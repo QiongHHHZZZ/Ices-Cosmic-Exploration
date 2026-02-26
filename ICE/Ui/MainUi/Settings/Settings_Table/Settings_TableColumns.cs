@@ -84,17 +84,17 @@ if (ImGui.Checkbox(T("Show Manual Mode Column"), ref showManualMode))
 
     private static readonly string[] classOptionsKeys =
     {
-        "Carpenter (CRP)",      // 0
-        "Blacksmith (BSM)",     // 1
-        "Armorer (ARM)",        // 2
-        "Goldsmith (GSM)",      // 3
-        "Leatherworker (LTW)",  // 4
-        "Weaver (WVR)",         // 5
-        "Alchemist (ALC)",      // 6
-        "Culinarian (CUL)",     // 7
-        "Miner (MIN)",          // 8
-        "Botanist (BTN)",       // 9
-        "Fisher (FSH)"          // 10
+        "Carpenter",      // 0
+        "Blacksmith",     // 1
+        "Armorer",        // 2
+        "Goldsmith",      // 3
+        "Leatherworker",  // 4
+        "Weaver",         // 5
+        "Alchemist",      // 6
+        "Culinarian",     // 7
+        "Miner",          // 8
+        "Botanist",       // 9
+        "Fisher"          // 10
     };
 
     private static string[] classOptionsDisplay = [];

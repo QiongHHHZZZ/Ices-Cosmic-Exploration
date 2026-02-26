@@ -490,14 +490,15 @@ ImGui.SetTooltip(T("Please note. This will ONLY grind for relic Exp under the ba
                                 C.Save();
                             }
 
-                            string currentJobName = BattleJobs.FirstOrDefault(x => x.Value == C.Relic_BattleJob).Key ?? T("None");
+                            string currentJobKey = BattleJobs.FirstOrDefault(x => x.Value == C.Relic_BattleJob).Key;
+                            string currentJobName = currentJobKey is null ? T("None") : T(currentJobKey);
 
                             if (ImGui.BeginCombo(T("Battle Job"), currentJobName))
                             {
                                 foreach (var job in BattleJobs)
                                 {
                                     bool isSelected = C.Relic_BattleJob == job.Value;
-                                    if (ImGui.Selectable(job.Key, isSelected))
+                                    if (ImGui.Selectable(T(job.Key), isSelected))
                                     {
                                         C.Relic_BattleJob = job.Value;
                                         C.Save();

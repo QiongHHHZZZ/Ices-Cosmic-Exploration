@@ -73,7 +73,8 @@ if (ImGui.Button(T("Select Mounting Option")))
             }
             ImGui.SameLine();
             ImGui.AlignTextToFramePadding();
-            ImGui.Text(T("Mount: {0}", C.MountName));
+            string mountDisplayName = C.MountId == 0 ? T("Mount Roulette") : C.MountName;
+            ImGui.Text(T("Mount: {0}", mountDisplayName));
 
             if (ImGui.BeginPopup("Mount Options"))
             {

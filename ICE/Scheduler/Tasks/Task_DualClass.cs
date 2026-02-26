@@ -420,14 +420,17 @@ namespace ICE.Scheduler.Tasks
                 else if (EzThrottler.Throttle("Starting to fish", 1000))
                 {
                     IceLogging.Debug("Telling it to start fishing", handle);
-                    ActionManager.Instance()->UseAction(ActionType.Action, 289);
+                    // CN-MAINT: Reuse unified fishing start policy (AutoHook/MissFisher/conflict handling).
+                    Task_Fishing.StartFishingByAvailablePlugin(handle);
                 }
                 return false;
             }
             else
             {
                 // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
-                P.AutoHook.SetPluginState(true);
+                // CN-MAINT: AutoHook runtime state is enabled only in exclusive AutoHook mode.
+                if (Task_Fishing.ShouldEnableAutoHookRuntime())
+                    P.AutoHook.SetPluginState(true);
                 IceLogging.Info("We're starting to fish. So kicking it over to checking the fish items", handle);
                 P.TaskManager.Insert(() => CheckItems(), "Checking for items to meet the quantity set", Utils.TaskConfig);
                 return true;

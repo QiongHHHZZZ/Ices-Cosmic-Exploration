@@ -782,6 +782,13 @@ namespace ICE.Scheduler.Tasks
                     }
 
                     IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now", tag);
+
+                    // CN-MAINT: gather Daily Routines TP is mission-entry only.
+                    if (Task_Gather.TryDailyRoutinesTeleportToGatherLandZone(startNode.LandZone, tag))
+                    {
+                        return false;
+                    }
+
                     Task_NavmeshMove.Enqueue_NavmeshTask(startNode.LandZone);
                     return true;
                 }
@@ -822,6 +829,11 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
+                    if (Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(randomFishingHole, tag))
+                    {
+                        return false;
+                    }
+
                     IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now");
                     Task_NavmeshMove.Enqueue_NavmeshTask(randomFishingHole);
                     randomFishingHole = Vector3.Zero;

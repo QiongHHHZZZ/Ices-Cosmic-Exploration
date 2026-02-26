@@ -13,12 +13,13 @@ using System.Globalization;
 using System.Reflection;
 using TerraFX.Interop.Windows;
 using static ICE.Utilities.CosmicHelper;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui
 {
     internal class OverlayWindow : Window
     {
-        public OverlayWindow() : base("ICE Overlay")
+        public OverlayWindow() : base(T("ICE Overlay"))
         {
             Flags = ImGuiWindowFlags.None;
      
@@ -26,7 +27,7 @@ namespace ICE.Ui
             TitleBarButtons.Add(
                 new()
                 {
-                    ShowTooltip = () => ImGui.SetTooltip("Overlay Settings"),
+                    ShowTooltip = () => ImGui.SetTooltip(T("Overlay Settings")),
                     Icon = FontAwesomeIcon.Cog,
                     IconOffset = new(1, 1),
                     Click = _ => ImGui.OpenPopup("OverlaySettingsPopup")
@@ -74,8 +75,8 @@ namespace ICE.Ui
             {
                 ImGui.TableSetupColumn("##Planets");
                 ImGui.TableSetupColumn("##Icons");
-                ImGui.TableSetupColumn("Current");
-                ImGui.TableSetupColumn("Next");
+                ImGui.TableSetupColumn(T("Current"));
+                ImGui.TableSetupColumn(T("Next"));
 
                 ImGui.TableHeadersRow();
 
@@ -100,7 +101,7 @@ namespace ICE.Ui
         {
             if (ImGui.BeginPopup(popupId))
             {
-                ImGui.Text("Select Mode");
+                ImGui.Text(T("Select Mode"));
                 ImGui.Separator();
 
                 bool standard = C.SelectedMode == ModeSelect.Standard;
@@ -108,22 +109,22 @@ namespace ICE.Ui
                 bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
                 bool agendaMode = C.SelectedMode == ModeSelect.AgendaMode;
 
-                if (ImGui.RadioButton("Standard", standard))
+                if (ImGui.RadioButton(T("Standard"), standard))
                 {
                     C.SelectedMode = ModeSelect.Standard;
                     C.Save();
                 }
-                if (ImGui.RadioButton("Relic Grind", relicMode))
+                if (ImGui.RadioButton(T("Relic Grind"), relicMode))
                 {
                     C.SelectedMode = ModeSelect.RelicMode;
                     C.Save();
                 }
-                if (ImGui.RadioButton("Leveling Grind", xpLeveling))
+                if (ImGui.RadioButton(T("Leveling Grind"), xpLeveling))
                 {
                     C.SelectedMode = ModeSelect.LevelMode;
                     C.Save();
                 }
-                if (ImGui.RadioButton("Agenda Mode", agendaMode))
+                if (ImGui.RadioButton(T("Agenda Mode"), agendaMode))
                 {
                     C.SelectedMode = ModeSelect.AgendaMode;
                     C.Save();
@@ -146,7 +147,7 @@ namespace ICE.Ui
             if (ImGui.IsItemHovered())
             {
                 ImGui.BeginTooltip();
-                ImGui.Text("Open ICE");
+                ImGui.Text(T("Open ICE"));
                 ImGui.EndTooltip();
             }
             ImGui.SameLine();
@@ -157,7 +158,7 @@ namespace ICE.Ui
             if (ImGui.IsItemHovered())
             {
                 ImGui.BeginTooltip();
-                ImGui.Text("Change mode");
+                ImGui.Text(T("Change mode"));
                 ImGui.EndTooltip();
             }
             DrawModeSelectPopup("Overlay Mode Select");
@@ -179,7 +180,7 @@ namespace ICE.Ui
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text(droneActive ? "Stop Drone Finder" : "Run Drone Finder");
+                    ImGui.Text(droneActive ? T("Stop Drone Finder") : T("Run Drone Finder"));
                     ImGui.EndTooltip();
                 }
             }
@@ -193,7 +194,8 @@ namespace ICE.Ui
                 ModeSelect.AgendaMode => "Cosmic Agenda",
                 _ => C.SelectedMode.ToString(),
             };
-            ImGui.Text($"{modeName} - {SchedulerMain.State}");
+            var stateName = T(SchedulerMain.State.ToString());
+            ImGui.Text($"{T(modeName)} - {stateName}");
 
             // Start/Stop toggle
             bool running = SchedulerMain.State != IceState.Idle;
@@ -211,7 +213,7 @@ namespace ICE.Ui
             if (ImGui.IsItemHovered())
             {
                 ImGui.BeginTooltip();
-                ImGui.Text(running ? "Stop" : "Start");
+                ImGui.Text(running ? T("Stop") : T("Start"));
                 ImGui.EndTooltip();
             }
 
@@ -229,7 +231,7 @@ namespace ICE.Ui
             if (ImGui.IsItemHovered())
             {
                 ImGui.BeginTooltip();
-                ImGui.Text(Mission_Settings.StopAfterCurrent ? "Stop after current mission: ON" : "Stop after current mission: OFF");
+                ImGui.Text(Mission_Settings.StopAfterCurrent ? T("Stop after current mission: ON") : T("Stop after current mission: OFF"));
                 ImGui.EndTooltip();
             }
 
@@ -243,13 +245,13 @@ namespace ICE.Ui
             }
             else
             {
-                ImGui.Text("No mission");
+                ImGui.Text(T("No mission"));
             }
 #if DEBUG
             if (C.ShowDebugGatherInfo)
             {
-                ImGui.Text($"Total Node: {Mission_Settings.nodeTotal}");
-                ImGui.Text($"Node Counter: {Mission_Settings.nodeCounter}");
+                ImGui.Text(T("Total Node: {0}", Mission_Settings.nodeTotal));
+                ImGui.Text(T("Node Counter: {0}", Mission_Settings.nodeCounter));
             }
 #endif
         }
@@ -322,7 +324,7 @@ namespace ICE.Ui
                             }
                         }
                         ImGui.AlignTextToFramePadding();
-                        ImGui.Text($"[{mission.Key}] {mission.Value.Name} ({mission.Value.RewardItemAmount}x tokens)");
+                        ImGui.Text(T("[{0}] {1} ({2}x tokens)", mission.Key, mission.Value.Name, mission.Value.RewardItemAmount));
                     }
                 }
                 ImGui.EndTooltip();
@@ -356,7 +358,7 @@ namespace ICE.Ui
                 if (i > 1)
                     ImGui.SameLine(0, 2);
 
-                DrawWeatherIcon(weatherForecasts[i], weatherMissions, $"In: {WeatherForecastHandler.FormatForecastTime(weatherForecasts[i].Time)}");
+                DrawWeatherIcon(weatherForecasts[i], weatherMissions, T("In: {0}", WeatherForecastHandler.FormatForecastTime(weatherForecasts[i].Time)));
             }
         }
         private unsafe void TimedMissionDetailsForTerritory(uint territoryId, string moonAsset)
@@ -403,7 +405,7 @@ namespace ICE.Ui
                         ImGui.SameLine(0, 2);
                         ImGui.Text($"{mission.Value.Name}");
                         var expires = EorzeaHoursUntil(eorzeaTime, (int)mission.Value.EndTime);
-                        ImGui.Text($"Expires in {FormatRealTime(expires)}");
+                        ImGui.Text(T("Expires in {0}", FormatRealTime(expires)));
                         ImGui.EndTooltip();
                     }
                 }
@@ -427,7 +429,7 @@ namespace ICE.Ui
                         ImGui.SameLine(0, 2);
                         ImGui.Text($"{mission.Value.Name}");
                         var startsIn = EorzeaHoursUntil(eorzeaTime, (int)mission.Value.StartTime);
-                        ImGui.Text($"Starts in {FormatRealTime(startsIn)}");
+                        ImGui.Text(T("Starts in {0}", FormatRealTime(startsIn)));
                         ImGui.EndTooltip();
                     }
                 }
@@ -447,7 +449,7 @@ namespace ICE.Ui
             if (ImGui.IsItemHovered() && moonName != null)
             {
                 ImGui.BeginTooltip();
-                ImGui.Text(moonName);
+                ImGui.Text(T(moonName));
                 ImGui.EndTooltip();
             }
             ImGui.TableNextColumn();
@@ -458,7 +460,7 @@ namespace ICE.Ui
             if (ImGui.IsItemHovered())
             {
                 ImGui.BeginTooltip();
-                ImGui.Text(icon == FontAwesomeIcon.Cloud ? "Weather" : "Timed");
+                ImGui.Text(icon == FontAwesomeIcon.Cloud ? T("Weather") : T("Timed"));
                 ImGui.EndTooltip();
             }
         }
@@ -476,7 +478,9 @@ namespace ICE.Ui
             int totalSeconds = (int)(eorzeaHours * 175);
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            return minutes > 0 ? $"{minutes}m {seconds:D2}s" : $"{seconds}s";
+            return minutes > 0
+                ? T("{0}分 {1:D2}秒", minutes, seconds)
+                : T("{0}秒", seconds);
         }
         private bool IsAvailableAtHour(CosmicInfo mission, int hour)
         {
@@ -548,11 +552,11 @@ namespace ICE.Ui
 
                 if (totalCompleted != 11)
                 {
-                    ImGui_Ice.Draw_XPBar(currentTotal, 0, maxScore, label: $"Total: {currentTotal:N0} / {maxScore:N0} [{totalCompleted} / 11]");
+                    ImGui_Ice.Draw_XPBar(currentTotal, 0, maxScore, label: T("Total: {0:N0} / {1:N0} [{2} / 11]", currentTotal, maxScore, totalCompleted));
                 }
                 else
                 {
-                    ImGui_Ice.Draw_XPBar(actualTotal, 0, maxScore, label: $"Total Score: {actualTotal:N0}");
+                    ImGui_Ice.Draw_XPBar(actualTotal, 0, maxScore, label: T("Total Score: {0:N0}", actualTotal));
                 }
                 if (ImGui.IsItemHovered())
                 {
@@ -566,7 +570,7 @@ namespace ICE.Ui
                         ImGui.Image(jobImage.GetWrapOrEmpty().Handle, new Vector2(23, 23));
                         ImGui.SameLine();
                         ImGui.AlignTextToFramePadding();
-                        ImGui.Text($"Score: {jobScore:N0}");
+                        ImGui.Text(T("Score: {0:N0}", jobScore));
                     }
 
                     ImGui.EndTooltip();
@@ -592,7 +596,7 @@ namespace ICE.Ui
             {
                 var currentJobId = (uint)Player.Job;
                 var flags = C.Overlay_RelicXpExpanded ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None;
-                var open = ImGui.CollapsingHeader("Relic Tool XP", flags);
+                var open = ImGui.CollapsingHeader(T("Relic Tool XP"), flags);
                 if (open != C.Overlay_RelicXpExpanded)
                 {
                     C.Overlay_RelicXpExpanded = open;

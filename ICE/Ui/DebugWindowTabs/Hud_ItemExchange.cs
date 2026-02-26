@@ -1,6 +1,7 @@
 ﻿using Lumina.Excel.Sheets;
 using System.Text;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -20,7 +21,7 @@ namespace ICE.Ui.DebugWindowTabs
             if (GenericHelpers.TryGetAddonMaster<ECommons.UIHelpers.AddonMasterImplementations.AddonMaster.InclusionShop>("InclusionShop", out var itemExchange) && itemExchange.IsAddonReady)
             {
 
-                ImGui.Text($"Currency Amount: {itemExchange.CurrencyAmount}");
+                ImGui.Text(T("Currency Amount: {0}", itemExchange.CurrencyAmount));
 
                 if (ImGui.BeginTable("Item Exchange Window", 3, tableFlags))
                 {
@@ -57,7 +58,7 @@ namespace ICE.Ui.DebugWindowTabs
                         }
                         ImGui.Text($"{cost}");
                         ImGui.SameLine();
-                        if (ImGui.Button("Buy Item"))
+                        if (ImGui.Button(T("Buy Item")))
                         {
                             entry.Select();
                         }
@@ -72,8 +73,8 @@ namespace ICE.Ui.DebugWindowTabs
                 var currencyIcon = sheet.GetRow(shopExchange.CurrencyId).Icon;
                 Svc.Texture.TryGetFromGameIcon((int)currencyIcon, out var texture);
                 ImGui.Text($"{shopExchange.CurrencyAmount}");
-                ImGui.InputInt("Tab #", ref Tab);
-                if (ImGui.Button("Copy Item List"))
+                ImGui.InputInt($"{T("Tab #")}##Tab", ref Tab);
+                if (ImGui.Button(T("Copy Item List")))
                 {
                     var sb = new StringBuilder();
                     for (int i = 0; i < shopExchange.NumEntries; i++)
@@ -124,13 +125,13 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text($"{entry.CostAmount}");
 
                         ImGui.TableNextColumn();
-                        if (ImGui.Button("Buy 1 Item"))
+                        if (ImGui.Button(T("Buy 1 Item")))
                         {
                             entry.Select();
                         }
 
                         ImGui.TableNextColumn();
-                        if (ImGui.Button("Buy Max"))
+                        if (ImGui.Button(T("Buy Max")))
                         {
                             if (EzThrottler.Throttle("Buying from shop throttle"))
                             {
@@ -157,7 +158,7 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.AlignTextToFramePadding();
                 ImGui.Text($"{amount}");
 
-                if (ImGui.Button("Copy Item List"))
+                if (ImGui.Button(T("Copy Item List")))
                 {
                     var sb = new StringBuilder();
                     for (int i = 0; i < Shop.NumEntries; i++)
@@ -206,13 +207,13 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text($"{entry.CostAmount}");
 
                         ImGui.TableNextColumn();
-                        if (ImGui.Button("Buy 1 Item"))
+                        if (ImGui.Button(T("Buy 1 Item")))
                         {
                             entry.Select();
                         }
 
                         ImGui.TableNextColumn();
-                        if (ImGui.Button("Buy Max"))
+                        if (ImGui.Button(T("Buy Max")))
                         {
                             if (EzThrottler.Throttle("Buying from shop throttle"))
                             {
@@ -228,7 +229,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
             else
             {
-                ImGui.Text("Waiting for a shop exchange window to be open");
+                ImGui.Text(T("Waiting for a shop exchange window to be open"));
             }
         }
     }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
@@ -17,28 +18,28 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         public static void Draw()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.ExclamationTriangle, "Safety Settings");
+            ImGuiEx.IconWithText(FontAwesomeIcon.ExclamationTriangle, T("Safety Settings"));
             ImGui.Dummy(new Vector2(0, 5));
 
-            if (ImGui.Checkbox("Ignore non-Cosmic prompts", ref rejectUnknownYesNo))
+if (ImGui.Checkbox(T("Ignore non-Cosmic prompts"), ref rejectUnknownYesNo))
             {
                 C.RejectUnknownYesno = rejectUnknownYesNo;
                 C.Save();
             }
             ImGuiEx.HelpMarker(
-                "Warning! This is a safety feature to avoid joining random parties!\n" +
-                "If you you uncheck this, YOU WILL JOIN random party invites.\n" +
-                "You have been warned. Disable at your own risk."
+                T("Warning! This is a safety feature to avoid joining random parties!\n" +
+                  "If you you uncheck this, YOU WILL JOIN random party invites.\n" +
+                  "You have been warned. Disable at your own risk.")
             );
-            if (ImGui.Checkbox("Add delay to mission menu", ref delayGrabMission))
+if (ImGui.Checkbox(T("Add delay to mission menu"), ref delayGrabMission))
             {
                 C.DelayGrabMission = delayGrabMission;
                 C.Save();
             }
             ImGuiEx.HelpMarker(
-                "This is here for safety! If you want to decrease the delay between missions be my guest.\n" +
-                "Safety is around... 250? If you're having animation locks you can absolutely increase it higher\n" +
-                "Or if you're feeling daredevil. Lower it. I'm not your dad (will tell dad jokes though.");
+                T("This is here for safety! If you want to decrease the delay between missions be my guest.\n" +
+                  "Safety is around... 250? If you're having animation locks you can absolutely increase it higher\n" +
+                  "Or if you're feeling daredevil. Lower it. I'm not your dad (will tell dad jokes though."));
             if (delayGrabMission)
             {
                 ImGui.SetNextItemWidth(150);
@@ -52,15 +53,15 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     }
                 }
             }
-            if (ImGui.Checkbox("Add delay to crafting menu", ref delayCraft))
+if (ImGui.Checkbox(T("Add delay to crafting menu"), ref delayCraft))
             {
                 C.DelayCraft = delayCraft;
                 C.Save();
             }
             ImGuiEx.HelpMarker(
-                "This is here for safety! If you want to decrease the delay before turnin be my guest.\n" +
-                "Safety is around... 2500? If you're having animation locks you can absolutely increase it higher\n" +
-                "Or if you're feeling daredevil. Lower it. I'm not your dad (will tell dad jokes though.");
+                T("This is here for safety! If you want to decrease the delay before turnin be my guest.\n" +
+                  "Safety is around... 2500? If you're having animation locks you can absolutely increase it higher\n" +
+                  "Or if you're feeling daredevil. Lower it. I'm not your dad (will tell dad jokes though."));
             if (delayCraft)
             {
                 ImGui.SetNextItemWidth(150);
@@ -76,7 +77,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
             int delayRelic = C.DelayPostRelic;
             ImGui.SetNextItemWidth(150);
-            if (ImGui.SliderInt("Delay Post Relic Turnin", ref delayRelic, 0, 5000))
+if (ImGui.SliderInt(T("Delay Post Relic Turnin"), ref delayRelic, 0, 5000))
             {
                 C.DelayPostRelic = delayRelic;
                 C.SaveDebounced();

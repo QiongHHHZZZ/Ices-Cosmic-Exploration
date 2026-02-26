@@ -32,6 +32,10 @@ public partial class Config
     public bool UseAethernet { get; set; } = true;
     public float HubReturn_Distance { get; set; } = 75f;
 
+    // CN-MAINT: Daily Routines TP integration switches.
+    public bool FishingUseDailyRoutinesTP { get; set; } = false;
+    public bool GatherUseDailyRoutinesTP { get; set; } = false;
+
     public class MissionCommand
     {
         public required string command { get; set; }

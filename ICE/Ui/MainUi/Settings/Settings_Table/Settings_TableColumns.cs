@@ -1,3 +1,4 @@
+using static ICE.Localization.L10n;
 ﻿using ICE.Utilities.Cosmic_Helper;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table;
@@ -12,12 +13,12 @@ public static class Settings_TableColumns
     public static void ColumnSettings()
     {
         int missionSelectedOption = C.TableSortOption;
-        if (ImGui.BeginCombo("Sort By", missionSortOptions[missionSelectedOption]))
+ if (ImGui.BeginCombo(T("Sort By"), T(missionSortOptions[missionSelectedOption])))
         {
             for (int i = 0; i < missionSortOptions.Length; i++)
             {
                 bool isSelected = (i == missionSelectedOption);
-                if (ImGui.Selectable(missionSortOptions[i], isSelected))
+                if (ImGui.Selectable(T(missionSortOptions[i]), isSelected))
                 {
                     missionSelectedOption = i;
                 }
@@ -35,32 +36,33 @@ public static class Settings_TableColumns
         }
 
         bool hideUnsupported = C.HideUnsupportedMissions;
-        if (ImGui.Checkbox("Hide Unsupported Missions", ref hideUnsupported))
+if (ImGui.Checkbox(T("Hide Unsupported Missions"), ref hideUnsupported))
         {
             C.HideUnsupportedMissions = hideUnsupported;
             C.Save();
         }
 
         bool grindAllProvisionals = C.GrindAllProvisionals;
-        if (ImGui.Checkbox("Allow All Provisional Kinds", ref grindAllProvisionals))
+if (ImGui.Checkbox(T("Allow All Provisional Kinds"), ref grindAllProvisionals))
         {
             C.GrindAllProvisionals = grindAllProvisionals;
             C.Save();
         }
-        ImGuiEx.HelpMarker("Enabling this will show you all weather/timed/sequence missions that you can grind, \n" +
-                           "ON TOP OF doing the normal missions for whichever class you start on.\n" +
-                           "If you just want to focus one specific class, set this to false\n" +
-                           "Do note: this replaced provisional grinding, due to just being built into the standard mode now (finally)");
+        ImGuiEx.HelpMarker(T(
+            "Enabling this will show you all weather/timed/sequence missions that you can grind, \n" +
+            "ON TOP OF doing the normal missions for whichever class you start on.\n" +
+            "If you just want to focus one specific class, set this to false\n" +
+            "Do note: this replaced provisional grinding, due to just being built into the standard mode now (finally)"));
 
         bool autoShowToken = C.Auto_ShowTokens;
-        if (ImGui.Checkbox("Auto Hide/Show Planet Tokens", ref autoShowToken))
+if (ImGui.Checkbox(T("Auto Hide/Show Planet Tokens"), ref autoShowToken))
         {
             C.Auto_ShowTokens = autoShowToken;
             C.Save();
         }
 
         bool showManualMode = C.ShowManualMode;
-        if (ImGui.Checkbox("Show Manual Mode Column", ref showManualMode))
+if (ImGui.Checkbox(T("Show Manual Mode Column"), ref showManualMode))
         {
             C.ShowManualMode = showManualMode;
             if (!showManualMode)
@@ -72,8 +74,7 @@ public static class Settings_TableColumns
             }
             C.Save();
         }
-        ImGuiEx.HelpMarker("Only enable this if you want plan on doing missions YOURSELF. AND NOT AUTOMATING IT. " +
-                           "Or if you're letting a different plugin do all the automating of turning in, craftings, gathering... and not letting I.C.E. handle interacting with those plugins");
+        ImGuiEx.HelpMarker(T("Only enable this if you want plan on doing missions YOURSELF. AND NOT AUTOMATING IT. Or if you're letting a different plugin do all the automating of turning in, craftings, gathering... and not letting I.C.E. handle interacting with those plugins"));
     }
 
     private static bool ApplyToAllClasses = true;
@@ -81,7 +82,7 @@ public static class Settings_TableColumns
     private static int SpecificClass = 8;
     private static int selectedClassIndex = 0;
 
-    private static readonly string[] classOptions = new[]
+    private static readonly string[] classOptionsKeys =
     {
         "Carpenter (CRP)",      // 0
         "Blacksmith (BSM)",     // 1
@@ -95,6 +96,24 @@ public static class Settings_TableColumns
         "Botanist (BTN)",       // 9
         "Fisher (FSH)"          // 10
     };
+
+    private static string[] classOptionsDisplay = [];
+    private static bool classOptionsDisplayIsZh;
+
+    private static string[] GetClassOptionsDisplay()
+    {
+        // Rebuild only when language toggle flips.
+        bool isZh = C.UseChineseUi;
+        if (classOptionsDisplay.Length == 0 || classOptionsDisplayIsZh != isZh)
+        {
+            classOptionsDisplayIsZh = isZh;
+            classOptionsDisplay = new string[classOptionsKeys.Length];
+            for (int i = 0; i < classOptionsKeys.Length; i++)
+                classOptionsDisplay[i] = T(classOptionsKeys[i]);
+        }
+
+        return classOptionsDisplay;
+    }
 
     private static readonly int[] classIds = new[]
     {
@@ -119,15 +138,15 @@ public static class Settings_TableColumns
     public static void GeneralMissionSettings()
     {
         bool removeGold = C.RemoveAfterGold;
-        if (ImGui.Checkbox("Remove Mission Upon Gold Completion", ref removeGold))
+if (ImGui.Checkbox(T("Remove Mission Upon Gold Completion"), ref removeGold))
         {
             C.RemoveAfterGold = removeGold;
             C.Save();
         }
 
-        ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
+ImGui.Checkbox(T("Stop after current mission"), ref Mission_Settings.StopAfterCurrent);
         bool relicTurnin = C.TurninRelic;
-        if (ImGui.Checkbox($"Turnin if relic is complete##RelicTurnin_GeneralSetting", ref relicTurnin))
+        if (ImGui.Checkbox(T("Turnin if relic is complete##RelicTurnin_GeneralSetting"), ref relicTurnin))
         {
             C.TurninRelic = relicTurnin;
             C.Save();
@@ -136,32 +155,34 @@ public static class Settings_TableColumns
         ImGui.TextDisabled("?");
         if (ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n" +
-                             "1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n" +
-                             "2: You must not have the tool eqipped for this to run full auto. \n" +
-                             "\t- This is due to the fact that I cba coding this in at this time. (might change my mind in the future *shrugs*)\n" +
-                             "3: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
-                             "4: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
-                             "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing");
+ ImGui.SetTooltip(
+     T("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n") +
+     T("1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n") +
+     T("2: You must not have the tool eqipped for this to run full auto. \n") +
+     T("\t- This is due to the fact that I cba coding this in at this time. (might change my mind in the future *shrugs*)\n") +
+     T("3: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n") +
+     T("4: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n") +
+     T("\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing"));
         }
-        if (ImGui.Button("Quick Apply Turnins"))
+if (ImGui.Button(T("Quick Apply Turnins")))
         {
             ImGui.OpenPopup("Quick Apply_Mission Turnins");
         }
 
         if (ImGui.BeginPopup("Quick Apply_Mission Turnins"))
         {
-            if (ImGui.RadioButton("Apply to all classes", ApplyToAllClasses))
+if (ImGui.RadioButton(T("Apply to all classes"), ApplyToAllClasses))
             {
                 ApplyToAllClasses = true;
                 ApplyToSpecicClass = false;
             }
 
-            if (ImGui.RadioButton("Apply to specific class", ApplyToSpecicClass))
+if (ImGui.RadioButton(T("Apply to specific class"), ApplyToSpecicClass))
             {
                 ApplyToAllClasses = false;
                 ApplyToSpecicClass = true;
             }
+            var classOptions = GetClassOptionsDisplay();
             if (ImGui.Combo("##ClassSelector", ref selectedClassIndex, classOptions, classOptions.Length))
             {
                 // Update SpecificClass when selection changes
@@ -169,10 +190,10 @@ public static class Settings_TableColumns
                 IceLogging.Debug($"Selected class: {classOptions[selectedClassIndex]}, ID: {SpecificClass}");
             }
             ImGui.Separator();
-            ImGui.Text("Select Turnin Options");
+ImGui.Text(T("Select Turnin Options"));
             ImGui.Dummy(new Vector2(0, 2));
 
-            if (ImGui.Checkbox("Auto", ref AnyTurnin))
+if (ImGui.Checkbox(T("Auto"), ref AnyTurnin))
             {
                 if (AnyTurnin)
                 {
@@ -192,23 +213,23 @@ public static class Settings_TableColumns
 
                 C.Save();
             }
-            ImGuiEx.HelpMarker("This option will strive to get the best result, but will turn in any result if necessary without stopping.");
+            ImGuiEx.HelpMarker(T("This option will strive to get the best result, but will turn in any result if necessary without stopping."));
 
             ImGui.Separator();
 
-            if (ImGui.Checkbox("Gold", ref TurninGold))
+if (ImGui.Checkbox(T("Gold"), ref TurninGold))
             {
                 if (AnyTurnin && TurninGold)
                     AnyTurnin = false;
 
             }
-            if (ImGui.Checkbox("Silver", ref TurninSilver))
+if (ImGui.Checkbox(T("Silver"), ref TurninSilver))
             {
                 if (AnyTurnin && TurninSilver)
                     AnyTurnin = false;
 
             }
-            if (ImGui.Checkbox("Bronze", ref TurninBronze))
+if (ImGui.Checkbox(T("Bronze"), ref TurninBronze))
             {
                 if (AnyTurnin && TurninBronze)
                     AnyTurnin = false;
@@ -220,7 +241,7 @@ public static class Settings_TableColumns
 
             ImGui.Separator();
 
-            if (ImGui.Button("Apply"))
+if (ImGui.Button(T("Apply")))
             {
                 var amountApplied = 0;
                 foreach (var mission in C.MissionConfig)

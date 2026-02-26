@@ -1,6 +1,7 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
+using static ICE.Localization.L10n;
 namespace ICE.Ui
 {
     internal class Relic_XP
@@ -55,11 +56,11 @@ namespace ICE.Ui
 
             bool MaxStage = XPTable.Where(x => x.Value.NeededXP != 0).Count() == 0;
 
-            ImGui.Text($"Stage: {stage}");
+            ImGui.Text(T("Stage: {0}", stage));
             if (MaxStage)
             {
                 ImGui.SameLine();
-                ImGui.Text("[MAX]");
+ImGui.Text(T("[MAX]"));
             }
             foreach (var type in XPTable)
             {
@@ -69,7 +70,7 @@ namespace ICE.Ui
                 float windowSize = ImGui.GetWindowSize().X - 20;
                 Vector2 size = new Vector2(windowSize, 10);
 
-                string overlay = $"ID: {current} / {max}";
+                string overlay = T("ID: {0} / {1}", current, max);
                 string xpType = "";
                 if (type.Key == 1)
                     xpType = "I";
@@ -88,11 +89,11 @@ namespace ICE.Ui
 
                 if (stage != CosmicHelper.MaxRelicLevel)
                 {
-                    DrawXPBar($"Type: {xpType}", current, needed, size, max);
+                    DrawXPBar(T("Type: {0}", xpType), current, needed, size, max);
                 }
                 else
                 {
-                    DrawXPBar($"Type: {xpType}", current, max, size, max);
+                    DrawXPBar(T("Type: {0}", xpType), current, max, size, max);
                 }
             }
         }

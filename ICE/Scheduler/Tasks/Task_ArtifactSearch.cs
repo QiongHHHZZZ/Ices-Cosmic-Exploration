@@ -6,6 +6,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Utilities.Cosmic_Helper;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Ui.DebugWindowTabs.Ui_OyzinMap;
@@ -269,6 +270,7 @@ namespace ICE.Scheduler.Tasks
 
                 IceLogging.Debug("We've found the map flag! Setting it for us to travel to", tag);
                 droneLoc = marker.Position;
+                TryDailyRoutinesTeleport(droneLoc, tag);
                 P.TaskManager.Insert(InteractWithDrone, "Interact with drone");
                 Task_NavmeshMove.Enqueue_NavmeshTask(droneLoc, false, 3.5f);
                 return true;
@@ -366,6 +368,35 @@ namespace ICE.Scheduler.Tasks
                 
             return false;
         }
+
+        private static void TryDailyRoutinesTeleport(Vector3 destination, string tag)
+        {
+            if (!C.Cosmodrone_UseDailyRoutinesTP)
+                return;
+
+            if (!Utils.HasPlugin("DailyRoutines"))
+            {
+                if (EzThrottler.Throttle("DroneMissingDailyRoutines", 8000))
+                {
+                    IceLogging.Warning("未检测到 Daily Routines，已回退原有寻路。", tag);
+                }
+                return;
+            }
+
+            if (EzThrottler.Throttle("DroneDailyRoutinesTeleport", 2500))
+            {
+                var command = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "/pdrtp pos {0:F2} {1:F2} {2:F2}",
+                    destination.X,
+                    destination.Y,
+                    destination.Z);
+
+                Svc.Commands.ProcessCommand(command);
+                IceLogging.Debug($"已尝试 Daily Routines 传送：{command}", tag);
+            }
+        }
+
         public static unsafe bool? OpenMapInfo()
         {
             if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("AreaMap", out var mapAddon) && GenericHelpers.IsAddonReady(mapAddon))

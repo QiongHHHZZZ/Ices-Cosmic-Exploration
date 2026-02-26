@@ -6,6 +6,7 @@ using ECommons.ImGuiMethods;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ICE.ConfigFiles.Config;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
@@ -27,7 +28,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
             bool BuyItems = C.BuyItems;
 
-            if (ImGui.Checkbox("Buy Items", ref BuyItems))
+            if (ImGui.Checkbox(T("Buy Items"), ref BuyItems))
             {
                 C.BuyItems = BuyItems;
                 C.StopOnceHitCosmoCredits = false;
@@ -38,14 +39,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             if (ImGui.IsItemHovered())
             {
                 ImGui.BeginTooltip();
-                ImGui.Text("This is your personalized shopping list that you can create that it will run when you hit a certain amount of credits.");
-                ImGui.Text("Here's what each of the following does:");
-                ImGui.BulletText("Keep: Will buy up to that many items to make sure that you have in your inventory. This count doesn't go down between runs.\n" +
-                                 "Useful for things like cordials where you want to always have a certain amount on hand");
-                ImGui.BulletText("Buy: Will buy X amount of those items, as it buys it from the vendor, the number will decrease until it hits 0.\n" +
-                                 "Good for one off buys, or something that you only need a particular amount of");
-                ImGui.BulletText("Keep Buying: Once the other 2 have been met (Keep/Buy), it will constantly buy this item if it has the credits to do so.\n" +
-                                 "This can only be set to 1 item, and gererally used for things you want to just spend your credits on");
+                ImGui.Text(T("This is your personalized shopping list that you can create that it will run when you hit a certain amount of credits."));
+                ImGui.Text(T("Here's what each of the following does:"));
+                ImGui.BulletText(T("Keep: Will buy up to that many items to make sure that you have in your inventory. This count doesn't go down between runs.\n" +
+                                  "Useful for things like cordials where you want to always have a certain amount on hand"));
+                ImGui.BulletText(T("Buy: Will buy X amount of those items, as it buys it from the vendor, the number will decrease until it hits 0.\n" +
+                                  "Good for one off buys, or something that you only need a particular amount of"));
+                ImGui.BulletText(T("Keep Buying: Once the other 2 have been met (Keep/Buy), it will constantly buy this item if it has the credits to do so.\n" +
+                                  "This can only be set to 1 item, and gererally used for things you want to just spend your credits on"));
                 ImGui.EndTooltip();
             }
             ImGui.NewLine();
@@ -54,14 +55,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             int CosmoKeepAmount = C.CosmoKeepAmount;
 
             ImGui.SetNextItemWidth(150);
-            if (ImGui.SliderInt("Go buy items when you reach", ref buyAtAmount, 0, 30000))
+            if (ImGui.SliderInt(T("Go buy items when you reach"), ref buyAtAmount, 0, 30000))
             {
                 C.CosmoBuyAtAmount = buyAtAmount;
                 C.SaveDebounced();
             }
 
             ImGui.SetNextItemWidth(150);
-            if (ImGui.SliderInt("Keep this much Cosmocredits", ref CosmoKeepAmount, 0, buyAtAmount))
+            if (ImGui.SliderInt(T("Keep this much Cosmocredits"), ref CosmoKeepAmount, 0, buyAtAmount))
             {
                 C.CosmoKeepAmount = CosmoKeepAmount;
                 C.SaveDebounced();
@@ -70,28 +71,28 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             CheckConfigState();
             if (Task_BuyCosmoItems.CanPurchaseAnyItem())
             {
-                ImGui.Text("You can buy cosmocredit items from the list!");
+                ImGui.Text(T("You can buy cosmocredit items from the list!"));
             }
             else
             {
-                ImGui.Text("You can't buy any items with your current credit value/items (tis fine, this just a test)");
+                ImGui.Text(T("You can't buy any items with your current credit value/items (tis fine, this just a test)"));
             }
 
-            if (ImGui.Button("Add Material/Dyes/Items"))
+            if (ImGui.Button(T("Add Material/Dyes/Items")))
             {
                 ImGui.OpenPopup("CosmocreditMateriaPopup");
             }
 
             ImGui.SameLine();
 
-            if (ImGui.Button("Add Armor/Housing/Mounts"))
+            if (ImGui.Button(T("Add Armor/Housing/Mounts")))
             {
                 ImGui.OpenPopup("Cosmocredit_MountArmorPopup");
             }
 
             ImGui.SameLine();
             
-            if (ImGui.Button("Clear shopping list"))
+            if (ImGui.Button(T("Clear shopping list")))
             {
                 C.CosmoShopping.Clear();
                 C.CosmoShoppingOrder.Clear();
@@ -105,13 +106,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             ImGui.Separator();
             ImGui.NewLine();
 
-            DrawShoppingTable("Armor/Housing/Mounts", Shop_Cosmocredits.Shop_MountsCards, C.CosmoShoppingOrder_Gear, GearDragDrop);
+            DrawShoppingTable(T("Armor/Housing/Mounts"), "ArmorHousingMounts", Shop_Cosmocredits.Shop_MountsCards, C.CosmoShoppingOrder_Gear, GearDragDrop);
 
             // Draw separate tables for each shop type
 
             ImGui.NewLine();
 
-            DrawShoppingTable("Materials/Dyes/Items", Shop_Cosmocredits.Shop_MateriaDye, C.CosmoShoppingOrder, MaterialDragDrop);
+            DrawShoppingTable(T("Materials/Dyes/Items"), "MaterialsDyesItems", Shop_Cosmocredits.Shop_MateriaDye, C.CosmoShoppingOrder, MaterialDragDrop);
         }
 
         private static void DrawAddItemPopups()
@@ -127,8 +128,8 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
                 if (ImGui.BeginTable("Cosmo Materia Shop", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.ScrollY | ImGuiTableFlags.RowBg, new Vector2(0, 250)))
                 {
-                    ImGui.TableSetupColumn("Icons", ImGuiTableColumnFlags.WidthFixed, 20);
-                    ImGui.TableSetupColumn("Names", ImGuiTableColumnFlags.WidthStretch);
+                    ImGui.TableSetupColumn(T("Icons"), ImGuiTableColumnFlags.WidthFixed, 20);
+                    ImGui.TableSetupColumn(T("Names"), ImGuiTableColumnFlags.WidthStretch);
 
                     foreach (var item in Shop_Cosmocredits.Shop_MateriaDye)
                     {
@@ -149,8 +150,8 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
                 if (ImGui.BeginTable("Cosmo Gear Shop", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.ScrollY | ImGuiTableFlags.RowBg, new Vector2(0, 250)))
                 {
-                    ImGui.TableSetupColumn("Icons", ImGuiTableColumnFlags.WidthFixed, 20);
-                    ImGui.TableSetupColumn("Names", ImGuiTableColumnFlags.WidthStretch);
+                    ImGui.TableSetupColumn(T("Icons"), ImGuiTableColumnFlags.WidthFixed, 20);
+                    ImGui.TableSetupColumn(T("Names"), ImGuiTableColumnFlags.WidthStretch);
 
                     foreach (var item in Shop_Cosmocredits.Shop_MountsCards)
                     {
@@ -196,30 +197,30 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
         }
 
-        private static void DrawShoppingTable(string tableName, Dictionary<uint, Shop_Cosmocredits.ItemInfo> shopData, List<uint> orderList, ImGuiEx.RealtimeDragDrop<uint> dragDrop)
+        private static void DrawShoppingTable(string tableName, string tableId, Dictionary<uint, Shop_Cosmocredits.ItemInfo> shopData, List<uint> orderList, ImGuiEx.RealtimeDragDrop<uint> dragDrop)
         {
             if (orderList.Count == 0)
             {
-                ImGui.TextDisabled($"No items in {tableName} shopping list");
+                ImGui.TextDisabled(T("No items in {0} shopping list", tableName));
                 return;
             }
 
-            ImGui.Text($"{tableName} ({orderList.Count} items)");
+            ImGui.Text(T("{0} ({1} items)", tableName, orderList.Count));
 
             dragDrop.Begin();
 
-            if (ImGui.BeginTable($"Shopping_{tableName}", 10, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+            if (ImGui.BeginTable($"Shopping_{tableId}", 10, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("Order", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("Name");
-                ImGui.TableSetupColumn("Have", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("Cost", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("Kind", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("Unlocked", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("Keep", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("Buy", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("Keep Buying", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn(T("Order"), ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn(T("Name"));
+                ImGui.TableSetupColumn(T("Have"), ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn(T("Cost"), ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn(T("Kind"), ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn(T("Unlocked"), ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn(T("Keep"), ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn(T("Buy"), ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn(T("Keep Buying"), ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn(T(""), ImGuiTableColumnFlags.WidthFixed);
 
                 ImGui.TableHeadersRow();
 
@@ -278,7 +279,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
             // Unlocked (for consumable items like mounts, orchestrion rolls, cards, etc.)
             ImGui.TableNextColumn();
-            ImGui.TextUnformatted(UnlockState.IsItemUnlockable(itemInfo) ? UnlockState.IsItemUnlocked(itemInfo) ? "Yes" : "No" : "-");
+            ImGui.TextUnformatted(UnlockState.IsItemUnlockable(itemInfo) ? UnlockState.IsItemUnlocked(itemInfo) ? T("Yes") : T("No") : "-");
 
             // Keep Amount
             ImGui.TableNextColumn();

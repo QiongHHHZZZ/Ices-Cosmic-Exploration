@@ -2,7 +2,9 @@
 <Project Sdk="Dalamud.NET.Sdk/14.0">
 
 	<PropertyGroup>
-		<Version>0.0.76.8</Version>
+		<Version>0.0.76.800</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
 		<Description>Who said we couldn't explore the moon!.</Description>
 		<PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -12,6 +14,11 @@
 		<InformationalVersion>$([System.DateTime]::UtcNow.ToString("yyyy\-MM\-dd HH\:mm\:ss"))</InformationalVersion>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<NoWarn>CS8618; CS8625; CS8629; </NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+		<DalamudLibPath Condition="Exists('$(appdata)\\XIVLauncherCN\\addon\\Hooks\\dev\\')">$(appdata)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
+		<AssemblySearchPaths Condition="Exists('$(DalamudLibPath)')">$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -51,8 +58,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
-		<ProjectReference Include="..\ffxiv_pictomancy\Pictomancy\Pictomancy.csproj" />
+		<ProjectReference Include="..\ECommons\ECommons\ECommons.csproj">
+			<AdditionalProperties>DalamudLibPath=$(DalamudLibPath)</AdditionalProperties>
+		</ProjectReference>
+		<ProjectReference Include="..\ffxiv_pictomancy\Pictomancy\Pictomancy.csproj">
+			<AdditionalProperties>DalamudLibPath=$(DalamudLibPath)</AdditionalProperties>
+		</ProjectReference>
 	</ItemGroup>
 
 	<ItemGroup>

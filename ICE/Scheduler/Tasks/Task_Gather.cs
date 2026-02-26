@@ -7,6 +7,7 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Resources.GatheringRoutes;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
+using System.Globalization;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.ConfigFiles.Config;
 
@@ -45,6 +46,42 @@ namespace ICE.Scheduler.Tasks
                 P.TaskManager.Enqueue(() => CheckCurrentLocation(), "Checking to see if gathering flags needs updated");
                 P.TaskManager.Enqueue(() => PathandCheckNode());
             }
+        }
+
+        // CN-MAINT: Gather TP helper is intentionally used ONLY during mission entry.
+        // Runtime node-to-node movement remains original vnav pathing to avoid excessive teleports.
+        internal static bool TryDailyRoutinesTeleportToGatherLandZone(Vector3 targetPosition, string handle)
+        {
+            if (!C.GatherUseDailyRoutinesTP)
+                return false;
+
+            if (Player.DistanceTo(targetPosition) < 3f)
+                return false;
+
+            if (!Utils.HasPlugin("DailyRoutines"))
+            {
+                if (EzThrottler.Throttle("GatherMissingDailyRoutines", 8000))
+                {
+                    IceLogging.Warning("未检测到 Daily Routines，已回退原有寻路。", handle);
+                }
+                return false;
+            }
+
+            if (EzThrottler.Throttle("GatherDailyRoutinesTeleport", 2500))
+            {
+                var command = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "/pdrtp pos {0:F2} {1:F2} {2:F2}",
+                    targetPosition.X,
+                    targetPosition.Y,
+                    targetPosition.Z);
+
+                Svc.Commands.ProcessCommand(command);
+                IceLogging.Debug($"已尝试 Daily Routines 传送：{command}", handle);
+                return true;
+            }
+
+            return false;
         }
 
         public static bool? GatherInteractV2()

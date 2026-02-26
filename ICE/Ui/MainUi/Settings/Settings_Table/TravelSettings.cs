@@ -4,6 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 using Pictomancy;
 using System.Collections.Generic;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
@@ -32,11 +33,15 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             ImGui.Separator();
             ImGui.Dummy(new Vector2(0, 5));
             CraftingLocations();
+            ImGui.Dummy(new Vector2(0, 5));
+            ImGui.Separator();
+            ImGui.Dummy(new Vector2(0, 5));
+            DailyRoutinesExtensions();
         }
 
         private static unsafe void MountSelection()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Feather, "Mount Settings");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Feather, T("Mount Settings"));
             ImGui.Dummy(new Vector2(0, 5));
 
             bool mountOutsideMission = C.UseMountOutsideMission;
@@ -44,10 +49,10 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             float minMountRange = C.MountRadius;
             float dismountRange = C.DismountRadius;
 
-            if (ImGui.Button("Select Mounting Option"))
+if (ImGui.Button(T("Select Mounting Option")))
             {
                 availableMounts.Clear();
-                availableMounts[0] = "Mount Roulette";
+                availableMounts[0] = T("Mount Roulette");
 
                 var mountSheet = Svc.Data.GetExcelSheet<Mount>();
 
@@ -68,11 +73,11 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
             ImGui.SameLine();
             ImGui.AlignTextToFramePadding();
-            ImGui.Text($"Mount: {C.MountName}");
+            ImGui.Text(T("Mount: {0}", C.MountName));
 
             if (ImGui.BeginPopup("Mount Options"))
             {
-                ImGui.InputText("Search", ref mountSearchText, 100);
+ImGui.InputText(T("Search"), ref mountSearchText, 100);
 
                 var filteredMounts = availableMounts
                     .Where(kvp => string.IsNullOrEmpty(mountSearchText) ||
@@ -100,16 +105,16 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
                 ImGui.Separator();
 
-                if (ImGui.Button("Previous") && mountDisplayOffset > 0)
+if (ImGui.Button(T("Previous")) && mountDisplayOffset > 0)
                 {
                     mountDisplayOffset = Math.Max(0, mountDisplayOffset - mountItemsPerPage);
                 }
 
                 ImGui.SameLine();
-                ImGui.Text($"{mountDisplayOffset + 1}-{Math.Min(mountDisplayOffset + mountItemsPerPage, totalItems)} of {totalItems}");
+                ImGui.Text(T("{0}-{1} of {2}", mountDisplayOffset + 1, Math.Min(mountDisplayOffset + mountItemsPerPage, totalItems), totalItems));
 
                 ImGui.SameLine();
-                if (ImGui.Button("Next") && mountDisplayOffset < maxOffset)
+if (ImGui.Button(T("Next")) && mountDisplayOffset < maxOffset)
                 {
                     mountDisplayOffset = Math.Min(maxOffset, mountDisplayOffset + mountItemsPerPage);
                 }
@@ -117,34 +122,34 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 ImGui.EndPopup();
             }
 
-            if (ImGui.Checkbox("Use mount outside mission", ref mountOutsideMission))
+if (ImGui.Checkbox(T("Use mount outside mission"), ref mountOutsideMission))
             {
                 C.UseMountOutsideMission = mountOutsideMission;
                 C.Save();
             }
 
-            if (ImGui.Checkbox("Use mount in mission", ref mountInMission))
+if (ImGui.Checkbox(T("Use mount in mission"), ref mountInMission))
             {
                 C.UseMountInMission = mountInMission;
                 C.Save();
             }
 
             ImGui.SetNextItemWidth(100);
-            if (ImGui.DragFloat("Minimum Mounting Range", ref minMountRange, 1))
+            if (ImGui.DragFloat(T("Minimum Mounting Range"), ref minMountRange, 1))
             {
                 C.MountRadius = minMountRange;
                 C.Save();
             }
             ImGui.SameLine();
-            ImGui.Checkbox("Visualize radius", ref visualizeRadius);
+ImGui.Checkbox(T("Visualize radius"), ref visualizeRadius);
             ImGui.SetNextItemWidth(100);
-            if (ImGui.DragFloat("Dismount Target Range", ref dismountRange, 1))
+            if (ImGui.DragFloat(T("Dismount Target Range"), ref dismountRange, 1))
             {
                 C.DismountRadius = dismountRange;
                 C.Save();
             }
             ImGui.SameLine();
-            ImGui.Checkbox("Visualize Dismount Radius", ref visualizeDismountRadius);
+ImGui.Checkbox(T("Visualize Dismount Radius"), ref visualizeDismountRadius);
 
             using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
             {
@@ -162,49 +167,49 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         private static void PathfindingSettings()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Route, "Pathfinding");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Route, T("Pathfinding"));
             ImGui.Dummy(new Vector2(0, 5));
 
             bool stellarSprint = C.MoonSprint;
-            if (ImGui.Checkbox("Auto-Use Stellar Sprint", ref stellarSprint))
+if (ImGui.Checkbox(T("Auto-Use Stellar Sprint"), ref stellarSprint))
             {
                 C.MoonSprint = stellarSprint;
                 C.Save();
             }
 
             bool closestNode = C.ClosestNodeSelection;
-            if (ImGui.Checkbox("Prioritize closest gathering node", ref closestNode))
+if (ImGui.Checkbox(T("Prioritize closest gathering node"), ref closestNode))
             {
                 C.ClosestNodeSelection = closestNode;
                 C.Save();
             }
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("Always navigate to the closest targetable node instead of following the fixed route order.\nUseful for timed EX+ missions where speed matters.");
+ImGui.SetTooltip(T("Always navigate to the closest targetable node instead of following the fixed route order.\nUseful for timed EX+ missions where speed matters."));
             }
 
             bool randomize = C.RandomizeWaypoints;
-            if (ImGui.Checkbox("Randomize waypoint positions", ref randomize))
+if (ImGui.Checkbox(T("Randomize waypoint positions"), ref randomize))
             {
                 C.RandomizeWaypoints = randomize;
                 C.Save();
             }
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("Adds a small random offset to navigation destinations so the character doesn't always follow the exact same path");
+ImGui.SetTooltip(T("Adds a small random offset to navigation destinations so the character doesn't always follow the exact same path"));
             }
             if (randomize)
             {
                 ImGui.SameLine();
                 float radius = C.RandomizeWaypointsRadius;
                 ImGui.SetNextItemWidth(100);
-                if (ImGui.SliderFloat("Randomize radius (yalms)", ref radius, 0.5f, 1.0f, "%.1f"))
+                if (ImGui.SliderFloat(T("Randomize radius (yalms)"), ref radius, 0.5f, 1.0f, "%.1f"))
                 {
                     C.RandomizeWaypointsRadius = radius;
                     C.SaveDebounced();
                 }
                 bool showDebug = C.RandomizeWaypointsDebug;
-                if (ImGui.Checkbox("Show random location debug target", ref showDebug))
+if (ImGui.Checkbox(T("Show random location debug target"), ref showDebug))
                 {
                     C.RandomizeWaypointsDebug = showDebug;
                     C.Save();
@@ -212,54 +217,54 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
 
             bool useHubReturn = C.UseHubReturn;
-            if (ImGui.Checkbox("Use Hub Return", ref useHubReturn))
+if (ImGui.Checkbox(T("Use Hub Return"), ref useHubReturn))
             {
                 C.UseHubReturn = useHubReturn;
                 C.Save();
             }
             ImGui.SameLine();
             bool useAethernet = C.UseAethernet;
-            if (ImGui.Checkbox("Use Aethernet", ref useAethernet))
+if (ImGui.Checkbox(T("Use Aethernet"), ref useAethernet))
             {
                 C.UseAethernet = useAethernet;
                 C.Save();
             }
 
             bool avoidStellarReturn = C.AvoidStellarReturn;
-            if (ImGui.Checkbox("Avoid Stellar Return for pathing", ref avoidStellarReturn))
+if (ImGui.Checkbox(T("Avoid Stellar Return for pathing"), ref avoidStellarReturn))
             {
                 C.AvoidStellarReturn = avoidStellarReturn;
                 C.Save();
             }
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("When enabled, the pathfinder will not use Stellar Return to travel to gathering nodes.\nThis applies to both Hub Return and Hub + Aethernet travel methods.");
+ImGui.SetTooltip(T("When enabled, the pathfinder will not use Stellar Return to travel to gathering nodes.\nThis applies to both Hub Return and Hub + Aethernet travel methods."));
             }
             if (C.AvoidStellarReturn)
             {
                 ImGui.SameLine();
                 bool exceptHub = C.AvoidStellarReturnExceptHub;
-                if (ImGui.Checkbox("Except for hub activities", ref exceptHub))
+if (ImGui.Checkbox(T("Except for hub activities"), ref exceptHub))
                 {
                     C.AvoidStellarReturnExceptHub = exceptHub;
                     C.Save();
                 }
                 if (ImGui.IsItemHovered())
                 {
-                    ImGui.SetTooltip("When enabled, Stellar Return will still be used to return to the hub\nfor activities like credit purchases, gambling, drone bits, and repairs.");
+ImGui.SetTooltip(T("When enabled, Stellar Return will still be used to return to the hub\nfor activities like credit purchases, gambling, drone bits, and repairs."));
                 }
             }
 
             var minHubReturnDistance = C.HubReturn_Distance;
             ImGui.SetNextItemWidth(200);
-            if (ImGui.DragFloat("Distance before hub return is used (yalms)", ref minHubReturnDistance))
+            if (ImGui.DragFloat(T("Distance before hub return is used (yalms)"), ref minHubReturnDistance))
             {
                 C.HubReturn_Distance = minHubReturnDistance;
                 C.SaveDebounced();
             }
 
             bool DisableRedAlertPathing = C.DisablePathfindingToRedAlert;
-            if (ImGui.Checkbox("Disable Pathfinding to Red Alerts", ref DisableRedAlertPathing))
+if (ImGui.Checkbox(T("Disable Pathfinding to Red Alerts"), ref DisableRedAlertPathing))
             {
                 C.DisablePathfindingToRedAlert = DisableRedAlertPathing;
                 C.Save();
@@ -268,11 +273,11 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         private static void StuckSettings()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.ExclamationTriangle, "Stuck Detection");
+            ImGuiEx.IconWithText(FontAwesomeIcon.ExclamationTriangle, T("Stuck Detection"));
             ImGui.Dummy(new Vector2(0, 5));
 
             bool unstuckEnabled = C.JumpIfStuck_V2 || C.RetargetIfStuck;
-            if (ImGui.Checkbox("If stuck during nav movement:", ref unstuckEnabled))
+if (ImGui.Checkbox(T("If stuck during nav movement:"), ref unstuckEnabled))
             {
                 if (unstuckEnabled)
                     C.JumpIfStuck_V2 = true;
@@ -284,30 +289,30 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
             ImGui.SameLine();
-            ImGuiEx.HelpMarker(
+            ImGuiEx.HelpMarker(T(
                 "When stuck during navmesh movement for the configured delay:\n" +
                 "- Jump: attempts to jump over the obstacle\n" +
-                "- Retarget: stops and re-pathfinds to the destination (re-randomizes if enabled)");
+                "- Retarget: stops and re-pathfinds to the destination (re-randomizes if enabled)"));
             if (!unstuckEnabled) ImGui.BeginDisabled();
-            if (ImGui.RadioButton("Jump", C.JumpIfStuck_V2 && !C.RetargetIfStuck))
+if (ImGui.RadioButton(T("Jump"), C.JumpIfStuck_V2 && !C.RetargetIfStuck))
             {
                 C.JumpIfStuck_V2 = true;
                 C.RetargetIfStuck = false;
                 C.Save();
             }
             ImGui.SameLine();
-            if (ImGui.RadioButton("Retarget", C.RetargetIfStuck))
+if (ImGui.RadioButton(T("Retarget"), C.RetargetIfStuck))
             {
                 C.RetargetIfStuck = true;
                 C.JumpIfStuck_V2 = false;
                 C.Save();
             }
             ImGui.SameLine();
-            ImGui.Text("after");
+ImGui.Text(T("after"));
             ImGui.SameLine();
             int stuckDelay = C.StuckDelayMs;
             ImGui.SetNextItemWidth(100);
-            if (ImGui.SliderInt("ms stuck###StuckDelay", ref stuckDelay, 500, 3000))
+            if (ImGui.SliderInt($"{T("ms stuck")}###StuckDelay", ref stuckDelay, 500, 3000))
             {
                 if (C.StuckDelayMs != stuckDelay)
                 {
@@ -320,11 +325,11 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         private static void CraftingLocations()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.MapPin, "Crafting Return Spot");
+            ImGuiEx.IconWithText(FontAwesomeIcon.MapPin, T("Crafting Return Spot"));
             ImGui.Dummy(new Vector2(0, 5));
 
             bool usePersonalLocations = C.PersonalReturnSpot;
-            if (ImGui.Checkbox("Use personal return spots", ref usePersonalLocations))
+if (ImGui.Checkbox(T("Use personal return spots"), ref usePersonalLocations))
             {
                 C.PersonalReturnSpot = usePersonalLocations;
                 C.Save();
@@ -336,7 +341,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 ImGui.SameLine();
                 if (C.CrafterLocations.TryGetValue(territory, out var moonLoc))
                 {
-                    if (ImGui.Button("Set to current location"))
+if (ImGui.Button(T("Set to current location")))
                     {
                         C.CrafterLocations[territory] = location;
                         C.Save();
@@ -346,14 +351,47 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 }
                 else
                 {
-                    if (ImGui.Button("Add Location"))
+if (ImGui.Button(T("Add Location")))
                     {
                         C.CrafterLocations[territory] = Player.Position;
                         C.Save();
                     }
                     ImGui.SameLine();
-                    ImGui.Text("No location set");
+ImGui.Text(T("No location set"));
                 }
+            }
+        }
+
+        private static void DailyRoutinesExtensions()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Plug, T("Daily Routines扩展"));
+            ImGui.Dummy(new Vector2(0, 5));
+
+            // CN-MAINT: Daily Routines TP toggles (keep labels consistent with scheduler behavior).
+            bool useFishingTp = C.FishingUseDailyRoutinesTP;
+if (ImGui.Checkbox(T("钓鱼任务使用Daily Routines的TP替代寻路"), ref useFishingTp))
+            {
+                C.FishingUseDailyRoutinesTP = useFishingTp;
+                C.Save();
+            }
+
+            bool useGatherTp = C.GatherUseDailyRoutinesTP;
+if (ImGui.Checkbox(T("采集任务使用Daily Routines的TP替代寻路"), ref useGatherTp))
+            {
+                C.GatherUseDailyRoutinesTP = useGatherTp;
+                C.Save();
+            }
+
+            bool useDroneTp = C.Cosmodrone_UseDailyRoutinesTP;
+if (ImGui.Checkbox(T("无人机任务使用Daily Routines的TP替代寻路"), ref useDroneTp))
+            {
+                C.Cosmodrone_UseDailyRoutinesTP = useDroneTp;
+                C.Save();
+            }
+
+            if (C.FishingUseDailyRoutinesTP || C.GatherUseDailyRoutinesTP || C.Cosmodrone_UseDailyRoutinesTP)
+            {
+                ImGui.TextWrapped(T("提示：请确认 Daily Routines 的“快捷传送面板”模块已开启。传送失败会自动回退原有寻路。"));
             }
         }
     }

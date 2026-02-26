@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using TerraFX.Interop.Windows;
 using static ICE.ConfigFiles.Config;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.ModeSelect_Modes
 {
@@ -45,8 +46,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 {
                     if (table)
                     {
-                        ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 24);
-                        ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
+                        ImGui.TableSetupColumn(T("Icon"), ImGuiTableColumnFlags.WidthFixed, 24);
+                        ImGui.TableSetupColumn(T("Name"), ImGuiTableColumnFlags.WidthStretch);
 
                         foreach (var jobId in JobOptions)
                         {
@@ -107,7 +108,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             ImGui.SameLine();
             using (ImRaii.Disabled(SelectedOption == PlaylistOptions.None))
             {
-                if (ImGui.Button("Add to Cosmic Agenda"))
+                if (ImGui.Button(T("Add to Cosmic Agenda")))
                 {
                     var mode = ModeSelect.Standard;
                     if (SelectedOption is PlaylistOptions.SinusMax or PlaylistOptions.PhaennaMax or PlaylistOptions.OizysMax or PlaylistOptions.SelectedRelicLv)
@@ -138,12 +139,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         {
             return mode switch
             {
-                ModeSelect.Standard => "Standard",
-                ModeSelect.RelicMode => "Relic Grind Mode",
-                ModeSelect.LevelMode => "Leveling Mode",
+                ModeSelect.Standard => T("Standard"),
+                ModeSelect.RelicMode => T("Relic Grind Mode"),
+                ModeSelect.LevelMode => T("Leveling Mode"),
                 // ModeSelect.ScoreMode => "Scoring Mode",
-                ModeSelect.AgendaMode => "Cosmic Agenda Mode",
-                _ => $"??? {mode}"
+                ModeSelect.AgendaMode => T("Cosmic Agenda Mode"),
+                _ => T("??? {0}", mode)
             };
         }
 
@@ -165,11 +166,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 if (PlaylistTable)
                 {
                     ImGui.TableSetupColumn("##Reorder");
-                    ImGui.TableSetupColumn("Job");
-                    ImGui.TableSetupColumn("Agenda");
-                    ImGui.TableSetupColumn("Run Until..");
-                    ImGui.TableSetupColumn("Mode Select");
-                    ImGui.TableSetupColumn("Remove");
+                    ImGui.TableSetupColumn(T("Job"));
+                    ImGui.TableSetupColumn(T("Agenda"));
+                    ImGui.TableSetupColumn(T("Run Until.."));
+                    ImGui.TableSetupColumn(T("Mode Select"));
+                    ImGui.TableSetupColumn(T("Remove"));
 
                     ImGui.TableHeadersRow();
 
@@ -209,8 +210,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 {
                                     if (table)
                                     {
-                                        ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 24);
-                                        ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
+                                        ImGui.TableSetupColumn(T("Icon"), ImGuiTableColumnFlags.WidthFixed, 24);
+                                        ImGui.TableSetupColumn(T("Name"), ImGuiTableColumnFlags.WidthStretch);
 
                                         foreach (var jobId in JobOptions)
                                         {
@@ -326,11 +327,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 var classScore = CosmicHelper.Cosmic_ClassInfo();
                                 if (classScore.TryGetValue(agendaInfo.SelectedJob, out var job))
                                 {
-                                    ImGui.SetTooltip($"Current Score: {job.Score:N0}");
+                                    ImGui.SetTooltip(T("Current Score: {0:N0}", job.Score));
                                 }
                                 else
                                 {
-                                    ImGui.SetTooltip($"No score can be loaded");
+                                    ImGui.SetTooltip(T("No score can be loaded"));
                                 }
                             }
                         }

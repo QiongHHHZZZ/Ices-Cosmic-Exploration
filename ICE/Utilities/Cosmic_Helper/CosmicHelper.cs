@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using static ICE.Localization.L10n;
 
 namespace ICE.Utilities;
 
@@ -24,18 +25,18 @@ public static unsafe partial class CosmicHelper
     {
         return jobId switch
         {
-            8 => "Carpenter",
-            9 => "Blacksmith",
-            10 => "Armorer",
-            11 => "Goldsmith",
-            12 => "Leatherworker",
-            13 => "Weaver",
-            14 => "Alchemist",
-            15 => "Culinarian",
-            16 => "Miner",
-            17 => "Botanist",
-            18 => "Fisher",
-            _ => "Unknown"
+            8 => T("Carpenter"),
+            9 => T("Blacksmith"),
+            10 => T("Armorer"),
+            11 => T("Goldsmith"),
+            12 => T("Leatherworker"),
+            13 => T("Weaver"),
+            14 => T("Alchemist"),
+            15 => T("Culinarian"),
+            16 => T("Miner"),
+            17 => T("Botanist"),
+            18 => T("Fisher"),
+            _ => T("Unknown")
         };
     }
 

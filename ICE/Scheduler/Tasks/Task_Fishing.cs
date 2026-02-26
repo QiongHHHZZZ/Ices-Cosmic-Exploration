@@ -5,6 +5,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ICE.Ui.DebugWindowTabs;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
+using System.Globalization;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Utilities.GatheringHelper.GatheringUtil;
 
@@ -19,6 +20,86 @@ namespace ICE.Scheduler.Tasks
         // Whenever all the conditions are cleared, check the inventory for the frame, see if you have enough/meet the score
 
         private static FishingDebug _fishingDebug = null;
+
+        private static bool IsAutoHookLoaded() => P.AutoHook.Installed;
+
+        // CN-MAINT: MissFisher compatibility relies on plugin presence check by internal name.
+        private static bool IsMissFisherLoaded() => Utils.HasPlugin("MissFisher");
+
+        internal static bool ShouldEnableAutoHookRuntime()
+        {
+            return IsAutoHookLoaded() && !IsMissFisherLoaded();
+        }
+
+        internal static void StartFishingByAvailablePlugin(string handle)
+        {
+            var autoHookLoaded = IsAutoHookLoaded();
+            var missFisherLoaded = IsMissFisherLoaded();
+
+            // CN-MAINT: Conflict policy intentionally mirrors RedAsteroid behavior.
+            // If both AutoHook and MissFisher are loaded, do NOT auto-start casting.
+            if (autoHookLoaded && missFisherLoaded)
+            {
+                if (EzThrottler.Throttle("FishingPluginConflictWarning", 10_000))
+                {
+                    IceLogging.Warning("检测到 AutoHook 与 MissFisher 同时启用。为避免冲突，本次不自动抛竿，请停用其中一个。", handle);
+                }
+                return;
+            }
+
+            if (autoHookLoaded)
+            {
+                // CN-MAINT: AutoHook start command.
+                Svc.Commands.ProcessCommand("/ahstart");
+                return;
+            }
+
+            if (missFisherLoaded)
+            {
+                if (EzThrottler.Throttle("MissFisherStartCommand", 6000))
+                {
+                    // CN-MAINT: MissFisher start command.
+                    Svc.Commands.ProcessCommand("/mf cosmic");
+                }
+                return;
+            }
+
+            if (EzThrottler.Throttle("FishingPluginMissingWarning", 10_000))
+            {
+                IceLogging.Warning("未检测到 AutoHook 或 MissFisher，无法自动抛竿。", handle);
+            }
+        }
+
+        internal static bool TryDailyRoutinesTeleportToFishingSpot(Vector3 targetPosition, string handle)
+        {
+            if (!C.FishingUseDailyRoutinesTP)
+                return false;
+
+            if (!Utils.HasPlugin("DailyRoutines"))
+            {
+                if (EzThrottler.Throttle("FishingMissingDailyRoutines", 8000))
+                {
+                    IceLogging.Warning("未检测到 Daily Routines，已回退原有寻路。", handle);
+                }
+                return false;
+            }
+
+            if (EzThrottler.Throttle("FishingDailyRoutinesTeleport", 2500))
+            {
+                var command = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "/pdrtp pos {0:F2} {1:F2} {2:F2}",
+                    targetPosition.X,
+                    targetPosition.Y,
+                    targetPosition.Z);
+
+                Svc.Commands.ProcessCommand(command);
+                IceLogging.Debug($"已尝试 Daily Routines 传送：{command}", handle);
+                return true;
+            }
+
+            return false;
+        }
 
         public static void Enqueue()
         {
@@ -144,8 +225,7 @@ namespace ICE.Scheduler.Tasks
                 else if (EzThrottler.Throttle("Starting to fish", 1000))
                 {
                     IceLogging.Debug("Telling it to start fishing", handle);
-                    // ActionManager.Instance()->UseAction(ActionType.Action, 289);
-                    Svc.Commands.ProcessCommand("/ahstart");
+                    StartFishingByAvailablePlugin(handle);
                 }
                 else if (EzThrottler.Throttle("Adding counter for bait not equipped"))
                 {
@@ -172,7 +252,8 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
-                P.AutoHook.SetPluginState(true);
+                if (ShouldEnableAutoHookRuntime())
+                    P.AutoHook.SetPluginState(true);
                 IceLogging.Info("We're starting to fish. So kicking it over to checking the fish items", handle);
                 P.TaskManager.Insert(() => WaitToStartFishing(), "Waiting till we actually start fishing", Utils.TaskConfig);
                 BaitCounter = 0;
@@ -313,6 +394,14 @@ namespace ICE.Scheduler.Tasks
         }
         public static bool? InitiateMoving(Vector3 fishingPos)
         {
+            string handle = "[Fishing: Initiate Move]";
+
+            if (Player.DistanceTo(fishingPos) < 4f)
+                return true;
+
+            if (TryDailyRoutinesTeleportToFishingSpot(fishingPos, handle))
+                return false;
+
             if (!P.Navmesh.IsReady())
             {
                 Utils.VnavBuildInfo();

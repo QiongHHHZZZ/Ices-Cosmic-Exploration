@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
@@ -17,12 +18,12 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         public static void Draw()
         {
-            ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
+ImGui.Checkbox(T("Stop after current mission"), ref Mission_Settings.StopAfterCurrent);
 
             #region CosmoCredits
 
             bool stopCosmic = C.StopOnceHitCosmoCredits;
-            if (ImGui.Checkbox($"Stop at Cosmic Credits", ref stopCosmic))
+            if (ImGui.Checkbox(T("Stop at Cosmic Credits"), ref stopCosmic))
             {
                 C.StopOnceHitCosmoCredits = stopCosmic;
                 C.Save();
@@ -47,7 +48,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             #region Planet Credits
 
             bool stopLunar = C.StopOnceHitLunarCredits;
-            if (ImGui.Checkbox($"Stop at Planetary Credit Amount", ref stopLunar))
+            if (ImGui.Checkbox(T("Stop at Planetary Credit Amount"), ref stopLunar))
             {
                 C.StopOnceHitLunarCredits = stopLunar;
                 C.Save();
@@ -68,7 +69,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             #region Cosmic Score
 
             bool stopScore = C.StopOnceHitCosmicScore;
-            if (ImGui.Checkbox($"Stop at Cosmic Score", ref stopScore))
+            if (ImGui.Checkbox(T("Stop at Cosmic Score"), ref stopScore))
             {
                 C.StopOnceHitCosmicScore = stopScore;
                 C.BuyItems = false;
@@ -90,7 +91,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             #region Level
 
             bool stopWhenLevel = C.StopWhenLevel;
-            if (ImGui.Checkbox($"Stop at Level", ref stopWhenLevel))
+            if (ImGui.Checkbox(T("Stop at Level"), ref stopWhenLevel))
             {
                 C.StopWhenLevel = stopWhenLevel;
                 C.Save();
@@ -111,7 +112,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             #region Relic Completed
 
             bool relicStop = C.StopOnceRelicFinished;
-            if (ImGui.Checkbox($"Stop @ Relic Complete", ref relicStop))
+            if (ImGui.Checkbox(T("Stop @ Relic Complete"), ref relicStop))
             {
                 C.StopOnceRelicFinished = relicStop;
                 C.Save();
@@ -122,7 +123,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             #region Sound Alert
 
             bool playSoundAlert = C.PlaySoundAlert;
-            if (ImGui.Checkbox("Play Sound Alert on Stop", ref playSoundAlert))
+if (ImGui.Checkbox(T("Play Sound Alert on Stop"), ref playSoundAlert))
             {
                 C.PlaySoundAlert = playSoundAlert;
                 C.Save();
@@ -130,14 +131,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             if (playSoundAlert)
             {
                 var soundVolume = C.SoundVolume;
-                ImGui.Text("Sound Volume");
+ImGui.Text(T("Sound Volume"));
                 ImGui.SetNextItemWidth(200);
                 if (ImGui.SliderFloat("##Sound Volume", ref soundVolume, 0f, 1f, "%.2f"))
                 {
                     C.SoundVolume = soundVolume;
                     C.SaveDebounced();
                 }
-                if (ImGui.Button("Test Sound Alert"))
+if (ImGui.Button(T("Test Sound Alert")))
                 {
                     _ = SoundPlayer.PlaySoundAsync();
                 }

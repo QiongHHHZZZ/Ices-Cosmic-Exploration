@@ -1,4 +1,5 @@
 ﻿using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -8,49 +9,49 @@ namespace ICE.Ui.DebugWindowTabs
         {
             if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var HudAddon))
             {
-                if (ImGui.Button("Mission"))
+                if (ImGui.Button(T("Mission")))
                 {
                     HudAddon.Mission();
                 }
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Mech"))
+                if (ImGui.Button(T("Mech")))
                 {
                     HudAddon.Mech();
                 }
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Steller"))
+                if (ImGui.Button(T("Steller")))
                 {
                     HudAddon.Steller();
                 }
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Infrastructor"))
+                if (ImGui.Button(T("Infrastructor")))
                 {
                     HudAddon.Infrastructor();
                 }
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Research"))
+                if (ImGui.Button(T("Research")))
                 {
                     HudAddon.Research();
                 }
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("ClassTracker"))
+                if (ImGui.Button(T("ClassTracker")))
                 {
                     HudAddon.ClassTracker();
                 }
             }
             else
             {
-                ImGui.Text("Waiting for \"WKSHud\" to be visible");
+                ImGui.Text(T("Waiting for \"WKSHud\" to be visible"));
             }
         }
     }

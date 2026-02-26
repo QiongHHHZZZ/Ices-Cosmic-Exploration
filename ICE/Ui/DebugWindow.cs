@@ -1,13 +1,14 @@
-﻿using ICE.Ui.DebugWindowTabs;
+using ICE.Ui.DebugWindowTabs;
 using ICE.Ui.MainUi.HelpFolder;
 using System.Collections.Generic;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui;
 
 internal class DebugWindow : Window
 {
     public DebugWindow() :
-        base($"ICE {P.GetType().Assembly.GetName().Version} Debugger ###IceCosmicDebug1")
+        base(T("ICE {0} Debugger ###IceCosmicDebug1", P.GetType().Assembly.GetName().Version?.ToString() ?? "unknown"))
     {
         Flags = ImGuiWindowFlags.None;
         SizeConstraints = new WindowSizeConstraints
@@ -105,7 +106,7 @@ internal class DebugWindow : Window
             }
             else
             {
-                ImGui.Text("Unknown Debug View");
+                ImGui.Text(T("Unknown Debug View"));
             }
         }
         ImGui.EndChild();

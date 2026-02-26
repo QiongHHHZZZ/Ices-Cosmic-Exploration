@@ -7,6 +7,7 @@ using ICE.Ui.MainUi;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Windows.Forms;
+using static ICE.Localization.L10n;
 
 namespace ICE.Utilities.ImGuiTools;
 
@@ -46,6 +47,7 @@ public static partial class ImGui_Ice
     public static bool Sidebar_CollaspableHeader(string label, FontAwesomeIcon? icon = null, IDalamudTextureWrap? imageTexture = null)
     {
         float scale = ImGuiHelpers.GlobalScale;
+        var displayLabel = T(label);
 
         // Default Colors for Theming. This is really here to make sure it's formatted as I want it to be
         var headerColor = ImGui.GetColorU32(ImGuiCol.Header);
@@ -97,7 +99,7 @@ public static partial class ImGui_Ice
 
         // Calculating the vertical spacing here, need to make sure it fits within our custom box nice and cozy
         float imageSize = 23 * scale; // Used for images specifically, since I like things being aligned with each other
-        float textHeight = ImGui.CalcTextSize(label).Y;
+        float textHeight = ImGui.CalcTextSize(displayLabel).Y;
         float verticalPadding = (height - textHeight) / 2;
 
         // Adding some padding to the left, don't need it feeling like it's right against the box. We're making somewhat bubbly things
@@ -135,7 +137,7 @@ public static partial class ImGui_Ice
 
         // Actual label here
         ImGui.PushStyleColor(ImGuiCol.Text, textColor);
-        ImGui.Text(label);
+        ImGui.Text(displayLabel);
         ImGui.PopStyleColor();
 
         // Replace the badge count section with the caret icon (scaled padding)
@@ -160,6 +162,7 @@ public static partial class ImGui_Ice
     {
         bool isSelected = C.MainUi_SelectedWindow == id;
         float scale = ImGuiHelpers.GlobalScale;
+        var displayLabel = T(label);
 
         // Change background color if selected
         if (isSelected)
@@ -204,7 +207,7 @@ public static partial class ImGui_Ice
 
         ImGuiEx.Icon(icon);
         ImGui.SameLine();
-        ImGui.Text(label);
+        ImGui.Text(displayLabel);
 
         // Add small spacing between items (scaled)
         ImGui.Dummy(new Vector2(0, 2 * scale));
@@ -213,6 +216,7 @@ public static partial class ImGui_Ice
     {
         bool isSelected = C.MainUi_SelectedWindow == id;
         float scale = ImGuiHelpers.GlobalScale;
+        var displayLabel = T(label);
 
         // Change background color if selected
         if (isSelected)
@@ -266,7 +270,7 @@ public static partial class ImGui_Ice
         }
 
         ImGui.SameLine();
-        ImGui.Text(label);
+        ImGui.Text(displayLabel);
     }
     public static bool DrawStyledImageButton(IDalamudTextureWrap? icon, Vector2 size, bool enabled = true)
     {
@@ -553,6 +557,7 @@ public static partial class ImGui_Ice
     public static bool DrawCategoryButton(string label, string categoryId, FontAwesomeIcon? icon = null, float spacingAfter = 5, bool disabled = false)
     {
         float scale = ImGuiHelpers.GlobalScale;
+        var displayLabel = T(label);
 
         // Setting the values of the content size (padding, spacing, etc) that way it's used across the board
         float horizontalPadding = 8 * scale;
@@ -564,7 +569,7 @@ public static partial class ImGui_Ice
         var cursorPos = ImGui.GetCursorScreenPos();
 
         // Calculate text size
-        var textSize = ImGui.CalcTextSize(label);
+        var textSize = ImGui.CalcTextSize(displayLabel);
 
         // Calculate icon width if present
         float iconWidth = icon.HasValue ? textSize.Y + iconTextSpacing : 0;
@@ -616,7 +621,7 @@ public static partial class ImGui_Ice
             ImGui.SameLine(0, iconTextSpacing);
         }
 
-        ImGui.Text(label);
+        ImGui.Text(displayLabel);
         ImGui.PopStyleColor();
 
         // Create an invisible button to properly reserve space and handle layout
@@ -649,6 +654,7 @@ public static partial class ImGui_Ice
     public static void DrawImageBox(ISharedImmediateTexture texture, string? label = null, float imageZoom = 1.5f, float spacingAfter = 5)
     {
         float scale = ImGuiHelpers.GlobalScale;
+        var displayLabel = string.IsNullOrEmpty(label) ? label : T(label);
 
         // Default coloring to match button style
         var headerColor = ImGui.GetColorU32(ImGuiCol.Button);
@@ -664,9 +670,9 @@ public static partial class ImGui_Ice
         // Calculate text size if label provided
         Vector2 textSize = Vector2.Zero;
         float textWidth = 0;
-        if (!string.IsNullOrEmpty(label))
+        if (!string.IsNullOrEmpty(displayLabel))
         {
-            textSize = ImGui.CalcTextSize(label);
+            textSize = ImGui.CalcTextSize(displayLabel);
             textWidth = textSize.X + iconTextSpacing;
         }
 
@@ -696,12 +702,12 @@ public static partial class ImGui_Ice
         drawList.AddImage(texture.GetWrapOrEmpty().Handle, imagePos, new Vector2(imagePos.X + imageSize, imagePos.Y + imageSize), uv0, uv1);
 
         // Draw text if provided, centered vertically
-        if (!string.IsNullOrEmpty(label))
+        if (!string.IsNullOrEmpty(displayLabel))
         {
             float textYOffset = contentVerticalCenter - (textSize.Y / 2);
             float textXPos = cursorPos.X + horizontalPadding + imageSize + iconTextSpacing;
             ImGui.SetCursorScreenPos(new Vector2(textXPos, textYOffset));
-            ImGui.Text(label);
+            ImGui.Text(displayLabel);
         }
 
         // Create an invisible button to properly reserve space and handle layout (matches DrawCategoryButton)
@@ -752,6 +758,7 @@ public static partial class ImGui_Ice
     private static float Lerp(float a, float b, float t) => a + (b - a) * t;
     public static bool SliderButton(string id, string label, ref bool v)
     {
+        var displayLabel = T(label);
         var pos = ImGui.GetCursorScreenPos();
         var dl = ImGui.GetWindowDrawList();
 
@@ -782,10 +789,10 @@ public static partial class ImGui_Ice
         dl.AddCircleFilled(new Vector2(knobX, pos.Y + radius), radius - 1.5f,
                            ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f)));
 
-        if (!string.IsNullOrEmpty(label))
+        if (!string.IsNullOrEmpty(displayLabel))
         {
             ImGui.SameLine();
-            ImGui.Text(label);
+            ImGui.Text(displayLabel);
         }
 
         return pressed;
@@ -799,18 +806,18 @@ public static partial class ImGui_Ice
         {
             foreach (var exp in jobInfo.CurrentExp.Values)
             {
-                ImGui.Text($"Exp {exp.Name}: {exp.Current} / {exp.Needed}");
+                ImGui.Text(T("Exp {0}: {1} / {2}", exp.Name, exp.Current, exp.Needed));
                 Draw_XPBar(exp.Current, exp.Needed, exp.Max);
                 if (ImGui.IsItemHovered())
                 {
                     using (var expTooltip = ImRaii.Tooltip())
                     {
-                        ImGui.Text($"Type: {exp.Name}");
+                        ImGui.Text(T("Type: {0}", exp.Name));
                         ImGui.Separator();
 
-                        ImGui.Text($"Current: {exp.Current}");
-                        ImGui.Text($"Need: {exp.Needed}");
-                        ImGui.Text($"Max: {exp.Max}");
+                        ImGui.Text(T("Current: {0}", exp.Current));
+                        ImGui.Text(T("Need: {0}", exp.Needed));
+                        ImGui.Text(T("Max: {0}", exp.Max));
                     }
                 }
             }

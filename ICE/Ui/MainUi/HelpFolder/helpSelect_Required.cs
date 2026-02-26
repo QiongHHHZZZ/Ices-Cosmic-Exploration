@@ -6,35 +6,72 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.HelpFolder
 {
     internal class helpSelect_Required
     {
+        private const string AutoHookRepo = "https://love.puni.sh/ment.json";
+        private const string AutoHookPluginName = "AutoHook";
+        private const string MissFisherRepo = "https://raw.githubusercontent.com/BlackCleaverLoli/MissFisher/refs/heads/main/MissFisher.json";
+        private const string MissFisherPluginName = "MissFisher";
+
         public static void Draw()
         {
-            ImGui.TextWrapped("These are a list of the following plugins that are required for the plugin to function. If you don't have these installed, it will not function properly");
+ImGui.TextWrapped(T("These are a list of the following plugins that are required for the plugin to function. If you don't have these installed, it will not function properly"));
 
             ImGui.Separator();
-            ImGuiEx.IconWithText(FontAwesomeIcon.Hammer, "Crafting");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Hammer, T("Crafting"));
             HasPlugin("https://love.puni.sh/ment.json", "Artisan");
 
             ImGui.Separator();
-            ImGuiEx.IconWithText(FontAwesomeIcon.Feather, "Gathering");
-            ImGui.Text("For botanist/miner/fisher");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Feather, T("Gathering"));
+ImGui.Text(T("For botanist/miner/fisher"));
             HasPlugin("https://puni.sh/api/repository/veyn", "vnavmesh");
             ImGui.Dummy(new Vector2(0, 10));
-            ImGui.Text("For fisher only");
-            HasPlugin("https://love.puni.sh/ment.json", "AutoHook");
+            DrawFishingPluginRequirement();
 
             ImGui.Separator();
-            ImGuiEx.IconWithText(FontAwesomeIcon.Running, "Automating Hub Activities");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Running, T("Automating Hub Activities"));
             HasPlugin("https://puni.sh/api/repository/veyn", "vnavmesh");
 
             ImGui.Separator();
-            ImGui.TextWrapped("This isn't required, but highly recommended for leveling up characters. It will auto equip gear from your armory/inventory, and swap it out when running Leveling Grind Mode");
-            ImGuiEx.IconWithText(FontAwesomeIcon.Leaf, "Stylist");
+ImGui.TextWrapped(T("This isn't required, but highly recommended for leveling up characters. It will auto equip gear from your armory/inventory, and swap it out when running Leveling Grind Mode"));
+            ImGuiEx.IconWithText(FontAwesomeIcon.Leaf, T("Stylist"));
             HasPlugin("https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json", "Stylist");
+        }
+
+        private static void DrawFishingPluginRequirement()
+        {
+            // CN-MAINT: Keep this UI in sync with Task_Fishing conflict policy (both installed => conflict warning).
+            ImGui.Text(T("仅适用于钓鱼（AutoHook 或 MissFisher，任选其一）"));
+
+            ImGui.TextDisabled(T("AutoHook"));
+            HasPlugin(AutoHookRepo, AutoHookPluginName);
+
+            ImGui.TextDisabled(T("MissFisher"));
+            HasPlugin(MissFisherRepo, MissFisherPluginName);
+
+            bool hasAutoHook = Utils.HasPlugin(AutoHookPluginName);
+            bool hasMissFisher = Utils.HasPlugin(MissFisherPluginName);
+
+            if (hasAutoHook && hasMissFisher)
+            {
+                ImGui.TextWrapped(T("检测到 AutoHook 与 MissFisher 同时安装，请停用其中一个。"));
+            }
+            else if (!hasAutoHook && !hasMissFisher)
+            {
+                ImGui.TextWrapped(T("未检测到钓鱼插件，请安装 AutoHook 或 MissFisher。"));
+            }
+            else if (hasAutoHook)
+            {
+                ImGui.TextWrapped(T("钓鱼插件检查通过（当前：AutoHook）。"));
+            }
+            else
+            {
+                ImGui.TextWrapped(T("钓鱼插件检查通过（当前：MissFisher）。"));
+            }
         }
 
         public static void HasPlugin(string repo, string pluginName)
@@ -44,13 +81,13 @@ namespace ICE.Ui.MainUi.HelpFolder
             {
                 FontAwesome.Print(EColor.Green, FontAwesome.Check);
                 ImGui.SameLine();
-                ImGui.Text($"{pluginName} Repo is Installed");
+                ImGui.Text(T("{0} Repo is Installed", pluginName));
             }
             else
             {
                 FontAwesome.Print(EColor.Red, FontAwesome.Cross);
                 ImGui.SameLine();
-                if (ImGui.Button($"Install {pluginName} Repo"))
+                if (ImGui.Button(T("Install {0} Repo", pluginName)))
                 {
                     DalamudReflector.AddRepo(repo, true);
                     DalamudReflector.SaveDalamudConfig();
@@ -63,7 +100,7 @@ namespace ICE.Ui.MainUi.HelpFolder
             {
                 FontAwesome.Print(EColor.Green, FontAwesome.Check);
                 ImGui.SameLine();
-                ImGui.Text($"{pluginName} is installed");
+                ImGui.Text(T("{0} is installed", pluginName));
             }
             else
             {
@@ -71,7 +108,7 @@ namespace ICE.Ui.MainUi.HelpFolder
                 ImGui.SameLine();
                 using (ImRaii.Disabled(installingPlugin))
                 {
-                    if (ImGui.Button($"Install {pluginName}"))
+                    if (ImGui.Button(T("Install {0}", pluginName)))
                     {
                         _ = InstallPlugin(repo, pluginName);
                     }

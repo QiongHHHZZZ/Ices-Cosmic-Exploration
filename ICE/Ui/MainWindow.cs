@@ -11,6 +11,7 @@ using ICE.Ui.MainUi.Settings.Settings_Table;
 using ICE.Ui.SettingTabs;
 using System.Collections.Generic;
 using System.Reflection;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui
 {
@@ -29,7 +30,7 @@ namespace ICE.Ui
                 MinimumSize = new Vector2(100, 100),
                 MaximumSize = new Vector2(4000, 4000),
             };
-            TitleBarButtons.Add(new() { ShowTooltip = () => ImGui.SetTooltip("♥ Ko-fi (Buy me an ice coffee)"), Icon = FontAwesomeIcon.Heart, IconOffset = new(1, 1), Click = _ => GenericHelpers.ShellStart("https://ko-fi.com/ice643269") });
+            TitleBarButtons.Add(new() { ShowTooltip = () => ImGui.SetTooltip(T("♥ Ko-fi (Buy me an ice coffee)")), Icon = FontAwesomeIcon.Heart, IconOffset = new(1, 1), Click = _ => GenericHelpers.ShellStart("https://ko-fi.com/ice643269") });
 
             P.windowSystem.AddWindow(this);
 
@@ -108,7 +109,7 @@ namespace ICE.Ui
             }
             else
             {
-                ImGui.Text("Hehe");
+                ImGui.Text(T("Hehe"));
             }
         }
     }

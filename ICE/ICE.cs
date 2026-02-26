@@ -77,13 +77,13 @@ public sealed partial class ICE : IDalamudPlugin
         externalDetails = new();
 
         EzCmd.Add("/icecosmic", OnCommand, """
-            Open plugin interface
-            /ice help - shows all commands
-            /ice clear - removes all missions
-            /ice stop - stops ICE
-            /ice start - Starts ICE
-            /ice add | remove | toggle | only 
-            /ice flag [id] - Opens the map and marks where the area of gathering is.
+            打开插件界面
+            /ice help - 显示所有命令
+            /ice clear - 清空所有任务
+            /ice stop - 停止 ICE
+            /ice start - 启动 ICE
+            /ice add | remove | toggle | only
+            /ice flag [id] - 打开地图并标记采集区域
             """);
         EzCmd.Add("/ice", OnCommand);
         EzCmd.Add("/IceCosmic", OnCommand);
@@ -283,20 +283,20 @@ public sealed partial class ICE : IDalamudPlugin
         }
         else if (firstArg.ToLower() == "help")
         {
-            string helpMessage = $"- - ICE Commands Help - - \n" +
-                                 $"/ice help - show all available commands\n" +
-                                 $"/ice -> opens the main settings\n" +
-                                 $"/ice s -> opens the settings menu\n" +
-                                 $" - - - Mission specific - - - \n" +
-                                 $"/ice stop - Stops ICE\n" +
-                                 $"/ice start - starts ICE \n" +
-                                 $"The rest of the commands work by doing a single id/multiple in a row \n" +
-                                 $"EX. /ice add 10 155 185\n" +
-                                 $"/ice add (ids) - enables select missions\n" +
-                                 $"/ice remove (ids) - removes/disables select missions\n" +
-                                 $"/ice toggle (ids) - toggles select mission ids" +
-                                 $"/ice only (ids) - makes only select missions enabled" +
-                                 $"/ice flag (id) - opens the map and flags the mission (if it has one).\n";
+            string helpMessage = $"- - ICE 命令帮助 - - \n" +
+                                 $"/ice help - 显示所有可用命令\n" +
+                                 $"/ice - 打开主界面\n" +
+                                 $"/ice s - 打开设置界面\n" +
+                                 $" - - - 任务相关 - - - \n" +
+                                 $"/ice stop - 停止 ICE\n" +
+                                 $"/ice start - 启动 ICE\n" +
+                                 $"以下命令支持单个或多个任务 ID（空格分隔）\n" +
+                                 $"例：/ice add 10 155 185\n" +
+                                 $"/ice add (ids) - 启用指定任务\n" +
+                                 $"/ice remove (ids) - 禁用/移除指定任务\n" +
+                                 $"/ice toggle (ids) - 切换指定任务状态\n" +
+                                 $"/ice only (ids) - 仅保留指定任务为启用\n" +
+                                 $"/ice flag (id) - 打开地图并标记该任务区域（若存在）\n";
             Svc.Chat.Print(helpMessage);
         }
     }

@@ -34,7 +34,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             T("Honestly, just wanted to say thank you for using my plugin, you're appreciated <3"),
 
-            T("Knock knock\n[This is where you say who's there]\nLettuce\n[Lettuce who]\nLettuce in")
+            T("Knock knock\n[This is where you say who's there]\nLettuce\n[Lettuce who]\nLettuce in"),
+
+            T("What do you a dinosaur that only has one eye?A \"Doyouthinkheseemesaurs\""),
+
+            T("So... you're telling me a shrimp fried this rice?")
         };
         public static int jokeId = 0;
 
@@ -261,7 +265,7 @@ ImGui.TableSetupColumn(T("VI")); // 15
 
                 #region Auto-Hiding Columns
 
-                ImGui.TableSetColumnEnabled(0, (C.SelectedMode == ModeSelect.Standard || (C.SelectedMode == ModeSelect.RelicMode && C.XPRelicOnlyEnabled)));
+                ImGui.TableSetColumnEnabled(0, (C.SelectedMode == ModeSelect.Standard || C.SelectedMode == ModeSelect.AgendaMode || (C.SelectedMode == ModeSelect.RelicMode && C.XPRelicOnlyEnabled)));
                 ImGui.TableSetColumnEnabled(1, (C.GrindAllProvisionals)); // Job Column (Useful for provisionals/Timed)
                 ImGui.TableSetColumnEnabled(2, C.ShowManualMode);
 
@@ -334,15 +338,10 @@ ImGui.TableSetupColumn(T("VI")); // 15
                 }
                 if (ImGui.BeginPopup("Jobs Options"))
                 {
-                    bool showAllJobs = C.ShowCompletionOnlyJob;
-                    if (ImGui.RadioButton(T("Show All Jobs"), !showAllJobs))
+                    bool showAllJobs = C.GrindAllProvisionals;
+                    if (ImGui.Checkbox(T("Show All Provisionals"), ref showAllJobs))
                     {
-                        C.ShowCompletionOnlyJob = false;
-                        C.Save();
-                    }
-                    if (ImGui.RadioButton(T("Show Only Current Job"), showAllJobs))
-                    {
-                        C.ShowCompletionOnlyJob = true;
+                        C.GrindAllProvisionals = showAllJobs;
                         C.Save();
                     }
                     ImGui.EndPopup();
@@ -387,7 +386,23 @@ ImGui.TableHeader(T("✓"));
                 {
                     ImGui.BeginTooltip();
                     ImGui.Text(T("Mission completion status"));
+                    ImGui.Text(T("Click to Show Completion Settings"));
                     ImGui.EndTooltip();
+                }
+                if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
+                {
+                    ImGui.OpenPopup($"Completion_{headerName}");
+                }
+                if (ImGui.BeginPopup($"Completion_{headerName}"))
+                {
+                    bool showMissingGoldOnly = C.Show_MissingGoldOnly;
+                    if (ImGui.Checkbox(T("Show Non-Gold Missions Only"), ref showMissingGoldOnly))
+                    {
+                        C.Show_MissingGoldOnly = showMissingGoldOnly;
+                        C.Save();
+                    }
+
+                    ImGui.EndPopup();
                 }
                 columnIndexCount++;
 
@@ -537,23 +552,16 @@ ImGui.TableHeader(T("✓"));
                     if (unsupported && hideUnsupported)
                         continue;
 
-                    if (C.ShowCompletionWindow)
+                    if (C.Show_MissingGoldOnly)
                     {
-                        if (C.ShowCompletion_MissingGold)
-                        {
-                            var managerPtr = WKSManager.Instance();
-                            if (managerPtr == null) continue;
+                        var managerPtr = WKSManager.Instance();
+                        if (managerPtr == null) continue;
 
-                            var manager = (WKSManagerCustom*)managerPtr;
-                            var isGold = manager->IsMissionGolded(Id);
+                        var manager = (WKSManagerCustom*)managerPtr;
+                        var isGold = manager->IsMissionGolded(Id);
 
-                            if (isGold)
-                                continue;
-                        }
-                        if (C.ShowSelectedJobOnly && !CosmicHelper.SheetMissionDict[Id].Jobs.Contains(C.SelectedJob))
-                        {
+                        if (isGold)
                             continue;
-                        }
                     }
 
                     ImGui.TableNextRow();

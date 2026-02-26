@@ -365,7 +365,6 @@ namespace ICE.Ui
         {
             var eorzeaTime = DateTimeOffset.FromUnixTimeSeconds(Framework.Instance()->ClientTime.EorzeaTime);
             int currentHour = eorzeaTime.Hour;
-            int nextHour = (currentHour + 1) % 24;
 
             var jobFilter = GetOverlayJobFilter();
 
@@ -376,12 +375,38 @@ namespace ICE.Ui
                 .OrderBy(kvp => kvp.Value.Jobs.FirstOrDefault())
                 .ToList();
 
-            var nextHourMissions = SheetMissionDict
-                .Where(kvp => IsAvailableAtHour(kvp.Value, nextHour))
-                .Where(kvp => kvp.Value.TerritoryId == territoryId)
-                .Where(kvp => jobFilter == null || kvp.Value.Jobs.Any(j => jobFilter.Contains(j)))
-                .OrderBy(kvp => kvp.Value.Jobs.FirstOrDefault())
-                .ToList();
+            // Get the set of mission keys currently shown (for deduplication check)
+            var currentMissionKeys = currentHourMissions.Select(kvp => kvp.Key).ToHashSet();
+
+            // Search forward for the next "interesting" hour
+            List<KeyValuePair<uint, CosmicHelper.CosmicInfo>> nextHourMissions = new();
+            int nextHour = -1;
+
+            for (int offset = 1; offset <= 24; offset++)
+            {
+                int candidateHour = (currentHour + offset) % 24;
+
+                var candidates = SheetMissionDict
+                    .Where(kvp => IsAvailableAtHour(kvp.Value, candidateHour))
+                    .Where(kvp => kvp.Value.TerritoryId == territoryId)
+                    .Where(kvp => jobFilter == null || kvp.Value.Jobs.Any(j => jobFilter.Contains(j)))
+                    .OrderBy(kvp => kvp.Value.Jobs.FirstOrDefault())
+                    .ToList();
+
+                if (candidates.Count == 0)
+                    continue;
+
+                // Esentially trying to find the first point where the current != the next as MUCH as we can. 
+                // Trying to give more visible time coming for things
+                bool isDifferent = candidates.Any(kvp => !currentMissionKeys.Contains(kvp.Key));
+
+                if (isDifferent)
+                {
+                    nextHourMissions = candidates;
+                    nextHour = candidateHour;
+                    break;
+                }
+            }
 
             ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(0);
@@ -390,8 +415,7 @@ namespace ICE.Ui
             ImGui.TableNextColumn();
             for (int i = 0; i < currentHourMissions.Count; i++)
             {
-                if (i > 0)
-                    ImGui.SameLine(0, 2);
+                if (i > 0) ImGui.SameLine(0, 2);
 
                 var mission = currentHourMissions[i];
                 if (CosmicHelper.JobIconDict.TryGetValue(mission.Value.Jobs[0], out var jobIcon))
@@ -414,8 +438,7 @@ namespace ICE.Ui
             ImGui.TableNextColumn();
             for (int i = 0; i < nextHourMissions.Count; i++)
             {
-                if (i > 0)
-                    ImGui.SameLine(0, 2);
+                if (i > 0) ImGui.SameLine(0, 2);
 
                 var mission = nextHourMissions[i];
                 if (CosmicHelper.JobIconDict.TryGetValue(mission.Value.Jobs[0], out var jobIcon))
@@ -429,7 +452,11 @@ namespace ICE.Ui
                         ImGui.SameLine(0, 2);
                         ImGui.Text($"{mission.Value.Name}");
                         var startsIn = EorzeaHoursUntil(eorzeaTime, (int)mission.Value.StartTime);
-                        ImGui.Text(T("Starts in {0}", FormatRealTime(startsIn)));
+                        int hoursAhead = ((nextHour - currentHour) + 24) % 24;
+                        if (hoursAhead == 1)
+                            ImGui.Text(T("Starts in {0}", FormatRealTime(startsIn)));
+                        else
+                            ImGui.Text(T("Starts in ~{0}h | {1}", hoursAhead, FormatRealTime(startsIn)));
                         ImGui.EndTooltip();
                     }
                 }

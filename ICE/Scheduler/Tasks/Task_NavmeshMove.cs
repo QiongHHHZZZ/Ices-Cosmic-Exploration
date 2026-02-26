@@ -2,6 +2,7 @@ using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using ICE.Ui.DebugWindowTabs;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -26,6 +27,8 @@ namespace ICE.Scheduler.Tasks
         private static DateTime whenStarted = DateTime.Now;
         private static DateTime lastTimeTracked = DateTime.Now;
         private static bool isJumpInProgress = false;
+
+        private static FishingDebug _fishingDebug = null;
 
         public static bool? Task_NavTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null, bool mountBeforeMove = false)
         {
@@ -185,6 +188,10 @@ namespace ICE.Scheduler.Tasks
                         float angle = (float)(_random.NextDouble() * 2 * Math.PI);
                         float dist = (float)(Math.Pow(_random.NextDouble(), 0.33) * radius);
                         targetPos = new Vector3(pos.X + dist * MathF.Cos(angle), pos.Y, pos.Z + dist * MathF.Sin(angle));
+
+                        var nearestPoint = P.Navmesh.NearestPointReachable(targetPos, 2, 2);
+                        if (nearestPoint != null)
+                            targetPos = nearestPoint.Value;
 
                         SetRandomizationDebug(pos, targetPos, 0, radius);
                     }
@@ -621,6 +628,7 @@ namespace ICE.Scheduler.Tasks
 
                         if (distance > 0)
                         {
+                            distance *= 1.2f;
                             method.distance = distance;
                         }
                     }

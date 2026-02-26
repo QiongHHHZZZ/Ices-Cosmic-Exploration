@@ -164,9 +164,7 @@ public static class ConfigMigration
         C.HideUnsupportedMissions = old.HideUnsupportedMissions;
         C.AutoPickCurrentJob = old.AutoPickCurrentJob;
         C.ShowCompletionWindow = old.ShowCompletionWindow;
-        C.ShowCompletionOnlyJob = old.ShowCompletionOnlyJob;
-        C.ShowSelectedJobOnly = old.ShowSelectedJobOnly;
-        C.ShowCompletion_MissingGold = old.ShowCompletion_MissingGold;
+        C.Show_MissingGoldOnly = old.ShowCompletion_MissingGold;
         C.ShowManualMode = old.ShowManualMode;
         C.Auto_ShowTokens = old.Auto_ShowTokens;
         C.Show_StopWhen = old.Show_StopWhen;

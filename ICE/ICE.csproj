@@ -36,7 +36,9 @@
 		<EmbeddedResource Include="Resources\GreyscaleJobs\MIN.png" />
 		<EmbeddedResource Include="Resources\GreyscaleJobs\WVR.png" />
 		<EmbeddedResource Include="Resources\GreyscaleJobs\CRP.png" />
-		<EmbeddedResource Include="Resources\Icon.png" />
+		<EmbeddedResource Include="Resources\Icon.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
 		<EmbeddedResource Include="Sounds\Task_Completed.mp3" />
 		<EmbeddedResource Include="Resources\Phaenna.png">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>

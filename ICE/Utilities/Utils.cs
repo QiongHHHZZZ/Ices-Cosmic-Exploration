@@ -152,6 +152,7 @@ public static unsafe class Utils
     }
     public static unsafe void MountAction()
     {
+        IceLogging.Verbose("We were told to use a mount action");
         bool useMount = C.MountId != 0 && PlayerState.Instance()->IsMountUnlocked(C.MountId);
 
         if (!Player.IsCasting && !Player.Mounting)

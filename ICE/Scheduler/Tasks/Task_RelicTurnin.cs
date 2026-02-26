@@ -54,6 +54,15 @@ namespace ICE.Scheduler.Tasks
                     return true;
                 }
             }
+            else if ((uint)Player.Job != Mission_Settings.SelectedJob)
+            {
+                if (EzThrottler.Throttle("Swapping jobs", 1000))
+                {
+                    IceLogging.Verbose($"Telling the game to swap you to jobID: {Mission_Settings.SelectedJob}");
+                    GearsetHandler.TaskClassChange((Job)Mission_Settings.SelectedJob);
+                }
+                return false;
+            }
             else
             {
                 IceLogging.Debug("No swap is necessary/not configured properly. Continuing on");

@@ -177,6 +177,12 @@ namespace ICE.Ui.DebugWindowTabs
                         {
                             Utils.MountAction();
                         }
+                        ImGui.SameLine();
+                        if (ImGui.Button("Stop All Task"))
+                        {
+                            P.TaskManager.Tasks.Clear();
+                            P.TaskManager.Abort();
+                        }
                         ImGui.Text($"Viable fishing spot: {_fishingDebug.IsFishable()}");
                         if (_fishingDebug.FindFishableLocation(out var fishablePosition))
                         {
@@ -303,7 +309,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                             if (ImGui.Button("Test Naving to [New]"))
                             {
-                                P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(spot.FishingSpot));
+                                Task_NavmeshMove.Enqueue_NavmeshTask(spot.FishingSpot);
                                 P.TaskManager.EnqueueDelay(200);
                                 if (_fishingDebug.FindFishableLocation(out var fisablePosition, searchSteps: 128))
                                 {

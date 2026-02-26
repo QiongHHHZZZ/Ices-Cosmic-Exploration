@@ -1896,6 +1896,41 @@ public static unsafe partial class GatheringUtil
                     FishingSpot = new Vector3(577.33f, 147.61f, 64.90f),
                 },
             },
+            // Export for Fishing Zone 1310, Flag (-137, -748)
+            [new Vector2(-137f, -748f)] = new()
+            {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-140.56f, -190.76f, -754.53f),
+                    FishingSpot = new Vector3(-141.09f, -191.18f, -757.31f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-138.80f, -190.63f, -757.05f),
+                    FishingSpot = new Vector3(-138.91f, -191.34f, -759.77f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-137.05f, -191.30f, -758.74f),
+                    FishingSpot = new Vector3(-136.42f, -191.21f, -760.72f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-134.76f, -191.29f, -758.93f),
+                    FishingSpot = new Vector3(-134.73f, -191.29f, -760.93f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-132.96f, -191.21f, -758.60f),
+                    FishingSpot = new Vector3(-131.86f, -191.21f, -760.27f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-129.03f, -191.25f, -756.92f),
+                    FishingSpot = new Vector3(-127.96f, -191.25f, -758.61f),
+                },
+            },
+
         }
     };
 

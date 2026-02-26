@@ -373,7 +373,7 @@ namespace ICE.Scheduler.Tasks
                             }
                         case MissionTypes.DroneSearch:
                             {
-                                if (C.Cosmodrone_Run)
+                                if (C.Cosmodrone_Run && PlayerHelper.IsInOizys())
                                 {
                                     P.TaskManager.Enqueue(() => Task_ArtifactSearch.RefreshMapInfo(), "Inserting Drone Task");
                                 }
@@ -403,10 +403,10 @@ namespace ICE.Scheduler.Tasks
                 string jobs = string.Join(", ", sheetInfo.Jobs);
 
                 IceLogging.Info($"We found a mission! We're going to exit out of this task and grab the following\n: " +
-                    $"[Id] = {missionId} " +
+                    $"[Id] = {missionId}\n" +
                     $"[Selected Job] = {Mission_Settings.SelectedJob}\n" +
-                    $"[Mission Job] = {jobs}" +
-                    $"Red Alert: {redAlert}" +
+                    $"[Mission Job] = {jobs}\n" +
+                    $"Red Alert: {redAlert}\n" +
                     $"Provisional: {provisional}", tag);
             }
 

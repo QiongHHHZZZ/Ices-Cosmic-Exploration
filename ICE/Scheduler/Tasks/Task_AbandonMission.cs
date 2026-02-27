@@ -34,30 +34,17 @@ namespace ICE.Scheduler.Tasks
                 ForceAbandon = false;
                 if (WasAbandoned)
                 {
-                    IceLogging.Debug("Mission was abandoned");
+                    IceLogging.Debug("Mission was abandoned", tag);
                     P.MissionTimer.AbandonMission();
-                }
-                else
-                {
-                    Task_TurninMission.UpdateScoreInfo();
-                    var duration = P.MissionTimer.CompleteMission();
-                    Mission_Settings.TurninState = TurninState.None;
-
-                    // Log the results
-                    if (C.MissionConfig.TryGetValue(Task_TurninMission.PreviousMissionId, out var config))
-                    {
-                        IceLogging.Info($"Mission [{Task_TurninMission.PreviousMissionId}] [{CosmicHelper.SheetMissionDict[Task_TurninMission.PreviousMissionId].Name}] completed in {duration:mm\\:ss\\.ff} | Best: {TimeSpan.FromSeconds(config.BestTime):mm\\:ss\\.ff} | Avg: {TimeSpan.FromSeconds(config.AverageTime):mm\\:ss\\.ff}", $"{tag} [Mission Timer]");
-                    }
                 }
 
                 WasAbandoned = false;
-
                 if (P.AutoHook.Installed)
                 {
                     P.AutoHook.DeleteAllAnonymousPresets();
                 }
 
-                IceLogging.Info("Current mission is 0, checking to see where we need to be now", "[Abandon Mission]");
+                IceLogging.Info("Current mission is 0, checking to see where we need to be now", tag);
                 return true;
             }
             else
@@ -74,30 +61,19 @@ namespace ICE.Scheduler.Tasks
                     return false;
                 }
 
-                if (!ForceAbandon)
+                var rank = Task_CheckScore.CurrentRank();
+                if (rank == WKSManagerCustom.MissionRank.Depleted)
                 {
-                    if (EzThrottler.Throttle("Trying to turnin/abandon", 250))
-                    {
-                        if (EzThrottler.Throttle("Attempt to Turnin", 1000))
-                        {
-                            ReportMissionInstance();
-                        }
-                        else if (EzThrottler.Throttle("Attempting to abandon", 1000))
-                        {
-                            AbandonMissionInstance();
-                            IceLogging.Debug("Attempting to abandon.", "Abandon Mission");
-                            WasAbandoned = true;
-                        }
-                    }
+                    IceLogging.Debug("Reporting the mission", tag);
+                    ReportMissionInstance();
+                    WasAbandoned = true;
+                    return false;
                 }
                 else
                 {
-                    if (EzThrottler.Throttle("Attempting to abandon", 250))
-                    {
-                        AbandonMissionInstance();
-                        IceLogging.Debug("Attempting to abandon.", "Abandon Mission");
-                        WasAbandoned = true;
-                    }
+                    AbandonMissionInstance();
+                    IceLogging.Debug("Abandoning the mission", tag);
+                    WasAbandoned = true;
                 }
             }
 

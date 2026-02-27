@@ -21,7 +21,9 @@ unsafe struct WKSManagerCustom
         None,
         Bronze,
         Silver,
-        Gold
+        Gold,
+
+        Depleted = 5,
     }
 
 

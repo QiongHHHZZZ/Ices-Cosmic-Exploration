@@ -237,8 +237,8 @@ internal static class L10n
         ["Timed Missions"] = "限时任务",
         ["Limited Nodes"] = "限量采集",
         ["Chained"] = "连锁",
-        ["Boon"] = "惠赐",
-        ["Chained + Boon"] = "连锁 + 惠赐",
+        ["Boon"] = "额外采集奖励",
+        ["Chained + Boon"] = "连锁 + 额外采集奖励",
         ["Dual Class"] = "双职业",
         ["Gather X Amount"] = "采集数量",
         ["Provisional: Type Order"] = "限定任务：类型顺序",
@@ -307,7 +307,7 @@ internal static class L10n
         ["Keep: Will buy up to that many items to make sure that you have in your inventory. This count doesn't go down between runs.\n" +
          "Useful for things like cordials where you want to always have a certain amount on hand"]
             = "保留：会补货至该数量，确保背包里始终有这么多。该数量不会在每轮之间递减。\n" +
-              "适合恢复药这类希望长期保持库存的物品",
+              "适合强心剂这类希望长期保持库存的物品",
         ["Buy: Will buy X amount of those items, as it buys it from the vendor, the number will decrease until it hits 0.\n" +
          "Good for one off buys, or something that you only need a particular amount of"]
             = "购买：会一次性购买设定数量。每次从商店购买后，该数值会递减，直到归零。\n" +
@@ -444,7 +444,7 @@ internal static class L10n
               "别再让它做 27 件了，它说的是“制作”不是“爆肝”。 (╯°Д°)╯︵/(.□ . \\)",
         ["Set to -1 to allow for infinite uses \n"] = "设为 -1 表示不限次数\n",
         ["Will only work while using ICE and not manual mode\n"] = "仅在 ICE 自动运行且关闭手动模式时生效\n",
-        ["What's the minimum gp you can have before it uses a cordial.\n"] = "设置使用恢复药前的最低 GP。\n",
+        ["What's the minimum gp you can have before it uses a cordial.\n"] = "设置使用强心剂前的最低 GP。\n",
         ["What's the minimum durability a node can have before this action is activated?\n"] = "设置该技能触发前所需的最低节点耐久。\n",
         ["Increases the number of items obtained when gathering by 1\n"] = "采集产出 +1\n",
         ["Increases the number of items obtained when gathering by 2\n"] = "采集产出 +2\n",
@@ -579,16 +579,16 @@ internal static class L10n
         ["None"] = "无",
         ["Use Stylist to re-equip tools"] = "使用 Stylist 重新装备工具",
         ["Extract Spiritbond on Gather"] = "采集时提取精炼度",
-        ["Auto Cordial"] = "自动使用恢复药",
+        ["Auto Cordial"] = "自动使用强心剂",
         ["Will only work while using ICE and not manual mode\nWill also pause pandora cordial usage while on the moon"]
-            = "仅在 ICE 自动运行且非手动模式时生效\n在月球上也会暂停 Pandora 的恢复药使用",
-        ["Cordial Settings"] = "恢复药设置",
-        ["Min mission rank for cordials"] = "恢复药最低任务等级",
+            = "仅在 ICE 自动运行且非手动模式时生效\n在月球上也会暂停 Pandora 的强心剂使用",
+        ["Cordial Settings"] = "强心剂设置",
+        ["Min mission rank for cordials"] = "强心剂最低任务等级",
         ["Inverse Priority (Watered -> Regular -> Hi)"] = "反向优先级（低级 -> 普通 -> 高级）",
         ["Prevent Overcap"] = "防止 GP 溢出",
-        ["Use cordial when below the following GP"] = "GP 低于以下数值时使用恢复药",
+        ["Use cordial when below the following GP"] = "GP 低于以下数值时使用强心剂",
         ["What's the minimum gp you can have before it uses a cordial.\nIf set to 0, it'll never use a cordial even with it enabled (because... you'll never have 0 gp)"]
-            = "设置触发恢复药的最低 GP。\n若设为 0，即使启用也不会使用恢复药。",
+            = "设置触发强心剂的最低 GP。\n若设为 0，即使启用也不会使用强心剂。",
         ["Food Settings"] = "食物设置",
         ["Min mission rank for food"] = "食物最低任务等级",
         ["Use food on gathering missions"] = "采集任务使用食物",
@@ -618,10 +618,10 @@ internal static class L10n
         ["Minumum Items To Gather"] = "最少采集数量",
         ["Pioneer's | Mountaineer's Gift II"] = "富矿的馈赠II / 沃土的馈赠II",
         ["Pioneer's | Mountaineer's Gift I"] = "富矿的馈赠I / 沃土的馈赠I",
-        ["Apply a 30% buff to your boon chance."] = "使惠赐触发率提高 30%。",
-        ["Apply a 10% buff to your boon chance."] = "使惠赐触发率提高 10%。",
+        ["Apply a 30% buff to your boon chance."] = "使额外采集奖励发生率提高 30%。",
+        ["Apply a 10% buff to your boon chance."] = "使额外采集奖励发生率提高 10%。",
         ["Nophica's / Nald'thal's Tidings Buff"] = "诺菲卡福音 / 纳尔札尔福音",
-        ["Increases item yield from Gatherer's Boon by 1"] = "采集者惠赐额外产出 +1。",
+        ["Increases item yield from Gatherer's Boon by 1"] = "额外采集奖励发生时获得数 +1。",
         ["Blessed / Kings Yield II"] = "莫非王土II / 天赐收成II",
         ["Blessed / Kings Yield I"] = "莫非王土 / 天赐收成",
         ["Increases the number of items obtained when gathering by 2\nWill only apply when the gathering node has full durability"]
@@ -810,7 +810,7 @@ internal static class L10n
         ["Expert Crafts"] = "专家制作",
         ["Timed Scoring"] = "限时计分",
         ["Chained Gather Scoring"] = "连锁采集计分",
-        ["Gatherer's Boons Scoring"] = "采集者惠赐计分",
+        ["Gatherer's Boons Scoring"] = "额外采集奖励计分",
         ["Largest Fish Scored"] = "最大体型计分",
         ["Variety of Fish Required"] = "需要鱼种多样性",
         ["Mission Score Required"] = "任务贡献度要求",

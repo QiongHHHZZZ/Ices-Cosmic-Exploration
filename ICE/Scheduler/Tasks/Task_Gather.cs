@@ -404,12 +404,20 @@ namespace ICE.Scheduler.Tasks
             var gatherInfo = GatheringRouteLoader.GetRoute(zoneId.RowId, missionFlag);
 
             var location = gatherInfo[Mission_Settings.nodeCounter];
+            var distanceToLandZone = Player.DistanceTo(location.LandZone);
+
+            // CN-MAINT: also allow DRTP after mission is already accepted when node is far away.
+            if (distanceToLandZone > SmartRoutingThreshold
+                && TryDailyRoutinesTeleportToGatherLandZone(location.LandZone, "[Gathering: PathAndCheckNode DRTP]"))
+            {
+                return false;
+            }
 
 
             // Use smart routing (aethernet/hub) for far nodes when closest node selection is active
-            if (C.ClosestNodeSelection && Player.DistanceTo(location.LandZone) > SmartRoutingThreshold)
+            if (C.ClosestNodeSelection && distanceToLandZone > SmartRoutingThreshold)
             {
-                IceLogging.Info($"Node is far ({Player.DistanceTo(location.LandZone):N0}y), using smart routing", "[Gathering: SmartRoute]");
+                IceLogging.Info($"Node is far ({distanceToLandZone:N0}y), using smart routing", "[Gathering: SmartRoute]");
                 P.TaskManager.Tasks.Clear();
                 Task_NavmeshMove.Enqueue_NavmeshTask(location.LandZone, distance: 2);
                 return true;

@@ -370,37 +370,49 @@ ImGui.Text(T("No location set"));
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.Plug, T("Daily Routines扩展"));
             ImGui.Dummy(new Vector2(0, 5));
+            ImGui.TextDisabled(T("使用Daily Routines传送"));
+            ImGui.Dummy(new Vector2(0, 2));
 
-            // CN-MAINT: Daily Routines TP toggles (keep labels consistent with scheduler behavior).
+            // CN-MAINT: Daily Routines TP toggles rendered in two compact rows.
             bool useFishingTp = C.FishingUseDailyRoutinesTP;
-if (ImGui.Checkbox(T("钓鱼任务使用Daily Routines的TP替代寻路"), ref useFishingTp))
+            if (ImGui.Checkbox(T("钓鱼任务"), ref useFishingTp))
             {
                 C.FishingUseDailyRoutinesTP = useFishingTp;
                 C.Save();
             }
 
+            ImGui.SameLine();
             bool useGatherTp = C.GatherUseDailyRoutinesTP;
-if (ImGui.Checkbox(T("采集任务使用Daily Routines的TP替代寻路"), ref useGatherTp))
+            if (ImGui.Checkbox(T("采集任务"), ref useGatherTp))
             {
                 C.GatherUseDailyRoutinesTP = useGatherTp;
                 C.Save();
             }
 
+            ImGui.SameLine();
             bool usePersonalReturnTp = C.PersonalReturnUseDailyRoutinesTP;
-if (ImGui.Checkbox(T("个人返回点使用Daily Routines的TP替代寻路"), ref usePersonalReturnTp))
+            if (ImGui.Checkbox(T("个人返回点"), ref usePersonalReturnTp))
             {
                 C.PersonalReturnUseDailyRoutinesTP = usePersonalReturnTp;
                 C.Save();
             }
 
+            bool useHubReturnTp = C.HubReturnUseDailyRoutinesTP;
+            if (ImGui.Checkbox(T("购买物品后返回"), ref useHubReturnTp))
+            {
+                C.HubReturnUseDailyRoutinesTP = useHubReturnTp;
+                C.Save();
+            }
+
+            ImGui.SameLine();
             bool useDroneTp = C.Cosmodrone_UseDailyRoutinesTP;
-if (ImGui.Checkbox(T("无人机任务使用Daily Routines的TP替代寻路"), ref useDroneTp))
+            if (ImGui.Checkbox(T("无人机任务"), ref useDroneTp))
             {
                 C.Cosmodrone_UseDailyRoutinesTP = useDroneTp;
                 C.Save();
             }
 
-            if (C.FishingUseDailyRoutinesTP || C.GatherUseDailyRoutinesTP || C.PersonalReturnUseDailyRoutinesTP || C.Cosmodrone_UseDailyRoutinesTP)
+            if (C.FishingUseDailyRoutinesTP || C.GatherUseDailyRoutinesTP || C.PersonalReturnUseDailyRoutinesTP || C.HubReturnUseDailyRoutinesTP || C.Cosmodrone_UseDailyRoutinesTP)
             {
                 ImGui.TextWrapped(T("提示：请确认 Daily Routines 的“快捷传送面板”模块已开启。传送失败会自动回退原有寻路。"));
             }

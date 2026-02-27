@@ -36,6 +36,7 @@ public partial class Config
     public bool FishingUseDailyRoutinesTP { get; set; } = false;
     public bool GatherUseDailyRoutinesTP { get; set; } = false;
     public bool PersonalReturnUseDailyRoutinesTP { get; set; } = false;
+    public bool HubReturnUseDailyRoutinesTP { get; set; } = false;
 
     public class MissionCommand
     {

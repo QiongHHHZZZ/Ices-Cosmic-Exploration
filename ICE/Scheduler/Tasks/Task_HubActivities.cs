@@ -2,6 +2,7 @@
 using ICE.Utilities.Cosmic_Helper;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -73,6 +74,9 @@ namespace ICE.Scheduler
         {
             if (CosmicHelper.CrafterJobList.Contains((uint)Player.Job))
             {
+                if (TryDailyRoutinesTeleportToCraftingSpot(craftingSpot))
+                    return false;
+
                 if (!Task_NavmeshMove.Task_NavTo(craftingSpot, true, 1, false).Value)
                 {
                     return false;
@@ -88,6 +92,40 @@ namespace ICE.Scheduler
                 IceLogging.Info($"We're not on a crafting job. (Allegedly) which means that we don't need to path back | Player Job: {(uint)Player.Job}");
                 return true;
             }
+        }
+
+        private static bool TryDailyRoutinesTeleportToCraftingSpot(Vector3 destination)
+        {
+            const string tag = "[Task_HubActivities: ReturnSpot TP]";
+
+            if (!C.HubReturnUseDailyRoutinesTP)
+                return false;
+
+            if (Player.DistanceTo(destination) < 3f)
+                return false;
+
+            if (!Utils.HasPlugin("DailyRoutines"))
+            {
+                if (EzThrottler.Throttle("HubReturnMissingDailyRoutines", 8000))
+                    IceLogging.Warning("未检测到 Daily Routines，已回退原有寻路。", tag);
+                return false;
+            }
+
+            if (EzThrottler.Throttle("HubReturnDailyRoutinesTeleport", 2500))
+            {
+                var command = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "/pdrtp pos {0:F2} {1:F2} {2:F2}",
+                    destination.X,
+                    destination.Y,
+                    destination.Z);
+
+                Svc.Commands.ProcessCommand(command);
+                IceLogging.Debug($"已尝试 Daily Routines 传送：{command}", tag);
+                return true;
+            }
+
+            return false;
         }
 
         private static bool? ResetAll()

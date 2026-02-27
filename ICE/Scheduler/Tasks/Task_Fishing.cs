@@ -75,6 +75,9 @@ namespace ICE.Scheduler.Tasks
             if (!C.FishingUseDailyRoutinesTP)
                 return false;
 
+            if (Player.DistanceTo(targetPosition) < 3f)
+                return false;
+
             if (!Utils.HasPlugin("DailyRoutines"))
             {
                 if (EzThrottler.Throttle("FishingMissingDailyRoutines", 8000))
@@ -395,7 +398,7 @@ namespace ICE.Scheduler.Tasks
         {
             string handle = "[Fishing: Initiate Move]";
 
-            if (Player.DistanceTo(fishingPos) < 4f)
+            if (Player.DistanceTo(fishingPos) < 3f)
                 return true;
 
             if (TryDailyRoutinesTeleportToFishingSpot(fishingPos, handle))

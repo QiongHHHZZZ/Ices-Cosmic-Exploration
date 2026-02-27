@@ -48,8 +48,8 @@ namespace ICE.Scheduler.Tasks
             }
         }
 
-        // CN-MAINT: Gather TP helper is intentionally used ONLY during mission entry.
-        // Runtime node-to-node movement remains original vnav pathing to avoid excessive teleports.
+        // CN-MAINT: Gather DRTP helper for mission entry + runtime node movement.
+        // Simple rule: <3m no TP; otherwise try TP first, then fall back to navmesh.
         internal static bool TryDailyRoutinesTeleportToGatherLandZone(Vector3 targetPosition, string handle)
         {
             if (!C.GatherUseDailyRoutinesTP)
@@ -406,9 +406,7 @@ namespace ICE.Scheduler.Tasks
             var location = gatherInfo[Mission_Settings.nodeCounter];
             var distanceToLandZone = Player.DistanceTo(location.LandZone);
 
-            // CN-MAINT: also allow DRTP after mission is already accepted when node is far away.
-            if (distanceToLandZone > SmartRoutingThreshold
-                && TryDailyRoutinesTeleportToGatherLandZone(location.LandZone, "[Gathering: PathAndCheckNode DRTP]"))
+            if (TryDailyRoutinesTeleportToGatherLandZone(location.LandZone, "[Gathering: PathAndCheckNode DRTP]"))
             {
                 return false;
             }

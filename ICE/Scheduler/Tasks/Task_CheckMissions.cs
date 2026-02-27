@@ -810,7 +810,7 @@ namespace ICE.Scheduler.Tasks
 
                     foreach (var node in gatherInfo)
                     {
-                        if (Player.DistanceTo(node.Position) < 5)
+                        if (Player.DistanceTo(node.Position) < 3)
                         {
                             IceLogging.Info("We're close enough to the node! So continuing onto grabbing the mission", tag);
                             return true;
@@ -819,7 +819,7 @@ namespace ICE.Scheduler.Tasks
 
                     IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now", tag);
 
-                    // CN-MAINT: gather Daily Routines TP is mission-entry only.
+                    // CN-MAINT: Gather uses simple DRTP rule (<3m skip TP, otherwise TP then nav fallback).
                     if (Task_Gather.TryDailyRoutinesTeleportToGatherLandZone(startNode.LandZone, tag))
                     {
                         return false;

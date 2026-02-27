@@ -308,12 +308,13 @@ if (ImGui.RadioButton(T("Retarget"), C.RetargetIfStuck))
                 C.JumpIfStuck_V2 = false;
                 C.Save();
             }
-            ImGui.SameLine();
-ImGui.Text(T("after"));
+
+            ImGui.Dummy(new Vector2(0, 4));
+            ImGui.Text(T("after"));
             ImGui.SameLine();
             int stuckDelay = C.StuckDelayMs;
-            ImGui.SetNextItemWidth(100);
-            if (ImGui.SliderInt($"{T("ms stuck")}###StuckDelay", ref stuckDelay, 500, 3000))
+            ImGui.SetNextItemWidth(120);
+            if (ImGui.SliderInt("##StuckDelay", ref stuckDelay, 500, 3000))
             {
                 if (C.StuckDelayMs != stuckDelay)
                 {
@@ -321,6 +322,8 @@ ImGui.Text(T("after"));
                     C.SaveDebounced();
                 }
             }
+            ImGui.SameLine();
+            ImGui.Text(T("ms stuck"));
             if (!unstuckEnabled) ImGui.EndDisabled();
         }
 
@@ -383,6 +386,13 @@ if (ImGui.Checkbox(T("采集任务使用Daily Routines的TP替代寻路"), ref u
                 C.Save();
             }
 
+            bool usePersonalReturnTp = C.PersonalReturnUseDailyRoutinesTP;
+if (ImGui.Checkbox(T("个人返回点使用Daily Routines的TP替代寻路"), ref usePersonalReturnTp))
+            {
+                C.PersonalReturnUseDailyRoutinesTP = usePersonalReturnTp;
+                C.Save();
+            }
+
             bool useDroneTp = C.Cosmodrone_UseDailyRoutinesTP;
 if (ImGui.Checkbox(T("无人机任务使用Daily Routines的TP替代寻路"), ref useDroneTp))
             {
@@ -390,7 +400,7 @@ if (ImGui.Checkbox(T("无人机任务使用Daily Routines的TP替代寻路"), re
                 C.Save();
             }
 
-            if (C.FishingUseDailyRoutinesTP || C.GatherUseDailyRoutinesTP || C.Cosmodrone_UseDailyRoutinesTP)
+            if (C.FishingUseDailyRoutinesTP || C.GatherUseDailyRoutinesTP || C.PersonalReturnUseDailyRoutinesTP || C.Cosmodrone_UseDailyRoutinesTP)
             {
                 ImGui.TextWrapped(T("提示：请确认 Daily Routines 的“快捷传送面板”模块已开启。传送失败会自动回退原有寻路。"));
             }

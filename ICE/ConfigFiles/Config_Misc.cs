@@ -35,6 +35,7 @@ public partial class Config
     // CN-MAINT: Daily Routines TP integration switches.
     public bool FishingUseDailyRoutinesTP { get; set; } = false;
     public bool GatherUseDailyRoutinesTP { get; set; } = false;
+    public bool PersonalReturnUseDailyRoutinesTP { get; set; } = false;
 
     public class MissionCommand
     {

@@ -4,6 +4,7 @@ using ICE.Utilities.Cosmic;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection.Metadata.Ecma335;
 using YamlDotNet.Core.Tokens;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -739,6 +740,41 @@ namespace ICE.Scheduler.Tasks
             }
         }
         private static Vector3 randomFishingHole = Vector3.Zero;
+
+        private static bool TryDailyRoutinesTeleportToPersonalReturn(Vector3 destination, string tag)
+        {
+            if (!C.PersonalReturnUseDailyRoutinesTP)
+                return false;
+
+            if (Player.DistanceTo(destination) < 3f)
+                return false;
+
+            if (!Utils.HasPlugin("DailyRoutines"))
+            {
+                if (EzThrottler.Throttle("PersonalReturnMissingDailyRoutines", 8000))
+                {
+                    IceLogging.Warning("未检测到 Daily Routines，已回退原有寻路。", tag);
+                }
+                return false;
+            }
+
+            if (EzThrottler.Throttle("PersonalReturnDailyRoutinesTeleport", 2500))
+            {
+                var command = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "/pdrtp pos {0:F2} {1:F2} {2:F2}",
+                    destination.X,
+                    destination.Y,
+                    destination.Z);
+
+                Svc.Commands.ProcessCommand(command);
+                IceLogging.Debug($"已尝试 Daily Routines 传送：{command}", tag);
+                return true;
+            }
+
+            return false;
+        }
+
         private static bool? CheckForMovementRequired(uint missionId)
         {
             string tag = "[Check Missions: Movement Check]";
@@ -852,6 +888,11 @@ namespace ICE.Scheduler.Tasks
                     var territory = Player.Territory.RowId;
                     if (C.CrafterLocations.TryGetValue(territory, out var location))
                     {
+                        if (TryDailyRoutinesTeleportToPersonalReturn(location, tag))
+                        {
+                            return false;
+                        }
+
                         IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now");
                         Task_NavmeshMove.Enqueue_NavmeshTask(location);
                         return true;

@@ -1930,7 +1930,6 @@ public static unsafe partial class GatheringUtil
                     FishingSpot = new Vector3(-127.96f, -191.25f, -758.61f),
                 },
             },
-
         }
     };
 

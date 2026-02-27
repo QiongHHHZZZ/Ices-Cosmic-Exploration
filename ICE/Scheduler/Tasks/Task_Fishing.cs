@@ -110,98 +110,136 @@ namespace ICE.Scheduler.Tasks
             // wait for fishing to be done
 
             P.TaskManager.Enqueue(() => Task_CheckScore.Fish());
-            P.TaskManager.Enqueue(() => FishingCheck());
+            P.TaskManager.Enqueue(() => FishCheckV2());
         }
 
-        private static int BaitCounter = 0;
+        private static int StartedFishing = 0;
 
-        private static unsafe bool? FishingCheck()
+        private static unsafe bool? FishCheckV2()
         {
-            if (_fishingDebug == null)
+            string handle = "Fishing Task: State Check";
+            if (Svc.Condition[ConditionFlag.Fishing])
             {
-                _fishingDebug = new FishingDebug();
+                IceLogging.Info("We're currently in the middle of fishing, so we're going to wait for us to complete");
+                StartedFishing = 0;
+                P.TaskManager.Enqueue(() => FinishFishing(), "Waiting for fishing to complete");
+                return true;
             }
-
-            if (Player.Mounted)
+            else
             {
-                Utils.Dismount();
-                return false;
-            }
-
-            string handle = "[Standard Fishing: Fishing Check]";
-            if (EzThrottler.Throttle("Throttling intro message", 1000))
-            {
-                IceLogging.Debug("Checking to see where we need to be here", handle);
-            }
-            bool hasBait = false;
-
-            if (CosmicHelper.CurrentBait == 0)
-            {
-                if (EzThrottler.Throttle("Equipping bait"))
+                IceLogging.Verbose("We're not currently fishing. Checking to see what we should do", handle);
+                if (Player.Mounted || Player.IsJumping)
                 {
-                    foreach (var bait in GatheringUtil.MoonBaits)
+                    if (EzThrottler.Throttle("Log message: Jump/Dismount", 1000))
+                        IceLogging.Verbose("We're in the middle of dismounting/jumping, waiting");
+
+                    Utils.Dismount();
+                    return false;
+                }
+
+                if (Svc.Condition[ConditionFlag.ExecutingGatheringAction])
+                {
+                    if (EzThrottler.Throttle("Gathering Action Execution", 2000))
+                        IceLogging.Info("We're currently executing some gathering action, so waiting");
+
+                    return false;
+                }
+
+                var hasBait = false;
+                uint firstBait = 0;
+                foreach (var bait in GatheringUtil.MoonBaits)
+                {
+                    foreach (var baitId in bait.Value)
                     {
-                        foreach (var baitId in bait.Value)
+                        if (PlayerHelper.GetItemCount(baitId, out var baitCount) && baitCount > 0)
                         {
-                            if (PlayerHelper.GetItemCount(baitId, out var count) && count > 0)
-                            {
-                                P.AutoHook.SwapBaitById(baitId);
-                                IceLogging.Debug($"Telling it to equip bait ID: {baitId}", handle);
-                                return false;
-                            }
+                            hasBait = true;
+                            firstBait = baitId;
+                            break;
+                        }
+                    }
+                    if (hasBait) break;
+                }
+
+                if (!hasBait)
+                {
+                    IceLogging.Info("We are reporting to be out of bait, proceeding to abandon/turnin mission");
+                    SchedulerMain.State = IceState.AbandonMission;
+                    return true;
+                }
+                if (CosmicHelper.CurrentBait == 0)
+                {
+                    if (EzThrottler.Throttle("Bait Message", 2000))
+                        IceLogging.Debug($"We are reporting we didn't have a bait equipped, so we're going to equip the first bait that we found: [{firstBait}]", handle);
+                    P.AutoHook.SwapBaitById(firstBait);
+                    return false;
+                }
+
+                if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Collectables))
+                {
+                    if (!PlayerHelper.HasStatusId(805))
+                    {
+                        if (EzThrottler.Throttle("Log Throttle for fishing", 2000))
+                            IceLogging.Debug("We need to apply collector's glove, so we're doing so", handle);
+
+                        if (!Player.IsBusy)
+                        {
+                            if (EzThrottler.Throttle("Attempting to turn on collectability"))
+                                ActionManager.Instance()->UseAction(ActionType.Action, 4101);
+                        }
+                        return false;
+                    }
+                }
+                if (_fishingDebug == null)
+                {
+                    _fishingDebug = new FishingDebug();
+                }
+
+                if (_fishingDebug.IsFishable())
+                {
+                    var currentSpot = GetCurrentFishingSpot();
+                    if (EzThrottler.Throttle("Fishable Location message"))
+                    {
+                        if (currentSpot != null)
+                        {
+                            IceLogging.Verbose("We were told we're in a fishable location, so going to report back we are suppose to be able to fish\n" +
+                                               $"Current spot: {currentSpot.FishingSpot:N2}", handle);
+                        }
+                        else
+                        {
+                            IceLogging.Verbose($"We are currently in a fishable spot... but the data isn't loaded correctly? MissionID: {CosmicHelper.CurrentLunarMission}", handle);
                         }
                     }
 
-                    IceLogging.Info("If we've gotten here, that means we're out of bait. Proceeding to turnin/abandon the mission");
-                    SchedulerMain.State = IceState.AbandonMission;
-                    P.TaskManager.Tasks.Clear();
-                    return true;
-                }
-                return false;
-            }
-
-            // little check here for seeing if we have any baits
-            foreach (var bait in GatheringUtil.MoonBaits)
-            {
-                foreach (var baitId in bait.Value)
-                {
-                    if (PlayerHelper.GetItemCount(baitId, out var count) && count > 0)
+                    if (EzThrottler.Throttle("Start Fishing: AH", 1000))
                     {
-                        if (EzThrottler.Throttle("Throttling bait message", 1000))
-                            IceLogging.Debug("We have the bait! Continuing onwards");
-                        hasBait = true;
-                        break;
+                        IceLogging.Verbose("We are telling fishing plugin to start via command...", handle);
+                        if (ShouldEnableAutoHookRuntime())
+                            P.AutoHook.SetPluginState(true);
+                        StartFishingByAvailablePlugin(handle);
+                    }
+                    else
+                    {
+                        if (EzThrottler.Throttle("Started Fishing Throttle", 1000))
+                        {
+                            IceLogging.Verbose("+1 to waiting for fishing to actually start...", handle);
+                            StartedFishing += 1;
+                        }
+                        if (StartedFishing > 10)
+                        {
+                            if (EzThrottler.Throttle("Start fishing Error", 2000))
+                                IceLogging.Error("We apperently... didn't start fishing. Which isn't good. So we're going to attempt to manually cast our line", handle);
+                            if (EzThrottler.Throttle("Attempting to turn on collectability"))
+                                ActionManager.Instance()->UseAction(ActionType.Action, 4101);
+                        }
                     }
                 }
-            }
-
-            if (!hasBait)
-            {
-                IceLogging.Info("If we've gotten here, that means we're out of bait. Proceeding to turnin/abandon the mission");
-                SchedulerMain.State = IceState.AbandonMission;
-                P.TaskManager.Tasks.Clear();
-                return true;
-            }
-            else if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Collectables) && !PlayerHelper.HasStatusId(805))
-            {
-                if (EzThrottler.Throttle("Log Throttle for fishing"))
-                    IceLogging.Debug("We need to apply collector's glove", "Task_Start Fishing");
-
-                if (!Player.IsBusy)
+                else
                 {
-                    if (EzThrottler.Throttle("Attempting to turn on collectability"))
-                        ActionManager.Instance()->UseAction(ActionType.Action, 4101);
-                }
-                return false;
-            }
-            else if (!Svc.Condition[ConditionFlag.Gathering])
-            {
-                if (!_fishingDebug.IsFishable())
-                {
-                    if (_fishingDebug.FindFishableLocation(out var fishablePos, searchSteps:64))
+                    IceLogging.Verbose("We apperently aren't facing toward the fishing hole... or not close enough to one that we can actually start. So going to attempt to fix it", handle);
+                    if (_fishingDebug.FindFishableLocation(out var fishablePos, searchSteps: 64))
                     {
                         IceLogging.Info("We're not in a fishable angle, so going to face one", handle);
-                        P.TaskManager.Tasks.Clear();
                         P.TaskManager.Enqueue(() => FacePosition(fishablePos.Value));
                         return true;
                     }
@@ -222,61 +260,8 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
                 }
-                else if (EzThrottler.Throttle("Starting to fish", 1000))
-                {
-                    IceLogging.Debug("Telling it to start fishing", handle);
-                    StartFishingByAvailablePlugin(handle);
-                }
-                else if (EzThrottler.Throttle("Adding counter for bait not equipped"))
-                {
-                    BaitCounter++;
-                    IceLogging.Debug($"Adding 1 to the counter. Counter is at: {BaitCounter}");
-                    if (BaitCounter >= 2)
-                    {
-                        foreach (var bait in GatheringUtil.MoonBaits)
-                        {
-                            foreach (var baitId in bait.Value)
-                            {
-                                if (PlayerHelper.GetItemCount(baitId, out var count) && count > 0)
-                                {
-                                    P.AutoHook.SwapBaitById(baitId);
-                                    IceLogging.Debug($"Telling it to equip bait ID: {baitId}", handle);
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                }
                 return false;
             }
-            else
-            {
-                // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
-                if (ShouldEnableAutoHookRuntime())
-                    P.AutoHook.SetPluginState(true);
-                IceLogging.Info("We're starting to fish. So kicking it over to checking the fish items", handle);
-                P.TaskManager.Insert(() => WaitToStartFishing(), "Waiting till we actually start fishing", Utils.TaskConfig);
-                BaitCounter = 0;
-                return true;
-            }
-        }
-
-        private static unsafe bool? WaitToStartFishing()
-        {
-            if (Svc.Condition[ConditionFlag.Fishing])
-            {
-                IceLogging.Info("We've started fishing, just going to wait for it to finish", "[Fishing: Waiting]");
-                P.TaskManager.Insert(() => FinishFishing(), "Waiting for fishing to finish", Utils.TaskConfig);
-                return true;
-            }
-            if (!Svc.Condition[ConditionFlag.Gathering])
-            {
-                IceLogging.Info("Somehow, we've gotten here and we're not fishing?? Going to check the score for a timer check", "[Fishing: Waiting]");
-                P.TaskManager.Tasks.Clear();
-                return true;
-            }
-
-            return false;
         }
 
         private static int collectableCounter = 0;
@@ -311,7 +296,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static unsafe bool? FacePosition(Vector3 pos, float tolerance = 0.1f)
         {
             float currentRotation = Player.Rotation;
@@ -391,6 +375,21 @@ namespace ICE.Scheduler.Tasks
 
             // If no close spot found, return the first entry
             return spots[0];
+        }
+        public static FisherSpotInfo? GetCurrentFishingSpot()
+        {
+            var zone = Player.Territory.RowId;
+            var mission = CosmicHelper.CurrentMissionInfo;
+            var flag = mission.MapPosition;
+
+            // Check if the zone and flag exist
+            if (!MoonFishingLocations.TryGetValue(zone, out var zoneData) || !zoneData.TryGetValue(flag, out var spots) || spots.Count == 0)
+            {
+                return null;
+            }
+
+            var closestSpot = spots.MinBy(x => Player.DistanceTo(x.FishingSpot));
+            return closestSpot;
         }
         public static bool? InitiateMoving(Vector3 fishingPos)
         {

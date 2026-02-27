@@ -20,7 +20,7 @@ namespace ICE.Scheduler.Tasks
 
         public static void Enqueue()
         {
-            if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady || GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
+            if (Svc.Condition[ConditionFlag.Gathering])
             {
                 IceLogging.Debug("Current in a gathering session");
                 Task_CheckScore.Enqueue();

@@ -808,24 +808,24 @@ namespace ICE.Scheduler.Tasks
                 {
                     var startNode = gatherInfo[0];
 
-                    foreach (var node in gatherInfo)
+                    if (Task_Gather.IsInsideMissionGatherCircle(sheetInfo))
                     {
-                        if (Player.DistanceTo(node.Position) < 3)
-                        {
-                            IceLogging.Info("We're close enough to the node! So continuing onto grabbing the mission", tag);
-                            return true;
-                        }
+                        Task_Gather.MarkMissionEntryPrepared(missionId);
+                        IceLogging.Info("Already inside mission gathering circle, continuing to grab mission", tag);
+                        return true;
                     }
 
                     IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now", tag);
 
-                    // CN-MAINT: Gather uses simple DRTP rule (<3m skip TP, otherwise TP then nav fallback).
+                    // CN-MAINT: Gather mission entry rule: outside flag circle -> TP once, fallback nav if TP unavailable.
                     if (Task_Gather.TryDailyRoutinesTeleportToGatherLandZone(startNode.LandZone, tag))
                     {
+                        Task_Gather.MarkMissionEntryPrepared(missionId);
                         return false;
                     }
 
                     Task_NavmeshMove.Enqueue_NavmeshTask(startNode.LandZone);
+                    Task_Gather.MarkMissionEntryPrepared(missionId);
                     return true;
                 }
             }
@@ -843,14 +843,12 @@ namespace ICE.Scheduler.Tasks
                     UnsupportedMissions.Ids.Add(missionId);
                 }
 
-                foreach (var fishingSpot in fishingHole)
+                if (Task_Fishing.IsInsideMissionFishingCircle(sheetInfo))
                 {
-                    if (Player.DistanceTo(fishingSpot.FishingSpot) < 3)
-                    {
-                        IceLogging.Info($"We've reached our fishing spot! We are current at: {fishingSpot.FishingSpot}", tag);
-                        randomFishingHole = Vector3.Zero;
-                        return true;
-                    }
+                    Task_Fishing.MarkMissionEntryPrepared(missionId);
+                    IceLogging.Info("Already inside mission fishing circle, continuing to grab mission", tag);
+                    randomFishingHole = Vector3.Zero;
+                    return true;
                 }
 
                 if (randomFishingHole == Vector3.Zero)
@@ -867,11 +865,13 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(randomFishingHole, tag))
                     {
+                        Task_Fishing.MarkMissionEntryPrepared(missionId);
                         return false;
                     }
 
                     IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now");
                     Task_NavmeshMove.Enqueue_NavmeshTask(randomFishingHole);
+                    Task_Fishing.MarkMissionEntryPrepared(missionId);
                     randomFishingHole = Vector3.Zero;
                     return true;
                 }

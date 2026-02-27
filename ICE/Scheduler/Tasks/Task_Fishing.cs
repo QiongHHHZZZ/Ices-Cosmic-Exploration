@@ -21,6 +21,11 @@ namespace ICE.Scheduler.Tasks
 
         private static FishingDebug _fishingDebug = null;
 
+        // Mission-entry fishing TP state (supports auto-accept + manual-accept).
+        private static uint _preparedMissionIdForEntryTp = 0;
+        private static uint _activeMissionIdForEntryTp = 0;
+        private static bool _runtimeEntryTpHandled = false;
+
         private static bool IsAutoHookLoaded() => P.AutoHook.Installed;
 
         // CN-MAINT: MissFisher compatibility relies on plugin presence check by internal name.
@@ -75,9 +80,6 @@ namespace ICE.Scheduler.Tasks
             if (!C.FishingUseDailyRoutinesTP)
                 return false;
 
-            if (Player.DistanceTo(targetPosition) < 3f)
-                return false;
-
             if (!Utils.HasPlugin("DailyRoutines"))
             {
                 if (EzThrottler.Throttle("FishingMissingDailyRoutines", 8000))
@@ -102,6 +104,40 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
+        }
+
+        internal static void MarkMissionEntryPrepared(uint missionId)
+        {
+            _preparedMissionIdForEntryTp = missionId;
+        }
+
+        internal static void UpdateMissionEntryTpState(uint currentMissionId)
+        {
+            if (currentMissionId == 0)
+            {
+                _activeMissionIdForEntryTp = 0;
+                _preparedMissionIdForEntryTp = 0;
+                _runtimeEntryTpHandled = false;
+                return;
+            }
+
+            if (_activeMissionIdForEntryTp != currentMissionId)
+            {
+                _activeMissionIdForEntryTp = currentMissionId;
+                _runtimeEntryTpHandled = false;
+            }
+        }
+
+        internal static bool IsInsideMissionFishingCircle(CosmicHelper.CosmicInfo mission)
+        {
+            if (mission.Radius <= 0)
+                return false;
+
+            var playerPos = Player.Position;
+            var player2D = new Vector2(playerPos.X, playerPos.Z);
+            var flagPos = new Vector2(mission.MapPosition.X, mission.MapPosition.Y);
+
+            return Vector2.Distance(player2D, flagPos) <= mission.Radius;
         }
 
         public static void Enqueue()
@@ -398,11 +434,28 @@ namespace ICE.Scheduler.Tasks
         {
             string handle = "[Fishing: Initiate Move]";
 
+            UpdateMissionEntryTpState(CosmicHelper.CurrentLunarMission);
+
             if (Player.DistanceTo(fishingPos) < 3f)
                 return true;
 
-            if (TryDailyRoutinesTeleportToFishingSpot(fishingPos, handle))
-                return false;
+            if (!_runtimeEntryTpHandled)
+            {
+                _runtimeEntryTpHandled = true;
+
+                bool alreadyPreparedBeforeAccept =
+                    _activeMissionIdForEntryTp != 0 &&
+                    _preparedMissionIdForEntryTp == _activeMissionIdForEntryTp;
+
+                bool insideMissionCircle = IsInsideMissionFishingCircle(CosmicHelper.CurrentMissionInfo);
+
+                if (!alreadyPreparedBeforeAccept &&
+                    !insideMissionCircle &&
+                    TryDailyRoutinesTeleportToFishingSpot(fishingPos, handle))
+                {
+                    return false;
+                }
+            }
 
             if (!P.Navmesh.IsReady())
             {

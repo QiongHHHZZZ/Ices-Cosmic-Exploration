@@ -31,6 +31,8 @@ namespace ICE.Scheduler.Tasks
 
             var currentMode = C.SelectedMode;
             var currentMissionId = CosmicHelper.CurrentLunarMission;
+            Task_Gather.UpdateMissionEntryTpState(currentMissionId);
+            Task_Fishing.UpdateMissionEntryTpState(currentMissionId);
             if (CosmicHelper.CurrentLunarMission != 0)
                 UpdateMissionState(currentMissionId);
 

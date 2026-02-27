@@ -8,6 +8,7 @@ using ICE.Resources.GatheringRoutes;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Numerics;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.ConfigFiles.Config;
 
@@ -17,6 +18,11 @@ namespace ICE.Scheduler.Tasks
     {
         private static int _lastCollectability = -1;
         private static DateTime _lastCollectProgress = DateTime.MinValue;
+
+        // Mission-entry gather TP state (supports auto-accept + manual-accept).
+        private static uint _preparedMissionIdForEntryTp = 0;
+        private static uint _activeMissionIdForEntryTp = 0;
+        private static bool _runtimeEntryTpHandled = false;
 
         public static void Enqueue()
         {
@@ -48,14 +54,11 @@ namespace ICE.Scheduler.Tasks
             }
         }
 
-        // CN-MAINT: Gather DRTP helper for mission entry + runtime node movement.
-        // Simple rule: <3m no TP; otherwise try TP first, then fall back to navmesh.
+        // CN-MAINT: Gather DRTP helper.
+        // Rule: mission-entry only (inside mission flag circle => no TP; outside => TP once, then fallback nav if needed).
         internal static bool TryDailyRoutinesTeleportToGatherLandZone(Vector3 targetPosition, string handle)
         {
             if (!C.GatherUseDailyRoutinesTP)
-                return false;
-
-            if (Player.DistanceTo(targetPosition) < 3f)
                 return false;
 
             if (!Utils.HasPlugin("DailyRoutines"))
@@ -82,6 +85,40 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
+        }
+
+        internal static void MarkMissionEntryPrepared(uint missionId)
+        {
+            _preparedMissionIdForEntryTp = missionId;
+        }
+
+        internal static void UpdateMissionEntryTpState(uint currentMissionId)
+        {
+            if (currentMissionId == 0)
+            {
+                _activeMissionIdForEntryTp = 0;
+                _preparedMissionIdForEntryTp = 0;
+                _runtimeEntryTpHandled = false;
+                return;
+            }
+
+            if (_activeMissionIdForEntryTp != currentMissionId)
+            {
+                _activeMissionIdForEntryTp = currentMissionId;
+                _runtimeEntryTpHandled = false;
+            }
+        }
+
+        internal static bool IsInsideMissionGatherCircle(CosmicHelper.CosmicInfo mission)
+        {
+            if (mission.Radius <= 0)
+                return false;
+
+            var playerPos = Player.Position;
+            var player2D = new Vector2(playerPos.X, playerPos.Z);
+            var flagPos = new Vector2(mission.MapPosition.X, mission.MapPosition.Y);
+
+            return Vector2.Distance(player2D, flagPos) <= mission.Radius;
         }
 
         public static bool? GatherInteractV2()
@@ -398,6 +435,8 @@ namespace ICE.Scheduler.Tasks
 
         public static bool? PathandCheckNode()
         {
+            UpdateMissionEntryTpState(CosmicHelper.CurrentLunarMission);
+
             var zoneId = Player.Territory;
             var missionEntry = CosmicHelper.CurrentMissionInfo;
             var missionFlag = missionEntry.MapPosition;
@@ -406,9 +445,24 @@ namespace ICE.Scheduler.Tasks
             var location = gatherInfo[Mission_Settings.nodeCounter];
             var distanceToLandZone = Player.DistanceTo(location.LandZone);
 
-            if (TryDailyRoutinesTeleportToGatherLandZone(location.LandZone, "[Gathering: PathAndCheckNode DRTP]"))
+            // Runtime gather TP: evaluate once at node 0 per mission.
+            if (Mission_Settings.nodeCounter == 0 && !_runtimeEntryTpHandled)
             {
-                return false;
+                _runtimeEntryTpHandled = true;
+
+                bool alreadyPreparedBeforeAccept =
+                    _activeMissionIdForEntryTp != 0 &&
+                    _preparedMissionIdForEntryTp == _activeMissionIdForEntryTp;
+
+                // Skip runtime TP when we're already inside this mission's official flag circle.
+                bool insideMissionCircle = IsInsideMissionGatherCircle(missionEntry);
+
+                if (!alreadyPreparedBeforeAccept &&
+                    !insideMissionCircle &&
+                    TryDailyRoutinesTeleportToGatherLandZone(location.LandZone, "[Gathering: PathAndCheckNode DRTP]"))
+                {
+                    return false;
+                }
             }
 
 

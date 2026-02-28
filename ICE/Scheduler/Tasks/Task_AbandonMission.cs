@@ -61,12 +61,11 @@ namespace ICE.Scheduler.Tasks
                     return false;
                 }
 
-                var rank = Task_CheckScore.CurrentRank();
-                if (rank == WKSManagerCustom.MissionRank.Depleted)
+                if ((int)Task_CheckScore.CurrentRank() > 0)
                 {
                     IceLogging.Debug("Reporting the mission", tag);
                     ReportMissionInstance();
-                    WasAbandoned = true;
+                    WasAbandoned = false;
                     return false;
                 }
                 else

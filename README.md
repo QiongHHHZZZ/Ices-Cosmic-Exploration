@@ -3,7 +3,7 @@
 仓库地址：`https://raw.githubusercontent.com/QiongHHHZZZ/DalamudPlugins/main/pluginmaster.json`
 
 这是一个面向宇宙探索（月球）内容的自动化辅助插件，用来减少重复刷任务的时间成本。  
-主要目标是帮助你高效刷取宇宙探索任务：无论是全任务金奖、宇宙工具经验，还是各职业 50 万贡献度，都可以通过配置后自动执行。
+主要目标是帮助你高效刷取宇宙探索任务：无论是全任务金奖、宇宙工具经验，还是各职业 50 万职业技巧点，都可以通过配置后自动执行。
 
 <img width="621" height="394" alt="image" src="https://github.com/user-attachments/assets/722c3e44-74d2-49d3-964a-de21e6a2cf87" />
 

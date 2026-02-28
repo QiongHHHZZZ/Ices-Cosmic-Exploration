@@ -1299,7 +1299,7 @@ if (ImGui.InputText(T("Preset Name"), ref presetName))
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text(T("Weather: {0}", missionInfo.Weather));
+                            ImGui.Text(T("Weather: {0}", CosmicHelper.GetCosmicWeatherName(missionInfo.Weather)));
                             ImGui.EndTooltip();
                         }
                         notesCount++;
@@ -1353,7 +1353,7 @@ if (ImGui.InputText(T("Preset Name"), ref presetName))
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text(notes.NoteInfo);
+                            ImGui.TextWrapped(T(notes.NoteInfo));
                             ImGui.Text(T("Average Score Per Minute: {0:N2}", notes.SPM));
 
                             ImGui.EndTooltip();

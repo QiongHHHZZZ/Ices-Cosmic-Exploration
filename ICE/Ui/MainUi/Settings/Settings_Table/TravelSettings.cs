@@ -368,14 +368,14 @@ ImGui.Text(T("No location set"));
 
         private static void DailyRoutinesExtensions()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Plug, T("Daily Routines扩展"));
+            ImGuiEx.IconWithText(FontAwesomeIcon.Plug, T("Daily Routines Extensions"));
             ImGui.Dummy(new Vector2(0, 5));
-            ImGui.TextDisabled(T("使用Daily Routines传送"));
+            ImGui.TextDisabled(T("Use Daily Routines teleport"));
             ImGui.Dummy(new Vector2(0, 2));
 
             // CN-MAINT: Daily Routines TP toggles rendered in two compact rows.
             bool useFishingTp = C.FishingUseDailyRoutinesTP;
-            if (ImGui.Checkbox(T("钓鱼任务"), ref useFishingTp))
+            if (ImGui.Checkbox(T("Fishing Missions"), ref useFishingTp))
             {
                 C.FishingUseDailyRoutinesTP = useFishingTp;
                 C.Save();
@@ -383,7 +383,7 @@ ImGui.Text(T("No location set"));
 
             ImGui.SameLine();
             bool useGatherTp = C.GatherUseDailyRoutinesTP;
-            if (ImGui.Checkbox(T("采集任务"), ref useGatherTp))
+            if (ImGui.Checkbox(T("Gathering Missions"), ref useGatherTp))
             {
                 C.GatherUseDailyRoutinesTP = useGatherTp;
                 C.Save();
@@ -391,14 +391,14 @@ ImGui.Text(T("No location set"));
 
             ImGui.SameLine();
             bool usePersonalReturnTp = C.PersonalReturnUseDailyRoutinesTP;
-            if (ImGui.Checkbox(T("个人返回点"), ref usePersonalReturnTp))
+            if (ImGui.Checkbox(T("Personal Return Spots"), ref usePersonalReturnTp))
             {
                 C.PersonalReturnUseDailyRoutinesTP = usePersonalReturnTp;
                 C.Save();
             }
 
             bool useHubReturnTp = C.HubReturnUseDailyRoutinesTP;
-            if (ImGui.Checkbox(T("购买物品后返回"), ref useHubReturnTp))
+            if (ImGui.Checkbox(T("Return after shopping"), ref useHubReturnTp))
             {
                 C.HubReturnUseDailyRoutinesTP = useHubReturnTp;
                 C.Save();
@@ -406,7 +406,7 @@ ImGui.Text(T("No location set"));
 
             ImGui.SameLine();
             bool useDroneTp = C.Cosmodrone_UseDailyRoutinesTP;
-            if (ImGui.Checkbox(T("无人机任务"), ref useDroneTp))
+            if (ImGui.Checkbox(T("Drone Missions"), ref useDroneTp))
             {
                 C.Cosmodrone_UseDailyRoutinesTP = useDroneTp;
                 C.Save();
@@ -414,7 +414,7 @@ ImGui.Text(T("No location set"));
 
             if (C.FishingUseDailyRoutinesTP || C.GatherUseDailyRoutinesTP || C.PersonalReturnUseDailyRoutinesTP || C.HubReturnUseDailyRoutinesTP || C.Cosmodrone_UseDailyRoutinesTP)
             {
-                ImGui.TextWrapped(T("提示：请确认 Daily Routines 的“快捷传送面板”模块已开启。传送失败会自动回退原有寻路。"));
+                ImGui.TextWrapped(T("Tip: Ensure Daily Routines 'Quick Teleport Panel' is enabled. If teleport fails, it automatically falls back to normal navigation."));
             }
         }
     }

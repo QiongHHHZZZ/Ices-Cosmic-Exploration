@@ -14,7 +14,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
     internal class GatherSettings
     {
         private static string newProfileName = "";
-        private static string[] MissionTypes = ["限量采集", "采集数量", "限时得分", "连锁得分", "额外采集奖励得分", "连锁+额外采集奖励", "双职业"];
+        private static string[] MissionTypes = ["限量节点", "采集数量", "限时任务", "连锁任务", "额外采集奖励任务", "连锁+额外采集奖励任务", "双职业任务"];
         private static readonly string[] RankLabels = ["全部任务", "D级及以上", "C级及以上", "B级及以上", "A级及以上", "EX及以上", "仅EX+"];
         private static int MissionIndex = 0;
 

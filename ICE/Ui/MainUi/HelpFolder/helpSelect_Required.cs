@@ -45,12 +45,12 @@ ImGui.TextWrapped(T("This isn't required, but highly recommended for leveling up
         private static void DrawFishingPluginRequirement()
         {
             // CN-MAINT: Keep this UI in sync with Task_Fishing conflict policy (both installed => conflict warning).
-            ImGui.Text(T("仅适用于钓鱼（AutoHook 或 MissFisher，任选其一）"));
+            ImGui.Text(T("Fishing only (choose one: AutoHook or MissFisher)"));
 
-            ImGui.TextDisabled(T("AutoHook"));
+            ImGui.TextDisabled("AutoHook");
             HasPlugin(AutoHookRepo, AutoHookPluginName);
 
-            ImGui.TextDisabled(T("MissFisher"));
+            ImGui.TextDisabled("MissFisher");
             HasPlugin(MissFisherRepo, MissFisherPluginName);
 
             bool hasAutoHook = Utils.HasPlugin(AutoHookPluginName);
@@ -58,19 +58,19 @@ ImGui.TextWrapped(T("This isn't required, but highly recommended for leveling up
 
             if (hasAutoHook && hasMissFisher)
             {
-                ImGui.TextWrapped(T("检测到 AutoHook 与 MissFisher 同时安装，请停用其中一个。"));
+                ImGui.TextWrapped(T("Detected both AutoHook and MissFisher installed. Disable one."));
             }
             else if (!hasAutoHook && !hasMissFisher)
             {
-                ImGui.TextWrapped(T("未检测到钓鱼插件，请安装 AutoHook 或 MissFisher。"));
+                ImGui.TextWrapped(T("No fishing plugin detected. Install AutoHook or MissFisher."));
             }
             else if (hasAutoHook)
             {
-                ImGui.TextWrapped(T("钓鱼插件检查通过（当前：AutoHook）。"));
+                ImGui.TextWrapped(T("Fishing plugin check passed (current: AutoHook)."));
             }
             else
             {
-                ImGui.TextWrapped(T("钓鱼插件检查通过（当前：MissFisher）。"));
+                ImGui.TextWrapped(T("Fishing plugin check passed (current: MissFisher)."));
             }
         }
 

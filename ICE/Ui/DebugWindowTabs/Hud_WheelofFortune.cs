@@ -1,3 +1,4 @@
+using static ICE.Localization.L10n;
 ﻿using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -51,7 +52,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
             else
             {
-                ImGui.Text("Waiting for \"WKSLottery\" to be visible");
+                ImGui.Text(T("Waiting for \"WKSLottery\" to be visible"));
             }
         }
     }

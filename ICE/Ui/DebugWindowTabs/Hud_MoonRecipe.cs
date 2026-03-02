@@ -1,3 +1,4 @@
+using static ICE.Localization.L10n;
 ﻿using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -10,26 +11,26 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 ImGui.Text(x.SelectedCraftingItem);
 
-                if (ImGui.Button("Fill NQ"))
+                if (ImGui.Button(T("Fill NQ")))
                 {
                     x.NQItemInput();
                 }
                 ImGui.SameLine();
 
-                if (ImGui.Button("Fill HQ"))
+                if (ImGui.Button(T("Fill HQ")))
                 {
                     x.HQItemInput();
                 }
                 ImGui.SameLine();
 
-                if (ImGui.Button("Fill Both"))
+                if (ImGui.Button(T("Fill Both")))
                 {
                     x.NQItemInput();
                     x.HQItemInput();
                 }
                 ImGui.SameLine();
 
-                if (ImGui.Button("Synthesize"))
+                if (ImGui.Button(T("Synthesize")))
                 {
                     x.Synthesize();
                 }
@@ -46,7 +47,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
             else
             {
-                ImGui.Text("Waiting for \"WKSRecipeNotebook\" to be visible");
+                ImGui.Text(T("Waiting for \"WKSRecipeNotebook\" to be visible"));
             }
         }
     }

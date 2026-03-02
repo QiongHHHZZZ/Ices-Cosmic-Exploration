@@ -1,3 +1,4 @@
+using static ICE.Localization.L10n;
 ﻿using Lumina.Excel.Sheets;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -10,10 +11,10 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable($"WKSMission Time Sheet", 4, ImGuiTableFlags.SizingFixedFit))
             {
-                ImGui.TableSetupColumn("Key");
-                ImGui.TableSetupColumn("Weather Required");
-                ImGui.TableSetupColumn("Start Hour");
-                ImGui.TableSetupColumn("End Hour");
+                ImGui.TableSetupColumn(T("Key"));
+                ImGui.TableSetupColumn(T("Weather Required"));
+                ImGui.TableSetupColumn(T("Start Hour"));
+                ImGui.TableSetupColumn(T("End Hour"));
 
                 ImGui.TableHeadersRow();
 

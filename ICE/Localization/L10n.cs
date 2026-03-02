@@ -288,7 +288,7 @@ internal static class L10n
         ["Order you would like to do the actions. It will work from the top down.\n" +
          "So if you Have Red Arert -> Drone Search, if a red alert isn't available, it will proceed to use a drone box if it can"]
             = "设置执行动作的优先顺序，按从上到下依次尝试。\n" +
-              "例如“紧急 -> 无人机搜索”：若当前没有紧急任务，就会尝试使用无人机箱。",
+              "例如“紧急 -> 无人机搜索”：若当前没有紧急任务，就会尝试使用俄匊斯能源包。",
         ["Drone Search"] = "无人机搜索",
         ["Red Alert"] = "紧急",
         ["Provisional Missions [Weather/Timed/Sequence]"] = "临时探索任务（天气限定/时间限定/连锁）",
@@ -351,19 +351,19 @@ internal static class L10n
         ["Keep Buying"] = "持续购买",
         ["No items in {0} shopping list"] = "{0}购物清单为空",
         ["{0} ({1} items)"] = "{0}（{1}项）",
-        ["Buy Drones"] = "购买无人机",
-        ["Buy At Amount"] = "购买触发数量",
-        ["Maximum Drones"] = "无人机上限",
-        ["Automate cosmodrone"] = "自动化宇宙无人机",
-        ["Do you want to buy drones? If yes, enable this"] = "是否需要自动购买无人机？需要的话请启用。",
+        ["Buy Drones"] = "购买俄匊斯能源包",
+        ["Buy At Amount"] = "购买触发点数",
+        ["Maximum Drones"] = "俄匊斯能源包上限",
+        ["Automate cosmodrone"] = "自动化无人机搜索",
+        ["Do you want to buy drones? If yes, enable this"] = "是否需要自动购买俄匊斯能源包？需要的话请启用。",
         ["When do you wanna buy drones from the vendor?\n" +
          "Set in incriments of 200, max of 5,000"]
-            = "希望在多少信用点时开始向商人购买无人机？\n" +
+            = "希望在多少无人机晶片时开始向商人购买俄匊斯能源包？\n" +
               "以 200 为步进，最大 5,000。",
         ["What's the maximum amount of drones you wanna keep?\n" +
          "0 = will just keep buying\n" +
          "Anything above 0 will just be a hard cap and will stop buying if it reaches this"]
-            = "希望最多保留多少无人机？\n" +
+            = "希望最多保留多少俄匊斯能源包？\n" +
               "0 = 持续购买\n" +
               "大于 0 = 作为硬上限，达到后停止购买",
         ["Do you want to run the automated drone finding? If yes, enable this\n" +
@@ -771,7 +771,7 @@ internal static class L10n
             = "将原本使用专家求解器的配方改为使用 Raphael。",
         ["This is the icon within the recipe details btw"] = "这个图标会显示在配方详情里。",
         ["I would not recommend this on Oizys, it's not perfect and has been causing a lot of issues for peeps."]
-            = "不建议在奥伊兹斯使用该选项，当前仍不够稳定，可能导致异常。",
+            = "不建议在俄匊斯行星使用该选项，当前仍不够稳定，可能导致异常。",
         ["More Coming Soon. . . "] = "更多功能即将上线...",
         ["Ice's Cosmic Exploration - Info"] = "ICE 信息",
         ["ICE Overlay"] = "ICE 悬浮窗",

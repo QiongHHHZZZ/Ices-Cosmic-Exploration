@@ -1,5 +1,6 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using System.Collections.Generic;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -28,7 +29,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         public static void Draw()
         {
-            if (ImGui.Button("Copy Selected"))
+            if (ImGui.Button(T("Copy Selected")))
             {
                 var ordered = MissionList.OrderBy(x => x);
                 var c = string.Join(", ", ordered);
@@ -37,7 +38,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("Clear"))
+            if (ImGui.Button(T("Clear")))
             {
                 MissionList.Clear();
             }
@@ -46,7 +47,7 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.SliderInt("Filter##JobFilter", ref sliderIndex, 0, 11, jobLabels[sliderIndex]);
 
             ImGui.Text($"1, 2, 3, 4, 5");
-            ImGui.Text("2, 3, 5, 6, 7");
+            ImGui.Text(T("2, 3, 5, 6, 7"));
 
             using (var missionTable = ImRaii.Child("Mission Selection Window", new Vector2(0, 0)))
             {
@@ -55,11 +56,11 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (ImGui.BeginTable("Quick Mission Add", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
                 {
-                    ImGui.TableSetupColumn("ID");
-                    ImGui.TableSetupColumn("Job");
-                    ImGui.TableSetupColumn("Added");
-                    ImGui.TableSetupColumn("Level");
-                    ImGui.TableSetupColumn("Name");
+                    ImGui.TableSetupColumn(T("ID"));
+                    ImGui.TableSetupColumn(T("Job"));
+                    ImGui.TableSetupColumn(T("Added"));
+                    ImGui.TableSetupColumn(T("Level"));
+                    ImGui.TableSetupColumn(T("Name"));
 
                     ImGui.TableHeadersRow();
 

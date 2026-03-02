@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -29,11 +30,11 @@ namespace ICE.Ui.DebugWindowTabs
 
                     if (ImGui.BeginTable("NPC Info Debugger", 5, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
                     {
-                        ImGui.TableSetupColumn("Name");
-                        ImGui.TableSetupColumn("Position");
-                        ImGui.TableSetupColumn("MoveTo Spot");
-                        ImGui.TableSetupColumn("Move To");
-                        ImGui.TableSetupColumn("Set To Current");
+                        ImGui.TableSetupColumn(T("Name"));
+                        ImGui.TableSetupColumn(T("Position"));
+                        ImGui.TableSetupColumn(T("MoveTo Spot"));
+                        ImGui.TableSetupColumn(T("Move To"));
+                        ImGui.TableSetupColumn(T("Set To Current"));
 
                         foreach (var npcEntry in moonNpcs)
                         {

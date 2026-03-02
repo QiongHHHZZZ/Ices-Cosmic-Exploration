@@ -1,5 +1,6 @@
 ﻿using Pictomancy;
 using System.Collections.Generic;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -29,7 +30,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             ImGui.Text($"Current pos: {currentPos.X:N2} | {currentPos.Y:N2} | {currentPos.Z:N2}");
 
-            if (ImGui.Button("Add Position"))
+            if (ImGui.Button(T("Add Position")))
             {
                 finalPath.Add(currentPos);
             }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -10,11 +11,11 @@ namespace ICE.Ui.DebugWindowTabs
         {
             if (ImGui.BeginTable("Leveling Table", 5, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
             {
-                ImGui.TableSetupColumn("ID");
-                ImGui.TableSetupColumn("Job Icon");
-                ImGui.TableSetupColumn("Level");
-                ImGui.TableSetupColumn("Enabled");
-                ImGui.TableSetupColumn("Name");
+                ImGui.TableSetupColumn(T("ID"));
+                ImGui.TableSetupColumn(T("Job Icon"));
+                ImGui.TableSetupColumn(T("Level"));
+                ImGui.TableSetupColumn(T("Enabled"));
+                ImGui.TableSetupColumn(T("Name"));
 
                 ImGui.TableHeadersRow();
 

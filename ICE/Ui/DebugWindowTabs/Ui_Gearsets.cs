@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -38,16 +39,16 @@ namespace ICE.Ui.DebugWindowTabs
 
         public static void Draw()
         {
-            if (ImGui.Button("Update Gearsets"))
+            if (ImGui.Button(T("Update Gearsets")))
             {
                 UpdateGearsets();
             }
 
             if (ImGui.BeginTable("Gearset Viewer", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("ID");
-                ImGui.TableSetupColumn("Name");
-                ImGui.TableSetupColumn("JobID");
+                ImGui.TableSetupColumn(T("ID"));
+                ImGui.TableSetupColumn(T("Name"));
+                ImGui.TableSetupColumn(T("JobID"));
 
                 ImGui.TableHeadersRow();
 

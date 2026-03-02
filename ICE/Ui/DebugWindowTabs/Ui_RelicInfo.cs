@@ -1,5 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using System.Collections.Generic;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -29,15 +30,15 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Relic Info", 15, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("Class");
-                ImGui.TableSetupColumn("Stage");
+                ImGui.TableSetupColumn(T("Class"));
+                ImGui.TableSetupColumn(T("Stage"));
                 for (int i = 0; i < XPtypes.Count; i++)
                 {
                     ImGui.TableSetupColumn($"{XPtypes[i]} - Current");
                     ImGui.TableSetupColumn($"{XPtypes[i]} - Need");
                     ImGui.TableSetupColumn($"{XPtypes[i]} - Max");
                 }
-                ImGui.TableSetupColumn("Score");
+                ImGui.TableSetupColumn(T("Score"));
 
                 ImGui.TableHeadersRow();
 

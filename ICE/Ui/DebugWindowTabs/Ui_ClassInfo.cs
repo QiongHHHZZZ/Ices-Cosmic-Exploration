@@ -1,3 +1,4 @@
+using static ICE.Localization.L10n;
 ﻿using Dalamud.Interface.Utility.Raii;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -24,21 +25,21 @@ namespace ICE.Ui.DebugWindowTabs
                 if (!table) continue;
 
                 // Set up columns
-                ImGui.TableSetupColumn("Property", ImGuiTableColumnFlags.WidthFixed, 150f);
-                ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn(T("Property"), ImGuiTableColumnFlags.WidthFixed, 150f);
+                ImGui.TableSetupColumn(T("Value"), ImGuiTableColumnFlags.WidthStretch);
                 ImGui.TableHeadersRow();
 
                 // Current Stage
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
-                ImGui.Text("Current Stage");
+                ImGui.Text(T("Current Stage"));
                 ImGui.TableNextColumn();
                 ImGui.Text($"{item.Value.Stage_Current}");
 
                 // Next Stage
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
-                ImGui.Text("Next Stage");
+                ImGui.Text(T("Next Stage"));
                 ImGui.TableNextColumn();
                 ImGui.Text($"{item.Value.Stage_Next}");
 

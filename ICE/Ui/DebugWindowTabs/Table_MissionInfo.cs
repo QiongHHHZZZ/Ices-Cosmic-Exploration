@@ -7,6 +7,7 @@ using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -40,20 +41,20 @@ namespace ICE.Ui.DebugWindowTabs
         {
             var itemSheet = ExcelHelper.ItemSheet;
             ImGui.SetNextItemWidth(250);
-            ImGui.InputText("Search by Name", ref CraftingTableSearchText, 100);
+            ImGui.InputText(T("Search by Name"), ref CraftingTableSearchText, 100);
             ImGui.SetNextItemWidth(250);
-            ImGui.InputText("Search by Attribute", ref AttributeSearchText, 100);
+            ImGui.InputText(T("Search by Attribute"), ref AttributeSearchText, 100);
             ImGui.SetNextItemWidth(250);
-            ImGui.SliderUInt("Rank ID", ref RankSearch, 0, 6);
+            ImGui.SliderUInt(T("Rank ID"), ref RankSearch, 0, 6);
             ImGui.SetNextItemWidth(250);
-            ImGui.SliderUInt("Class Selection", ref jobSearch, 7, 18);
-            if (ImGui.Button("Copy Scores"))
+            ImGui.SliderUInt(T("Class Selection"), ref jobSearch, 7, 18);
+            if (ImGui.Button(T("Copy Scores")))
             {
                 ImGui.SetClipboardText(GenerateMissionScoreDictionaryCode());
             }
             ImGui.SameLine();
 
-            if (ImGui.Button("Export Fishing Missions"))
+            if (ImGui.Button(T("Export Fishing Missions")))
             {
                 var fishingMissions = CosmicHelper.SheetMissionDict
                     .Where(kvp => kvp.Value.Attributes.HasFlag(MissionAttributes.Fish)) // Adjust flag name as needed
@@ -74,13 +75,13 @@ namespace ICE.Ui.DebugWindowTabs
                 }
                 else
                 {
-                    ImGui.SetTooltip("No fishing missions found!");
+                    ImGui.SetTooltip(T("No fishing missions found!"));
                 }
             }
 
             ImGui.SameLine();
 
-            if (ImGui.Button("Clear stored scores"))
+            if (ImGui.Button(T("Clear stored scores")))
             {
                 C.ScoreKeeper.Clear();
                 C.Save();
@@ -90,7 +91,7 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.InputText("##ExportPath", ref exportPath, 500);
 
             ImGui.SameLine();
-            if (ImGui.Button("Browse..."))
+            if (ImGui.Button(T("Browse...")))
             {
                 fileDialogManager.SaveFileDialog(
                     "Select Export Location",
@@ -108,7 +109,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("Export CSV"))
+            if (ImGui.Button(T("Export CSV")))
             {
                 ExportToCsv();
             }
@@ -130,18 +131,18 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Moon Mission Information Table", 35, tableFlags)) // Increased column count by 1
             {
-                ImGui.TableSetupColumn("ID");
-                ImGui.TableSetupColumn("Jobs");
+                ImGui.TableSetupColumn(T("ID"));
+                ImGui.TableSetupColumn(T("Jobs"));
 
-                ImGui.TableSetupColumn("Mission Name");
-                ImGui.TableSetupColumn("Job");
-                ImGui.TableSetupColumn("2nd Job");
-                ImGui.TableSetupColumn("Rank");
-                ImGui.TableSetupColumn("ToDo ID");
-                ImGui.TableSetupColumn("Bronze");
-                ImGui.TableSetupColumn("Silver");
-                ImGui.TableSetupColumn("Gold");
-                ImGui.TableSetupColumn("Attribute Flags");
+                ImGui.TableSetupColumn(T("Mission Name"));
+                ImGui.TableSetupColumn(T("Job"));
+                ImGui.TableSetupColumn(T("2nd Job"));
+                ImGui.TableSetupColumn(T("Rank"));
+                ImGui.TableSetupColumn(T("ToDo ID"));
+                ImGui.TableSetupColumn(T("Bronze"));
+                ImGui.TableSetupColumn(T("Silver"));
+                ImGui.TableSetupColumn(T("Gold"));
+                ImGui.TableSetupColumn(T("Attribute Flags"));
 
                 IOrderedEnumerable<KeyValuePair<int, string>> orderedExp = CosmicHelper.ExpDictionary.ToList().OrderBy(exp => exp.Key);
                 var agent = AgentMap.Instance();
@@ -152,26 +153,26 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableSetupColumn($"{exp.Value}", ImGuiTableColumnFlags.WidthFixed, -1);
                 }
 
-                ImGui.TableSetupColumn("Test Flag");
+                ImGui.TableSetupColumn(T("Test Flag"));
 
-                ImGui.TableSetupColumn("Score");
+                ImGui.TableSetupColumn(T("Score"));
 
-                ImGui.TableSetupColumn("Main Item 1");
-                ImGui.TableSetupColumn("Amount #1");
-                ImGui.TableSetupColumn("Main Item 2");
-                ImGui.TableSetupColumn("Amount #2");
-                ImGui.TableSetupColumn("Main Item 3");
-                ImGui.TableSetupColumn("Amount #3");
-                ImGui.TableSetupColumn("Pre-Craft Item");
-                ImGui.TableSetupColumn("Pre-Craft Amount");
-                ImGui.TableSetupColumn("Export"); // New column for export button
+                ImGui.TableSetupColumn(T("Main Item 1"));
+                ImGui.TableSetupColumn(T("Amount #1"));
+                ImGui.TableSetupColumn(T("Main Item 2"));
+                ImGui.TableSetupColumn(T("Amount #2"));
+                ImGui.TableSetupColumn(T("Main Item 3"));
+                ImGui.TableSetupColumn(T("Amount #3"));
+                ImGui.TableSetupColumn(T("Pre-Craft Item"));
+                ImGui.TableSetupColumn(T("Pre-Craft Amount"));
+                ImGui.TableSetupColumn(T("Export")); // New column for export button
                 for (int i = 1; i < 4; i++)
                 {
                     ImGui.TableSetupColumn($"Gather [{i}]");
                     ImGui.TableSetupColumn($"Amount [G-{i}]");
                 }
-                ImGui.TableSetupColumn("Completion");
-                ImGui.TableSetupColumn("Activate Mission");
+                ImGui.TableSetupColumn(T("Completion"));
+                ImGui.TableSetupColumn(T("Activate Mission"));
 
                 ImGui.TableHeadersRow();
 
@@ -362,7 +363,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text("Export this fishing mission entry");
+                            ImGui.Text(T("Export this fishing mission entry"));
                             ImGui.EndTooltip();
                         }
                     }
@@ -393,19 +394,19 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableSetColumnIndex(34);
                     if (CosmicHelper.CurrentLunarMission != 0)
                     {
-                        if (ImGui.Button("Turn in"))
+                        if (ImGui.Button(T("Turn in")))
                         {
                             ReportMission();
                         }
                         ImGui.SameLine();
-                        if (ImGui.Button("Abandon"))
+                        if (ImGui.Button(T("Abandon")))
                         {
                             AbandonMission();
                         }
                     }
                     else
                     {
-                        if (ImGui.Button("Initiate"))
+                        if (ImGui.Button(T("Initiate")))
                         {
                             InitiateMission(entry.Key);
                         }

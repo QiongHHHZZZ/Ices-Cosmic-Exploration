@@ -1,5 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ICE.Utilities.Cosmic_Helper;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -12,7 +13,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         public static unsafe void Draw()
         {
-            ImGui.InputInt("TableId", ref TableRow);
+            ImGui.InputInt(T("TableId"), ref TableRow);
 
             var MapInfo = ExcelHelper.MarkerSheet;
 
@@ -28,13 +29,13 @@ namespace ICE.Ui.DebugWindowTabs
                 Utils.SetGatheringRing(1237, _x, _y, _radius);
             }
             ImGui.SetNextItemWidth(125);
-            ImGui.InputInt("Map X (Sheet)", ref posX);
+            ImGui.InputInt(T("Map X (Sheet)"), ref posX);
             ImGui.SameLine();
             ImGui.SetNextItemWidth(125);
-            ImGui.InputInt("Map Y (Sheet)", ref posY);
+            ImGui.InputInt(T("Map Y (Sheet)"), ref posY);
             ImGui.SameLine();
             ImGui.SetNextItemWidth(125);
-            ImGui.InputInt("Map Radius", ref posRadius);
+            ImGui.InputInt(T("Map Radius"), ref posRadius);
             if (ImGui.Button($"Test Map Marker from coords"))
             {
                 var agent = AgentMap.Instance();

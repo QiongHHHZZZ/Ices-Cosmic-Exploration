@@ -142,7 +142,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text("Bait:");
+                    ImGui.Text(T("Bait:"));
                     ImGui.TableNextColumn();
                     ImGui.Text($"{currentlyEquippped}");
                     */

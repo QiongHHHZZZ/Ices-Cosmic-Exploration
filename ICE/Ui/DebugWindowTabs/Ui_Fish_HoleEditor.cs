@@ -8,6 +8,7 @@ using Pictomancy;
 using System.Collections.Generic;
 using System.Text;
 using static ICE.Utilities.GatheringHelper.GatheringUtil;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -29,7 +30,7 @@ namespace ICE.Ui.DebugWindowTabs
                 _fishingDebug = new FishingDebug();
             }
 
-            if (ImGui.Button("Add Missing Fishing Holes"))
+            if (ImGui.Button(T("Add Missing Fishing Holes")))
             {
                 foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(18)))
                 {
@@ -53,7 +54,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("Export All Fishing Data"))
+            if (ImGui.Button(T("Export All Fishing Data")))
             {
                 var exportData = ExportAllFishingData();
                 ImGui.SetClipboardText(exportData);
@@ -63,7 +64,7 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.SameLine();
             using (ImRaii.Disabled(selectedFlag == Vector2.Zero))
             {
-                if (ImGui.Button("Export Selected Flag"))
+                if (ImGui.Button(T("Export Selected Flag")))
                 {
                     var exportData = ExportSingleFishingFlag(selectedZone, selectedFlag);
                     ImGui.SetClipboardText(exportData);
@@ -71,7 +72,7 @@ namespace ICE.Ui.DebugWindowTabs
                 }
             }
 
-            ImGui.Checkbox("Show fishing spot raycast", ref _fishingDebug.ShowFishRay);
+            ImGui.Checkbox(T("Show fishing spot raycast"), ref _fishingDebug.ShowFishRay);
             if (PlayerHelper.LocalPlayer is { } player && _fishingDebug.ShowFishRay)
             {
                 _fishingDebug.Draw();
@@ -81,8 +82,8 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Fishing Editor Table", 2, ImGuiTableFlags.Resizable | ImGuiTableFlags.SizingFixedFit))
             {
-                ImGui.TableSetupColumn("Fishing Hole Selector", ImGuiTableColumnFlags.WidthFixed, 200);
-                ImGui.TableSetupColumn("Fishing Hole Editor", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn(T("Fishing Hole Selector"), ImGuiTableColumnFlags.WidthFixed, 200);
+                ImGui.TableSetupColumn(T("Fishing Hole Editor"), ImGuiTableColumnFlags.WidthStretch);
 
                 ImGui.TableNextRow();
 
@@ -122,7 +123,7 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     if (selectedZone != 0 && selectedFlag != Vector2.Zero)
                     {
-                        if (ImGui.Button("Open map position"))
+                        if (ImGui.Button(T("Open map position")))
                         {
                             var missionEntry = CosmicHelper.SheetMissionDict.Where(x => x.Value.MapPosition == selectedFlag
                                                                                  && x.Value.TerritoryId == selectedZone).FirstOrDefault();
@@ -132,7 +133,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 Utils.SetGatheringRing(mission.TerritoryId, (int)mission.MapPosition.X, (int)mission.MapPosition.Y, mission.Radius, mission.Name);
                             }
                         }
-                        if (ImGui.CollapsingHeader("All Missions for this hole"))
+                        if (ImGui.CollapsingHeader(T("All Missions for this hole")))
                         {
                             if (ImGui.BeginTable("Mission Viewer", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
                             {
@@ -163,22 +164,22 @@ namespace ICE.Ui.DebugWindowTabs
                             }
                         }
 
-                        if (ImGui.Button("Move to Flag"))
+                        if (ImGui.Button(T("Move to Flag")))
                         {
                             Chat.SendMessage("/vnav moveflag");
                         }
                         ImGui.SameLine();
-                        if (ImGui.Button("Stop naving"))
+                        if (ImGui.Button(T("Stop naving")))
                         {
                             P.Navmesh.Stop();
                         }
                         ImGui.SameLine();
-                        if (ImGui.Button("Mount"))
+                        if (ImGui.Button(T("Mount")))
                         {
                             Utils.MountAction();
                         }
                         ImGui.SameLine();
-                        if (ImGui.Button("Stop All Task"))
+                        if (ImGui.Button(T("Stop All Task")))
                         {
                             P.TaskManager.Tasks.Clear();
                             P.TaskManager.Abort();
@@ -187,7 +188,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (_fishingDebug.FindFishableLocation(out var fishablePosition))
                         {
                             ImGui.Text($"First Available Fishing Spot: {fishablePosition.Value.X:N2}, {fishablePosition.Value.Y:N2}, {fishablePosition.Value.Z:N2}");
-                            if (ImGui.Button("Face toward spot"))
+                            if (ImGui.Button(T("Face toward spot")))
                             {
                                 if (_fishingDebug.FindFishableLocation(out var fishPosition, searchSteps: 128))
                                 {
@@ -196,7 +197,7 @@ namespace ICE.Ui.DebugWindowTabs
                             }
                         }
 
-                        ImGui.Checkbox("View Fishing Spots", ref viewAllFishingSpots);
+                        ImGui.Checkbox(T("View Fishing Spots"), ref viewAllFishingSpots);
                         ImGui.SameLine();
                         Vector4 circleColor = Utils.FromUintABGR(C.PictoColor_Circle);
                         ImGui.SetNextItemWidth(200);
@@ -206,7 +207,7 @@ namespace ICE.Ui.DebugWindowTabs
                             C.Save();
                         }
 
-                        ImGui.Checkbox("View Nav Spots", ref viewNavSpot);
+                        ImGui.Checkbox(T("View Nav Spots"), ref viewNavSpot);
                         ImGui.SameLine();
                         Vector4 dotColor = Utils.FromUintABGR(C.PictoColor_Dot);
                         ImGui.SetNextItemWidth(200);
@@ -228,7 +229,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                         ImGui.Text($"Zone {selectedZone} - X:{selectedFlag.X} Z:{selectedFlag.Y}");
 
-                        if (ImGui.Button("Add Fishing Spot"))
+                        if (ImGui.Button(T("Add Fishing Spot")))
                         {
                             fishingHole.Add(new FisherSpotInfo()
                             {
@@ -281,7 +282,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 spot.FishingSpot = fish;
                             }
                             ImGui.SameLine();
-                            if (ImGui.Button("Set fishing to current"))
+                            if (ImGui.Button(T("Set fishing to current")))
                             {
                                 spot.FishingSpot = Player.Position;
                             }
@@ -293,7 +294,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 spot.FacePosition = nav;
                             }
                             ImGui.SameLine();
-                            if (ImGui.Button("Set Fishing Rotation"))
+                            if (ImGui.Button(T("Set Fishing Rotation")))
                             {
                                 var currentRotation = Player.Rotation;
                                 spot.FacePosition = GetPositionInFrontOfPlayer(Player.Position, currentRotation);
@@ -307,7 +308,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 spot.RotationTolerance = toleranceDegrees * ((float)Math.PI / 180f);
                             }
 
-                            if (ImGui.Button("Test Naving to [New]"))
+                            if (ImGui.Button(T("Test Naving to [New]")))
                             {
                                 Task_NavmeshMove.Enqueue_NavmeshTask(spot.FishingSpot);
                                 P.TaskManager.EnqueueDelay(200);

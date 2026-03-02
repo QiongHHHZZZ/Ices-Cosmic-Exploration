@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using TerraFX.Interop.Windows;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -20,12 +21,12 @@ namespace ICE.Ui.DebugWindowTabs
         {
             if (ImGui.BeginTable("Fish Editor | Window Selector", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit, ImGui.GetContentRegionAvail()))
             {
-                ImGui.TableSetupColumn("Mission Selector");
-                ImGui.TableSetupColumn("Mission Details", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn(T("Mission Selector"));
+                ImGui.TableSetupColumn(T("Mission Details"), ImGuiTableColumnFlags.WidthStretch);
 
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
-                ImGui.InputText("Search Name", ref search_MissionName, 100);
+                ImGui.InputText(T("Search Name"), ref search_MissionName, 100);
                 ImGui.InputUInt("Search ID", ref search_MissionId);
                 using (var missionSelection = ImRaii.Child("Mission Selection Child", new(300, ImGui.GetContentRegionAvail().Y)))
                 {
@@ -79,20 +80,20 @@ namespace ICE.Ui.DebugWindowTabs
         {
             if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var missionInfo))
             {
-                if (ImGui.Button("Export All Presets"))
+                if (ImGui.Button(T("Export All Presets")))
                 {
                     var clipboard = ExportAllMissions();
                     ImGui.SetClipboardText(clipboard);
                 }
 
-                if (ImGui.Button("Export Selected Mission"))
+                if (ImGui.Button(T("Export Selected Mission")))
                 {
                     var clipboard = ExportSelected();
                     ImGui.SetClipboardText(clipboard);
                 }
 
                 ImGui.Text($"[{selectedMission}] {missionInfo.Name}");
-                if (ImGui.Button("Import New Preset"))
+                if (ImGui.Button(T("Import New Preset")))
                 {
                     var clipboard = ImGui.GetClipboardText();
                     if (clipboard.StartsWith("AH4_"))
@@ -107,7 +108,7 @@ namespace ICE.Ui.DebugWindowTabs
                     }
                 }
                 ImGui.SameLine(0, 10);
-                if (ImGui.Button("Temp Set Presets"))
+                if (ImGui.Button(T("Temp Set Presets")))
                 {
                     P.AutoHook.DeleteAllAnonymousPresets();
                     foreach (var preset in missionInfo.Fish_Presets)

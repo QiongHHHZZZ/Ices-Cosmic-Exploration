@@ -3,6 +3,7 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -13,7 +14,7 @@ namespace ICE.Ui.DebugWindowTabs
         public static unsafe void Draw()
         {
             ImGui.SetNextItemWidth(250);
-            ImGui.InputText("Search by Name", ref MissionSearchText, 100);
+            ImGui.InputText(T("Search by Name"), ref MissionSearchText, 100);
 
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                             ImGuiTableFlags.Borders |
@@ -24,15 +25,15 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Mission_GatheringInfo", 10, tableFlags))
             {
-                ImGui.TableSetupColumn("Key");
-                ImGui.TableSetupColumn("Mission Name");
+                ImGui.TableSetupColumn(T("Key"));
+                ImGui.TableSetupColumn(T("Mission Name"));
                 for (int i = 1; i < 4; i++)
                 {
                     ImGui.TableSetupColumn($"Gather Item [{i}]");
                     ImGui.TableSetupColumn($"Amount [{i}]");
                 }
-                ImGui.TableSetupColumn("Mission Radius");
-                ImGui.TableSetupColumn("Critical Location");
+                ImGui.TableSetupColumn(T("Mission Radius"));
+                ImGui.TableSetupColumn(T("Critical Location"));
                 ImGui.TableHeadersRow();
 
                 foreach (var entry in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Intersect(CosmicHelper.GatheringJobList).Any()))

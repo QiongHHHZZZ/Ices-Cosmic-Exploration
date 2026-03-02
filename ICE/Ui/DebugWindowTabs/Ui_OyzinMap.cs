@@ -6,6 +6,7 @@ using SharpDX.Direct2D1.Effects;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -16,11 +17,11 @@ namespace ICE.Ui.DebugWindowTabs
             var agentMap = AgentMap.Instance();
             if (agentMap == null)
             {
-                ImGui.Text("AgentMap is null!");
+                ImGui.Text(T("AgentMap is null!"));
                 return;
             }
 
-            if (ImGui.CollapsingHeader("Event Markers"))
+            if (ImGui.CollapsingHeader(T("Event Markers")))
             {
                 DrawEventMarkersTable(GetAllEventMarkers());
             }
@@ -76,11 +77,11 @@ namespace ICE.Ui.DebugWindowTabs
         {
             if (markers.Count == 0)
             {
-                ImGui.Text("No markers found!");
+                ImGui.Text(T("No markers found!"));
                 return;
             }
 
-            if (ImGui.Button("Stop Current Task"))
+            if (ImGui.Button(T("Stop Current Task")))
             {
                 P.TaskManager.AbortCurrent();
                 P.Navmesh.Stop();
@@ -91,10 +92,10 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Event Markers", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
             {
-                ImGui.TableSetupColumn("Position");
-                ImGui.TableSetupColumn("Icon ID");
-                ImGui.TableSetupColumn("Territory");
-                ImGui.TableSetupColumn("SubLevel");
+                ImGui.TableSetupColumn(T("Position"));
+                ImGui.TableSetupColumn(T("Icon ID"));
+                ImGui.TableSetupColumn(T("Territory"));
+                ImGui.TableSetupColumn(T("SubLevel"));
                 ImGui.TableHeadersRow();
 
                 foreach (var marker in markers)

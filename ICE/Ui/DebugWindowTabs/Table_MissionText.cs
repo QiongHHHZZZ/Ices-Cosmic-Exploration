@@ -1,5 +1,6 @@
 ﻿using Lumina.Excel.Sheets;
 using System.Collections.Generic;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -12,17 +13,17 @@ namespace ICE.Ui.DebugWindowTabs
         public static void Draw()
         {
             // Search filter input
-            ImGui.Text("Search missions:");
+            ImGui.Text(T("Search missions:"));
             ImGui.SetNextItemWidth(200);
             ImGui.InputText("##searchFilter", ref searchFilter, 256);
 
-            if (ImGui.Button("Update all mission text"))
+            if (ImGui.Button(T("Update all mission text")))
             {
                 UpdateText();
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("Clear"))
+            if (ImGui.Button(T("Clear")))
             {
                 searchFilter = "";
             }

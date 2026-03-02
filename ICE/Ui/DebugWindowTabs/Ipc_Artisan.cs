@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -28,7 +29,7 @@ namespace ICE.Ui.DebugWindowTabs
         {
             ImGui.Text($"Selected Food: [{SelectedFood.Id}] {SelectedFood.Name}");
             ImGui.SameLine();
-            if (ImGui.Button("Select Food"))
+            if (ImGui.Button(T("Select Food")))
             {
                 PotentialCrafterFood.Clear();
                 foreach (var food in ConsumableInfo.CrafterFood)
@@ -53,7 +54,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             ImGui.Text($"Selected Pot: [{SelectedPot.Id}] {SelectedPot.Name}");
             ImGui.SameLine();
-            if (ImGui.Button("Select Pot"))
+            if (ImGui.Button(T("Select Pot")))
             {
                 PotentialPots.Clear();
                 foreach (var pot in ConsumableInfo.Pots)
@@ -78,7 +79,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             ImGui.Text($"Selected Manual: [{SelectedManual.Id}] {SelectedManual.Name}");
             ImGui.SameLine();
-            if (ImGui.Button("Select Manual"))
+            if (ImGui.Button(T("Select Manual")))
             {
                 PotentialManuals.Clear();
                 foreach (var manual in ConsumableInfo.Manuals)
@@ -103,7 +104,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             ImGui.Text($"Selected Squadron Manual: [{SelectedSquadronManual.Id}] {SelectedSquadronManual.Name}");
             ImGui.SameLine();
-            if (ImGui.Button("Select Squadron Manual"))
+            if (ImGui.Button(T("Select Squadron Manual")))
             {
                 PotentialSquadronManuals.Clear();
                 foreach (var manual in ConsumableInfo.SquadronManuals)
@@ -129,7 +130,7 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.Separator();
             ImGui.InputUInt("Recipe Id", ref RecipeId);
 
-            if (ImGui.Button("Reset Temp"))
+            if (ImGui.Button(T("Reset Temp")))
             {
                 P.Artisan.SetTempFoodBackToNormal(RecipeId);
                 P.Artisan.SetTempPotionBackToNormal(RecipeId);
@@ -137,32 +138,32 @@ namespace ICE.Ui.DebugWindowTabs
                 P.Artisan.SetTempSquadronManualBackToNormal(RecipeId);
             }
 
-            if (ImGui.Button("Food [HQ]"))
+            if (ImGui.Button(T("Food [HQ]")))
             {
                 P.Artisan.ChangeFood(RecipeId, SelectedFood.Id, true, true);
             }
             ImGui.SameLine();
-            if (ImGui.Button("Food [NQ]"))
+            if (ImGui.Button(T("Food [NQ]")))
             {
                 P.Artisan.ChangeFood(RecipeId, SelectedFood.Id, false, true);
             }
 
-            if (ImGui.Button("Potion [HQ]"))
+            if (ImGui.Button(T("Potion [HQ]")))
             {
                 P.Artisan.ChangePotion(RecipeId, SelectedPot.Id, true, true);
             }
             ImGui.SameLine();
-            if (ImGui.Button("Potion [NQ]"))
+            if (ImGui.Button(T("Potion [NQ]")))
             {
                 P.Artisan.ChangePotion(RecipeId, SelectedPot.Id, false, true);
             }
 
-            if (ImGui.Button("Manual"))
+            if (ImGui.Button(T("Manual")))
             {
                 P.Artisan.ChangeManual(RecipeId, SelectedManual.Id, true);
             }
             ImGui.SameLine();
-            if (ImGui.Button("Squad Manual"))
+            if (ImGui.Button(T("Squad Manual")))
             {
                 P.Artisan.ChangeSquadronManual(RecipeId, SelectedSquadronManual.Id, true);
             }

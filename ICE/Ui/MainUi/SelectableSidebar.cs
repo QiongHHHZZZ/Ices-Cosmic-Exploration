@@ -180,7 +180,7 @@ ImGui.Text(T("Filters which planets appear in the\nmission list and the overlay.
                         var random = new Random();
                         modeSelect_TableInfo.jokeId = random.Next(0, modeSelect_TableInfo.JokeList.Count);
                     }
-                    ImGui.SetTooltip(modeSelect_TableInfo.JokeList[modeSelect_TableInfo.jokeId]);
+                    ImGui.SetTooltip(T(modeSelect_TableInfo.JokeList[modeSelect_TableInfo.jokeId]));
                 }
                 else
                 {

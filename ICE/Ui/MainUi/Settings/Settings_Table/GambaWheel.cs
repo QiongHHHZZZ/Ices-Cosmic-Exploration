@@ -80,7 +80,8 @@ if (ImGui.Checkbox(T("Prefer smaller wheel"), ref gambaPreferSmallerWheel))
                         var itemName = ExcelItemHelper.GetName(gamba.ItemId);
                         int weight = gamba.Weight;
                         ImGui.SetNextItemWidth(120f);
-                        if (ImGui.InputInt($"[{gamba.ItemId}] {itemName}##gamba_weight", ref weight))
+                        var weightLabel = T("[{0}] {1}", gamba.ItemId, itemName);
+                        if (ImGui.InputInt(weightLabel + $"##gamba_weight_{gamba.ItemId}", ref weight))
                         {
                             gamba.Weight = weight;
                             C.Save();

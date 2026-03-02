@@ -8,6 +8,7 @@ using Lumina.Excel.Sheets;
 using Pictomancy;
 using System.Collections.Generic;
 using static ICE.ConfigFiles.Config;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
@@ -36,32 +37,32 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         public static void OverlaySettings()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.WindowMaximize, "Overlay Window");
+            ImGuiEx.IconWithText(FontAwesomeIcon.WindowMaximize, T("Overlay Window"));
             ImGui.Dummy(new (0, 5));
 
             bool showOverlay = C.ShowOverlay;
-            if (ImGui.Checkbox("Show Overlay", ref showOverlay))
+            if (ImGui.Checkbox(T("Show Overlay"), ref showOverlay))
             {
                 C.ShowOverlay = showOverlay;
                 C.Save();
             }
             ImGui.SameLine();
             bool useCogsIcon = C.Overlay_UseCogsIcon;
-            if (ImGui.Checkbox("Use cogs button instead of home", ref useCogsIcon))
+            if (ImGui.Checkbox(T("Use cogs button instead of home"), ref useCogsIcon))
             {
                 C.Overlay_UseCogsIcon = useCogsIcon;
                 C.Save();
             }
 
             bool ShowSeconds = C.ShowSeconds;
-            if (ImGui.Checkbox("Show Seconds", ref ShowSeconds))
+            if (ImGui.Checkbox(T("Show Seconds"), ref ShowSeconds))
             {
                 C.ShowSeconds = ShowSeconds;
                 C.Save();
             }
 
             bool showExpOverlay = C.ShowExpBars;
-            if (ImGui.Checkbox("Show Experience Bars on Overlay", ref showExpOverlay))
+            if (ImGui.Checkbox(T("Show Experience Bars on Overlay"), ref showExpOverlay))
             {
                 C.ShowExpBars = showExpOverlay;
                 C.Save();
@@ -70,7 +71,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             {
                 ImGui.SameLine();
                 bool hideWhenMaxed = C.ShowExpBars_HideWhenMaxed;
-                if (ImGui.Checkbox("Until maxed only", ref hideWhenMaxed))
+                if (ImGui.Checkbox(T("Until maxed only"), ref hideWhenMaxed))
                 {
                     C.ShowExpBars_HideWhenMaxed = hideWhenMaxed;
                     C.Save();
@@ -78,21 +79,21 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
 
             bool showClassScore = C.ShowCurrentScore;
-            if (ImGui.Checkbox("Show Current Class Score", ref showClassScore))
+            if (ImGui.Checkbox(T("Show Current Class Score"), ref showClassScore))
             {
                 C.ShowCurrentScore = showClassScore;
                 C.Save();
             }
             ImGui.SameLine();
             bool showTotalScore = C.ShowTotalScore;
-            if (ImGui.Checkbox("Show Total Score", ref showTotalScore))
+            if (ImGui.Checkbox(T("Show Total Score"), ref showTotalScore))
             {
                 C.ShowTotalScore = showTotalScore;
                 C.Save();
             }
 
             bool AutoResize = C.Overlay_AutoResize;
-            if (ImGui.Checkbox("Auto Resize Overlay", ref AutoResize))
+            if (ImGui.Checkbox(T("Auto Resize Overlay"), ref AutoResize))
             {
                 C.Overlay_AutoResize = AutoResize;
                 C.Save();
@@ -100,14 +101,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
 
             bool highlightTokenWeather = C.Overlay_HighlightTokenWeather;
-            if (ImGui.Checkbox("Highlight EX+ token weathers", ref highlightTokenWeather))
+            if (ImGui.Checkbox(T("Highlight EX+ token weathers"), ref highlightTokenWeather))
             {
                 C.Overlay_HighlightTokenWeather = highlightTokenWeather;
                 C.Save();
             }
 
             bool filterByCurrentJob = C.Overlay_FilterByCurrentJob;
-            if (ImGui.Checkbox("Filter by current job only", ref filterByCurrentJob))
+            if (ImGui.Checkbox(T("Filter by current job only"), ref filterByCurrentJob))
             {
                 C.Overlay_FilterByCurrentJob = filterByCurrentJob;
                 C.Save();
@@ -119,9 +120,9 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 float iconSpacing = 4;
                 var classDict = new Dictionary<uint, string>
                 {
-                    [8] = "CRP", [9] = "BSM", [10] = "ARM", [11] = "GSM",
-                    [12] = "LTW", [13] = "WVR", [14] = "ALC", [15] = "CUL",
-                    [16] = "MIN", [17] = "BTN", [18] = "FSH",
+                    [8] = "Carpenter", [9] = "Blacksmith", [10] = "Armorer", [11] = "Goldsmith",
+                    [12] = "Leatherworker", [13] = "Weaver", [14] = "Alchemist", [15] = "Culinarian",
+                    [16] = "Miner", [17] = "Botanist", [18] = "Fisher",
                 };
                 foreach (var (jobId, name) in classDict)
                 {
@@ -138,63 +139,63 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                         C.Save();
                     }
                     if (ImGui.IsItemHovered())
-                        ImGui.SetTooltip(name);
+                        ImGui.SetTooltip(T(name));
                     ImGui.SameLine(0, iconSpacing);
                 }
                 ImGui.NewLine();
             }
 
             bool disableHudClipping = C.DisableHudClipping;
-            if (ImGui.Checkbox("Disable HUD Clipping", ref disableHudClipping))
+            if (ImGui.Checkbox(T("Disable HUD Clipping"), ref disableHudClipping))
             {
                 C.DisableHudClipping = disableHudClipping;
                 C.Save();
             }
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("When enabled, overlays will render over the native UI elements");
+                ImGui.SetTooltip(T("When enabled, overlays will render over the native UI elements"));
             }
 
         }
 
         private static void AutoUse()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.PersonRays, "Auto-Use");
+            ImGuiEx.IconWithText(FontAwesomeIcon.PersonRays, T("Auto-Use"));
             ImGui.Dummy(new Vector2(0, 5));
 
             bool DisableLunarAura = C.RemoveStellarStatus;
-            if (ImGui.Checkbox("Auto-Remove Stellar Status", ref DisableLunarAura))
+            if (ImGui.Checkbox(T("Auto-Remove Stellar Status"), ref DisableLunarAura))
             {
                 C.RemoveStellarStatus = DisableLunarAura;
                 C.Save();
             }
             ImGui.SameLine();
             ImGuiEx.IconWithTooltip(FontAwesomeIcon.InfoCircle,
-                                   "Automatically removes the Star Contributor visual effect (the glow you get for being a top contributor).\n" +
-                                   "The buff restores itself when you re-enter the zone.");
+                                   T("Automatically removes the Star Contributor visual effect (the glow you get for being a top contributor).\n" +
+                                     "The buff restores itself when you re-enter the zone."));
 
             bool autoStartOnMoonEnter = C.StartUponEnterMoon;
-            if (ImGui.Checkbox("Auto start upon entering a Cosmic Exploration area", ref autoStartOnMoonEnter))
+            if (ImGui.Checkbox(T("Auto start upon entering a Cosmic Exploration area"), ref autoStartOnMoonEnter))
             {
                 C.StartUponEnterMoon = autoStartOnMoonEnter;
                 C.Save();
             }
             ImGui.SameLine();
             ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
-                                   "This will check to see if you're on a gathering/crafting class upon first entering the moon.\n" +
-                                   "If you are, it will automatically start as if you had pressed the start button yourself\n" +
-                                   "Really useful if you have a tool to auto-log you in/if you just want to enter the moon and go\n" +
-                                   "This will ONLY run upon first entry.");
+                                   T("This will check to see if you're on a gathering/crafting class upon first entering the moon.\n" +
+                                     "If you are, it will automatically start as if you had pressed the start button yourself\n" +
+                                     "Really useful if you have a tool to auto-log you in/if you just want to enter the moon and go\n" +
+                                     "This will ONLY run upon first entry."));
             ImGui.Dummy(Vector2.Zero);
         }
 
         private static void RepairSettings()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Hammer, "Repair Settings");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Hammer, T("Repair Settings"));
             ImGui.Dummy(new Vector2(0, 5));
 
             bool repairAtVendor = C.RepairAtVendor;
-            if (ImGui.Checkbox("Repair at Vendor", ref repairAtVendor))
+            if (ImGui.Checkbox(T("Repair at Vendor"), ref repairAtVendor))
             {
                 C.RepairAtVendor = repairAtVendor;
                 C.Save();
@@ -203,14 +204,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             using (ImRaii.Disabled(repairAtVendor))
             {
                 bool selfRepairGather = C.SelfRepairGather;
-                if (ImGui.Checkbox("Self Repair Gather", ref selfRepairGather))
+                if (ImGui.Checkbox(T("Self Repair Gather"), ref selfRepairGather))
                 {
                     C.SelfRepairGather = selfRepairGather;
                     C.Save();
                 }
 
                 bool selfRepairCrafter = C.SelfRepairCrafter;
-                if (ImGui.Checkbox("Self Repair Crafter", ref selfRepairCrafter))
+                if (ImGui.Checkbox(T("Self Repair Crafter"), ref selfRepairCrafter))
                 {
                     C.SelfRepairCrafter= selfRepairCrafter;
                     C.Save();
@@ -231,12 +232,12 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         private static void TimeRecords()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Clock, "Record Settings");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Clock, T("Record Settings"));
             ImGui.Dummy(new Vector2(0, 5));
 
             int TimeHistory = C.TimeHistoryLimit;
             ImGui.SetNextItemWidth(100);
-            if (ImGui.InputInt("Average Time History to keep", ref TimeHistory))
+            if (ImGui.InputInt(T("Average Time History to keep"), ref TimeHistory))
             {
                 C.TimeHistoryLimit = TimeHistory;
                 C.Save();
@@ -245,21 +246,18 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             ImGui.TextDisabled("?");
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("Anything below 0 to keep all logs\n" +
-                                 "Above 0 to keep a set limit");
+                ImGui.SetTooltip(T("Anything below 0 to keep all logs\nAbove 0 to keep a set limit"));
             }
         }
 
         private static void PostMissionCommands()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Play, "Post Mission Commands");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Play, T("Post Mission Commands"));
             ImGui.Dummy(new Vector2(0, 5));
 
-            ImGui.TextWrapped("Input below a list of commands that you would like to run after a run has been completed. \n" +
-                              "This is kind of my way of letting you somewhat script/set up a sequence of other things that you would like to do that might not be included in the plugin itself. \n" +
-                              "If you want something more complex, just make an SND script at that point. And have this run that script post lol.");
+            ImGui.TextWrapped(T("Input below a list of commands that you would like to run after a run has been completed. \nThis is kind of my way of letting you somewhat script/set up a sequence of other things that you would like to do that might not be included in the plugin itself. \nIf you want something more complex, just make an SND script at that point. And have this run that script post lol."));
 
-            if (ImGui.Button("Add New Command"))
+            if (ImGui.Button(T("Add New Command")))
             {
                 C.PostMissionCommands.Add(new MissionCommand
                 {
@@ -274,9 +272,9 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
             if (ImGui.BeginTable("Mission Commands", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("Command");
-                ImGui.TableSetupColumn("Delay");
-                ImGui.TableSetupColumn("Remove");
+                ImGui.TableSetupColumn(T("Command"));
+                ImGui.TableSetupColumn(T("Delay"));
+                ImGui.TableSetupColumn(T("Remove"));
 
                 ImGui.TableHeadersRow();
 
@@ -324,13 +322,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         private static void ArtisanSettings()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Wrench, "Global Artisan Settings");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Wrench, T("Global Artisan Settings"));
             ImGui.Dummy(new Vector2(0, 5));
 
             bool force_Raphael = C.Artisan_RaphaelForce;
             bool expertRaphael = C.Artisan_RaphaelMaster;
 
-            if (ImGui.Checkbox("Enforce Raphael Solver", ref force_Raphael))
+            if (ImGui.Checkbox(T("Enforce Raphael Solver"), ref force_Raphael))
             {
                 C.Artisan_RaphaelForce = force_Raphael;
                 C.Save();
@@ -340,13 +338,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             if (ImGui.IsItemHovered())
             {
                 ImGui.BeginTooltip();
-                ImGui.Text($"Will force all crafts while the plugin is running to use the raphael solver.");
-                ImGui.Text($"This excludes the expert solver crafts due to their nature of how they function");
+                ImGui.Text(T("Will force all crafts while the plugin is running to use the raphael solver."));
+                ImGui.Text(T("This excludes the expert solver crafts due to their nature of how they function"));
                 ImGui.EndTooltip();
             }
             if (force_Raphael)
             {
-                if (ImGui.Checkbox("Use Raphael Solver on Expert Recipe", ref expertRaphael))
+                if (ImGui.Checkbox(T("Use Raphael Solver on Expert Recipe"), ref expertRaphael))
                 {
                     C.Artisan_RaphaelMaster = expertRaphael;
                     C.Save();
@@ -356,21 +354,21 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text($"Will force crafts that would normally use the Expert Solver to instead use Raphael.");
+                    ImGui.Text(T("Will force crafts that would normally use the Expert Solver to instead use Raphael."));
                     ImGuiEx.Icon(new Vector4(1.0f, 0.4f, 0.0f, 1.0f), FontAwesomeIcon.Diamond);
                     ImGui.SameLine();
-                    ImGui.Text($"This is the icon within the recipe details btw");
-                    ImGui.Text($"I would not recommend this on Oizys, it's not perfect and has been causing a lot of issues for peeps.");
+                    ImGui.Text(T("This is the icon within the recipe details btw"));
+                    ImGui.Text(T("I would not recommend this on Oizys, it's not perfect and has been causing a lot of issues for peeps."));
                     ImGui.EndTooltip();
                 }
             }
 
-            ImGui.TextDisabled("More Coming Soon. . . ");
+            ImGui.TextDisabled(T("More Coming Soon. . . "));
         }
 
         private static void ArtisanSettingsV2()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Wrench, "Global Artisan Settings");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Wrench, T("Global Artisan Settings"));
             ImGui.Dummy(new Vector2(0, 5));
 
             List<ArtisanCraftType> global_StandardModes = new()
@@ -391,8 +389,8 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             if (ImGui.BeginTable("Global Artisan Settings", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
             {
                 ImGui.TableSetupColumn("");
-                ImGui.TableSetupColumn("Standard Craft Settings");
-                ImGui.TableSetupColumn("Expert Craft Settings");
+                ImGui.TableSetupColumn(T("Standard Craft Settings"));
+                ImGui.TableSetupColumn(T("Expert Craft Settings"));
 
                 ImGui.TableHeadersRow();
 
@@ -405,17 +403,17 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 {
                     return type switch
                     {
-                        ArtisanCraftType.Default => "Default",
-                        ArtisanCraftType.Raphael => "Raphael Solver",
-                        ArtisanCraftType.ProgressOnly => "Progress Only Solver",
-                        ArtisanCraftType.Standard => "Standard Solver",
-                        ArtisanCraftType.Expert => "Expert Recipe Solver",
-                        _ => "Unknown"
+                        ArtisanCraftType.Default => T("Default"),
+                        ArtisanCraftType.Raphael => T("Raphael Solver"),
+                        ArtisanCraftType.ProgressOnly => T("Progress Only Solver"),
+                        ArtisanCraftType.Standard => T("Standard Solver"),
+                        ArtisanCraftType.Expert => T("Expert Recipe Solver"),
+                        _ => T("Unknown")
                     };
                 }
                 string GetFoodLable(uint foodId)
                 {
-                    if (foodId == 0) return "Default";
+                    if (foodId == 0) return T("Default");
                     var item = ConsumableInfo.CrafterFood.FirstOrDefault(x => x.Id == foodId);
                     PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
                     PlayerHelper.GetItemCount(item.Id, out var hq, includeHq: true, includeNq: false);
@@ -423,7 +421,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 }
                 string GetPotionLable(uint potionId)
                 {
-                    if (potionId == 0) return "Default";
+                    if (potionId == 0) return T("Default");
                     var item = ConsumableInfo.Pots.FirstOrDefault(x => x.Id == potionId);
                     PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
                     PlayerHelper.GetItemCount(item.Id, out var hq, includeHq: true, includeNq: false);
@@ -431,14 +429,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 }
                 string GetManualLabel(uint manualId)
                 {
-                    if (manualId == 0) return "Default";
+                    if (manualId == 0) return T("Default");
                     var item = ConsumableInfo.Manuals.FirstOrDefault(x => x.Id == manualId);
                     PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
                     return BuildItemLabel(item.Name, nq, 0);
                 }
                 string GetSquadronManualLabel(uint squadManualId)
                 {
-                    if (squadManualId == 0) return "Default";
+                    if (squadManualId == 0) return T("Default");
                     var item = ConsumableInfo.SquadronManuals.FirstOrDefault(x => x.Id == squadManualId);
                     PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
                     return BuildItemLabel(item.Name, nq, 0);
@@ -492,7 +490,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 ImGui.TableSetColumnIndex(0);
 
                 ImGui.AlignTextToFramePadding();
-                ImGui.Text("Solver Type");
+                ImGui.Text(T("Solver Type"));
 
                 ImGui.TableNextColumn();
                 ImGui.SetNextItemWidth(standard_ComboWidth);
@@ -541,7 +539,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
                     ImGui.AlignTextToFramePadding();
-                    ImGui.Text("Food");
+                    ImGui.Text(T("Food"));
 
                     ImGui.TableNextColumn();
                     ImGui.SetNextItemWidth(standard_ComboWidth);
@@ -549,7 +547,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     {
                         // Default option
                         bool isDefaultSelected = craft_Standard.FoodId == 0;
-                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        if (ImGui.Selectable(T("Default"), isDefaultSelected))
                         {
                             craft_Standard.FoodId = 0;
                             craft_Standard.FoodHQ = false;
@@ -590,7 +588,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     {
                         // Default option
                         bool isDefaultSelected = craft_Expert.FoodId == 0;
-                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        if (ImGui.Selectable(T("Default"), isDefaultSelected))
                         {
                             craft_Expert.FoodId = 0;
                             craft_Expert.FoodHQ = false;
@@ -632,7 +630,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
                     ImGui.AlignTextToFramePadding();
-                    ImGui.Text("Potions");
+                    ImGui.Text(T("Potions"));
 
                     ImGui.TableNextColumn();
                     ImGui.SetNextItemWidth(standard_ComboWidth);
@@ -640,7 +638,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     {
                         // Default option
                         bool isDefaultSelected = craft_Standard.PotionId == 0;
-                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        if (ImGui.Selectable(T("Default"), isDefaultSelected))
                         {
                             craft_Standard.PotionId = 0;
                             craft_Standard.PotionHQ = false;
@@ -681,7 +679,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     {
                         // Default option
                         bool isDefaultSelected = craft_Expert.PotionId == 0;
-                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        if (ImGui.Selectable(T("Default"), isDefaultSelected))
                         {
                             craft_Expert.PotionId = 0;
                             craft_Expert.PotionHQ = false;
@@ -723,7 +721,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
                     ImGui.AlignTextToFramePadding();
-                    ImGui.Text("Manual");
+                    ImGui.Text(T("Manual"));
 
                     ImGui.TableNextColumn();
                     ImGui.SetNextItemWidth(standard_ComboWidth);
@@ -731,7 +729,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     {
                         // Default option
                         bool isDefaultSelected = craft_Standard.ManualId == 0;
-                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        if (ImGui.Selectable(T("Default"), isDefaultSelected))
                         {
                             craft_Standard.ManualId = 0;
                             C.Save();
@@ -769,7 +767,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     {
                         // Default option
                         bool isDefaultSelected = craft_Expert.ManualId == 0;
-                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        if (ImGui.Selectable(T("Default"), isDefaultSelected))
                         {
                             craft_Expert.ManualId = 0;
                             C.Save();
@@ -808,7 +806,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
                     ImGui.AlignTextToFramePadding();
-                    ImGui.Text("Squadron Manual");
+                    ImGui.Text(T("Squadron Manual"));
 
                     ImGui.TableNextColumn();
                     ImGui.SetNextItemWidth(standard_ComboWidth);
@@ -816,7 +814,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     {
                         // Default option
                         bool isDefaultSelected = craft_Standard.SquadronManual == 0;
-                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        if (ImGui.Selectable(T("Default"), isDefaultSelected))
                         {
                             craft_Standard.SquadronManual = 0;
                             C.Save();
@@ -854,7 +852,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     {
                         // Default option
                         bool isDefaultSelected = craft_Expert.SquadronManual == 0;
-                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        if (ImGui.Selectable(T("Default"), isDefaultSelected))
                         {
                             craft_Expert.SquadronManual = 0;
                             C.Save();

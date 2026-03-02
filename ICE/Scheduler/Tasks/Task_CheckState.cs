@@ -446,6 +446,8 @@ namespace ICE.Scheduler.Tasks
                 TurninRelic = isUpgradable && canUpgrade;
             }
 
+            Task_HubActivities.ApplyPostHubReentryGuard(ref BuyDrones, ref GambaWheel);
+
             if (BuyDrones || GambaWheel || BuyItems || RepairVendor || TurninRelic)
             {
                 IceLogging.Info("We have some reason to return back to the base so... we're doing so.\n" +

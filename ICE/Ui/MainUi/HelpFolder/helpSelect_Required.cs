@@ -47,10 +47,10 @@ ImGui.TextWrapped(T("This isn't required, but highly recommended for leveling up
             // CN-MAINT: Keep this UI in sync with Task_Fishing conflict policy (both installed => conflict warning).
             ImGui.Text(T("Fishing only (choose one: AutoHook or MissFisher)"));
 
-            ImGui.TextDisabled("AutoHook");
+            ImGui.TextDisabled(T("AutoHook"));
             HasPlugin(AutoHookRepo, AutoHookPluginName);
 
-            ImGui.TextDisabled("MissFisher");
+            ImGui.TextDisabled(T("MissFisher"));
             HasPlugin(MissFisherRepo, MissFisherPluginName);
 
             bool hasAutoHook = Utils.HasPlugin(AutoHookPluginName);

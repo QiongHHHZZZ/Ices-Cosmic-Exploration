@@ -125,7 +125,7 @@ ImGui.TableSetupColumn(T("Message"), ImGuiTableColumnFlags.WidthStretch);
                         LogLevel.Info => new Vector4(0, 1, 1, 1),
                         _ => new Vector4(0.7f, 0.7f, 0.7f, 1)
                     };
-                    ImGui.TextColored(color, log.Level.ToString());
+                    ImGui.TextColored(color, T(log.Level.ToString()));
 
                     ImGui.TableNextColumn();
                     ImGui.Text(log.Category ?? "");

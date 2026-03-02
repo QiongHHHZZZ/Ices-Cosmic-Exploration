@@ -17,6 +17,8 @@ namespace ICE.Scheduler
         public static bool CanGamba = false;
         public static bool CanBuyDrones = false;
         private static Vector3 craftingSpot = Vector3.Zero;
+        private static bool blockNextHubReentry = false;
+        private static long blockNextHubReentryUntil = 0;
 
         public static void Enqueue()
         {
@@ -55,6 +57,7 @@ namespace ICE.Scheduler
             }
             P.TaskManager.EnqueueMulti
             (
+                new(ArmPostHubReentryGuard, "Arming hub reentry guard"),
                 new(() => ResetAll(), "Setting all task to false"),
                 new(() => IceLogging.Info("Checking to see if we need to path back to the spot")),
                 new(PathBackToCraftingSpot, "Pathing back to our crafting spot", Utils.TaskConfig),
@@ -128,6 +131,27 @@ namespace ICE.Scheduler
             return false;
         }
 
+        public static void ApplyPostHubReentryGuard(ref bool canBuyDrones, ref bool canGamba)
+        {
+            if (!blockNextHubReentry)
+                return;
+
+            if (Environment.TickCount64 > blockNextHubReentryUntil)
+            {
+                blockNextHubReentry = false;
+                return;
+            }
+
+            if (!(canBuyDrones || canGamba))
+                return;
+
+            canBuyDrones = false;
+            canGamba = false;
+            blockNextHubReentry = false;
+
+            IceLogging.Info("已拦截一次 Hub 立即重入（抽奖/无人机），避免 TP 回点后立刻再返回基地。", "[Task_HubActivities: Reentry Guard]");
+        }
+
         private static bool? ResetAll()
         {
             IceLogging.Info("Resetting all hub task to false");
@@ -137,6 +161,17 @@ namespace ICE.Scheduler
             CosmoBuy = false;
             CanGamba = false;
             CanBuyDrones = false;
+
+            return true;
+        }
+
+        private static bool? ArmPostHubReentryGuard()
+        {
+            if (CanGamba || CanBuyDrones)
+            {
+                blockNextHubReentry = true;
+                blockNextHubReentryUntil = Environment.TickCount64 + 8000;
+            }
 
             return true;
         }

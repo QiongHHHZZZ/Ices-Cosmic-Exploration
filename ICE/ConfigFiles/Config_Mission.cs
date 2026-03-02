@@ -41,8 +41,6 @@ public partial class Config
     public bool ShowOizysMissions { get; set; } = true;
     public bool RemoveAfterGold { get; set; } = false;
     public bool ShowExtraMissionInfo { get; set; } = true;
-    public bool Artisan_RaphaelForce { get; set; } = true;
-    public bool Artisan_RaphaelMaster { get; set; } = false;
     public Dictionary<uint, uint> ScoreKeeper { get; set; } = new();
     public Dictionary<uint, MissionSettings> MissionConfig { get; set; } = new();
     public Dictionary<string, List<uint>> Mission_Playlist { get; set; } = new();
@@ -85,12 +83,12 @@ public partial class Config
         public class ArtisanSettings
         {
             public bool UseGlobal { get; set; } = true;
-            public uint SelectedFood { get; set; } = 0;
+            public uint FoodId { get; set; } = 0;
             public bool FoodHQ { get; set; } = true;
-            public uint SelectedPotion { get; set; } = 0;
-            public uint PotionHQ { get; set; } = 0;
-            public uint SelectedManual { get; set; } = 0;
-            public uint SelectedSquadronManual { get; set; } = 0;
+            public uint PotionId { get; set; } = 0;
+            public bool PotionHQ { get; set; } = false;
+            public uint ManualId { get; set; } = 0;
+            public uint SquadronManualId { get; set; } = 0;
             public ArtisanCraftType ArtisanSolverType { get; set; } = ArtisanCraftType.Standard;
             public string MacroName { get; set; } = "";
         };

@@ -5,7 +5,7 @@ flag:
   x: 455
   y: 243
 author: Puni.sh Community
-date_modified: 2026-01-28T22:00:51.2785479Z
+date_modified: 2026-03-02T04:54:25.3943222Z
 nodes:
 - node_id: 35177
   position:
@@ -16,10 +16,11 @@ nodes:
     x: 489.71
     y: 35.7
     z: 174.19
-  radius_start: 0
-  radius_end: 360
+  radius_start: 133
+  radius_end: 215
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35178
   position:
     x: 441.94
@@ -29,10 +30,11 @@ nodes:
     x: 441.74
     y: 35.5
     z: 176.29
-  radius_start: 0
-  radius_end: 360
+  radius_start: 288
+  radius_end: 58
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35180
   position:
     x: 382.5
@@ -42,10 +44,11 @@ nodes:
     x: 383.06
     y: 35.01
     z: 264.97
-  radius_start: 0
-  radius_end: 360
+  radius_start: 137
+  radius_end: 330
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0.46
 - node_id: 35179
   position:
     x: 395.4
@@ -55,10 +58,11 @@ nodes:
     x: 395.65
     y: 36.48
     z: 276.62
-  radius_start: 0
-  radius_end: 360
+  radius_start: 120
+  radius_end: 359
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35181
   position:
     x: 476.83
@@ -68,10 +72,11 @@ nodes:
     x: 477.28
     y: 39.93
     z: 297.15
-  radius_start: 0
-  radius_end: 360
+  radius_start: 147
+  radius_end: 227
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35182
   position:
     x: 510.84
@@ -81,7 +86,8 @@ nodes:
     x: 510.55
     y: 36.63
     z: 283.3
-  radius_start: 0
-  radius_end: 360
+  radius_start: 41
+  radius_end: 212
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0

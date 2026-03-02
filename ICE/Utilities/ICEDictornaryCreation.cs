@@ -828,6 +828,10 @@ public sealed partial class ICE
             // That means we're still on the old config version. Time to migrate if it exist
             ConfigMigration.MigrateFromOldYaml(C);
         }
+        if (!C.MigratedOldArtisan)
+        {
+            Artisan_MigrateNew();
+        }
     }
 
     public static void EnsureAllMission()
@@ -847,5 +851,15 @@ public sealed partial class ICE
             }
         }
         C.Save();
+    }
+    public static void Artisan_MigrateNew()
+    {
+        if (C.Artisan_RaphaelForce)
+        {
+            C.Artisan_GlobalStandard.SolverType = ArtisanCraftType.Raphael;
+            if (C.Artisan_RaphaelMaster)
+                C.Artisan_GlobalExpert.SolverType = ArtisanCraftType.Raphael;
+        }
+        C.MigratedOldArtisan = true;
     }
 }

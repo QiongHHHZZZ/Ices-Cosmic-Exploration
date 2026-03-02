@@ -64,6 +64,46 @@ namespace ICE.Scheduler.Tasks
 
         private static bool? ThrottleArtisanTaskV2(KeyValuePair<ushort, CosmicHelper.CraftingInfo> item, int amount, uint rank)
         {
+            void ApplyArtisanSettings(uint recipeId, ArtisanCraftType type, uint foodId, bool foodHQ, uint potionId, bool PotionHQ, uint manualId, uint squadronManualId, string macroName = "")
+            {
+                if (type != ArtisanCraftType.Default)
+                {
+                    string ArtisanType = type switch
+                    {
+                        ArtisanCraftType.Standard => "Standard Recipe Solver",
+                        ArtisanCraftType.ProgressOnly => "Progress Only Solver",
+                        ArtisanCraftType.Raphael => "Raphael Recipe Solver",
+                        ArtisanCraftType.Macro => $"Macro: {macroName}",
+                        ArtisanCraftType.Expert => "Expert Recipe Solver",
+                    };
+                    P.Artisan.ChangeSolver(recipeId, ArtisanType, true);
+                }
+                else
+                {
+                    P.Artisan.SetTempSolverBackToNormal(recipeId);
+                }
+
+                if (foodId != 0)
+                    P.Artisan.ChangeFood(recipeId, foodId, foodHQ, true);
+                else
+                    P.Artisan.SetTempFoodBackToNormal(recipeId);
+
+                if (potionId != 0)
+                    P.Artisan.ChangePotion(recipeId, potionId, PotionHQ, true);
+                else
+                    P.Artisan.SetTempPotionBackToNormal(recipeId);
+
+                if (manualId != 0)
+                    P.Artisan.ChangeManual(recipeId, manualId, true);
+                else
+                    P.Artisan.SetTempManualBackToNormal(recipeId);
+
+                if (squadronManualId != 0)
+                    P.Artisan.ChangeSquadronManual(recipeId, squadronManualId, true);
+                else
+                    P.Artisan.SetTempSquadronManualBackToNormal(recipeId);
+            }
+
             int delay = C.DelayCraft ? C.DelayCraftIncrease : 25;
 
             var craftId = item.Key;
@@ -73,41 +113,54 @@ namespace ICE.Scheduler.Tasks
             var expertRaph = C.Artisan_RaphaelMaster;
 
 
-            if (EzThrottler.Throttle("Waiting X Amount of seconds for artisan", delay))
+            var missionId = CosmicHelper.CurrentLunarMission;
+            var missionConfig = C.MissionConfig[missionId];
+
+            if (missionConfig.CraftSettings.TryGetValue(recipeId, out var recipeConfig))
             {
-                if (EzThrottler.Throttle("Craft Information", 2000))
-                    IceLogging.Debug($"RecipeID: {recipeId} | Expert: {expert}");
-
-                throttleCounter += 1;
-                if (Mission_Settings.Mode == ModeSelect.LevelMode)
+                if (EzThrottler.Throttle("Applying Config States", 1000))
                 {
-                    IceLogging.Debug($"Setting {recipeId} to progress only. ItemID: {itemId}");
-                    P.Artisan.ChangeSolver(recipeId, "Progress Only Solver", true);
-                }
-                else if (C.Artisan_RaphaelForce)
-                {
-
-                    if (!expert)
+                    IceLogging.Info($"Applying config states for the following recipeID: {recipeId}");
+                    if (Mission_Settings.Mode == ModeSelect.LevelMode)
                     {
-                        P.Artisan.ChangeSolver(recipeId, "Raphael Recipe Solver", true);
+                        IceLogging.Debug($"Setting {recipeId} to progress only. ItemID: {itemId}");
+                        P.Artisan.ChangeSolver(recipeId, "Progress Only Solver", true);
                     }
-                    else if (expert)
+                    else if (recipeConfig.UseGlobal)
                     {
-                        if (expertRaph)
-                        {
-                            P.Artisan.ChangeSolver(recipeId, "Raphael Recipe Solver", true);
-                        }
-                        else
-                        {
-                            P.Artisan.ChangeSolver(recipeId, "Expert Recipe Solver", true);
-                        }
+                        var globalSettings = expert ? C.Artisan_GlobalExpert : C.Artisan_GlobalStandard;
+
+                        ApplyArtisanSettings(recipeId,
+                                             globalSettings.SolverType,
+                                             globalSettings.FoodId, globalSettings.FoodHQ,
+                                             globalSettings.PotionId, globalSettings.PotionHQ,
+                                             globalSettings.ManualId,
+                                             globalSettings.SquadronManual);
                     }
-                }
-                else
-                {
-                    P.Artisan.SetTempSolverBackToNormal(recipeId);
+                    else
+                    {
+                        ApplyArtisanSettings(recipeId, 
+                                             recipeConfig.ArtisanSolverType, 
+                                             recipeConfig.FoodId, recipeConfig.FoodHQ, 
+                                             recipeConfig.PotionId, recipeConfig.PotionHQ, 
+                                             recipeConfig.ManualId, 
+                                             recipeConfig.SquadronManualId,
+                                             recipeConfig.MacroName);
+                    }
                 }
             }
+            else
+            {
+                missionConfig.CraftSettings[recipeId] = new();
+                C.Save();
+            }
+
+            if (EzThrottler.Throttle("Waiting X Amount of seconds for artisan", delay))
+            {
+
+                throttleCounter += 1;
+            }
+
             if (throttleCounter >= 3)
             {
                 if (EzThrottler.Throttle("Artisan Crafting Task"))

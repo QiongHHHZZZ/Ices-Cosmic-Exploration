@@ -1,7 +1,8 @@
-using Dalamud.Game.ClientState.Conditions;
+﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using ICE.Resources.GatheringRoutes;
 using ICE.Ui.DebugWindowTabs;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
@@ -29,6 +30,8 @@ namespace ICE.Scheduler.Tasks
         private static bool isJumpInProgress = false;
 
         private static FishingDebug _fishingDebug = null;
+
+        #region Navmesh Stuff
 
         public static bool? Task_NavTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null, bool mountBeforeMove = false)
         {
@@ -76,6 +79,68 @@ namespace ICE.Scheduler.Tasks
 
             // Handle starting navmesh
             return HandleStartNavmesh(pos, distance, stayMounted, npcLoc, usingCosmoliner, mounted, distanceToTarget, handle, useMount, mountBeforeMove);
+        }
+        public static bool? Task_GatherMove(GathNodeInfo routeinfo, bool waitForBusy = true, float distance = 4.5f, bool stayMounted = false, bool mountBeforeMove = false)
+        {
+            string handle = "Navmesh: Gather Move";
+
+            // Cache frequently accessed values
+            bool usingCosmoliner = Svc.Condition[ConditionFlag.Unknown101];
+            bool mounted = Player.Mounted;
+            bool inMission = CosmicHelper.CurrentLunarMission != 0;
+            float minMountDistance = C.MountRadius;
+            float dismountDistance = C.DismountRadius;
+            bool useMount = ShouldUseMount(inMission);
+
+            if (EzThrottler.Throttle("Navmesh message throttle", navmeshThrottleMs))
+                IceLogging.Verbose("Executing Navmesh Task", handle, debugOnly: true);
+
+            // Early exit if navmesh not installed
+            if (!P.Navmesh.Installed)
+            {
+                IceLogging.Info("We seem to be missing navmesh... so we're just going to exit here", handle);
+                return true;
+            }
+
+            // Handle navmesh not ready
+            if (!P.Navmesh.IsReady())
+            {
+                if (EzThrottler.Throttle("Waiting on navmesh", waitingThrottleMs))
+                {
+                    var navProgress = P.Navmesh.BuildProgress();
+                    IceLogging.Debug($"Waiting for navmesh to finish building. Currently at: {navProgress:N2}", handle);
+                }
+                return false;
+            }
+
+            // This is where we need to get a random point in a fan if possible...
+            // Esentially going to pass this once mainly for the pathing, and then if we meed the minimum distance the HandleRunningNavmesh should take care of properly returning if we're within interacting range once stop moving
+
+            Vector3 nodePos = routeinfo.Position;
+            Vector3 playerPos = Player.Position;
+            float angleToPlayer = CalculateAngleToPlayer(nodePos, playerPos);
+
+            float node_MinAngle = PictomancyToFFXIV(routeinfo.Radius_Start + routeinfo.FanHeight);
+            float node_MaxAngle = PictomancyToFFXIV(routeinfo.Radius_End + routeinfo.FanHeight);
+
+            var (sectionMin, sectionMax) = GetNearestSection(node_MinAngle, node_MaxAngle, angleToPlayer, 15f);
+            float selectedAngle = RandomAngleInRange(sectionMin, sectionMax);
+            float selectedDistance = NextFloat(routeinfo.Distance_Min, routeinfo.Distance_Max);
+
+            Vector3 randomPosition = CalculateFanPosition(nodePos, selectedAngle, selectedDistance, routeinfo.FanHeight);
+            if (EzThrottler.Throttle("Gather Route Throttle", 3000))
+                IceLogging.Debug($"[GatherMove] angleToPlayer={angleToPlayer:F1}, node_MinAngle={node_MinAngle:F1}, node_MaxAngle={node_MaxAngle:F1}, sectionMin={sectionMin:F1}, sectionMax={sectionMax:F1}, selectedAngle={selectedAngle:F1}, selectedDistance={selectedDistance:F2}, minDist={routeinfo.Distance_Min}, maxDist={routeinfo.Distance_Max}, randomPosition={randomPosition}", handle);
+
+            float distanceToTarget = Player.DistanceTo(nodePos);
+
+            // Handle running navmesh
+            if (P.Navmesh.IsRunning())
+            {
+                return HandleRunningNavmesh(randomPosition, waitForBusy, distance, stayMounted, nodePos, usingCosmoliner, mounted, useMount, minMountDistance, dismountDistance, distanceToTarget, handle);
+            }
+
+            // Handle starting navmesh
+            return HandleStartNavmesh(randomPosition, distance, stayMounted, nodePos, usingCosmoliner, mounted, distanceToTarget, handle, useMount, mountBeforeMove);
         }
         private static bool ShouldUseMount(bool inMission)
         {
@@ -177,25 +242,6 @@ namespace ICE.Scheduler.Tasks
                 P.Navmesh.SetTolerance(navmeshTolerance);
 
                 var targetPos = pos;
-                if (C.RandomizeWaypoints)
-                {
-                    var playerPos = Player.Position;
-                    var toTarget = pos - playerPos;
-                    var toTargetLen = new Vector2(toTarget.X, toTarget.Z).Length();
-                    if (toTargetLen > 0.1f)
-                    {
-                        float radius = C.RandomizeWaypointsRadius;
-                        float angle = (float)(_random.NextDouble() * 2 * Math.PI);
-                        float dist = (float)(Math.Pow(_random.NextDouble(), 0.33) * radius);
-                        targetPos = new Vector3(pos.X + dist * MathF.Cos(angle), pos.Y, pos.Z + dist * MathF.Sin(angle));
-
-                        var nearestPoint = P.Navmesh.NearestPointReachable(targetPos, 2, 2);
-                        if (nearestPoint != null)
-                            targetPos = nearestPoint.Value;
-
-                        SetRandomizationDebug(pos, targetPos, 0, radius);
-                    }
-                }
 
                 P.Navmesh.PathfindAndMoveTo(targetPos, false);
             }
@@ -268,6 +314,10 @@ namespace ICE.Scheduler.Tasks
                 }
             }
         }
+
+        #endregion
+
+        #region Best Pathfinding
 
         public class PathInfo
         {
@@ -895,36 +945,167 @@ namespace ICE.Scheduler.Tasks
             return await P.Navmesh.Pathfind(position, destination, false);
         }
 
-        // Randomization debug visualization - stored so it can be drawn every frame
-        private static (Vector3 Original, Vector3 Randomized, float BackAngle, float Radius)? _randomDebug;
+        #endregion
 
-        private static void SetRandomizationDebug(Vector3 originalPos, Vector3 randomizedPos, float backAngle, float radius)
+        #region Gathering Functions
+
+        /// <summary>
+        /// Converts Pictomancy coordinates to FFXIV world coordinates.
+        /// Pictomancy: 0=South, 90=West, 180=North, 270=East
+        /// FFXIV:      0=North, 90=East, 180=South, 270=West
+        /// </summary>
+        private static float PictomancyToFFXIV(float pictomancyAngle)
         {
-            _randomDebug = (originalPos, randomizedPos, backAngle, radius);
+            float ffxivAngle = (pictomancyAngle + 180f) % 360f;
+            if (ffxivAngle < 0f)
+                ffxivAngle += 360f;
+            return ffxivAngle;
         }
 
-        public static void ClearRandomizationDebug()
+        private static float CalculateAngleToPlayer(Vector3 nodePos, Vector3 playerPos)
         {
-            _randomDebug = null;
+            Vector3 direction = playerPos - nodePos;
+            float angle = MathF.Atan2(direction.X, direction.Z) * (180f / MathF.PI);
+            angle = 180f - angle;
+
+            if (angle < 0f)
+                angle += 360f;
+            else if (angle >= 360f)
+                angle -= 360f;
+
+            return angle;
         }
 
-        public static void DrawRandomizationDebug()
+        private static float NormalizeAngle(float angle)
         {
-            if (_randomDebug is not { } dbg) return;
-
-            uint circleColor = 0x4000FF00;    // green, 25% alpha
-            uint originalColor = 0xFFFFFFFF;  // white
-            uint randomizedColor = 0xFF00FF00; // green
-
-            // Draw circle showing the valid randomization zone
-            Handlers.PictoManager.AddDrawCommand(d => d.AddCircleFilled(dbg.Original, dbg.Radius, circleColor, circleColor));
-
-            // Draw original target (white circle)
-            Handlers.PictoManager.AddDrawCommand(d => d.AddCircleFilled(dbg.Original, 0.15f, originalColor, originalColor));
-            // Draw randomized target (green circle)
-            Handlers.PictoManager.AddDrawCommand(d => d.AddCircleFilled(dbg.Randomized, 0.15f, randomizedColor, randomizedColor));
-            // Line between them
-            Handlers.PictoManager.AddDrawCommand(d => d.AddLine(dbg.Original, dbg.Randomized, 0.01f, randomizedColor));
+            angle = angle % 360f;
+            if (angle < 0f)
+                angle += 360f;
+            return angle;
         }
+
+        private static float GetRangeSpan(float min, float max)
+        {
+            float diff = MathF.Abs(max - min);
+            if (MathF.Abs(diff - 360f) < 0.01f)
+                return 360f;
+
+            min = NormalizeAngle(min);
+            max = NormalizeAngle(max);
+
+            float span = max - min;
+            if (span < 0)
+                span += 360f;
+
+            return span;
+        }
+
+        private static bool IsAngleInRange(float angle, float min, float max)
+        {
+            angle = NormalizeAngle(angle);
+            min = NormalizeAngle(min);
+            max = NormalizeAngle(max);
+
+            float rangeSpan = max - min;
+            if (rangeSpan < 0)
+                rangeSpan += 360f;
+
+            if (rangeSpan >= 360f)
+                return true;
+
+            if (min <= max)
+                return angle >= min && angle <= max;
+            else
+                return angle >= min || angle <= max;
+        }
+
+        private static float GetAngularDistance(float angle1, float angle2)
+        {
+            angle1 = NormalizeAngle(angle1);
+            angle2 = NormalizeAngle(angle2);
+
+            float diff = angle2 - angle1;
+            while (diff > 180f) diff -= 360f;
+            while (diff < -180f) diff += 360f;
+
+            return MathF.Abs(diff);
+        }
+
+        private static float ClampAngleToRange(float angle, float allowedMin, float allowedMax, bool preferMin)
+        {
+            angle = NormalizeAngle(angle);
+
+            if (IsAngleInRange(angle, allowedMin, allowedMax))
+                return angle;
+
+            float distToMin = GetAngularDistance(angle, allowedMin);
+            float distToMax = GetAngularDistance(angle, allowedMax);
+
+            if (MathF.Abs(distToMin - distToMax) < 0.01f)
+                return preferMin ? allowedMin : allowedMax;
+
+            return distToMin < distToMax ? allowedMin : allowedMax;
+        }
+
+        private static (float sectionMin, float sectionMax) GetNearestSection(float allowedMin, float allowedMax, float targetAngle, float sectionSize)
+        {
+            float rangeSpan = GetRangeSpan(allowedMin, allowedMax);
+
+            if (rangeSpan >= 359.9f)
+            {
+                float halfSection = sectionSize / 2f;
+                return (NormalizeAngle(targetAngle - halfSection), NormalizeAngle(targetAngle + halfSection));
+            }
+
+            allowedMin = NormalizeAngle(allowedMin);
+            allowedMax = NormalizeAngle(allowedMax);
+            targetAngle = NormalizeAngle(targetAngle);
+
+            float closestPointInRange = IsAngleInRange(targetAngle, allowedMin, allowedMax)
+                ? targetAngle
+                : GetAngularDistance(targetAngle, allowedMin) < GetAngularDistance(targetAngle, allowedMax)
+                    ? allowedMin
+                    : allowedMax;
+
+            float half = sectionSize / 2f;
+            float secMin = NormalizeAngle(closestPointInRange - half);
+            float secMax = NormalizeAngle(closestPointInRange + half);
+
+            secMin = ClampAngleToRange(secMin, allowedMin, allowedMax, true);
+            secMax = ClampAngleToRange(secMax, allowedMin, allowedMax, false);
+
+            return (secMin, secMax);
+        }
+
+        private static float RandomAngleInRange(float min, float max)
+        {
+            min = NormalizeAngle(min);
+            max = NormalizeAngle(max);
+
+            if (min <= max)
+                return NextFloat(min, max);
+
+            float rangeSize = (360f - min) + max;
+            return NormalizeAngle(min + NextFloat(0, rangeSize));
+        }
+
+        private static float NextFloat(float min, float max)
+        {
+            return min + (float)_random.NextDouble() * (max - min);
+        }
+
+        private static Vector3 CalculateFanPosition(Vector3 center, float angleDegrees, float distance, float height)
+        {
+            float standardAngle = 180f - angleDegrees;
+            float angleRadians = standardAngle * (MathF.PI / 180f);
+
+            return new Vector3(
+                center.X + distance * MathF.Sin(angleRadians),
+                center.Y,
+                center.Z + distance * MathF.Cos(angleRadians)
+            );
+        }
+
+        #endregion
     }
 }

@@ -61,7 +61,8 @@ namespace ICE.Scheduler.Tasks
                     return false;
                 }
 
-                if ((int)Task_CheckScore.CurrentRank() > 0)
+                var rank = Task_CheckScore.CurrentRank();
+                if (rank > WKSManagerCustom.MissionRank.None)
                 {
                     IceLogging.Debug("Reporting the mission", tag);
                     ReportMissionInstance();

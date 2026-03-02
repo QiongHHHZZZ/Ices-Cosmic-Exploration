@@ -5,7 +5,7 @@ flag:
   x: -463
   y: -729
 author: Puni.sh Community
-date_modified: 2026-01-28T22:00:51.3156043Z
+date_modified: 2026-03-02T04:54:25.4322053Z
 nodes:
 - node_id: 35056
   position:
@@ -16,10 +16,11 @@ nodes:
     x: -420.66
     y: 65.99
     z: -690.31
-  radius_start: 0
-  radius_end: 360
+  radius_start: 322
+  radius_end: 99
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35055
   position:
     x: -428.39
@@ -29,10 +30,11 @@ nodes:
     x: -429.45
     y: 67.01
     z: -702.27
-  radius_start: 0
-  radius_end: 360
+  radius_start: 334
+  radius_end: 120
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35054
   position:
     x: -447.28
@@ -42,10 +44,11 @@ nodes:
     x: -445.43
     y: 67.66
     z: -707.8
-  radius_start: 0
-  radius_end: 360
+  radius_start: 197
+  radius_end: 320
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35053
   position:
     x: -461.66
@@ -55,10 +58,11 @@ nodes:
     x: -462.73
     y: 68.9
     z: -712.48
-  radius_start: 0
-  radius_end: 360
+  radius_start: 350
+  radius_end: 134
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35052
   position:
     x: -462.91
@@ -68,10 +72,11 @@ nodes:
     x: -464.34
     y: 70.41
     z: -730.15
-  radius_start: 0
-  radius_end: 360
+  radius_start: 357
+  radius_end: 110
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35051
   position:
     x: -467.54
@@ -81,10 +86,11 @@ nodes:
     x: -469.22
     y: 72.59
     z: -747.28
-  radius_start: 0
-  radius_end: 360
+  radius_start: 19
+  radius_end: 195
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35050
   position:
     x: -469.04
@@ -94,10 +100,11 @@ nodes:
     x: -470.74
     y: 76.04
     z: -769.39
-  radius_start: 0
-  radius_end: 360
+  radius_start: 360
+  radius_end: 153
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35049
   position:
     x: -492.64
@@ -107,7 +114,8 @@ nodes:
     x: -492.14
     y: 77.9
     z: -775
-  radius_start: 0
-  radius_end: 360
+  radius_start: 315
+  radius_end: 74
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0

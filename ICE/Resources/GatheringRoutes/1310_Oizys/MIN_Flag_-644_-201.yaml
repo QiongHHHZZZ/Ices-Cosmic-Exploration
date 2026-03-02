@@ -5,7 +5,7 @@ flag:
   x: -644
   y: -201
 author: Puni.sh Community
-date_modified: 2026-01-28T22:00:51.7436276Z
+date_modified: 2026-03-02T04:54:25.9415833Z
 nodes:
 - node_id: 35486
   position:
@@ -16,10 +16,11 @@ nodes:
     x: -612.55774
     y: -35.740005
     z: -201.41962
-  radius_start: 0
-  radius_end: 360
-  min_distance: 1
-  max_distance: 5
+  radius_start: 129
+  radius_end: 203
+  min_distance: 1.5
+  max_distance: 2.4
+  fan_height: 0
 - node_id: 35485
   position:
     x: -618.0475
@@ -29,10 +30,11 @@ nodes:
     x: -618.1934
     y: -37.41088
     z: -198.96034
-  radius_start: 0
-  radius_end: 360
+  radius_start: 95
+  radius_end: 216
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35487
   position:
     x: -653.9366
@@ -42,10 +44,11 @@ nodes:
     x: -654.4484
     y: -42.382034
     z: -196.07996
-  radius_start: 0
-  radius_end: 360
-  min_distance: 1
-  max_distance: 5
+  radius_start: 135
+  radius_end: 200
+  min_distance: 1.6
+  max_distance: 2.7
+  fan_height: 0.73
 - node_id: 35491
   position:
     x: -683.1051
@@ -55,10 +58,11 @@ nodes:
     x: -681.70154
     y: -41.7274
     z: -190.77739
-  radius_start: 0
-  radius_end: 360
+  radius_start: 241
+  radius_end: 327
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35492
   position:
     x: -685.29
@@ -68,10 +72,11 @@ nodes:
     x: -684.2056
     y: -42.383476
     z: -196.05077
-  radius_start: 0
-  radius_end: 360
+  radius_start: 155
+  radius_end: 297
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35489
   position:
     x: -682.6017
@@ -81,10 +86,11 @@ nodes:
     x: -682.3319
     y: -43.026554
     z: -208.11421
-  radius_start: 0
-  radius_end: 360
-  min_distance: 1
-  max_distance: 5
+  radius_start: 318
+  radius_end: 28
+  min_distance: 1.6
+  max_distance: 2.5
+  fan_height: 0
 - node_id: 35490
   position:
     x: -678.5057
@@ -94,10 +100,11 @@ nodes:
     x: -678.0254
     y: -43.64538
     z: -209.50607
-  radius_start: 0
-  radius_end: 360
+  radius_start: 235
+  radius_end: 42
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0
 - node_id: 35488
   position:
     x: -673.038
@@ -107,7 +114,8 @@ nodes:
     x: -671.6094
     y: -43.035965
     z: -201.3179
-  radius_start: 0
-  radius_end: 360
+  radius_start: 169
+  radius_end: 11
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
+  fan_height: 0

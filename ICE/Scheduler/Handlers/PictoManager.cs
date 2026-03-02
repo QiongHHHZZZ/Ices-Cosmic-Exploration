@@ -181,7 +181,7 @@ namespace ICE.Scheduler.Handlers
                 }
             }
         }
-        public static void DrawGatherNodes(List<GathNodeInfo>? routeItem, List<Vector3>? waypointPath = null)
+        public static void DrawGatherNodes(List<GathNodeInfo>? routeItem, uint selectedNode, List<Vector3>? waypointPath = null)
         {
             // Light colors with transparency (lighter alpha ~50%)
             uint lightBlue = 0x80ADD8E6;   // Light blue with 50% alpha
@@ -270,6 +270,50 @@ namespace ICE.Scheduler.Handlers
                     {
                         pictoDraw.AddDot(currentNode.LandZone, 5, orange);
                     });
+
+                    var fanColor = lightPurple;
+                    if (selectedNode == currentNode.NodeId)
+                        fanColor = orange;
+
+                    Vector3 position = new(currentNode.Position.X, currentNode.Position.Y + currentNode.FanHeight, currentNode.Position.Z);
+
+                    if (currentNode.Radius_Start > currentNode.Radius_End)
+                    {
+                        AddDrawCommand(pictoDraw =>
+                        {
+                            // Draw from start up to 360
+                            pictoDraw.AddFanFilled(
+                                position,
+                                currentNode.Distance_Min,
+                                currentNode.Distance_Max,
+                                DegreesToRadians(currentNode.Radius_Start),
+                                DegreesToRadians(360),
+                                fanColor);
+
+                            // Draw from 0 up to end
+                            pictoDraw.AddFanFilled(
+                                position,
+                                currentNode.Distance_Min,
+                                currentNode.Distance_Max,
+                                DegreesToRadians(0),
+                                DegreesToRadians(currentNode.Radius_End),
+                                fanColor);
+                        });
+                    }
+                    else
+                    {
+                        // Normal case, start < end
+                        AddDrawCommand(pictoDraw =>
+                        {
+                            pictoDraw.AddFanFilled(
+                                position,
+                                currentNode.Distance_Min,
+                                currentNode.Distance_Max,
+                                DegreesToRadians(currentNode.Radius_Start),
+                                DegreesToRadians(currentNode.Radius_End),
+                                fanColor);
+                        });
+                    }
 
                     // Draw line between position and landzone with color based on distance
                     float distance = Vector3.Distance(currentNode.Position, currentNode.LandZone);
@@ -374,6 +418,11 @@ namespace ICE.Scheduler.Handlers
             pictoDraw.AddLine(headLeft, headRight, lineHalfWidth, outlineColor, 2.0f);
             pictoDraw.AddLine(headLeft, arrowTip, lineHalfWidth, outlineColor, 2.0f);
             pictoDraw.AddLine(headRight, arrowTip, lineHalfWidth, outlineColor, 2.0f);
+        }
+
+        public static float DegreesToRadians(float degrees)
+        {
+            return degrees * (MathF.PI / 180f);
         }
     }
 }

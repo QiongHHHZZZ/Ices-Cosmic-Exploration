@@ -95,9 +95,6 @@ public static unsafe partial class CosmicHelper
     public class CraftingInfo
     {
         public uint ItemId { get; set; } 
-        public uint Durability { get; set; }
-        public uint Quality { get; set; }
-        public uint Progress { get; set; }
         public int RequiredAmount { get; set; } 
         public uint RecipeId { get; set; }
         public bool ExpertCraft { get; set; } = false;

@@ -56,175 +56,152 @@ namespace ICE.Scheduler.Tasks
             string tag = "[Task_Check Score: Fish]";
             var currentMission = CosmicHelper.CurrentLunarMission;
 
-            IceLogging.Verbose($"Score check for fish was initialized. Checking for minimum requirements: [{currentMission}]", tag);
-            if (CosmicHelper.SheetMissionDict.TryGetValue(currentMission, out var sheetInfo))
+            if (EzThrottler.Throttle("Fish Score Check Throttle", 1000))
+                IceLogging.Verbose($"Score check for fish was initialized. Checking for minimum requirements: [{currentMission}]", tag);
+
+            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
             {
-                var rank = CurrentRank();
-
-                if (rank == MissionRank.Depleted)
+                if (CosmicHelper.SheetMissionDict.TryGetValue(currentMission, out var sheetInfo))
                 {
-                    IceLogging.Debug("Mission is either timed out, or out of resources. So going to force a turnin", tag);
-                    SchedulerMain.State = IceState.AbandonMission;
-                    P.TaskManager.Tasks.Clear();
-                    return true;
-                }
+                    var rank = CurrentRank();
 
-                IceLogging.Verbose("Mission info was valid, searching what we should be checking for", tag);
-
-                if (sheetInfo.Gathering_Min.Count > 0)
-                {
-                    IceLogging.Verbose($"Fishing mission has a minumum amount of fish needed. Checking the specifics for each", tag);
-                    foreach (var fishItem in sheetInfo.Gathering_Min)
+                    if (rank == MissionRank.Depleted)
                     {
-                        if (PlayerHelper.GetItemCount(fishItem.Key, out var amount))
-                        {
-                            if (amount < fishItem.Value)
-                            {
-                                IceLogging.Debug("We've found a fish that we're still missing!\n" +
-                                    $"ItemID: {fishItem.Key}. We need: {fishItem.Value}. We have: {amount}", tag);
+                        IceLogging.Debug("Mission is either timed out, or out of resources. So going to force a turnin", tag);
+                        SchedulerMain.State = IceState.AbandonMission;
+                        P.TaskManager.Tasks.Clear();
+                        return true;
+                    }
 
+                    IceLogging.Verbose("Mission info was valid, searching what we should be checking for", tag);
+
+                    if (sheetInfo.Gathering_Min.Count > 0)
+                    {
+                        IceLogging.Verbose($"Fishing mission has a minumum amount of fish needed. Checking the specifics for each", tag);
+                        foreach (var fishItem in sheetInfo.Gathering_Min)
+                        {
+                            if (PlayerHelper.GetItemCount(fishItem.Key, out var amount))
+                            {
+                                if (amount < fishItem.Value)
+                                {
+                                    IceLogging.Debug("We've found a fish that we're still missing!\n" +
+                                        $"ItemID: {fishItem.Key}. We need: {fishItem.Value}. We have: {amount}", tag);
+
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    else if (sheetInfo.Fish_AmountRequired > 0)
+                    {
+                        IceLogging.Verbose("We're in a mission where we need a certain amount of fish overall. So checking that", tag);
+                        var amount = CurrentCollectedTotal();
+
+                        if (amount < sheetInfo.Fish_AmountRequired)
+                        {
+                            IceLogging.Debug($"We're not at the total amount needed for the mission. Need: {sheetInfo.Fish_AmountRequired} | Have: {amount}", tag);
+                            return true;
+                        }
+                    }
+                    else if (sheetInfo.Fish_VarietyAmount > 0)
+                    {
+                        var amount = CurrentIndividualTotal();
+                        if (amount < sheetInfo.Fish_VarietyAmount)
+                        {
+                            IceLogging.Debug($"Need a variety of fish, and we're missing some. Need: {sheetInfo.Fish_VarietyAmount} | Have: {amount}", tag);
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        var currentScore = CurrentScore();
+                        var bronzeScore = sheetInfo.BronzeScore;
+
+                        if (currentScore < bronzeScore && sheetInfo.BronzeScore != 0)
+                        {
+                            IceLogging.Debug("We need to still hit the score threshold for bronze. So we're still gonna fish", tag);
+                            return true;
+                        }
+                    }
+
+                    if (rank != MissionRank.None || sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
+                    {
+                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        {
+                            IceLogging.Debug("We're in a mission where we're just meeting the minimum score. Turning in", tag);
+                            SchedulerMain.State = IceState.TurninMission;
+                            P.TaskManager.Tasks.Clear();
+
+                            Mission_Settings.TurninState = DetermineTurninState();
+                            return true;
+                        }
+                        else
+                        {
+                            bool shouldTurnin = false;
+
+                            if (sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
+                            {
+                                IceLogging.Verbose("We're in a critical mission, this needs to just be turned in", tag);
+                                shouldTurnin = true;
+                            }
+                            else if (Mission_Settings.Mode == ModeSelect.LevelMode && rank >= MissionRank.Bronze)
+                            {
+                                IceLogging.Debug("We're in Leveling Mode, and we only need a bronze. So we're setting turnin to true");
+                                shouldTurnin = true;
+                            }
+                            else
+                            {
+                                var config = C.MissionConfig[currentMission];
+
+                                shouldTurnin = ((config.TurninGold || config.AutoTurnin) && rank >= MissionRank.Gold) ||
+                                               (config.TurninSilver && rank >= MissionRank.Silver) ||
+                                               (config.TurninBronze && rank >= MissionRank.Bronze);
+                            }
+
+                            if (shouldTurnin)
+                            {
+                                MedalChecker(rank);
+                                IceLogging.Info("The threshold for scoring was met. Time to turnin", tag);
+                                SchedulerMain.State = IceState.TurninMission;
+                                P.TaskManager.Tasks.Clear();
+
+                                return true;
+                            }
+                            else
+                            {
+                                var config = C.MissionConfig[currentMission];
+
+                                IceLogging.Debug("We're still going for a score/not met threshold.\n" +
+                                    $"Rank: {rank.ToString()}\n" +
+                                    $"Any Turnin: {config.AutoTurnin}" +
+                                    $"Gold Turnin: {config.TurninGold}\n" +
+                                    $"Silver Turnin: {config.TurninSilver}\n" +
+                                    $"Bronze Turnin: {config.TurninBronze}", tag);
                                 return true;
                             }
                         }
                     }
-                }
-                else if (sheetInfo.Fish_AmountRequired > 0)
-                {
-                    IceLogging.Verbose("We're in a mission where we need a certain amount of fish overall. So checking that", tag);
-                    var amount = CurrentCollectedTotal();
-
-                    if (amount < sheetInfo.Fish_AmountRequired)
-                    {
-                        IceLogging.Debug($"We're not at the total amount needed for the mission. Need: {sheetInfo.Fish_AmountRequired} | Have: {amount}", tag);
-                        return true;
-                    }
-                }
-                else if (sheetInfo.Fish_VarietyAmount > 0)
-                {
-                    var amount = CurrentIndividualTotal();
-                    if (amount < sheetInfo.Fish_VarietyAmount)
-                    {
-                        IceLogging.Debug($"Need a variety of fish, and we're missing some. Need: {sheetInfo.Fish_VarietyAmount} | Have: {amount}", tag);
-                        return true;
-                    }
-                }
-                else
-                {
-                    var currentScore = CurrentScore();
-                    var bronzeScore = sheetInfo.BronzeScore;
-
-                    if (currentScore < bronzeScore && sheetInfo.BronzeScore != 0)
-                    {
-                        IceLogging.Debug("We need to still hit the score threshold for bronze. So we're still gonna fish", tag);
-                        return true;
-                    }
-                }
-
-                if (rank != MissionRank.None || sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
-                {
-                    if (sheetInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
-                    {
-                        IceLogging.Debug("We're in a mission where we're just meeting the minimum score. Turning in", tag);
-                        SchedulerMain.State = IceState.TurninMission;
-                        P.TaskManager.Tasks.Clear();
-
-                        Mission_Settings.TurninState = DetermineTurninState();
-                        return true;
-                    }
                     else
                     {
-                        bool shouldTurnin = false;
+                        IceLogging.Error($"Hey, it seems something slipped through the cracks. If you could report to me this it would be great\n" +
+                            $"ID: {currentMission}\n" +
+                            $"Name: {sheetInfo.Name}\n" +
+                            $"Missed the score ranking but slipped through", tag);
 
-                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
-                        {
-                            IceLogging.Verbose("We're in a critical mission, this needs to just be turned in", tag);
-                            shouldTurnin = true;
-                        }
-                        else if (Mission_Settings.Mode == ModeSelect.LevelMode && rank >= MissionRank.Bronze)
-                        {
-                            IceLogging.Debug("We're in Leveling Mode, and we only need a bronze. So we're setting turnin to true");
-                            shouldTurnin = true;
-                        }
-                        else
-                        {
-                            var config = C.MissionConfig[currentMission];
-
-                            shouldTurnin = ((config.TurninGold || config.AutoTurnin) && rank >= MissionRank.Gold) ||
-                                           (config.TurninSilver && rank >= MissionRank.Silver) ||
-                                           (config.TurninBronze && rank >= MissionRank.Bronze);
-                        }
-
-                        if (shouldTurnin)
-                        {
-                            MedalChecker(rank);
-                            IceLogging.Info("The threshold for scoring was met. Time to turnin", tag);
-                            SchedulerMain.State = IceState.TurninMission;
-                            P.TaskManager.Tasks.Clear();
-
-                            return true;
-                        }
-                        else
-                        {
-                            var config = C.MissionConfig[currentMission];
-
-                            IceLogging.Debug("We're still going for a score/not met threshold.\n" +
-                                $"Rank: {rank.ToString()}\n" +
-                                $"Any Turnin: {config.AutoTurnin}" +
-                                $"Gold Turnin: {config.TurninGold}\n" +
-                                $"Silver Turnin: {config.TurninSilver}\n" +
-                                $"Bronze Turnin: {config.TurninBronze}", tag);
-                            return true;
-                        }
+                        return true;
                     }
                 }
-                else
+            }
+            else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("Opening the moon hud", 1000))
                 {
-                    IceLogging.Error($"Hey, it seems something slipped through the cracks. If you could report to me this it would be great\n" +
-                        $"ID: {currentMission}\n" +
-                        $"Name: {sheetInfo.Name}\n" +
-                        $"Missed the score ranking but slipped through", tag);
-
-                    return true;
+                    moonHud.Mission();
+                    IceLogging.Info("Hud wasn't visible. Opening it", "[Score Check]");
                 }
             }
 
             return false;
-        }
-
-        private static unsafe uint CurrentCollectedTotal()
-        {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return 0;
-
-            var manager = (WKSManagerCustom*)managerPtr;
-            return manager->CollectedTotal;
-        }
-
-        private static unsafe uint CurrentIndividualTotal()
-        {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return 0;
-
-            var manager = (WKSManagerCustom*)managerPtr;
-            return manager->CollectedIndividual;
-        }
-
-        private static unsafe uint CurrentScore()
-        {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return 0;
-
-            var manager = (WKSManagerCustom*)managerPtr;
-            return manager->CurrentScore;
-        }
-
-        public static unsafe MissionRank CurrentRank()
-        {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return MissionRank.None;
-
-            var manager = (WKSManagerCustom*)managerPtr;
-            return manager->CurrentRank;
         }
 
         public static bool? Craft_V2()
@@ -343,222 +320,208 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
 
-            var id = CosmicHelper.CurrentLunarMission;
-            if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var sheet))
+            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
             {
-
-                if (sheet.Attributes.HasFlag(MissionAttributes.Critical))
+                var id = CosmicHelper.CurrentLunarMission;
+                if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var sheet))
                 {
-                    foreach (var item in sheet.Gathering_Min)
-                    {
-                        if (PlayerHelper.GetItemCount(item.Key, out var count) && count < item.Value)
-                        {
-                            IceLogging.Info("We're still missing items for the critical mission, so continuing on", tag);
-                            return true;
-                        }
-                    }
-                }
-                else if (rank == MissionRank.None)
-                {
-                    IceLogging.Info("We still haven't achieved atleast bronze scoring for the missions. So we're going to continue on", tag);
-                    return true;
-                }
-
-                if (rank != MissionRank.None || sheet.Attributes.HasFlag(MissionAttributes.Critical))
-                {
-                    bool shouldTurnin = false;
 
                     if (sheet.Attributes.HasFlag(MissionAttributes.Critical))
                     {
-                        IceLogging.Verbose("We're in a critical mission, this needs to just be turned in", tag);
-                        shouldTurnin = true;
+                        foreach (var item in sheet.Gathering_Min)
+                        {
+                            if (PlayerHelper.GetItemCount(item.Key, out var count) && count < item.Value)
+                            {
+                                IceLogging.Info("We're still missing items for the critical mission, so continuing on", tag);
+                                return true;
+                            }
+                        }
                     }
-                    else if (Mission_Settings.Mode == ModeSelect.LevelMode && rank >= MissionRank.Bronze)
+                    else if (rank == MissionRank.None)
                     {
-                        IceLogging.Debug("We're in Leveling Mode, and we only need a bronze. So we're setting turnin to true");
-                        shouldTurnin = true;
-                    }
-                    else if (sheet.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
-                    {
-                        shouldTurnin = true;
-                    }
-                    else
-                    {
-                        var config = C.MissionConfig[id];
-
-                        shouldTurnin = ((config.TurninGold || config.AutoTurnin) && rank >= MissionRank.Gold) ||
-                                       (config.TurninSilver && rank >= MissionRank.Silver) ||
-                                       (config.TurninBronze && rank >= MissionRank.Bronze);
-                    }
-
-                    if (shouldTurnin)
-                    {
-                        MedalChecker(rank);
-                        IceLogging.Info("The threshold for scoring was met. Time to turnin", tag);
-                        SchedulerMain.State = IceState.TurninMission;
-                        P.TaskManager.Tasks.Clear();
-
+                        IceLogging.Info("We still haven't achieved atleast bronze scoring for the missions. So we're going to continue on", tag);
                         return true;
                     }
+
+                    if (rank != MissionRank.None || sheet.Attributes.HasFlag(MissionAttributes.Critical))
+                    {
+                        bool shouldTurnin = false;
+
+                        if (sheet.Attributes.HasFlag(MissionAttributes.Critical))
+                        {
+                            IceLogging.Verbose("We're in a critical mission, this needs to just be turned in", tag);
+                            shouldTurnin = true;
+                        }
+                        else if (CosmicHandler.IsMissionTimedOut())
+                        {
+                            IceLogging.Verbose("We seem to be timed out of our current mission. But we've hit a minimum threshold of score, so we're just going to turnin", tag);
+                            shouldTurnin = true;
+                        }
+                        else if (Mission_Settings.Mode == ModeSelect.LevelMode && rank >= MissionRank.Bronze)
+                        {
+                            IceLogging.Debug("We're in Leveling Mode, and we only need a bronze. So we're setting turnin to true", tag);
+                            shouldTurnin = true;
+                        }
+                        else if (sheet.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        {
+                            IceLogging.Debug("Score is based on time remaining, and we have some sort of rank. Turning in", tag);
+                            shouldTurnin = true;
+                        }
+                        else if (sheet.Attributes.HasFlag(MissionAttributes.Limited) && Mission_Settings.nodeTotal == 8)
+                        {
+                            if (!Svc.Condition[ConditionFlag.Gathering])
+                            {
+                                shouldTurnin = true;
+                                IceLogging.Debug("We might of not reached our turnin point, but we've ran out of nodes to gather at. So we're just going to just turnin", tag);
+                            }
+                        }
+                        else
+                        {
+                            var config = C.MissionConfig[id];
+
+                            shouldTurnin = ((config.TurninGold || config.AutoTurnin) && rank >= MissionRank.Gold) ||
+                                           (config.TurninSilver && rank >= MissionRank.Silver) ||
+                                           (config.TurninBronze && rank >= MissionRank.Bronze);
+                        }
+
+                        if (shouldTurnin)
+                        {
+                            MedalChecker(rank);
+                            IceLogging.Info("The threshold for scoring was met. Time to turnin", tag);
+                            SchedulerMain.State = IceState.TurninMission;
+                            P.TaskManager.Tasks.Clear();
+
+                            return true;
+                        }
+                        else
+                        {
+                            var config = C.MissionConfig[id];
+
+                            IceLogging.Debug("We're still going for a score/not met threshold.\n" +
+                                $"Rank: {rank.ToString()}\n" +
+                                $"Any Turnin: {config.AutoTurnin}" +
+                                $"Gold Turnin: {config.TurninGold}\n" +
+                                $"Silver Turnin: {config.TurninSilver}\n" +
+                                $"Bronze Turnin: {config.TurninBronze}", tag);
+                            return true;
+                        }
+                    }
                     else
                     {
-                        var config = C.MissionConfig[id];
+                        IceLogging.Error($"Hey, it seems something slipped through the cracks. If you could report to me this it would be great\n" +
+                            $"ID: {id}\n" +
+                            $"Name: {sheet.Name}\n" +
+                            $"Missed the score ranking but slipped through", tag);
 
-                        IceLogging.Debug("We're still going for a score/not met threshold.\n" +
-                            $"Rank: {rank.ToString()}\n" +
-                            $"Any Turnin: {config.AutoTurnin}" +
-                            $"Gold Turnin: {config.TurninGold}\n" +
-                            $"Silver Turnin: {config.TurninSilver}\n" +
-                            $"Bronze Turnin: {config.TurninBronze}", tag);
                         return true;
                     }
                 }
-                else
+            }
+            else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("Opening the moon hud", 1000))
                 {
-                    IceLogging.Error($"Hey, it seems something slipped through the cracks. If you could report to me this it would be great\n" +
-                        $"ID: {id}\n" +
-                        $"Name: {sheet.Name}\n" +
-                        $"Missed the score ranking but slipped through", tag);
+                    moonHud.Mission();
+                    IceLogging.Info("Hud wasn't visible. Opening it", "[Score Check]");
+                }
+            }
+
+            return false;
+        }
+        public static unsafe bool? DualClass()
+        {
+            string tag = "Score Check: Dual Class";
+
+            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
+            {
+                var currentScore = CurrentScore();
+                var rank = CurrentRank();
+                var Id = CosmicHelper.CurrentLunarMission;
+
+                if (CosmicHandler.IsMissionTimedOut())
+                {
+                    SchedulerMain.State = IceState.AbandonMission;
+                    P.TaskManager.Tasks.Clear();
+                    return true;
+                }
+                else if (rank == MissionRank.Depleted)
+                {
+                    SchedulerMain.State = IceState.AbandonMission;
+                    P.TaskManager.Tasks.Clear();
+                    return true;
+                }
+
+                var config = C.MissionConfig[Id];
+                bool shouldTurnin = ((config.TurninGold || config.AutoTurnin) && rank >= MissionRank.Gold) ||
+                                    (config.TurninSilver && rank >= MissionRank.Silver) ||
+                                    (config.TurninBronze && rank >= MissionRank.Bronze);
+
+                if (shouldTurnin)
+                {
+                    MedalChecker(rank);
+                    IceLogging.Info("The threshold for scoring was met. Time to turnin", tag);
+                    SchedulerMain.State = IceState.TurninMission;
+                    P.TaskManager.Tasks.Clear();
 
                     return true;
+                }
+                else
+                {
+                    IceLogging.Debug("We're still going for a score/not met threshold.\n" +
+                        $"Rank: {rank.ToString()}\n" +
+                        $"Any Turnin: {config.AutoTurnin}" +
+                        $"Gold Turnin: {config.TurninGold}\n" +
+                        $"Silver Turnin: {config.TurninSilver}\n" +
+                        $"Bronze Turnin: {config.TurninBronze}", tag);
+                    return true;
+                }
+            }
+            else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud))
+            {
+                if (EzThrottler.Throttle("Opening the moon hud", 1000))
+                {
+                    moonHud.Mission();
+                    IceLogging.Info("Hud wasn't visible. Opening it", tag);
                 }
             }
 
             return false;
         }
 
-        public static unsafe bool? DualClass()
+        private static unsafe uint CurrentCollectedTotal()
         {
-            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
-            {
-                if (missionInfo.CurrentScore == null)
-                {
-                    return false;
-                }
-                else
-                {
-                    if (CosmicHandler.IsMissionTimedOut())
-                    {
-                        SchedulerMain.State = IceState.AbandonMission;
-                        P.TaskManager.Tasks.Clear();
-                        return true;
-                    }
+            var managerPtr = WKSManager.Instance();
+            if (managerPtr == null) return 0;
 
-                    var Id = CosmicHelper.CurrentLunarMission;
-                    // var mission = CosmicHelper.Dict_CosmicMissions[Id];
-                    var mission = CosmicHelper.SheetMissionDict[Id];
-                    bool shouldTurnin = false;
+            var manager = (WKSManagerCustom*)managerPtr;
+            return manager->CollectedTotal;
+        }
 
-                    if (mission.BronzeScore != 0 && (missionInfo.CurrentScore <= mission.BronzeScore))
-                    {
-                        IceLogging.Info("Bronze score is recorded at not 0. Which means that it needs a minimum score. \n" +
-                                        $"Current Score: {missionInfo.CurrentScore}\n" +
-                                        $"Minimum Score: {mission.BronzeScore}\n" +
-                                        $"Continuing on with the crafting process");
-                        return true;
-                    }
-                    else
-                    {
-                        var currentScore = missionInfo.CurrentScore;
-                        var bronzeScore = mission.BronzeScore;
-                        var silverScore = mission.SilverScore;
-                        var goldScore = mission.GoldScore;
+        private static unsafe uint CurrentIndividualTotal()
+        {
+            var managerPtr = WKSManager.Instance();
+            if (managerPtr == null) return 0;
 
-                        var config = C.MissionConfig[Id];
-                        bool AnyTurnin = config.AutoTurnin;
-                        bool GoldGoal = goldScore <= currentScore;
-                        bool SilverGoal = silverScore <= currentScore;
-                        bool TurninBronze = config.TurninBronze;
+            var manager = (WKSManagerCustom*)managerPtr;
+            return manager->CollectedIndividual;
+        }
 
-                        if (config.AutoTurnin)
-                        {
-                            // AutoTurnin enabled, going to check for gold only since we have materials/time still
-                            if (GoldGoal)
-                            {
-                                IceLogging.Info("Auto turnin was enabled, and hit the max score.", "[Craft Scoring]");
-                                shouldTurnin = true;
-                            }
-                        }
-                        else
-                        {
-                            if (GoldGoal && config.TurninGold)
-                            {
-                                IceLogging.Info("Gold Turnin was enabled, and hit the max score.", "[Craft Scoring]");
-                                shouldTurnin = true;
-                            }
-                            else if (SilverGoal && config.TurninSilver)
-                            {
-                                if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
-                                {
-                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold enabled.", "[Craft Scoring]");
-                                    shouldTurnin = true;
-                                }
-                            }
-                            else if (config.TurninBronze)
-                            {
-                                if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
-                                {
-                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold or silver enabled.", "[Craft Scoring]");
-                                    shouldTurnin = true;
-                                }
-                            }
-                        }
-                    }
+        private static unsafe uint CurrentScore()
+        {
+            var managerPtr = WKSManager.Instance();
+            if (managerPtr == null) return 0;
 
-                    if (shouldTurnin)
-                    {
-                        IceLogging.Debug("The threshold for scoring was met. Time to turnin", "[Craft Scoring]");
+            var manager = (WKSManagerCustom*)managerPtr;
+            return manager->CurrentScore;
+        }
 
-                        if (mission.Attributes.HasFlag(MissionAttributes.Critical))
-                            Mission_Settings.TurninState = TurninState.Gold;
-                        else
-                        {
-                            var currentScore = missionInfo.CurrentScore;
-                            var silverScore = mission.SilverScore;
-                            var goldScore = mission.GoldScore;
-                            // to check later
-                            MedalChecker(currentScore.Value, silverScore, goldScore);
-                        }
+        public static unsafe MissionRank CurrentRank()
+        {
+            var managerPtr = WKSManager.Instance();
+            if (managerPtr == null) return MissionRank.None;
 
-                        SchedulerMain.State = IceState.TurninMission;
-                        P.TaskManager.Tasks.Clear();
-
-                        return true;
-                    }
-                    else
-                    {
-                        var config = C.MissionConfig[Id];
-                        var currentScore = missionInfo.CurrentScore;
-                        var bronzeScore = mission.BronzeScore;
-                        var silverScore = mission.SilverScore;
-                        var goldScore = mission.GoldScore;
-
-                        IceLogging.Debug("Minimum scoring isn't met for your current preset. Continuing on", "[Craft Scoring]");
-                        IceLogging.Info("Currently Enabled:\n" +
-                                        $"Bronze Enable: {config.TurninBronze} | Score: {bronzeScore}" +
-                                        $"Silver Enable: {config.TurninSilver} | Score: {silverScore}" +
-                                        $"Gold Enabled: {config.TurninGold} | Score: {goldScore}" +
-                                        $"Any Turnin Enabled: {config.AutoTurnin}" +
-                                        $"Current Score: {missionInfo.CurrentScore}");
-
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                // Addon wasn't visiable/ready. Opening it up.
-                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud))
-                {
-                    if (EzThrottler.Throttle("Opening the moon hud", 1000))
-                    {
-                        moonHud.Mission();
-                        IceLogging.Info("Hud wasn't visible. Opening it", "[Score Check]");
-                    }
-                }
-            }
-
-            return false;
+            var manager = (WKSManagerCustom*)managerPtr;
+            return manager->CurrentRank;
         }
 
         public static TurninState DetermineTurninState()

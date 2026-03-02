@@ -5,7 +5,7 @@ flag:
   x: -320
   y: 97
 author: Puni.sh Community
-date_modified: 2026-01-28T22:00:51.4736698Z
+date_modified: 2026-03-02T04:54:25.5835671Z
 nodes:
 - node_id: 35323
   position:
@@ -20,6 +20,7 @@ nodes:
   radius_end: 360
   min_distance: 1
   max_distance: 5
+  fan_height: 0
 - node_id: 35324
   position:
     x: -299.46
@@ -33,6 +34,7 @@ nodes:
   radius_end: 360
   min_distance: 1
   max_distance: 5
+  fan_height: 0
 - node_id: 35321
   position:
     x: -375.36
@@ -46,6 +48,7 @@ nodes:
   radius_end: 360
   min_distance: 1
   max_distance: 5
+  fan_height: 0
 - node_id: 35322
   position:
     x: -374.67
@@ -59,6 +62,7 @@ nodes:
   radius_end: 360
   min_distance: 1
   max_distance: 5
+  fan_height: 0
 - node_id: 35320
   position:
     x: -290.44
@@ -72,6 +76,7 @@ nodes:
   radius_end: 360
   min_distance: 1
   max_distance: 5
+  fan_height: 0
 - node_id: 35319
   position:
     x: -283.03
@@ -85,3 +90,4 @@ nodes:
   radius_end: 360
   min_distance: 1
   max_distance: 5
+  fan_height: 0

@@ -17,16 +17,17 @@ public class GathNodeInfo
     public Vector3 LandZone { get; set; }
 
     [YamlMember(Alias = "radius_start")]
-    public float RadiusStart { get; set; } = 0.0f;
+    public float Radius_Start { get; set; } = 0.0f;
 
     [YamlMember(Alias = "radius_end")]
-    public float RadiusEnd { get; set; } = 360.0f;
+    public float Radius_End { get; set; } = 360.0f;
 
     [YamlMember(Alias = "min_distance")]
-    public float MinDistance { get; set; } = 1.0f;
+    public float Distance_Min { get; set; } = 1.0f;
 
     [YamlMember(Alias = "max_distance")]
-    public float MaxDistance { get; set; } = 5.0f;
+    public float Distance_Max { get; set; } = 3.0f;
+    public float FanHeight { get; set; } = 0;
 }
 
 public class GatheringRouteFile

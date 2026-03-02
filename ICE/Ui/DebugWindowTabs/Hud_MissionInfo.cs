@@ -81,6 +81,16 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.TableNextColumn();
                         ImGui.Text($"{x.CriticalScore}");
                     }
+                    
+                    if (mission.Attributes.HasFlag(MissionAttributes.Fish))
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Current Bait");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{CosmicHelper.CurrentBait}");
+                    }
 
                      ImGui.TableNextRow();
                      ImGui.TableSetColumnIndex(0);

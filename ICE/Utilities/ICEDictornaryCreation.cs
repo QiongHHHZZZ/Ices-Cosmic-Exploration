@@ -138,6 +138,10 @@ public sealed partial class ICE
             {
                 mapFlag = new(-514, 232);
             }
+            else if (keyId is 1317 or 1318 or 1319)
+            {
+                mapFlag = new(mapFlag.X + 1, mapFlag.Y + 1);
+            }
 
             // Mission Attributes/Flags. Esentially a quick way to know what is what kind of mission at a quick glance
             MissionAttributes attributes = MissionAttributes.None;

@@ -80,7 +80,7 @@ namespace ICE.Scheduler.Tasks
             // Handle starting navmesh
             return HandleStartNavmesh(pos, distance, stayMounted, npcLoc, usingCosmoliner, mounted, distanceToTarget, handle, useMount, mountBeforeMove);
         }
-        public static bool? Task_GatherMove(GathNodeInfo routeinfo, bool waitForBusy = true, float distance = 4.5f, bool stayMounted = false, bool mountBeforeMove = false)
+        public static bool? Task_GatherMove(GathNodeInfo routeinfo, bool waitForBusy = true, float distance = 3.5f, bool stayMounted = false, bool mountBeforeMove = false)
         {
             string handle = "Navmesh: Gather Move";
 
@@ -123,11 +123,15 @@ namespace ICE.Scheduler.Tasks
             float node_MinAngle = PictomancyToFFXIV(routeinfo.Radius_Start + routeinfo.FanHeight);
             float node_MaxAngle = PictomancyToFFXIV(routeinfo.Radius_End + routeinfo.FanHeight);
 
-            var (sectionMin, sectionMax) = GetNearestSection(node_MinAngle, node_MaxAngle, angleToPlayer, 15f);
+            bool isInsideFan = IsAngleInRange(angleToPlayer, node_MinAngle, node_MaxAngle);
+            float sectionSize = isInsideFan ? 30f : 60f;
+
+            var (sectionMin, sectionMax) = GetNearestSection(node_MinAngle, node_MaxAngle, angleToPlayer, sectionSize);
             float selectedAngle = RandomAngleInRange(sectionMin, sectionMax);
             float selectedDistance = NextFloat(routeinfo.Distance_Min, routeinfo.Distance_Max);
 
             Vector3 randomPosition = CalculateFanPosition(nodePos, selectedAngle, selectedDistance, routeinfo.FanHeight);
+            randomPosition = P.Navmesh.NearestPoint(randomPosition, 0.1f, 5f).Value;
             if (EzThrottler.Throttle("Gather Route Throttle", 3000))
                 IceLogging.Debug($"[GatherMove] angleToPlayer={angleToPlayer:F1}, node_MinAngle={node_MinAngle:F1}, node_MaxAngle={node_MaxAngle:F1}, sectionMin={sectionMin:F1}, sectionMax={sectionMax:F1}, selectedAngle={selectedAngle:F1}, selectedDistance={selectedDistance:F2}, minDist={routeinfo.Distance_Min}, maxDist={routeinfo.Distance_Max}, randomPosition={randomPosition}", handle);
 

@@ -465,7 +465,6 @@ namespace ICE.Scheduler.Tasks
                 }
             }
 
-
             // Use smart routing (aethernet/hub) for far nodes when closest node selection is active
             if (C.ClosestNodeSelection && distanceToLandZone > SmartRoutingThreshold)
             {
@@ -475,10 +474,9 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
 
-            if (!Task_NavmeshMove.Task_NavTo(location.LandZone, distance: 2).Value)
+            if (!Task_NavmeshMove.Task_GatherMove(location).Value)
             {
                 UseCordial();
-                ThrottleMessage("Currently in the process of moving, so going to wait", "Task_Gather: NavmeshMovement");
                 return false;
             }
             else

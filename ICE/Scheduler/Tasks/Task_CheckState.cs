@@ -233,9 +233,22 @@ namespace ICE.Scheduler.Tasks
                                 break;
                             }
                         }
-                        if (canTurnin && C.TurninRelic)
+                        if (canTurnin)
                         {
-                            IceLogging.Debug("Relic is at a point to be able to turnin! Going to do so later", tag);
+                            if (C.TurninRelic)
+                            {
+                                IceLogging.Debug("Relic is at a point to be able to turnin! Going to do so later", tag);
+                            }
+                            else
+                            {
+                                IceLogging.ChatInfo("We're at the point we can turn in the relic! Please do so, or disable stop when at relic turnin", tag);
+                                SchedulerMain.State = IceState.Idle;
+                                if (C.PlaySoundAlert)
+                                {
+                                    _ = SoundPlayer.PlaySoundAsync();
+                                }
+                                return true;
+                            }
                         }
                     }
                     else

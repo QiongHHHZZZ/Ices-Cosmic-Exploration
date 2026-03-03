@@ -1654,111 +1654,15 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     headerFlags = ImGuiTreeNodeFlags.DefaultOpen;
 #endif
 
-                    if (ImGui.CollapsingHeader(T("Mission Crafts"), headerFlags))
-                    {
-                        if (ImGui.BeginTable("Mission Craft Info", 5, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
-                        {
-                            ImGui.TableSetupColumn(T("Item"));
-                            ImGui.TableSetupColumn(T("Progress"));
-                            ImGui.TableSetupColumn(T("Quality"));
-                            ImGui.TableSetupColumn(T("Durability"));
-                            ImGui.TableSetupColumn(T("Amount"));
+                    Dictionary<ushort, CosmicHelper.CraftingInfo> missionCrafts = new();
+                    foreach (var craft in mission.Crafts_Main)
+                        missionCrafts[craft.Key] = craft.Value;
+                    foreach (var craft in mission.Crafts_Pre)
+                        missionCrafts[craft.Key] = craft.Value;
 
-                            ImGui.TableHeadersRow();
-
-                            ImGui.TableNextRow();
-                            ImGui.TableSetColumnIndex(0);
-                            ImGui.Text(T("Main Crafts"));
-
-                            foreach (var craft in mission.Crafts_Main)
-                            {
-                                if (Svc.Data.GetExcelSheet<Recipe>().TryGetRow(craft.Key, out var recipe))
-                                {
-                                    string itemName = recipe.ItemResult.Value.Name.ToString();
-                                    var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Key);
-
-                                    ImGui.TableNextRow();
-                                    ImGui.TableSetColumnIndex(0);
-                                    ImGui.Text($"{itemName}");
-#if DEBUG
-                                    if (ImGui.IsItemHovered())
-                                    {
-                                        ImGui.SetTooltip(T("RecipeId: {0}", recipe.RowId));
-                                    }
-#endif
-                                    if (recipe.IsExpert)
-                                    {
-                                        ImGui.SameLine();
-                                        ImGuiEx.Icon(new Vector4(1.0f, 0.4f, 0.0f, 1.0f), FontAwesomeIcon.Diamond);
-                                        if (ImGui.IsItemHovered())
-                                        {
-                                            ImGui.SetTooltip(T("Expert Craft"));
-                                        }
-                                    }
-
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text($"{recipeInfo.Progress}");
-
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text($"{recipeInfo.Quality}");
-
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text($"{recipeInfo.Durability}");
-
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text($"{craft.Value.RequiredAmount}");
-                                }
-                            }
-
-                            if (mission.Crafts_Pre.Count > 0)
-                            {
-                                ImGui.TableNextRow();
-                                ImGui.TableSetColumnIndex(0);
-                                ImGui.Text(T("Pre-Crafts"));
-
-                                foreach (var craft in mission.Crafts_Pre)
-                                {
-                                    if (Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Recipe>().TryGetRow(craft.Key, out var recipe))
-                                    {
-                                        string itemName = recipe.ItemResult.Value.Name.ToString();
-                                        var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Key);
-
-                                        ImGui.TableNextRow();
-                                        ImGui.TableSetColumnIndex(0);
-                                        ImGui.Text($"{itemName}");
-                                        if (recipe.IsExpert)
-                                        {
-                                            ImGui.SameLine();
-                                            ImGuiEx.Icon(new Vector4(1.0f, 0.4f, 0.0f, 1.0f), FontAwesomeIcon.Diamond);
-                                            if (ImGui.IsItemHovered())
-                                            {
-                                                ImGui.SetTooltip(T("Expert Craft"));
-                                            }
-                                        }
-
-                                        ImGui.TableNextColumn();
-                                        ImGui.Text($"{recipeInfo.Progress}");
-
-                                        ImGui.TableNextColumn();
-                                        ImGui.Text($"{recipeInfo.Quality}");
-
-                                        ImGui.TableNextColumn();
-                                        ImGui.Text($"{recipeInfo.Durability}");
-
-                                        ImGui.TableNextColumn();
-                                        ImGui.Text($"{craft.Value.RequiredAmount}");
-                                    }
-                                }
-                            }
-
-                            ImGui.EndTable();
-                        }
-                    }
-
-#if DEBUG
                     if (ImGui.CollapsingHeader(T("Craft Item Settings"), headerFlags))
                     {
-                        foreach (var craft in mission.Crafts_Main)
+                        foreach (var craft in missionCrafts)
                         {
                             if (ImGui.BeginTable($"Main Craft Details_{craft.Value.RecipeId}", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.Hideable))
                             {
@@ -2178,7 +2082,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                         }
                     }
-#endif
                 }
 
                 WindowSpacer();

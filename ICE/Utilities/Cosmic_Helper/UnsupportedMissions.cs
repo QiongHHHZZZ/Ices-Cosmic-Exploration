@@ -12,9 +12,6 @@ namespace ICE.Utilities.Cosmic
             0,
 
             // Oizyr Missions
-
-            1289, 1290, 1291, 
-            1317, 1318, 1319,
         };
     }
 }

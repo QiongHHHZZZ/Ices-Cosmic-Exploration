@@ -122,23 +122,31 @@ public sealed partial class ICE : IDalamudPlugin
 
     private void Tick(object _)
     {
-        if (Player.Available)
+        if (PlayerHelper.IsInCosmicZone())
         {
-            PlayerHandlers.Tick();
-            if (SchedulerMain.State != IceState.Idle)
-                SchedulerMain.Tick();
-            WeatherForecastHandler.Tick();
+            if (Player.Available)
+            {
+                PlayerHandlers.Tick();
+                if (SchedulerMain.State != IceState.Idle)
+                    SchedulerMain.Tick();
+                WeatherForecastHandler.Tick();
+            }
+            else
+            {
+                if (SchedulerMain.State != IceState.Idle)
+                    PlayerHandlers.DisablePlugin();
+                if (PlayerHandlers.PlayerFirstCosmicZone)
+                    PlayerHandlers.PlayerFirstCosmicZone = false;
+            }
+            GenericManager.Tick();
+            TextAdvancedManager.Tick();
+            YesAlreadyManager.Tick();
         }
         else
         {
             if (SchedulerMain.State != IceState.Idle)
-                PlayerHandlers.DisablePlugin();
-            if (PlayerHandlers.PlayerFirstCosmicZone)
-                PlayerHandlers.PlayerFirstCosmicZone = false;
+                SchedulerMain.DisablePlugin();
         }
-        GenericManager.Tick();
-        TextAdvancedManager.Tick();
-        YesAlreadyManager.Tick();
     }
 
     private void OnDraw()

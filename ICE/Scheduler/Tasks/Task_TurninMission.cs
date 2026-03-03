@@ -7,6 +7,7 @@ using ICE.Sounds;
 using ICE.Ui;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
+using System.Collections.Generic;
 using TerraFX.Interop.Windows;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.ConfigFiles.Config;
@@ -437,22 +438,28 @@ namespace ICE.Scheduler.Tasks
 
             if (C.RemoveAfterGold && isGold)
             {
-                if (sheetInfo.SequenceMissions_Next.Count == 0)
+                List<uint> seqMissions = new();
+                foreach (var mission in sheetInfo.SequenceMissions_Next)
+                    seqMissions.Add(mission);
+                foreach (var mission in sheetInfo.SequenceMissions_Previous)
+                    seqMissions.Add(mission);
+                seqMissions.Add(PreviousMissionId);
+
+                if (seqMissions.All(x => manager->IsMissionGolded(x)))
                 {
-                    C.MissionConfig[PreviousMissionId].Enabled = false;
+                    foreach (var mission in seqMissions)
+                    {
+                        C.MissionConfig[mission].Enabled = false;
+                    }
                     C.Save();
                 }
             }
             if (C.RemoveAfterGold && !isGold)
             {
-                if (sheetInfo.SequenceMissions_Previous.Count != 0)
-                {
-                    foreach (var prevMission in sheetInfo.SequenceMissions_Previous)
-                    {
-                        C.MissionConfig[prevMission].Enabled = true;
-                    }
-                    C.Save();
-                }
+                foreach (var prevMission in sheetInfo.SequenceMissions_Previous)
+                    C.MissionConfig[prevMission].Enabled = true;
+
+                C.Save();
             }
 
             IceLogging.Info("Gold Check is complete, and checking to see what state we need to be in post cleanup");

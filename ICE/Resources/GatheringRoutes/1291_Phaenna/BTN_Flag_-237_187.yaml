@@ -5,7 +5,7 @@ flag:
   x: -237
   y: 187
 author: Puni.sh Community
-date_modified: 2026-03-02T04:54:25.4807802Z
+date_modified: 2026-03-02T16:39:02.1465059Z
 nodes:
 - node_id: 35417
   position:
@@ -16,10 +16,10 @@ nodes:
     x: -209.62
     y: 20.31
     z: 199.51
-  radius_start: 0
-  radius_end: 360
+  radius_start: 180
+  radius_end: 179
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
   fan_height: 0
 - node_id: 35418
   position:
@@ -30,10 +30,10 @@ nodes:
     x: -215.35
     y: 20.31
     z: 196.97
-  radius_start: 0
-  radius_end: 360
+  radius_start: 180
+  radius_end: 179
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
   fan_height: 0
 - node_id: 35420
   position:
@@ -44,10 +44,10 @@ nodes:
     x: -217.72
     y: 20.31
     z: 183.81
-  radius_start: 0
-  radius_end: 360
+  radius_start: 180
+  radius_end: 179
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
   fan_height: 0
 - node_id: 35421
   position:
@@ -58,10 +58,10 @@ nodes:
     x: -223.21
     y: 20.31
     z: 177.64
-  radius_start: 0
-  radius_end: 360
+  radius_start: 180
+  radius_end: 179
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
   fan_height: 0
 - node_id: 35419
   position:
@@ -72,10 +72,10 @@ nodes:
     x: -250.98
     y: 20.31
     z: 161.63
-  radius_start: 0
-  radius_end: 360
+  radius_start: 180
+  radius_end: 179
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
   fan_height: 0
 - node_id: 35422
   position:
@@ -86,10 +86,10 @@ nodes:
     x: -255.39
     y: 20.31
     z: 160.04
-  radius_start: 0
-  radius_end: 360
+  radius_start: 180
+  radius_end: 179
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
   fan_height: 0
 - node_id: 35416
   position:
@@ -100,10 +100,10 @@ nodes:
     x: -242.7
     y: 20.31
     z: 211.85
-  radius_start: 0
-  radius_end: 360
+  radius_start: 180
+  radius_end: 179
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
   fan_height: 0
 - node_id: 35415
   position:
@@ -114,8 +114,8 @@ nodes:
     x: -245.53
     y: 20.31
     z: 214.48
-  radius_start: 0
-  radius_end: 360
+  radius_start: 180
+  radius_end: 179
   min_distance: 1
-  max_distance: 5
+  max_distance: 2
   fan_height: 0

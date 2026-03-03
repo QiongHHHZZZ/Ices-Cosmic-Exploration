@@ -1,0 +1,93 @@
+zone_id: 1310
+zone_name: Oizys
+job: BTN
+flag:
+  x: -228
+  y: -900
+author: Puni.sh Community
+date_modified: 2026-03-02T16:39:02.3752404Z
+nodes:
+- node_id: 35648
+  position:
+    x: -200.855
+    y: -190.6467
+    z: -868.9025
+  land_zone:
+    x: -201.72743
+    y: -191.96152
+    z: -869.22705
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0.61
+- node_id: 35647
+  position:
+    x: -200.1344
+    y: -190.7708
+    z: -865.629
+  land_zone:
+    x: -201.56834
+    y: -191.96155
+    z: -865.8517
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0.79
+- node_id: 35645
+  position:
+    x: -224.5208
+    y: -190.5775
+    z: -839.5071
+  land_zone:
+    x: -224.075
+    y: -191.9528
+    z: -840.6942
+  radius_start: 169
+  radius_end: 256
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35646
+  position:
+    x: -228.5889
+    y: -191.0389
+    z: -840.1714
+  land_zone:
+    x: -228.46707
+    y: -191.61096
+    z: -841.2335
+  radius_start: 72
+  radius_end: 270
+  min_distance: 1
+  max_distance: 2.4
+  fan_height: 0
+- node_id: 35644
+  position:
+    x: -230.045
+    y: -190.4237
+    z: -953.858
+  land_zone:
+    x: -230.41118
+    y: -190.90697
+    z: -952.61237
+  radius_start: 196
+  radius_end: 76
+  min_distance: 1
+  max_distance: 2
+  fan_height: 1.14
+- node_id: 35643
+  position:
+    x: -225.9538
+    y: -189.5068
+    z: -953.9769
+  land_zone:
+    x: -225.7565
+    y: -190.37474
+    z: -952.7063
+  radius_start: 43
+  radius_end: 308
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0.44

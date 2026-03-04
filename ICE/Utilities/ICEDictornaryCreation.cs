@@ -865,5 +865,6 @@ public sealed partial class ICE
                 C.Artisan_GlobalExpert.SolverType = ArtisanCraftType.Raphael;
         }
         C.MigratedOldArtisan = true;
+        C.Save();
     }
 }

@@ -192,10 +192,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 ImGui.SameLine(0, 10 * scale);
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
 
-                bool unsupportedArtisan = xpLeveling && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
-                bool unsupportedMoon = PlayerHelper.IsInOizys() && xpLeveling;
+                bool unsupportedArtisan = false; // xpLeveling && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
+                bool unsupportedMoon = false; // PlayerHelper.IsInOizys() && xpLeveling;
 
-                using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !usingSupportedJob || unsupportedArtisan || unsupportedMoon))
+                using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !usingSupportedJob || unsupportedMoon))
                 {
                     if (ImGui.Button(T("Start"), new Vector2(150 * scale, 0)))
                     {

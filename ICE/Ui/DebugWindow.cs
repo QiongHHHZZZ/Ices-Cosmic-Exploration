@@ -68,6 +68,7 @@ internal class DebugWindow : Window
         ["Table: Leveling Missions"] = () => Table_LevelingMissions.Draw(),
         ["Table: Mission Select"] = () => Table_MissionSelect.Draw(),
         ["Oizyr Map Stuff"] = () => Ui_OyzinMap.Draw(),
+        ["Aethernet Test"] = () => Ui_Aethernet.Draw(),
 
         ["IPC: Artisan"] = () => Ipc_Artisan.Draw()
     };

@@ -44,7 +44,7 @@ namespace ICE.IPC
         {
             if (DalamudReflector.TryGetDalamudPlugin($"Artisan", out var plogon, false, true))
             {
-                if (plogon.GetType().Assembly.GetName().Version < new Version(4, 0, 4, 29))
+                if (plogon.GetType().Assembly.GetName().Version < new Version(4, 0, 4, 45))
                     return false;
 
                 return true;

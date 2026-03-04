@@ -454,6 +454,13 @@ namespace ICE.Scheduler.Tasks
                     Location = new(733.85f, 218.80f, -100.98f),
                     LandZone = new(732.61f, 218.80f, -101.53f),
                 },
+                new()
+                {
+                    MapSelector = 4,
+                    AethernetId = 2015066,
+                    Location = new(-124.6f, -193.7f, -801.46f),
+                    LandZone = new(-123.94f, -193.70f, -802.01f)
+                }
             }
         };
         private static Task? _PathCalculations = null;

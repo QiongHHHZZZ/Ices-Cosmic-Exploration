@@ -83,25 +83,29 @@ namespace ICE.Scheduler.Tasks
                     P.Artisan.SetTempSolverBackToNormal(recipeId);
                 }
 
-                if (foodId != 0)
-                    P.Artisan.ChangeFood(recipeId, foodId, foodHQ, true);
-                else
-                    P.Artisan.SetTempFoodBackToNormal(recipeId);
+                if (P.Artisan.UpdatedArtisan())
+                {
 
-                if (potionId != 0)
-                    P.Artisan.ChangePotion(recipeId, potionId, PotionHQ, true);
-                else
-                    P.Artisan.SetTempPotionBackToNormal(recipeId);
+                    if (foodId != 0)
+                        P.Artisan.ChangeFood(recipeId, foodId, foodHQ, true);
+                    else
+                        P.Artisan.SetTempFoodBackToNormal(recipeId);
 
-                if (manualId != 0)
-                    P.Artisan.ChangeManual(recipeId, manualId, true);
-                else
-                    P.Artisan.SetTempManualBackToNormal(recipeId);
+                    if (potionId != 0)
+                        P.Artisan.ChangePotion(recipeId, potionId, PotionHQ, true);
+                    else
+                        P.Artisan.SetTempPotionBackToNormal(recipeId);
 
-                if (squadronManualId != 0)
-                    P.Artisan.ChangeSquadronManual(recipeId, squadronManualId, true);
-                else
-                    P.Artisan.SetTempSquadronManualBackToNormal(recipeId);
+                    if (manualId != 0)
+                        P.Artisan.ChangeManual(recipeId, manualId, true);
+                    else
+                        P.Artisan.SetTempManualBackToNormal(recipeId);
+
+                    if (squadronManualId != 0)
+                        P.Artisan.ChangeSquadronManual(recipeId, squadronManualId, true);
+                    else
+                        P.Artisan.SetTempSquadronManualBackToNormal(recipeId);
+                }
             }
 
             int delay = C.DelayCraft ? C.DelayCraftIncrease : 25;

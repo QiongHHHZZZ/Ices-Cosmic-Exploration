@@ -10,12 +10,25 @@ namespace ICE.IPC;
 
 public class IceCosmicExplorationIPC
 {
-    public IceCosmicExplorationIPC() => EzIPC.Init(this);
+    public IceCosmicExplorationIPC()
+    {
+        EzIPC.Init(this);
+    }
 
 
-    [EzIPC] public bool IsRunning() => SchedulerMain.State != IceState.Idle;
-    [EzIPC] public void Enable() => SchedulerMain.EnablePlugin();
-    [EzIPC] public void Disable() => SchedulerMain.DisablePlugin();
+    [EzIPC] public bool IsRunning()
+    {
+        return SchedulerMain.State != IceState.Idle;
+    }
+    [EzIPC] public void Enable()
+    {
+        SchedulerMain.EnablePlugin();
+    }
+    [EzIPC] public void Disable()
+    {
+        IceLogging.Info("We were told to stop via IPC");
+        SchedulerMain.DisablePlugin();
+    }
     /// <summary>
     /// Adds the following missions to your mission list
     /// </summary>

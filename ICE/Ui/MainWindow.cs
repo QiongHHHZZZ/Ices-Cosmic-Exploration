@@ -27,7 +27,7 @@ namespace ICE.Ui
             Flags = ImGuiWindowFlags.NoScrollbar;
             SizeConstraints = new()
             {
-                MinimumSize = new Vector2(100, 100),
+                MinimumSize = new Vector2(500, 500),
                 MaximumSize = new Vector2(4000, 4000),
             };
             TitleBarButtons.Add(new() { ShowTooltip = () => ImGui.SetTooltip(T("♥ Ko-fi (Buy me an ice coffee)")), Icon = FontAwesomeIcon.Heart, IconOffset = new(1, 1), Click = _ => GenericHelpers.ShellStart("https://ko-fi.com/ice643269") });

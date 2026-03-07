@@ -15,7 +15,7 @@ namespace ICE.Ui
             Flags = ImGuiWindowFlags.None;
             SizeConstraints = new()
             {
-                MinimumSize = new Vector2(100, 100)
+                MinimumSize = new Vector2(500, 500)
             };
             P.windowSystem.AddWindow(this);
         }

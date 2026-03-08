@@ -73,6 +73,16 @@ namespace ICE.Scheduler.Tasks
                         return true;
                     }
 
+                    // CN-MAINT: Keep a local fish-timeout escape hatch until upstream
+                    // adds equivalent timeout handling in the fishing score path.
+                    if (CosmicHandler.IsMissionTimedOut())
+                    {
+                        IceLogging.Debug("Mission timed out while fishing. Forcing cleanup path.", tag);
+                        SchedulerMain.State = IceState.AbandonMission;
+                        P.TaskManager.Tasks.Clear();
+                        return true;
+                    }
+
                     IceLogging.Verbose("Mission info was valid, searching what we should be checking for", tag);
 
                     if (sheetInfo.Gathering_Min.Count > 0)

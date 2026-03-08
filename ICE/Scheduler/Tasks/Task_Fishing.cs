@@ -417,8 +417,9 @@ namespace ICE.Scheduler.Tasks
                 else if (EzThrottler.Throttle("Starting to fish", 1000))
                 {
                     IceLogging.Debug("Telling it to start fishing", handle);
-                    // ActionManager.Instance()->UseAction(ActionType.Action, 289);
-                    Svc.Commands.ProcessCommand("/ahstart");
+                    if (ShouldEnableAutoHookRuntime())
+                        P.AutoHook.SetPluginState(true);
+                    StartFishingByAvailablePlugin(handle);
                 }
                 else if (EzThrottler.Throttle("Adding counter for bait not equipped"))
                 {
@@ -445,7 +446,8 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
-                P.AutoHook.SetPluginState(true);
+                if (ShouldEnableAutoHookRuntime())
+                    P.AutoHook.SetPluginState(true);
                 IceLogging.Info("We're starting to fish. So kicking it over to checking the fish items", handle);
                 P.TaskManager.Insert(() => FinishFishing(), "Waiting till we actually start fishing", Utils.TaskConfig);
                 BaitCounter = 0;

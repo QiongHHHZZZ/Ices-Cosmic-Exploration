@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/14.0">
 
 	<PropertyGroup>
-		<Version>0.0.76.2003</Version>
+		<Version>0.0.76.2100</Version>
 		<AssemblyVersion>$(Version)</AssemblyVersion>
 		<FileVersion>$(Version)</FileVersion>
 		<Description>Who said we couldn't explore the moon!.</Description>

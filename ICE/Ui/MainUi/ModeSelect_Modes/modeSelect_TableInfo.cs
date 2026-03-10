@@ -1740,8 +1740,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     if (config.TurninRecords.Count > 0)
                     {
-                        ImGui.Text(T("Best Time: {0}", TimeSpan.FromSeconds(config.BestTime).ToString(@"mm\\:ss\\.ff", CultureInfo.CurrentCulture)));
-                        ImGui.Text(T("Average Time: {0}", TimeSpan.FromSeconds(config.AverageTime).ToString(@"mm\\:ss\\.ff", CultureInfo.CurrentCulture)));
+                        ImGui.Text(T("Best Time: {0}", TimeSpan.FromSeconds(config.BestTime).ToString(@"mm\:ss\.ff", CultureInfo.CurrentCulture)));
+                        ImGui.Text(T("Average Time: {0}", TimeSpan.FromSeconds(config.AverageTime).ToString(@"mm\:ss\.ff", CultureInfo.CurrentCulture)));
                     }
                     else
                     {

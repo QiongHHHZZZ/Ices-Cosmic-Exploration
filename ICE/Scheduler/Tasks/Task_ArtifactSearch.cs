@@ -103,45 +103,48 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "[Task_ArtifactSearch: Buy Drones]";
 
-            if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var YesNo) && YesNo.IsAddonReady)
+            if (EzThrottler.Throttle("General Buying Throttle"))
             {
-                if (EzThrottler.Throttle("Buy Drone Boxes"))
+                if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var YesNo) && YesNo.IsAddonReady)
                 {
-                    YesNo.Yes();
-                }
-            }
-            else if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
-            {
-                // There's only 1 item here. So we just need to make sure we have enough to buy it
-                var currency = shopExchange.CurrencyAmount;
-                var item = shopExchange.BasicShopItems[0];
-                var maxAmount = (int)(currency / item.CostAmount); // Maximum we could afford
-                PlayerHelper.GetItemCount(item.ItemId, out var currentAmount);
-
-                if (C.Cosmodrone_MaxKeep != 0)
-                {
-                    var remainingSpace = C.Cosmodrone_MaxKeep - currentAmount;
-                    if (remainingSpace <= 0)
+                    if (EzThrottler.Throttle("Buy Drone Boxes"))
                     {
-                        IceLogging.Debug($"Already at or above max keep limit ({currentAmount}/{C.Cosmodrone_MaxKeep}), skipping purchase", tag);
+                        YesNo.Yes();
+                    }
+                }
+                else if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
+                {
+                    // There's only 1 item here. So we just need to make sure we have enough to buy it
+                    var currency = shopExchange.CurrencyAmount;
+                    var item = shopExchange.BasicShopItems[0];
+                    var maxAmount = (int)(currency / item.CostAmount); // Maximum we could afford
+                    PlayerHelper.GetItemCount(item.ItemId, out var currentAmount);
+
+                    if (C.Cosmodrone_MaxKeep != 0)
+                    {
+                        var remainingSpace = C.Cosmodrone_MaxKeep - currentAmount;
+                        if (remainingSpace <= 0)
+                        {
+                            IceLogging.Debug($"Already at or above max keep limit ({currentAmount}/{C.Cosmodrone_MaxKeep}), skipping purchase", tag);
+                            return true;
+                        }
+
+                        maxAmount = Math.Min(maxAmount, remainingSpace);
+                    }
+
+                    if (maxAmount > 0 && item.CostAmount <= currency)
+                    {
+                        if (EzThrottler.Throttle("Selecting to buy this item", 1000))
+                        {
+                            item.Select(maxAmount);
+                            IceLogging.Debug($"Purchasing {maxAmount} items (current: {currentAmount}, max keep: {C.Cosmodrone_MaxKeep})", tag);
+                        }
+                    }
+                    else
+                    {
+                        IceLogging.Debug("We don't have any more currency to buy the dronebit, so continuing on", tag);
                         return true;
                     }
-
-                    maxAmount = Math.Min(maxAmount, remainingSpace);
-                }
-
-                if (maxAmount > 0 && item.CostAmount <= currency)
-                {
-                    if (EzThrottler.Throttle("Selecting to buy this item", 1000))
-                    {
-                        item.Select(maxAmount);
-                        IceLogging.Debug($"Purchasing {maxAmount} items (current: {currentAmount}, max keep: {C.Cosmodrone_MaxKeep})", tag);
-                    }
-                }
-                else
-                {
-                    IceLogging.Debug("We don't have any more currency to buy the dronebit, so continuing on", tag);
-                    return true;
                 }
             }
 

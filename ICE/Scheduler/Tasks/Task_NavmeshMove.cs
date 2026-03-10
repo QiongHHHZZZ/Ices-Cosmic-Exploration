@@ -7,6 +7,7 @@ using ICE.Ui.DebugWindowTabs;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -70,6 +71,8 @@ namespace ICE.Scheduler.Tasks
                 }
                 return false;
             }
+
+            CloseExtraWindows();
 
             // Handle running navmesh
             if (P.Navmesh.IsRunning())
@@ -345,6 +348,7 @@ namespace ICE.Scheduler.Tasks
             public Vector3 Location { get; set; } = Vector3.Zero;
             public Vector3 LandZone { get; set; } = Vector3.Zero;
             public int MapSelector { get; set; } = 0;
+            public uint RequiredLogLv { get; set; } = 0;
         }
         public static Dictionary<uint, List<AethernetSystem>> PlanetAethernet = new()
         {
@@ -454,15 +458,14 @@ namespace ICE.Scheduler.Tasks
                     Location = new(733.85f, 218.80f, -100.98f),
                     LandZone = new(732.61f, 218.80f, -101.53f),
                 },
-                /*
                 new()
                 {
                     MapSelector = 4,
                     AethernetId = 2015066,
                     Location = new(-124.6f, -193.7f, -801.46f),
-                    LandZone = new(-123.94f, -193.70f, -802.01f)
+                    LandZone = new(-123.94f, -193.70f, -802.01f),
+                    RequiredLogLv = 14,
                 }
-                */
             }
         };
         private static Task? _PathCalculations = null;
@@ -493,9 +496,39 @@ namespace ICE.Scheduler.Tasks
             }
             return true;
         }
+
+        public static Dictionary<uint, uint> PlanetProgress = new()
+        {
+            [1237] = 15,
+            [1291] = 15,
+            [1310] = 0,
+        };
+
         private static bool? CalculateAethernet(Vector3 destination)
         {
             string tag = "Navmesh: Aethernet Calculation";
+            var territoryId = Player.Territory.RowId;
+            var planetProgress = PlanetProgress[territoryId];
+
+            if (planetProgress == 0)
+            {
+                if (GenericHelpers.TryGetAddonMaster<WKSHistoryBoard>("WKSHistoryBoard", out var progress) && progress.IsAddonReady)
+                {
+                    PlanetProgress[territoryId] = progress.NumEntries;
+                    IceLogging.Info($"We've updated the entried to contain the following value: {PlanetProgress[territoryId]}");
+                    if (EzThrottler.Throttle("Closing addon"))
+                        GenericHandlers.FireCallback("WKSHistoryBoard", true, -1);
+                }
+                else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var hud) && hud.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Opening Progress Hud"))
+                    {
+                        hud.Infrastructor();
+                    }
+                }
+
+                return false;
+            }
 
             var territory = Player.Territory.RowId;
             if (!PlanetAethernet.TryGetValue(territory, out var aetherList))
@@ -510,8 +543,12 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
 
-            var closestAetheryte = aetherList.OrderBy(x => Player.DistanceTo(x.Location)).FirstOrDefault();
-            var destinationAetheryte = aetherList.OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
+            var closestAetheryte = aetherList
+                .Where(x => x.RequiredLogLv <= planetProgress)
+                .OrderBy(x => Player.DistanceTo(x.Location)).FirstOrDefault();
+            var destinationAetheryte = aetherList
+                .Where(x => x.RequiredLogLv <= planetProgress)
+                .OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
 
             if (closestAetheryte == null || destinationAetheryte == null)
             {
@@ -715,6 +752,9 @@ namespace ICE.Scheduler.Tasks
         private static bool? CalculateHubAethernet(Vector3 destination)
         {
             string tag = "[Navmesh: Calculate Hub -> Aethernet]";
+            var territoryId = Player.Territory.RowId;
+            var planetProgress = PlanetProgress[territoryId];
+
             if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
                 var method = TravelMethods["HubAethernet"];
@@ -741,7 +781,9 @@ namespace ICE.Scheduler.Tasks
                     }
 
                     var closestAetheryte = aetherList.OrderBy(x => Vector3.Distance(HubCenter, x.Location)).FirstOrDefault();
-                    var destinationAetheryte = aetherList.OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
+                    var destinationAetheryte = aetherList
+                        .Where(x => x.RequiredLogLv <= planetProgress)
+                        .OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
 
                     if (closestAetheryte == null || destinationAetheryte == null)
                     {
@@ -1120,5 +1162,16 @@ namespace ICE.Scheduler.Tasks
         }
 
         #endregion
+
+        private static void CloseExtraWindows()
+        {
+            if (EzThrottler.Throttle("Closing Extra Windows"))
+            {
+                if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
+                {
+                    GenericHandlers.FireCallback("ShopExchangeCurrency", true, -1);
+                }
+            }
+        }
     }
 }

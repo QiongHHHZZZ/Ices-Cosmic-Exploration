@@ -35,6 +35,18 @@ namespace ICE.IPC
         [EzIPC] public Action<uint, uint, bool> ChangeSquadronManual;
         [EzIPC] public Action<uint> SetTempSquadronManualBackToNormal;
 
+        [EzIPC] public Action<uint, uint, bool> ChangeExpertProfileID;
+        [EzIPC] public Action<uint> SetTempExpertProfileIDBackToNormal;
+
+        [EzIPC] public Action<uint, uint, bool> ChangeExpertMaxSteadyUses;
+        [EzIPC] public Action<uint> SetTempExpertMaxSteadyUsesBackToNormal;
+
+        [EzIPC] public Action<uint, uint, bool> ChangeExpertUseMaterialMiracle;
+        [EzIPC] public Action<uint> SetTempExpertUseMaterialMiracleBackToNormal;
+
+        [EzIPC] public Action<uint, uint, bool> ChangeExpertMinimumStepsBeforeMiracle;
+        [EzIPC] public Action<uint> SetTempExpertMinimumStepsBeforeMiracleBackToNormal;
+
         public void AssignArtisanRecipe(ushort recipeId, uint reqFood, uint reqPotion = 0, uint reqManual = 0, uint reqSquadronManual = 0)
         {
             P.Artisan.AssignRecipie(recipeId, reqFood, reqPotion, reqManual, reqSquadronManual);

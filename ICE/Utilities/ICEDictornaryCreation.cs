@@ -28,6 +28,7 @@ public sealed partial class ICE
             bool isExpert = false;
             bool isCollectable = false;
             uint tempActionId = 0;
+            uint tempActionCount = 0;
 
             uint keyId = entry.RowId;
 
@@ -199,6 +200,7 @@ public sealed partial class ICE
             attributes |= previousMissionId != 0 ? MissionAttributes.ProvisionalSequential : MissionAttributes.None;
 
             tempActionId = missionToDo.TemporaryAction.RowId;
+            tempActionCount = missionToDo.Unknown14;
 
             // - - - Crafter information - - - //
             var wksRecipeSheet = entry.WKSMissionRecipe;
@@ -569,6 +571,7 @@ public sealed partial class ICE
                     IsExpert = isExpert,
 
                     TemporaryActionId = tempActionId,
+                    TemporaryActionCount = tempActionCount,
                 };
             }
         }

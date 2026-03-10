@@ -6,8 +6,6 @@ using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
-using Lumina.Excel.Sheets;
-using Lumina.Excel.Sheets.Experimental;
 using System.Collections.Generic;
 using System.Globalization;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -1402,6 +1400,25 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             }
         }
 
+        public static void MissionTable_V3(string headerName, string tableName, List<Mission> missions)
+        {
+            // Setting up the size of the table here, ideally I want this to be the width of the current available space
+            // Also setting up the header for here as well
+            var availableSpace = ImGui.GetContentRegionAvail().X;
+            var textSize = ImGui.CalcTextSize(headerName);
+            var headerPadding = new Vector2(10, 5);
+            var headerHeight = textSize.Y + headerPadding.Y * 2;
+
+            // Custom header to display above the table. This is moreso for quick user viewability
+            ImGui.Dummy(new Vector2(0, headerPadding.Y));
+            var centeredPosX = (availableSpace - textSize.X) / 2;
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + Math.Max(0, centeredPosX));
+            ImGui.Text($"{headerName} Missions");
+            ImGui.Separator();
+
+            ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Hideable | ImGuiTableFlags.SizingFixedFit;
+        }
+
         public class ScoringInfo
         {
             public int Multipler { get; set; } = 1;
@@ -2358,13 +2375,14 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                             #region Squadron Manual
 
-                            if (globalArtisan)
+                            if (!globalArtisan)
                             {
                                 ImGui.TableNextRow();
                                 ImGui.TableSetColumnIndex(1);
                                 ImGui.Text(T("Squadron Manual"));
 
                                 ImGui.TableNextColumn();
+                                ImGui.SetNextItemWidth(recipe_ComboWidth);
                                 if (ImGui.BeginCombo("##StandardSquadManual", recipe_SquadManualLabel))
                                 {
                                     // Default option
@@ -2399,6 +2417,56 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     }
 
                                     ImGui.EndCombo();
+                                }
+                            }
+
+                            #endregion
+
+                            #region ActionUsage
+
+                            if (mission.TemporaryActionCount != 0)
+                            {
+                                ImGui.TableNextRow();
+                                ImGui.TableSetColumnIndex(0);
+                                var actionInfo = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>().GetRow(mission.TemporaryActionId);
+                                var name = actionInfo.Name;
+                                var icon = Svc.Texture.GetFromGameIcon((int)actionInfo.Icon).GetWrapOrEmpty();
+                                ImGui.Image(icon.Handle, new(24, 24));
+                                ImGui.AlignTextToFramePadding();
+                                ImGui.SameLine();
+                                ImGui.Text($"{name}");
+
+                                if (supportedArtisan)
+                                {
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text(T("Max use"));
+
+                                    ImGui.TableNextColumn();
+                                    var maxUsage = recipeConfig.SkillUsageAmount;
+                                    ImGui.SetNextItemWidth(recipe_ComboWidth);
+                                    string skillUsageLabel = maxUsage == -1 ? T("Default") : $"{maxUsage}";
+                                    if (ImGui.SliderInt("##MaxSkillUsage", ref maxUsage, -1, (int)mission.TemporaryActionCount, skillUsageLabel))
+                                    {
+                                        recipeConfig.SkillUsageAmount = maxUsage;
+                                        C.SaveDebounced();
+                                    }
+
+                                    if (mission.TemporaryActionId == 41269 && !globalArtisan)
+                                    {
+                                        ImGui.TableNextRow();
+                                        ImGui.TableSetColumnIndex(1);
+                                        ImGui.Text(T("Use after this many steps"));
+
+                                        ImGui.TableNextColumn();
+                                        var minSteps = recipeConfig.MinStepsForMiracle;
+                                        string skillMinStepsName = minSteps == -1 ? T("Default") : $"{minSteps}";
+                                        ImGui.SetNextItemWidth(recipe_ComboWidth);
+                                        if (ImGui.SliderInt("##MinMiracleSteps", ref minSteps, -1, 20, skillMinStepsName))
+                                        {
+                                            recipeConfig.MinStepsForMiracle = minSteps;
+                                            C.SaveDebounced();
+                                        }
+                                    }
                                 }
                             }
 

@@ -64,7 +64,7 @@ namespace ICE.Scheduler.Tasks
 
         private static bool? ThrottleArtisanTaskV2(KeyValuePair<ushort, CosmicHelper.CraftingInfo> item, int amount, uint rank)
         {
-            void ApplyArtisanSettings(uint recipeId, ArtisanCraftType type, uint foodId, bool foodHQ, uint potionId, bool PotionHQ, uint manualId, uint squadronManualId, string macroName = "")
+            void ApplyArtisanSettings(uint recipeId, ArtisanCraftType type, uint foodId, bool foodHQ, uint potionId, bool PotionHQ, uint manualId, uint squadronManualId, string macroName = "", int skillUsage = -1, int miracleSteps = -1)
             {
                 if (type != ArtisanCraftType.Default)
                 {
@@ -75,6 +75,7 @@ namespace ICE.Scheduler.Tasks
                         ArtisanCraftType.Raphael => "Raphael Recipe Solver",
                         ArtisanCraftType.Macro => $"Macro: {macroName}",
                         ArtisanCraftType.Expert => "Expert Recipe Solver",
+                        _ => "Standard Recipe Solver",
                     };
                     P.Artisan.ChangeSolver(recipeId, ArtisanType, true);
                 }
@@ -105,6 +106,22 @@ namespace ICE.Scheduler.Tasks
                         P.Artisan.ChangeSquadronManual(recipeId, squadronManualId, true);
                     else
                         P.Artisan.SetTempSquadronManualBackToNormal(recipeId);
+
+                    if (skillUsage != -1)
+                    {
+                        P.Artisan.ChangeExpertMaxSteadyUses(recipeId, (uint)skillUsage, true);
+                        P.Artisan.ChangeExpertUseMaterialMiracle(recipeId, (uint)skillUsage, true);
+                    }
+                    else
+                    {
+                        P.Artisan.SetTempExpertMaxSteadyUsesBackToNormal(recipeId);
+                        P.Artisan.SetTempExpertUseMaterialMiracleBackToNormal(recipeId);
+                    }
+
+                    if (miracleSteps != -1)
+                        P.Artisan.ChangeExpertMinimumStepsBeforeMiracle(recipeId, (uint)miracleSteps, true);
+                    else
+                        P.Artisan.SetTempExpertMinimumStepsBeforeMiracleBackToNormal(recipeId);
                 }
             }
 
@@ -149,7 +166,9 @@ namespace ICE.Scheduler.Tasks
                                              recipeConfig.PotionId, recipeConfig.PotionHQ, 
                                              recipeConfig.ManualId, 
                                              recipeConfig.SquadronManualId,
-                                             recipeConfig.MacroName);
+                                             recipeConfig.MacroName,
+                                             recipeConfig.SkillUsageAmount,
+                                             recipeConfig.MinStepsForMiracle);
                     }
                 }
             }

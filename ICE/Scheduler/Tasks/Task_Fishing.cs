@@ -148,8 +148,12 @@ namespace ICE.Scheduler.Tasks
             // if craft not required, fish
             // wait for fishing to be done
 
-            P.TaskManager.Enqueue(() => Task_CheckScore.Fish());
-            P.TaskManager.Enqueue(() => FishingCheck());
+            P.TaskManager.EnqueueMulti
+                (
+                    new(() => Task_CheckScore.Fish(), "Checking Score: Fishing"),
+                    new(() => Task_Gather.UseFood(), "Checking for food usage"),
+                    new(() => FishingCheck(), "Checking Fishing State")
+                );
         }
 
         private static int StartedFishing = 0;

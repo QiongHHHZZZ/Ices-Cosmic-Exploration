@@ -1,4 +1,5 @@
 ﻿using ECommons.GameHelpers;
+using ECommons.MathHelpers;
 using ICE.Resources.GatheringRoutes;
 using ICE.Utilities.Cosmic_Helper;
 using Pictomancy;
@@ -418,6 +419,45 @@ namespace ICE.Scheduler.Handlers
             pictoDraw.AddLine(headLeft, headRight, lineHalfWidth, outlineColor, 2.0f);
             pictoDraw.AddLine(headLeft, arrowTip, lineHalfWidth, outlineColor, 2.0f);
             pictoDraw.AddLine(headRight, arrowTip, lineHalfWidth, outlineColor, 2.0f);
+        }
+
+        public static void DrawIcon(ImTextureID textureHandle, Vector3 worldPos, Vector2? size = null)
+        {
+            AddDrawCommand(_ =>
+            {
+                var iconSize = size ?? new Vector2(24, 24);
+                if (!PictoService.GameGui.WorldToScreen(worldPos, out var screenPos)) return;
+
+                var topLeft = screenPos - iconSize / 2;
+                ImGui.GetForegroundDrawList().AddImage(textureHandle, topLeft, topLeft + iconSize);
+            });
+        }
+
+        public static void DrawIcon(ImTextureID textureHandle, Vector3 worldPos, Vector2? size = null, float opacity = 1f, float? scaleByDistance = null)
+        {
+            AddDrawCommand(_ =>
+            {
+                if (!PictoService.GameGui.WorldToScreen(worldPos, out var screenPos)) return;
+
+                var iconSize = size ?? new Vector2(24, 24);
+
+                // Scale based on distance if a max distance is provided
+                if (scaleByDistance != null)
+                {
+                    float distance = Vector3.Distance(Player.Position, worldPos);
+                    // Normalize distance: 0 = right next to it (scale 1x), maxDist = far away (scale 4x)
+                    float t = Math.Clamp(distance / scaleByDistance.Value, 0f, 1f);
+                    float scaleFactor = 1f + (4f - 1f) * t;
+                    iconSize *= scaleFactor;
+                }
+
+                // Convert opacity 0-1 to alpha byte in RGBA
+                uint alpha = (uint)(Math.Clamp(opacity, 0f, 1f) * 255) << 24;
+                uint tintColor = alpha | 0x00FFFFFF; // full white RGB, variable alpha
+
+                var topLeft = screenPos - iconSize / 2;
+                ImGui.GetForegroundDrawList().AddImage(textureHandle, topLeft, topLeft + iconSize, Vector2.Zero, Vector2.One, tintColor);
+            });
         }
 
         public static float DegreesToRadians(float degrees)

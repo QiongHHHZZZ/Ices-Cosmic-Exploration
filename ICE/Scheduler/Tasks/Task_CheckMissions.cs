@@ -114,6 +114,25 @@ namespace ICE.Scheduler.Tasks
                 entry.Value.Clear();
             }
 
+            var playerTerritory = Player.Territory.RowId;
+
+            var SinusCount = CosmicHelper.SheetMissionDict
+                .Where(x => C.MissionConfig[x.Key].Enabled)
+                .Where(x => x.Value.TerritoryId == 1237);
+            var PhaennaCount = CosmicHelper.SheetMissionDict
+                .Where(x => C.MissionConfig[x.Key].Enabled)
+                .Where(x => x.Value.TerritoryId == 1291);
+            var OizysCount = CosmicHelper.SheetMissionDict
+                .Where(x => C.MissionConfig[x.Key].Enabled)
+                .Where(x => x.Value.TerritoryId == 1310);
+
+            IceLogging.Info("This is just general message to let me know WHAT planet you're on, and where you have things enabled\n" +
+                "If you're not running things that requires these to be enabled, you can ignore this if you're reading this." +
+                $"Sinus [1237] = [{SinusCount.Count()}]\n" +
+                $"Phaenna [1291] = [{PhaennaCount.Count()}]\n" +
+                $"Oizys [1310] = [{OizysCount}]\n" +
+                $"Current TerritoryID: {playerTerritory}");
+
             var modeSelected = Mission_Settings.Mode;
             foreach (var mission in CosmicHelper.SheetMissionDict)
             {
@@ -640,7 +659,38 @@ namespace ICE.Scheduler.Tasks
                                 }
                             }
 
-                            if (bestMissionId != null)
+
+                            var firstMission = missionInfo.StellerMissions.FirstOrDefault();
+                            var TestMissionLevel = CosmicHelper.SheetMissionDict[firstMission.MissionId].Level;
+                            var ListMissionLevel = CosmicHelper.SheetMissionDict[missionList.First()].Level;
+
+                            /*
+                            if (TestMissionLevel != 100 && ListMissionLevel == 100)
+                            {
+                                IceLogging.Debug("We're lv. 100 (or... atleast the mission list expects us to be lv. 100)\n" +
+                                    "And we seem to be missing the lv. 100 tab so, we gonna see what we need to do", tag);
+
+                                var Lv90Missions = missionList.Where(x => CosmicHelper.SheetMissionDict[x].Level == 90).ToList();
+                                if (Lv90Missions != null)
+                                {
+                                    var totalCompleted = Lv90Missions.Where(x => MissionCompleted(x)).Count();
+                                    var totalGolded = Lv90Missions.Where(x => MissionGolded(x)).Count();
+
+                                    if (totalCompleted < 5)
+                                    {
+                                        IceLogging.Debug("We are missing a minimum amount of completed missions");
+                                        var mission = missionInfo.StellerMissions.Where(x => !MissionCompleted(x.MissionId)).FirstOrDefault();
+                                    }
+                                }
+
+                                foreach (var mission in missionInfo.StellerMissions.Where(x => CosmicHelper.SheetMissionDict[x.MissionId].Level == 90))
+                                {
+                                    // if ()
+                                }
+                            }
+
+                            */
+                            if (bestMissionId != null && bestScore > 0)
                             {
                                 LogInfo(bestMissionId.Value);
                                 Insert_GrabMissionTask(bestMissionId.Value);
@@ -1300,12 +1350,22 @@ namespace ICE.Scheduler.Tasks
         private static unsafe bool MissionCompleted(uint id)
         {
             var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return true;
+            if (managerPtr == null) return false;
 
             var manager = (WKSManagerCustom*)managerPtr;
             var isCompleted = manager->IsMissionCompleted(id);
 
             return isCompleted;
+        }
+        private static unsafe bool MissionGolded(uint id)
+        {
+            var managerPtr = WKSManager.Instance();
+            if (managerPtr == null) return false;
+
+            var manager = (WKSManagerCustom*)managerPtr;
+            var isGolded = manager->IsMissionGolded(id);
+
+            return isGolded;
         }
         private static void Notes()
         {

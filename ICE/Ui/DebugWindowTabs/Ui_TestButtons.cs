@@ -195,11 +195,36 @@ namespace ICE.Ui.DebugWindowTabs
             { "uE0E9", "\uE0E9" },
         };
 
+        private static Vector3 WorldPos = Vector3.Zero;
+        private static float Scale = 1.0f;
+        private static float Height = 1.0f;
 
         public static unsafe void Draw()
         {
             ImGui.Text($"Current Mission: {CosmicHelper.CurrentLunarMission}");
             ImGui.Text($"Artisan Endurance: {P.Artisan.GetEnduranceStatus()}");
+
+            if (ImGui.Button($"{T("Set Location: {0}", WorldPos)}##SetPositionForDraw"))
+            {
+                var pos = Player.Position;
+                WorldPos = pos;
+            }
+            ImGui.DragFloat(T("Height"), ref Height, 0.1f, 0, 10);
+            ImGui.DragFloat(T("Scale"), ref Scale);
+
+            if (WorldPos != Vector3.Zero)
+            {
+                var size = new Vector2(24 * Scale, 24 * Scale);
+                var icon = CosmicHelper.JobIconDict[8].GetWrapOrDefault();
+                if (icon != null)
+                {
+                    PictoManager.DrawIcon(icon.Handle, new(WorldPos.X, WorldPos.Y + Height, WorldPos.Z), size);
+                    ImGui.Image(icon.Handle, new(24, 24));
+                }
+            }
+
+            Ui_WorldIconTEst.DrawControls();
+            Ui_WorldIconTEst.DrawOverlay();
 
             //  4 - Col 2  - Unknown 7
             //  8 - Col 3  - Unknown 0
@@ -218,6 +243,11 @@ namespace ICE.Ui.DebugWindowTabs
             //  1          - Unknown 11
 
             ImGui.Text($"{WKSManager.Instance()->CurrentMissionUnitRowId}");
+
+            if (ImGui.Button(T("Test Drone Buy")))
+            {
+                Task_ArtifactSearch.EnqueueBuy();
+            }
 
             if (ImGui.Button(T("Find Mission")))
             {

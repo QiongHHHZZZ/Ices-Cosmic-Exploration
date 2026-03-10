@@ -1003,7 +1003,14 @@ internal static class L10n
 
         ["Unknown Debug View"] = "未知调试视图",
         ["ICE {0} Debugger ###IceCosmicDebug1"] = "ICE {0} 调试器 ###IceCosmicDebug1",
-        ["HEY. ENABLE SOME MISSIONS SO WE CAN DISPLAY SOMETHING HERE"] = "请先启用一些任务，这里才能显示内容。"
+        ["HEY. ENABLE SOME MISSIONS SO WE CAN DISPLAY SOMETHING HERE"] = "请先启用一些任务，这里才能显示内容。",
+        ["Set Location: {0}"] = "设置位置：{0}",
+        ["Height"] = "高度",
+        ["Scale"] = "缩放",
+        ["Set marker to current position"] = "将标记设为当前位置",
+        ["Test Drone Buy"] = "测试购买无人机",
+        ["Max use"] = "最大使用次数",
+        ["Use after this many steps"] = "达到该步数后使用"
     };
 
     internal static string T(string key)

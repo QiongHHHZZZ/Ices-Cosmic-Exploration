@@ -175,6 +175,9 @@ namespace ICE.Scheduler.Tasks
                         if (provisional)
                             continue;
 
+                        if (mission.Value.Attributes.HasFlag(MissionAttributes.Critical) && !C.Relic_IncludeCriticals)
+                            continue;
+
                         var jobLevel = Math.Min(Player.GetLevel((Job)mission.Value.Jobs.First()), Player.GetLevel((Job)mission.Value.Jobs.Last()));
                         if (jobLevel < mission.Value.Level)
                             continue;
@@ -690,7 +693,7 @@ namespace ICE.Scheduler.Tasks
                             }
 
                             */
-                            if (bestMissionId != null && bestScore > 0)
+                            if (bestMissionId != null)
                             {
                                 LogInfo(bestMissionId.Value);
                                 Insert_GrabMissionTask(bestMissionId.Value);

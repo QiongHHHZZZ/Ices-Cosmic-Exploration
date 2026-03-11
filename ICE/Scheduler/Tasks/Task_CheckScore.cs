@@ -132,7 +132,6 @@ namespace ICE.Scheduler.Tasks
                             SchedulerMain.State = IceState.TurninMission;
                             P.TaskManager.Tasks.Clear();
 
-                            Mission_Settings.TurninState = DetermineTurninState();
                             return true;
                         }
                         else
@@ -165,7 +164,6 @@ namespace ICE.Scheduler.Tasks
 
                             if (shouldTurnin)
                             {
-                                MedalChecker(rank);
                                 IceLogging.Info("The threshold for scoring was met. Time to turnin", tag);
                                 SchedulerMain.State = IceState.TurninMission;
                                 P.TaskManager.Tasks.Clear();
@@ -284,7 +282,6 @@ namespace ICE.Scheduler.Tasks
 
                         if (shouldTurnin)
                         {
-                            MedalChecker(rank);
                             IceLogging.Info("The threshold for scoring was met. Time to turnin", tag);
                             SchedulerMain.State = IceState.TurninMission;
                             P.TaskManager.Tasks.Clear();
@@ -406,7 +403,6 @@ namespace ICE.Scheduler.Tasks
 
                         if (shouldTurnin)
                         {
-                            MedalChecker(rank);
                             IceLogging.Info("The threshold for scoring was met. Time to turnin", tag);
                             SchedulerMain.State = IceState.TurninMission;
                             P.TaskManager.Tasks.Clear();
@@ -478,7 +474,6 @@ namespace ICE.Scheduler.Tasks
 
                 if (shouldTurnin)
                 {
-                    MedalChecker(rank);
                     IceLogging.Info("The threshold for scoring was met. Time to turnin", tag);
                     SchedulerMain.State = IceState.TurninMission;
                     P.TaskManager.Tasks.Clear();
@@ -636,26 +631,6 @@ namespace ICE.Scheduler.Tasks
         private static string GoldTimerAddon()
         {
             return AddonHelper.GetNodeText("WKSMissionInfomation", 11);
-        }
-
-        private static void MedalChecker(uint current, uint silver, uint gold)
-        {
-            if (current >= gold)
-                Mission_Settings.TurninState = TurninState.Gold;
-            else if (current >= silver)
-                Mission_Settings.TurninState = TurninState.Silver;
-            else
-                Mission_Settings.TurninState = TurninState.Bronze;
-        }
-
-        private static void MedalChecker(MissionRank rank)
-        {
-            if (rank == MissionRank.Gold)
-                Mission_Settings.TurninState = TurninState.Gold;
-            else if (rank == MissionRank.Silver)
-                Mission_Settings.TurninState = TurninState.Silver;
-            else if (rank == MissionRank.Bronze)
-                Mission_Settings.TurninState = TurninState.Bronze;
         }
     }
 }

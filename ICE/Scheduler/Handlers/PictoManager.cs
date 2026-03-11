@@ -1,11 +1,8 @@
 ﻿using ECommons.GameHelpers;
-using ECommons.MathHelpers;
 using ICE.Resources.GatheringRoutes;
 using ICE.Utilities.Cosmic_Helper;
 using Pictomancy;
 using System.Collections.Generic;
-using System.Windows.Forms;
-using TerraFX.Interop.Windows;
 
 namespace ICE.Scheduler.Handlers
 {

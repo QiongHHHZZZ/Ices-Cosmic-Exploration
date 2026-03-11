@@ -577,6 +577,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     ImGui.TableNextRow();
                     ImGui.PushID(Id);
+                    if (C.HighlightVisibleMissions && CosmicHelper.CurrentLunarMission == Id)
+                    {
+                        ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, ImGui.GetColorU32(new Vector4(0.0f, 1.0f, 0.2f, 0.25f)));
+                    }
 
                     #region Enabled Column Stuff
 

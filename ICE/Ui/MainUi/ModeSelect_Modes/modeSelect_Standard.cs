@@ -323,22 +323,28 @@ ImGui.Text(T("4.0.4.29"));
                             ImGui.TextDisabled("?");
                             if (ImGui.IsItemHovered())
                             {
-ImGui.SetTooltip(T("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n") +
-                                                 "1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n" +
-                                                 "2: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
-                                                 "3: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
-                                                 "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing");
+                                ImGui.SetTooltip(T("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n" +
+                                                   "1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n" +
+                                                   "2: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
+                                                   "3: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
+                                                   "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing"));
                             }
 
                             ImGui.Separator();
-
+                            bool relic_AllowRedAlert = C.Relic_IncludeCriticals;
+                            if (ImGui.Checkbox(T("Include Critical Missions in Cosmic Tool Mode"), ref relic_AllowRedAlert))
+                            {
+                                C.Relic_IncludeCriticals = relic_AllowRedAlert;
+                                C.Save();
+                            }
                             ImGui.SameLine();
                             ImGui.TextDisabled("?");
                             if (ImGui.IsItemHovered())
                             {
-ImGui.SetTooltip(T("Please note. This will ONLY grind for relic Exp under the basic mission tab. \n") +
-                                                   "This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions");
+                                ImGui.SetTooltip(T("Please note. This will ONLY grind for relic Exp under the basic mission tab. \n") +
+                                                 T("This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions"));
                             }
+                            
                             bool OnlySelected = C.XPRelicOnlyEnabled;
                             if (ImGui.Checkbox(T("Only selected missions"), ref OnlySelected))
                             {

@@ -215,6 +215,8 @@ internal static class L10n
         ["Run Until.."] = "运行至",
         ["Mode Select"] = "模式选择",
         ["Please note. This will ONLY grind for relic Exp under the basic mission tab. \n"] = "注意：该选项仅会在基础任务页刷宇宙工具经验。\n",
+        ["THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n2: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n3: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing"]
+            = "提示：以下为当前机制说明，后续若机制调整，此提示也会同步更新。\n1：会按你当前实际职业（不是菜单中选中的职业）检查宇宙工具交付。\n2：它会优先于“宇宙工具完成后停止”；若两者同时开启，会优先交付而不是停止。\n3：如果你当前是生产职业，交付后会回到你之前制作的位置。\n\t- 这是可选功能，不需要的话可以关闭。",
         ["Show All Provisionals"] = "显示所有临时任务",
         ["Show Non-Gold Missions Only"] = "仅显示非金奖任务",
         ["Click to Show Completion Settings"] = "点击查看完成度设置",
@@ -1010,7 +1012,11 @@ internal static class L10n
         ["Set marker to current position"] = "将标记设为当前位置",
         ["Test Drone Buy"] = "测试购买无人机",
         ["Max use"] = "最大使用次数",
-        ["Use after this many steps"] = "达到该步数后使用"
+        ["Use after this many steps"] = "达到该步数后使用",
+        ["Allow Red Alerts for Relic"] = "遗物模式允许红警任务",
+        ["Include Critical Missions in Cosmic Tool Mode"] = "宇宙工具强化模式包含紧急任务",
+        ["Please note. This will ONLY grind for relic Exp under the basic mission tab. \n"] = "请注意：这只会在基础任务页里刷遗物经验。\n",
+        ["This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions"] = "它不会在顺序 / 限时 / 天候 / 紧急任务里生效，即使你勾选了这些任务。"
     };
 
     internal static string T(string key)

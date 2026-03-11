@@ -47,6 +47,7 @@ public partial class Config
 
     public bool GrindAllProvisionals { get; set; } = true;
     public bool GrindOffClassRedAlert { get; set; } = false;
+    public bool Relic_IncludeCriticals { get; set; } = true;
 
     public class MissionSettings
     {

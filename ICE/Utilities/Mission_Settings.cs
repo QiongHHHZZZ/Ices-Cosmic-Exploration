@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using static ICE.Utilities.WKSManagerCustom;
+
 
 namespace ICE.Utilities
 {
@@ -15,8 +17,8 @@ namespace ICE.Utilities
         internal static Vector2 previousMap = Vector2.Zero;
         internal static int nodeCounter = 0;
         internal static int nodeTotal = 0;
+        
         internal static uint item_collectableId = 0;
-
         internal static uint Collectable_BuffCount = 0;
 
         internal static Dictionary<string, uint> SkillUseAmount { get; set; } = new()

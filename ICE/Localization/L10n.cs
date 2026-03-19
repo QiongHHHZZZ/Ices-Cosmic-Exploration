@@ -1015,6 +1015,7 @@ internal static class L10n
         ["Use after this many steps"] = "达到该步数后使用",
         ["Allow Red Alerts for Relic"] = "遗物模式允许红警任务",
         ["Include Critical Missions in Cosmic Tool Mode"] = "宇宙工具强化模式包含紧急任务",
+        ["Show enabled missions on weather hover"] = "悬停天气时显示已启用任务",
         ["Please note. This will ONLY grind for relic Exp under the basic mission tab. \n"] = "请注意：这只会在基础任务页里刷遗物经验。\n",
         ["This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions"] = "它不会在顺序 / 限时 / 天候 / 紧急任务里生效，即使你勾选了这些任务。"
     };

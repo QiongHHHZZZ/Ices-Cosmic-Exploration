@@ -2017,13 +2017,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             {
                 foreach (var craft in missionCrafts)
                 {
-                    if (ImGui.BeginTable($"Main Craft Details_{craft.Value.RecipeId}", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.Hideable))
+                    if (ImGui.BeginTable($"Main Craft Details_{craft.Key}", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.Hideable))
                     {
                         ImGui.TableSetupColumn(T("Item Details"));
                         ImGui.TableSetupColumn(T("Dropdown Detail"));
                         ImGui.TableSetupColumn(T("Dropdown Selection"), ImGuiTableColumnFlags.WidthStretch);
 
-                        if (C.MissionConfig[id].CraftSettings.TryGetValue(craft.Value.RecipeId, out var recipeConfig))
+                        if (C.MissionConfig[id].CraftSettings.TryGetValue(craft.Key, out var recipeConfig))
                         {
                             bool globalArtisan = recipeConfig.UseGlobal;
                             bool supportedArtisan = P.Artisan.UpdatedArtisan();
@@ -2031,8 +2031,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             ImGui.TableSetColumnEnabled(1, !globalArtisan);
                             ImGui.TableSetColumnEnabled(2, !globalArtisan);
 
-                            var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Value.RecipeId);
-                            var recipeSheet = Svc.Data.GetExcelSheet<Recipe>().GetRow(craft.Value.RecipeId);
+                            var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Key);
+                            var recipeSheet = Svc.Data.GetExcelSheet<Recipe>().GetRow(craft.Key);
                             var iconId = recipeSheet.ItemResult.Value.Icon;
                             string itemName = recipeSheet.ItemResult.Value.Name.ToString();
 
@@ -2138,6 +2138,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (Svc.Texture.TryGetFromGameIcon((int)iconId, out var iconImage))
                             {
                                 ImGui.Image(iconImage.GetWrapOrEmpty().Handle, new Vector2(24, 24));
+                            }
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.BeginTooltip();
+                                ImGui.Text($"RecipeID: {craft.Value.RecipeId}");
+                                ImGui.Text($"ItemID: {craft.Value.ItemId}");
+                                ImGui.EndTooltip();
                             }
                             if (craft.Value.ExpertCraft)
                             {
@@ -2478,7 +2485,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                         else
                         {
-                            C.MissionConfig[id].CraftSettings[craft.Value.RecipeId] = new();
+                            C.MissionConfig[id].CraftSettings[craft.Key] = new();
                             C.SaveDebounced();
                         }
 

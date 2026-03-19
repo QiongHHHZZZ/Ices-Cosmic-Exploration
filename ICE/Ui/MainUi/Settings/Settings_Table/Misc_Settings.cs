@@ -107,6 +107,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
 
+            bool showSelectedWeatherMissions = C.Overlay_WeatherSelected;
+            if (ImGui.Checkbox(T("Show enabled missions on weather hover"), ref showSelectedWeatherMissions))
+            {
+                C.Overlay_WeatherSelected = showSelectedWeatherMissions;
+                C.Save();
+            }
+
             bool filterByCurrentJob = C.Overlay_FilterByCurrentJob;
             if (ImGui.Checkbox(T("Filter by current job only"), ref filterByCurrentJob))
             {

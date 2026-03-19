@@ -19,4 +19,5 @@ public partial class Config
     public bool Overlay_HighlightTokenWeather { get; set; } = true;
     public bool Overlay_UseCogsIcon { get; set; } = false;
     public bool Overlay_RelicXpExpanded { get; set; } = false;
+    public bool Overlay_WeatherSelected { get; set; } = true;
 }

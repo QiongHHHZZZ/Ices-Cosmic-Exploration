@@ -327,6 +327,52 @@ namespace ICE.Ui
                         ImGui.Text(T("[{0}] {1} ({2}x tokens)", mission.Key, mission.Value.Name, mission.Value.RewardItemAmount));
                     }
                 }
+                if (C.Overlay_WeatherSelected)
+                {
+                    List<uint> enabledWeathers = new();
+                    foreach (var mission in C.MissionConfig)
+                    {
+                        if (!mission.Value.Enabled)
+                            continue;
+
+                        var sheetInfo = CosmicHelper.SheetMissionDict[mission.Key];
+                        if (sheetInfo.Weather == CosmicWeather.None)
+                            continue;
+
+                        if (CosmicHelper.WeatherIds.TryGetValue(sheetInfo.Weather, out var iconId) && iconId == forecast.IconId)
+                            enabledWeathers.Add(mission.Key);
+                    }
+                    if (enabledWeathers.Count > 0)
+                    {
+                        ImGui.Separator();
+                        if (ImGui.BeginTable("##EnabledWeatherMissionTable", 3, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
+                        {
+                            ImGui.TableSetupColumn(T("Icon"));
+                            ImGui.TableSetupColumn(T("Mission"));
+                            ImGui.TableSetupColumn(T("Name"));
+                            foreach (var mission in enabledWeathers)
+                            {
+                                var sheetInfo = CosmicHelper.SheetMissionDict[mission];
+                                ImGui.TableNextRow();
+                                ImGui.TableSetColumnIndex(0);
+                                foreach (var job in sheetInfo.Jobs)
+                                {
+                                    var icon = CosmicHelper.JobIconDict[job];
+                                    ImGui.Image(icon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
+                                    ImGui.SameLine();
+                                }
+
+                                ImGui.TableNextColumn();
+                                ImGui.Text($"{mission}");
+
+                                ImGui.TableNextColumn();
+                                ImGui.Text($"{sheetInfo.Name}");
+                            }
+
+                            ImGui.EndTable();
+                        }
+                    }
+                }
                 ImGui.EndTooltip();
             }
         }

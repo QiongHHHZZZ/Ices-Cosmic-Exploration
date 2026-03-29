@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using NAudio.CoreAudioApi;
+using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
 using System.IO;
@@ -31,21 +32,23 @@ namespace ICE.Sounds
                 var sampleProvider = reader.ToSampleProvider();
                 var volumeProvider = new VolumeSampleProvider(sampleProvider)
                 {
-                    Volume = C.SoundVolume // Apply volume at sample level (0.0 to 1.0)
+                    Volume = C.SoundVolume
                 };
 
-                var waveOut = new WaveOutEvent();
-                waveOut.Volume = 1.0f;
+                var waveOut = new WasapiOut(
+                    AudioClientShareMode.Shared,
+                    latency: 200
+                );
 
                 var tcs = new TaskCompletionSource<bool>();
 
                 waveOut.PlaybackStopped += (sender, args) =>
                 {
                     tcs.TrySetResult(true);
-                    waveOut.Dispose(); // Dispose after playback stops
+                    waveOut.Dispose();
                 };
 
-                waveOut.Init(volumeProvider.ToWaveProvider16());
+                waveOut.Init(volumeProvider);
                 waveOut.Play();
 
                 await tcs.Task.ConfigureAwait(false);

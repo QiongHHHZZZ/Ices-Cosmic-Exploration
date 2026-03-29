@@ -2,11 +2,10 @@
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Utilities.Cosmic_Helper;
-using TerraFX.Interop.Windows;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Localization.L10n;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -14,7 +13,17 @@ namespace ICE.Scheduler.Tasks
     {
         public static void Enqueue()
         {
-            if (PlayerHelper.NeedsRepair(C.RepairPercent))
+            if (PlayerHelper.AnyNeedsRepair(C.RepairPercent) && C.RepairAllGear)
+            {
+                P.TaskManager.EnqueueMulti
+                (
+                    new(OpenSelfRepair, "Opening the self repair window"),
+                    new(SelfRepair_All, "Executing the self repair"),
+                    new(CloseRepair, "Closing Self Repair"),
+                    new(() => SchedulerMain.State = IceState.GrabMission)
+                );
+            }
+            else if (PlayerHelper.NeedsRepair(C.RepairPercent))
             {
                 var currentJob = (uint)Player.Job;
 
@@ -121,24 +130,34 @@ namespace ICE.Scheduler.Tasks
             var currentTarget = Svc.Targets.Target;
             var repairAmount = C.RepairPercent;
 
-            if (!PlayerHelper.NeedsRepair(99.9f))
+            IceLogging.Debug($"{!PlayerHelper.NeedsRepair(99.9f)} | {!(PlayerHelper.AnyNeedsRepair(99.9f) && C.RepairAllGear)}");
+
+            if (!PlayerHelper.NeedsRepair(99.9f) && !(PlayerHelper.AnyNeedsRepair(99.9f) && C.RepairAllGear))
             {
                 IceLogging.Debug("Repair Complete! Finishing task and closing window");
                 return true;
             }
             else if (GenericHelpers.TryGetAddonMaster<Repair>("Repair", out var repair) && repair.IsAddonReady)
             {
-                if (PlayerHelper.NeedsRepair(repairAmount))
+                if (PlayerHelper.NeedsRepair(repairAmount) || (PlayerHelper.AnyNeedsRepair(99.9f) && C.RepairAllGear))
                 {
                     if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var Yesno) && Yesno.IsAddonReady)
                     {
                         if (FrameThrottler.Throttle("Saying yes to the gil"))
                             Yesno.Yes();
                     }
-                    else if (EzThrottler.Throttle("Firing off repair request", 300))
+                    else if (EzThrottler.Throttle("Sending Repair Request", 2000))
                     {
-                        IceLogging.Debug("Repair Callback", "[Self Repair Task]");
-                        repair.RepairAll();
+                        if (C.RepairAllGear)
+                        {
+                            IceLogging.Debug("Firing off callbacl to repair all", "Self Repair Task: All");
+                            GenericHandlers.FireCallback("Repair", true, 1);
+                        }
+                        else
+                        {
+                            IceLogging.Debug("Repair Callback", "[Self Repair Task]");
+                            repair.RepairAll();
+                        }
                     }
                 }
             }
@@ -161,8 +180,16 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        public unsafe static bool OpenSelfRepair()
+        public unsafe static bool? OpenSelfRepair()
         {
+            if (C.Stop_DarkMatter && PlayerHelper.GetItemCount(Utils.DarkMatter_8Id, out var dmCount) && dmCount < C.Minimum_DarkMatter)
+            {
+                IceLogging.ChatInfo(T("Dark matter is below the minimum we want to keep, so self repair is stopping."), "[I.C.E.] Task: Self Repair");
+                SchedulerMain.State = IceState.Idle;
+                P.TaskManager.Tasks.Clear();
+                return true;
+            }
+
             if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("Repair", out var x) && GenericHelpers.IsAddonReady(x))
             {
                 return true;
@@ -172,7 +199,7 @@ namespace ICE.Scheduler.Tasks
                 ActionManager.Instance()->UseAction(ActionType.GeneralAction, 6);
             return false;
         }
-        public unsafe static bool SelfRepair()
+        public unsafe static bool? SelfRepair()
         {
             if (!PlayerHelper.NeedsRepair(C.RepairPercent))
             {
@@ -204,7 +231,42 @@ namespace ICE.Scheduler.Tasks
             }
             return false;
         }
-        public unsafe static bool CloseRepair()
+        public unsafe static bool? SelfRepair_All()
+        {
+            string tag = "Self Repair: All";
+
+            if (!PlayerHelper.AnyNeedsRepair(C.RepairPercent))
+            {
+                IceLogging.Debug("All gear has been repaired, continuing", tag);
+                return true;
+            }
+            else if (Svc.Condition[ConditionFlag.Mounted])
+            {
+                if (EzThrottler.Throttle("Attempting to dismount for repairing"))
+                {
+                    IceLogging.Debug("Dismounting for self repair", tag);
+                    ActionManager.Instance()->UseAction(ActionType.GeneralAction, 9);
+                }
+            }
+            else if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("SelectYesno", out var addon) && GenericHelpers.IsAddonReady(addon))
+            {
+                if (FrameThrottler.Throttle("SelectYesnoThrottle", 300))
+                {
+                    IceLogging.Debug("SelectYesno Callback", tag);
+                    ECommons.Automation.Callback.Fire(addon, true, 0);
+                }
+            }
+            else if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("Repair", out var addon2) && GenericHelpers.IsAddonReady(addon2))
+            {
+                if (FrameThrottler.Throttle("Firing off repair request", 300))
+                {
+                    IceLogging.Debug("Repair Callback", tag);
+                    ECommons.Automation.Callback.Fire(addon2, true, 1);
+                }
+            }
+            return false;
+        }
+        public unsafe static bool? CloseRepair()
         {
             if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var Yesno) && Yesno.IsAddonReady)
             {
@@ -231,5 +293,7 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+
+
     }
 }

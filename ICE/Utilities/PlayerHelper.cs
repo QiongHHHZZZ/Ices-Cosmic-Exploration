@@ -105,23 +105,25 @@ public class PlayerHelper
     }
     public static unsafe bool NeedsRepair(float below = 0)
     {
+        string tag = "Needs Repair";
+
         var im = InventoryManager.Instance();
         if (im == null)
         {
-            Svc.Log.Error("InventoryManager was null");
+            IceLogging.Error("InventoryManager was null");
             return false;
         }
 
         var equipped = im->GetInventoryContainer(InventoryType.EquippedItems);
         if (equipped == null)
         {
-            Svc.Log.Error("InventoryContainer was null");
+            IceLogging.Error("InventoryContainer was null", tag);
             return false;
         }
 
         if (!equipped->IsLoaded)
         {
-            Svc.Log.Error($"InventoryContainer is not loaded");
+            IceLogging.Error($"InventoryContainer is not loaded");
             return false;
         }
 
@@ -142,6 +144,70 @@ public class PlayerHelper
 
         return false;
     }
+
+    public static unsafe bool AnyNeedsRepair(float below = 0)
+    {
+        string tag = "All Repair Check";
+
+        var im = InventoryManager.Instance();
+        if (im == null)
+        {
+            IceLogging.Error("Inventory Manager was null, so can't check for repair status", tag);
+            return false;
+        }
+
+        List<InventoryType> listInventory = new()
+        {
+            InventoryType.ArmoryMainHand,
+            InventoryType.ArmoryOffHand,
+            InventoryType.ArmoryHead,
+            InventoryType.ArmoryBody,
+            InventoryType.ArmoryHands,
+            InventoryType.ArmoryLegs,
+            InventoryType.ArmoryFeets,
+            InventoryType.ArmoryEar,
+            InventoryType.ArmoryNeck,
+            InventoryType.ArmoryWrist,
+            InventoryType.ArmoryRings,
+            InventoryType.EquippedItems
+        };
+
+        foreach (var type in listInventory)
+        {
+            var inventory = im->GetInventoryContainer(type);
+            if (inventory == null)
+            {
+                IceLogging.Error($"{type} has returned null, going to skip this for the check");
+                continue;
+            }
+
+            if (!inventory->IsLoaded)
+            {
+                IceLogging.Error($"Inventory {type} is reporting not loaded, skipping", tag);
+                continue;
+            }
+
+            for (var i = 0; i < inventory->Size; i++)
+            {
+                var item = inventory->GetInventorySlot(i);
+                if (item == null)
+                    continue;
+
+                var itemCondition = Convert.ToInt32(Convert.ToDouble(item->Condition) / 30000.0 * 100.0);
+
+                if (itemCondition <= below)
+                {
+                    IceLogging.Debug($"Found an item that needed repair. Condition: {itemCondition}", tag);
+                    return true;
+                }
+            }
+
+        }
+
+        IceLogging.Debug("Repair all check has concluded, no item can be repaired", tag);
+        return false;
+    }
+
     public class ManipInfo
     {
         public uint ActionId { get; set; }

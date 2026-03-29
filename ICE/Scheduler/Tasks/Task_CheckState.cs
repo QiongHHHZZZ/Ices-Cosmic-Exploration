@@ -380,7 +380,7 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool? HubActivityCheck()
         {
-            string tag = "[Task Check State: Hub Activity Check]";
+            string tag = "Task Check State: Hub Activity Check";
 
             var territoryId = Player.Territory.RowId;
             var relicProgress = CosmicHelper.Cosmic_ClassInfo();
@@ -391,7 +391,11 @@ namespace ICE.Scheduler.Tasks
             bool RepairVendor = false;
             bool TurninRelic = false;
 
-            bool needsRepair = PlayerHelper.NeedsRepair(C.RepairPercent);
+            bool repairSelfGear = PlayerHelper.NeedsRepair(C.RepairPercent);
+            bool repairAllGear = PlayerHelper.AnyNeedsRepair(C.RepairPercent) && C.RepairAllGear;
+
+            IceLogging.Verbose($"Repair Class: {repairSelfGear} | Repair All: {repairAllGear}", tag);
+
             bool selfRepairCraft = C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
             bool selfRepairGathering = C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains((uint)Player.Job);
 
@@ -399,16 +403,20 @@ namespace ICE.Scheduler.Tasks
                 && CosmicHelper.GatheringJobList.Contains((uint)Player.Job)
                 && Task_Spiritbond.IsSpiritbondReadyAny();
 
-            if (needsRepair)
+            if (repairSelfGear || repairAllGear)
             {
+                IceLogging.Verbose($"We were told we needed repairs, one of these should be true...", tag);
                 if (C.RepairAtVendor)
                 {
+                    IceLogging.Debug("We were told to repair at the vendor, so we'll add that to the list of hub activities", tag);
                     RepairVendor = true;
                 }
                 else
                 {
+                    IceLogging.Verbose($"Self Repair Crafter: {selfRepairCraft} | Self Repair Gathering: {selfRepairGathering}");
                     if (selfRepairCraft || selfRepairGathering)
                     {
+                        IceLogging.Debug("We were told that we can repair at ONE of these. So going to exit -> self repair", tag);
                         SchedulerMain.State = IceState.Repair;
                         return true;
                     }

@@ -1016,6 +1016,12 @@ internal static class L10n
         ["Allow Red Alerts for Relic"] = "遗物模式允许红警任务",
         ["Include Critical Missions in Cosmic Tool Mode"] = "宇宙工具强化模式包含紧急任务",
         ["Show enabled missions on weather hover"] = "悬停天气时显示已启用任务",
+        ["Repair all gear in bag"] = "修理背包中的全部装备",
+        ["Stop when below x dark matter"] = "暗物质低于设定值时停止",
+        ["Minimum Grade 8 Dark Matter"] = "最低保留 8 级暗物质",
+        ["Current have: {0:N0} Grade 8 Dark Matter"] = "当前持有：{0:N0} 个 8 级暗物质",
+        ["Any need repaired: {0}"] = "是否有装备需要修理：{0}",
+        ["Dark matter is below the minimum we want to keep, so self repair is stopping."] = "暗物质数量低于保留阈值，已停止自修。",
         ["Please note. This will ONLY grind for relic Exp under the basic mission tab. \n"] = "请注意：这只会在基础任务页里刷遗物经验。\n",
         ["This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions"] = "它不会在顺序 / 限时 / 天候 / 紧急任务里生效，即使你勾选了这些任务。"
     };

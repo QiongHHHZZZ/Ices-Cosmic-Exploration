@@ -19,7 +19,7 @@ public partial class Config
 
     public class Global_Artisan
     {
-        public ArtisanCraftType SolverType { get; set; } = ArtisanCraftType.Standard;
+        public ArtisanCraftType SolverType { get; set; } = ArtisanCraftType.Default;
         public uint FoodId { get; set; } = 0;
         public bool FoodHQ { get; set; } = true;
         public uint PotionId { get; set; } = 0;

@@ -176,13 +176,34 @@ namespace ICE.Scheduler.Tasks
         }
 
         private static int BuyAmount = 0;
-        private static uint ItemId = 0;
         private static int KeepAmount = 0;
 
+        /*
         private static unsafe bool? BuyGearItems()
         {
             bool TryPurchaseGearItem(ShopExchangeCurrency shopExchange, uint currencyAmount, Func<CosmoShoppingList, uint, int> getTargetAmount, Action<int> setAmount)
             {
+                if (ItemId != 0)
+                {
+                    if (PlayerHelper.GetItemCount(ItemId, out var currentAmount) && currencyAmount == previousItemCount)
+                        return true;
+                    else
+                    {
+                        if (C.CosmoShopping.TryGetValue(ItemId, out var config))
+                        {
+                            config.BuyAmount -= BuyAmount;
+                            if (config.BuyAmount <= 0)
+                                config.BuyAmount = 0;
+                            C.Save();
+                        }
+
+                        setAmount(1);
+                        ItemId = 0;
+                        previousItemCount = -1;
+                        return true;
+                    }
+                }
+
                 foreach (var itemId in C.CosmoShoppingOrder_Gear)
                 {
                     if (!C.CosmoShopping.TryGetValue(itemId, out var item))
@@ -208,14 +229,13 @@ namespace ICE.Scheduler.Tasks
                     if (maxAffordable <= 0)
                         continue;
 
-                    int buyAmount = Math.Min(maxAffordable, targetAmount);
-                    if (buyAmount > 99) buyAmount = 99;
+                    int buyAmount = 1;
 
                     if (EzThrottler.Throttle("Selecting Item to Buy"))
                     {
                         shopExchangeItem.Select(buyAmount);
-                        setAmount(buyAmount);
                         ItemId = itemId;
+                        PlayerHelper.GetItemCount(ItemId, out previousItemCount);
                     }
                     return true;
                 }
@@ -224,6 +244,9 @@ namespace ICE.Scheduler.Tasks
 
             if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var YesNo) && YesNo.IsAddonReady)
             {
+                if (EzThrottler.Throttle($"Updating Item Count: {ItemId}", 3000))
+                    PlayerHelper.GetItemCount(ItemId, out previousItemCount);
+
                 if (EzThrottler.Throttle("Buy Item", 500))
                 {
                     YesNo.Yes();
@@ -256,15 +279,11 @@ namespace ICE.Scheduler.Tasks
                     return false;
 
                 // Try BuyAmount first
-                if (TryPurchaseGearItem(shopExchange, currencyAmount,
-                    (item, itemId) => item.BuyAmount,
-                    (amount) => BuyAmount = amount))
+                if (TryPurchaseGearItem(shopExchange, currencyAmount, (item, itemId) => item.BuyAmount, (amount) => BuyAmount = amount))
                     return false;
 
                 // Finally try KeepBuying (buy max affordable)
-                if (TryPurchaseGearItem(shopExchange, currencyAmount,
-                    (item, itemId) => item.KeepBuying ? int.MaxValue : 0,
-                    (amount) => KeepAmount = amount))
+                if (TryPurchaseGearItem(shopExchange, currencyAmount, (item, itemId) => item.KeepBuying ? int.MaxValue : 0, (amount) => KeepAmount = amount))
                     return false;
 
                 return true;
@@ -272,6 +291,150 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+        */
+
+        private static uint previousItemId = 0;
+        private static int previousItemCount = -1;
+
+        private static unsafe bool? BuyGearItems()
+        {
+            string tag = "Shopping: Gear Items";
+
+            bool TryPurchaseGearItem(ShopExchangeCurrency shopExchange, uint amountAvailable, bool singleBuy = false, bool keepAmount = false, bool keepBuying = false)
+            {
+                if (previousItemId != 0 && singleBuy)
+                {
+                    if (C.CosmoShopping.TryGetValue(previousItemId, out var config))
+                    {
+                        // We have an item that we're expecting to change +1, so we're going to check that
+                        if (PlayerHelper.GetItemCount(previousItemId, out var currentCount))
+                        {
+                            if (EzThrottler.Throttle($"Item Check Count Log {previousItemId}", 1000))
+                            {
+                                IceLogging.Verbose($"Checking itemId: {previousItemId}. Last Count: {previousItemCount}", tag);
+                            }
+                            if (previousItemCount < currentCount)
+                            {
+                                IceLogging.Verbose("We got an increase in the current count. Time to update the shopping list", tag);
+                                if (config.BuyAmount != 0 && singleBuy)
+                                {
+                                    config.BuyAmount -= 1;
+                                    if (config.BuyAmount < 0)
+                                        config.BuyAmount = 0;
+                                    C.Save();
+                                }
+                                previousItemId = 0;
+                                previousItemCount = -1;
+                                IceLogging.Verbose("All Need to keep stuff is reset", tag);
+                            }
+
+                            return true;
+                        }
+                        else
+                        {
+                            if (EzThrottler.Throttle($"Warning itemID not found: {previousItemId}"))
+                                IceLogging.Error($"Hey! {previousItemId} wasn't found... which shouldn't be the case", tag);
+
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        IceLogging.Error("Somehow... we're here? Which means something got pulled from the config wrong... We shouldn't be, so we're just going to reset everything/not change values");
+                        previousItemId = 0;
+                        previousItemCount = -1;
+                        return true;
+                    }
+                }
+
+                foreach (var itemId in C.CosmoShoppingOrder_Gear)
+                {
+                    if (C.CosmoShopping.TryGetValue(itemId, out var config))
+                    {
+                        PlayerHelper.GetItemCount(itemId, out var currentCount);
+
+                        IceLogging.Debug($"Checking for ItemID: {itemId}");
+
+                        var shopItem = shopExchange.BasicShopItems.FirstOrDefault(x => x.ItemId == itemId);
+                        if (shopItem == null)
+                        {
+                            if (Shop_Cosmocredits.Shop_MountsCards.TryGetValue(itemId, out var shopInfo))
+                            {
+                                if (EzThrottler.Throttle("Callback fire"))
+                                    ECommons.Automation.Callback.Fire(shopExchange.Base, true, 4, -1, 1, shopInfo.Tab);
+
+                                IceLogging.Verbose("Selecting tab for item", tag);
+
+                                return true;
+                            }
+                        }
+
+                        var maxAfordable = (int)(amountAvailable / shopItem.CostAmount);
+                        if (maxAfordable == 0)
+                        {
+                            IceLogging.Verbose($"Skipping: {itemId} due to not being able to buy amount: {maxAfordable} | Current Amount: {currentCount}");
+                            continue;
+                        }
+
+                        bool buyItem = false;
+
+                        if (singleBuy && config.BuyAmount != 0)
+                            buyItem = true;
+                        else if (config.KeepAmount != 0 && currentCount < config.KeepAmount && keepAmount)
+                            buyItem = true;
+                        else if (config.KeepBuying && keepBuying)
+                            buyItem = true;
+
+                        IceLogging.Debug($"Buy Check: {buyItem} | Single Buy: {singleBuy} | Keep Amount: {keepAmount} | Keep Buying: {keepBuying}");
+
+                        if (buyItem)
+                        {
+                            if (EzThrottler.Throttle("Selecting item", 500))
+                            {
+                                shopItem.Select();
+                                previousItemId = itemId;
+                                previousItemCount = currentCount;
+                            }
+
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        IceLogging.Error($"No item exist in the gear shop: {itemId}", tag);
+                    }
+                }
+
+                return false;
+            }
+
+            if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var YesNo) && YesNo.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("SelectYesNo"))
+                    YesNo.Yes();
+            }
+            else if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
+            {
+                var currencyAmount = shopExchange.CurrencyAmount - (uint)C.CosmoKeepAmount;
+
+                if (TryPurchaseGearItem(shopExchange, currencyAmount, singleBuy: true))
+                    return false;
+
+                if (TryPurchaseGearItem(shopExchange, currencyAmount, keepAmount: true))
+                    return false;
+
+                if (TryPurchaseGearItem(shopExchange, currencyAmount, keepBuying: true))
+                    return false;
+
+                IceLogging.Debug("Gear shop is finished, continuing", tag);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static uint ItemId = 0;
+
         private static bool? BuyMaterialItems()
         {
             bool TryPurchaseMaterialItem(ShopExchangeCurrency shopExchange, uint currencyAmount, Func<CosmoShoppingList, uint, int> getTargetAmount, Action<int> setAmount)

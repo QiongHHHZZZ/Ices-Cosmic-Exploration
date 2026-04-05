@@ -229,6 +229,15 @@ public class PlayerHelper
         if (Player.IsBusy)
             return;
 
+        if (Player.Mounted || Player.IsJumping)
+            return;
+
+        if (Svc.Condition[ConditionFlag.Crafting] || Svc.Condition[ConditionFlag.ExecutingCraftingAction] || Svc.Condition[ConditionFlag.PreparingToCraft])
+            return;
+
+        if (Svc.Condition[ConditionFlag.Gathering] || Svc.Condition[ConditionFlag.ExecutingGatheringAction])
+            return;
+
         foreach (var jobId in CosmicHelper.CrafterJobList)
         {
             if (ManipClassInfo.TryGetValue(jobId, out var info))

@@ -828,7 +828,7 @@ public sealed partial class ICE
         C.Save();
     }
 
-    private static void MigrateConfigV1()
+    private static void MigrateConfigSettings()
     {
         if (!C.OldConfigMigrateV1)
         {
@@ -839,7 +839,46 @@ public sealed partial class ICE
         {
             Artisan_MigrateNew();
         }
+
+        if (C.Config_Versioning == 0)
+        {
+            foreach (var mission in C.MissionConfig)
+            {
+                var id = mission.Key;
+                if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var sheetInfo))
+                {
+                    if (sheetInfo.Attributes.HasFlag(MissionAttributes.ExpertCraft))
+                    {
+                        Dictionary<ushort, CraftingInfo> allCrafts = new();
+
+                        foreach (var craft in sheetInfo.Crafts_Main)
+                            allCrafts.Add(craft.Key, craft.Value);
+
+                        foreach (var craft in sheetInfo.Crafts_Pre)
+                            allCrafts.Add(craft.Key, craft.Value);
+
+                        foreach (var craft in allCrafts)
+                        {
+                            if (mission.Value.CraftSettings.TryGetValue(craft.Key, out var craftSettings))
+                            {
+                                IceLogging.Info($"We found the settings for mission: {id}");
+                                if (craftSettings.UseGlobal)
+                                    craftSettings.ArtisanSolverType = ArtisanCraftType.Default;
+                                else
+                                {
+                                    if (craft.Value.ExpertCraft && craftSettings.ArtisanSolverType == ArtisanCraftType.Standard)
+                                        craftSettings.ArtisanSolverType = ArtisanCraftType.Default;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            C.Config_Versioning = 1;
+            C.Save();
+        }
     }
+
 
     public static void EnsureAllMission()
     {

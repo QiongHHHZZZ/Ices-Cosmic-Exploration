@@ -90,7 +90,7 @@ public partial class Config
             public bool PotionHQ { get; set; } = false;
             public uint ManualId { get; set; } = 0;
             public uint SquadronManualId { get; set; } = 0;
-            public ArtisanCraftType ArtisanSolverType { get; set; } = ArtisanCraftType.Standard;
+            public ArtisanCraftType ArtisanSolverType { get; set; } = ArtisanCraftType.Default;
             public string MacroName { get; set; } = "";
             public int SkillUsageAmount { get; set; } = -1;
             public int MinStepsForMiracle { get; set; } = -1;

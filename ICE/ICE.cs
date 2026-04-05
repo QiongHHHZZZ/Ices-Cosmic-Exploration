@@ -106,12 +106,12 @@ public sealed partial class ICE : IDalamudPlugin
         // timer stuff
         MissionTimer = new MissionTimer();
 
-        MigrateConfigV1();
-
         DictionaryCreation();
         Task_Gamba.EnsureGambaWeightsInitialized();
         GatheringUtil.UpdateCriticalWeather();
         TestLoadRoutes();
+
+        MigrateConfigSettings();
     }
 
     private static void Init()

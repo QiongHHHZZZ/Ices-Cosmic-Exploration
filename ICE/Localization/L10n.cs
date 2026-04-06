@@ -1023,7 +1023,11 @@ internal static class L10n
         ["Any need repaired: {0}"] = "是否有装备需要修理：{0}",
         ["Dark matter is below the minimum we want to keep, so self repair is stopping."] = "暗物质数量低于保留阈值，已停止自修。",
         ["Please note. This will ONLY grind for relic Exp under the basic mission tab. \n"] = "请注意：这只会在基础任务页里刷遗物经验。\n",
-        ["This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions"] = "它不会在顺序 / 限时 / 天候 / 紧急任务里生效，即使你勾选了这些任务。"
+        ["This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions"] = "它不会在顺序 / 限时 / 天候 / 紧急任务里生效，即使你勾选了这些任务。",
+        ["No standard missions are enabled for your current planet/moon and selected job.\nPlease enable some so the agenda does not stall when there are no timed or weather missions.\nCurrently enabled on this planet/moon:"] = "你当前所在的星球/月球上，没有为这个职业启用任何普通任务。\n如果不想在没有限时或天气任务时卡住，请先启用一些普通任务。\n当前星球/月球已启用数量：",
+        ["\nSinus = {0}"] = "\n憧憬湾 = {0}",
+        ["\nPhaenna = {0}"] = "\n法恩娜 = {0}",
+        ["\nOizys = {0}"] = "\n俄匊斯 = {0}"
     };
 
     internal static string T(string key)

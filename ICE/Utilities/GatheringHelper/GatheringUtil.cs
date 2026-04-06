@@ -17,6 +17,7 @@ public static unsafe partial class GatheringUtil
         /// Sheet name
         /// </summary>
         public uint StatusId { get; set; }
+        public uint StatusId2 { get; set; }
         /// <summary>
         /// The status name attached to it (personal use)
         /// </summary>
@@ -128,9 +129,10 @@ public static unsafe partial class GatheringUtil
                     [17] = 273,
                 },
                 StatusId = 1286,
+                StatusId2 = 756,
                 StatusName = "",
                 RequiredGp = 100,
-                RequiredLv = 68,
+                RequiredLv = 24,
             }},
             { "FieldMasteryIII", new GatheringActions
             {

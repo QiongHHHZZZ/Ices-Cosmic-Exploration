@@ -144,7 +144,16 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Info($"Applying config states for the following recipeID: {recipeId}");
                     if (Mission_Settings.Mode == ModeSelect.LevelMode)
                     {
+                        var globalSettings = C.Artisan_GlobalStandard;
+
                         IceLogging.Debug($"Setting {recipeId} to progress only. ItemID: {itemId}");
+                        ApplyArtisanSettings(recipeId,
+                                             ArtisanCraftType.ProgressOnly,
+                                             globalSettings.FoodId, globalSettings.FoodHQ,
+                                             globalSettings.PotionId, globalSettings.PotionHQ,
+                                             globalSettings.ManualId,
+                                             globalSettings.SquadronManual);
+
                         P.Artisan.ChangeSolver(recipeId, "Progress Only Solver", true);
                     }
                     else if (recipeConfig.UseGlobal)

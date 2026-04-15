@@ -18,4 +18,13 @@ public partial class Config
     }
 
     public List<AgendaInfo> Cosmic_Agenda { get; set; } = new();
+
+    public class AgendaProfileInfo
+    {
+        public string Name { get; set; } = "New Profile";
+        public string Description { get; set; } = "";
+        public List<AgendaInfo> MissionList { get; set; } = new();
+    }
+
+    public List<AgendaProfileInfo> Agenda_Profiles { get; set; } = new();
 }

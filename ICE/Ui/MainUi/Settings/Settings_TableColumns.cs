@@ -1,7 +1,8 @@
+﻿using Dalamud.Interface.Utility.Raii;
+using ICE.Utilities.Cosmic_Helper;
 using static ICE.Localization.L10n;
-﻿using ICE.Utilities.Cosmic_Helper;
 
-namespace ICE.Ui.MainUi.Settings.Settings_Table;
+namespace ICE.Ui.MainUi.Settings;
 
 public static class Settings_TableColumns
 {
@@ -142,6 +143,15 @@ if (ImGui.Checkbox(T("Remove Mission Upon Gold Completion"), ref removeGold))
         {
             C.RemoveAfterGold = removeGold;
             C.Save();
+        }
+        using (ImRaii.Disabled(!removeGold))
+        {
+            bool keepARanks = C.KeepARanks;
+            if (ImGui.Checkbox("Keep \"A Rank\" missions and below", ref keepARanks))
+            {
+                C.KeepARanks = keepARanks;
+                C.Save();
+            }
         }
 
 ImGui.Checkbox(T("Stop after current mission"), ref Mission_Settings.StopAfterCurrent);

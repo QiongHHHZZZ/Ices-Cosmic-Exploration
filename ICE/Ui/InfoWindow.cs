@@ -3,7 +3,7 @@ using Dalamud.Interface.Utility.Raii;
 using ECommons.Reflection;
 using FFXIVClientStructs;
 using ICE.Ui.MainUi.HelpFolder;
-using ICE.Ui.MainUi.Settings.Settings_Table;
+using ICE.Ui.MainUi.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;

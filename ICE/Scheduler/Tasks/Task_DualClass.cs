@@ -174,7 +174,7 @@ namespace ICE.Scheduler.Tasks
             }
             else if ((uint)Player.Job == 16 || (uint)Player.Job == 17)
             {
-                bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent);
+                bool selfRepairGather = Char_Info.SelfRepairGather && PlayerHelper.NeedsRepair(Char_Info.RepairPercent);
 
                 if (selfRepairGather)
                 {
@@ -196,7 +196,7 @@ namespace ICE.Scheduler.Tasks
             else if ((uint)Player.Job == 18)
             {
                 IceLogging.Info("We're on a fishing job, so going fishing.", handle);
-                bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent);
+                bool selfRepairGather = Char_Info.SelfRepairGather && PlayerHelper.NeedsRepair(Char_Info.RepairPercent);
 
                 if (selfRepairGather)
                 {

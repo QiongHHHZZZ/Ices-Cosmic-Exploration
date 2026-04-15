@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using static ICE.ConfigFiles.Config;
 using static ICE.Localization.L10n;
 
-namespace ICE.Ui.SettingTabs
+namespace ICE.Ui.MainUi.Settings
 {
     internal class Priority_Settings
     {

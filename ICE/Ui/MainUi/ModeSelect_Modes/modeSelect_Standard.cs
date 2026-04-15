@@ -4,7 +4,7 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
-using ICE.Ui.MainUi.Settings.Settings_Table;
+using ICE.Ui.MainUi.Settings;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
 using System.Reflection;

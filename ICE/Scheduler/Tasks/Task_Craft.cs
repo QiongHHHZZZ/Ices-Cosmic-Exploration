@@ -144,7 +144,7 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Info($"Applying config states for the following recipeID: {recipeId}");
                     if (Mission_Settings.Mode == ModeSelect.LevelMode)
                     {
-                        var globalSettings = C.Artisan_GlobalStandard;
+                        var globalSettings = Char_Info.Artisan_GlobalStandard;
 
                         IceLogging.Debug($"Setting {recipeId} to progress only. ItemID: {itemId}");
                         ApplyArtisanSettings(recipeId,
@@ -158,7 +158,7 @@ namespace ICE.Scheduler.Tasks
                     }
                     else if (recipeConfig.UseGlobal)
                     {
-                        var globalSettings = expert ? C.Artisan_GlobalExpert : C.Artisan_GlobalStandard;
+                        var globalSettings = expert ? Char_Info.Artisan_GlobalExpert : Char_Info.Artisan_GlobalStandard;
 
                         ApplyArtisanSettings(recipeId,
                                              globalSettings.SolverType,

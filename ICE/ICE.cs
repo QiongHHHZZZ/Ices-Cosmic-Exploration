@@ -112,6 +112,7 @@ public sealed partial class ICE : IDalamudPlugin
         TestLoadRoutes();
 
         MigrateConfigSettings();
+        _ = Sounds.SoundPlayer.InitializeAsync();
     }
 
     private static void Init()

@@ -135,8 +135,8 @@ namespace ICE.Scheduler.Tasks
 
             Vector3 randomPosition = CalculateFanPosition(nodePos, selectedAngle, selectedDistance, routeinfo.FanHeight);
             randomPosition = P.Navmesh.NearestPoint(randomPosition, 0.1f, 5f).Value;
-            if (EzThrottler.Throttle("Gather Route Throttle", 3000))
-                IceLogging.Debug($"[GatherMove] angleToPlayer={angleToPlayer:F1}, node_MinAngle={node_MinAngle:F1}, node_MaxAngle={node_MaxAngle:F1}, sectionMin={sectionMin:F1}, sectionMax={sectionMax:F1}, selectedAngle={selectedAngle:F1}, selectedDistance={selectedDistance:F2}, minDist={routeinfo.Distance_Min}, maxDist={routeinfo.Distance_Max}, randomPosition={randomPosition}", handle);
+            // if (EzThrottler.Throttle("Gather Route Throttle", 3000))
+               // IceLogging.Debug($"[GatherMove] angleToPlayer={angleToPlayer:F1}, node_MinAngle={node_MinAngle:F1}, node_MaxAngle={node_MaxAngle:F1}, sectionMin={sectionMin:F1}, sectionMax={sectionMax:F1}, selectedAngle={selectedAngle:F1}, selectedDistance={selectedDistance:F2}, minDist={routeinfo.Distance_Min}, maxDist={routeinfo.Distance_Max}, randomPosition={randomPosition}", handle);
 
             float distanceToTarget = Player.DistanceTo(nodePos);
 
@@ -295,6 +295,7 @@ namespace ICE.Scheduler.Tasks
                 return;
             }
 
+            /*
             // Throttled logging for debug purposes
             if (EzThrottler.Throttle("Log stuck info", stuckCheckLogThrottleMs))
             {
@@ -302,6 +303,7 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Verbose($"Navmesh Start time: {navmeshStartTime:N0}ms");
                 IceLogging.Verbose($"Current Pos: {currentPos:N2} | Last position: {lastPosition:N2} | Distance: {distanceMoved:N2}");
             }
+            */
 
             // If stuck for long enough, try unstuck actions
             if (timeSinceLastChecked >= stuckTimeThresholdMs && navmeshStartTime >= stuckTimeThresholdMs)

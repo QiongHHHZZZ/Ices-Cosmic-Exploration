@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static ICE.Localization.L10n;
 
-namespace ICE.Ui.MainUi.Settings.Settings_Table
+namespace ICE.Ui.MainUi.Settings
 {
     internal class SafetySettings
     {

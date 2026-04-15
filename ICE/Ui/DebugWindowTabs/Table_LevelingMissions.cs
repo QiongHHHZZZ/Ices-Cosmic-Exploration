@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
+using Dalamud.Interface.Textures;
 using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -9,50 +11,83 @@ namespace ICE.Ui.DebugWindowTabs
     {
         public static void Draw()
         {
-            if (ImGui.BeginTable("Leveling Table", 5, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
+            if (ImGui.BeginTable("Leveling Table", 14, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchSame))
             {
-                ImGui.TableSetupColumn(T("ID"));
-                ImGui.TableSetupColumn(T("Job Icon"));
-                ImGui.TableSetupColumn(T("Level"));
-                ImGui.TableSetupColumn(T("Enabled"));
-                ImGui.TableSetupColumn(T("Name"));
-
-                ImGui.TableHeadersRow();
-
-                for (int i = 0; i < CosmicHelper.QuickLevelList.Count; i++)
+                ImGui.TableSetupColumn("Planet");
+                ImGui.TableSetupColumn("Lv");
+                for (int i = 1; i < 12; i++)
                 {
-                    var id = CosmicHelper.QuickLevelList[i];
-                    if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var missionInfo))
-                    {
-                        ImGui.TableNextRow();
-                        ImGui.TableSetColumnIndex(0);
-                        ImGui.Text($"[{id}]");
-
-                        ImGui.TableNextColumn();
-                        var jobIcon = CosmicHelper.JobIconDict[missionInfo.Jobs.First()];
-                        Vector2 imageSize = new Vector2(23, 23);
-                        ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
-
-                        ImGui.TableNextColumn();
-                        ImGui.Text($"{missionInfo.Level}");
-
-                        ImGui.TableNextColumn();
-                        if (C.MissionConfig.TryGetValue(id, out var configInfo))
-                        {
-                            bool enabled = configInfo.Enabled;
-                            if (ImGui.Checkbox($"##Enabed_{id}", ref enabled))
-                            {
-                                configInfo.Enabled = enabled;
-                                C.Save();
-                            }
-                        }
-
-                        ImGui.TableNextColumn();
-                        ImGui.Text($"{missionInfo.Name}");
-                    }
+                    ImGui.TableSetupColumn($"##icon_{i}", ImGuiTableColumnFlags.WidthStretch);
                 }
 
+                ImGui.TableNextRow(ImGuiTableRowFlags.Headers);
+
+                // Column 0 — "Planet" with proper header styling
+                ImGui.TableSetColumnIndex(0);
+                ImGui.TableHeader("Planet");
+
+                // Column 1 — "Lv"
+                ImGui.TableNextColumn();
+                ImGui.TableHeader("Lv");
+
+                // Icon columns
+                for (uint i = 8; i < 19; i++)
+                {
+                    ImGui.TableNextColumn();
+                    ImGui.TableHeader("##icon_header_" + i);
+                    ImGui.SameLine(0, 0);
+
+                    float colWidth = ImGui.GetColumnWidth();
+                    float cellHeight = ImGui.GetFrameHeight();
+                    float imgSize = 20f;
+
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (colWidth - imgSize) * 0.5f);
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (cellHeight - imgSize) * 0.5f);
+
+                    var image = CosmicHelper.JobIconDict[i];
+                    ImGui.Image(image.GetWrapOrEmpty().Handle, new Vector2(imgSize));
+                }
+
+                List<uint> sinusLeveling = CosmicHelper.QuickLevelList.Where(x => CosmicHelper.SheetMissionDict[x].TerritoryId == 1237).ToList();
+                List<uint> phaennaLeveling = CosmicHelper.QuickLevelList.Where(x => CosmicHelper.SheetMissionDict[x].TerritoryId == 1291).ToList();
+                List<uint> oizysLeveling = CosmicHelper.QuickLevelList.Where(x => CosmicHelper.SheetMissionDict[x].TerritoryId == 1310).ToList();
+
+                List<uint> levels = new() { 10, 50, 90 };
+
+                DrawPlanetLevelRows("ICE.Resources.Sinus_Ardorum.png", sinusLeveling, levels);
+                DrawPlanetLevelRows("ICE.Resources.Phaenna.png", phaennaLeveling, levels);
+                DrawPlanetLevelRows("ICE.Resources.Oizys.png", oizysLeveling, levels);
+
                 ImGui.EndTable();
+            }
+        }
+
+        private static void DrawPlanetLevelRows(string assetPath, List<uint> missionIds, List<uint> levels)
+        {
+            var texture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), assetPath).GetWrapOrEmpty();
+
+            foreach (var lv in levels)
+            {
+                ImGui.TableNextRow();
+                ImGui.TableSetColumnIndex(0);
+                ImGui.Image(texture.Handle, new Vector2(24));
+
+                ImGui.TableNextColumn();
+                ImGui.Text($"{lv}");
+
+                for (uint i = 8; i < 19; i++)
+                {
+                    var mission = missionIds
+                        .Select(id => (id, CosmicHelper.SheetMissionDict[id]))
+                        .Where(x => x.Item2.Level == lv && x.Item2.Jobs.Contains(i))
+                        .FirstOrDefault();
+
+                    ImGui.TableNextColumn();
+                    if (mission.id != 0)
+                        ImGui.Text($"{mission.id}");
+                    else
+                        ImGui.TextDisabled("-");
+                }
             }
         }
     }

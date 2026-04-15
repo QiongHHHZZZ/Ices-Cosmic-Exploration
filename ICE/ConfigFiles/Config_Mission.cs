@@ -40,6 +40,7 @@ public partial class Config
     public bool ShowPhaennaMissions { get; set; } = true;
     public bool ShowOizysMissions { get; set; } = true;
     public bool RemoveAfterGold { get; set; } = false;
+    public bool KeepARanks { get; set; } = false;
     public bool ShowExtraMissionInfo { get; set; } = true;
     public Dictionary<uint, uint> ScoreKeeper { get; set; } = new();
     public Dictionary<uint, MissionSettings> MissionConfig { get; set; } = new();
@@ -72,6 +73,7 @@ public partial class Config
         public int GoldCompletions { get; set; } = 0;
         public int CriticalCompletions { get; set; } = 0;
         public int FailedCounters { get; set; } = 0;
+        public int TotalAttempts { get; set; } = 0;
         public List<TurninData> TurninRecords { get; set; } = new();
         public Dictionary<uint, ArtisanSettings> CraftSettings { get; set; } = new();
 

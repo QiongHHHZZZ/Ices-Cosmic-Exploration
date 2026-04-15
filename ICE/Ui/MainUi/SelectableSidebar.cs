@@ -1,4 +1,5 @@
-﻿using Dalamud.Interface;
+using Dalamud.Interface;
+using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
@@ -106,6 +107,7 @@ ImGui.Text(T("Filters which planets appear in the\nmission list and the overlay.
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Leaf, T("Gathering Profile"), "setting_GatheringProfile");
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.SortAmountUp, T("Mission Priority"), "setting_MissionPriority");
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Route, T("Travel & Pathfinding"), "setting_Travel");
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.PersonBurst, T("Character Settings"), "setting_Character");
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.UserCog, T("Misc Settings"), "setting_Misc");
                 }
                 var currentClass = C.SelectedJob;

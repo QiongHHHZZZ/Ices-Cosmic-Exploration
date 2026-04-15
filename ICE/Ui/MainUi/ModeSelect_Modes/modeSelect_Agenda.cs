@@ -1,6 +1,9 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
+using ECommons.GameHelpers;
+using ICE.ConfigFiles;
 using ICE.Utilities.ImGuiTools;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -33,42 +36,78 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         public static uint SelectedJob = 8;
         public static PlaylistOptions SelectedOption = PlaylistOptions.None;
 
+        public static AgendaProfileInfo SelectedAgenda = new();
+        public static string profileName = "";
+        public static string profileDescription = "";
+        private static string _importBuffer = "";
+
         public static void Draw()
         {
-            var selectedJobIcon = CosmicHelper.JobIconDict[SelectedJob];
-            var selectedJobName = CosmicHelper.GetJobName(SelectedJob);
-
-            ImGui.Image(selectedJobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(200);
-
-            if (ImGui.BeginCombo("##JobCombo", selectedJobName))
+            if (ImGui.BeginTabBar("Agenda Mode: Tabs"))
             {
-                using (var table = ImRaii.Table("JobSelectionTable", 2, ImGuiTableFlags.BordersInnerV))
+                if (ImGui.BeginTabItem("Current Agenda"))
                 {
-                    if (table)
+                    var selectedJobIcon = CosmicHelper.JobIconDict[SelectedJob];
+                    var selectedJobName = CosmicHelper.GetJobName(SelectedJob);
+
+                    ImGui.Image(selectedJobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(200);
+
+                    if (ImGui.BeginCombo("##JobCombo", selectedJobName))
                     {
-                        ImGui.TableSetupColumn(T("Icon"), ImGuiTableColumnFlags.WidthFixed, 24);
-                        ImGui.TableSetupColumn(T("Name"), ImGuiTableColumnFlags.WidthStretch);
-
-                        foreach (var jobId in JobOptions)
+                        using (var table = ImRaii.Table("JobSelectionTable", 2, ImGuiTableFlags.BordersInnerV))
                         {
-                            var jobIcon = CosmicHelper.JobIconDict[jobId];
-                            var jobName = CosmicHelper.GetJobName(jobId);
-                            bool isSelected = jobId == SelectedJob;
-
-                            ImGui.TableNextRow();
-                            ImGui.TableNextColumn();
-
-                            // Icon column
-                            ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
-
-                            ImGui.TableNextColumn();
-
-                            // Name column with selectable
-                            if (ImGui.Selectable($"{jobName}##{jobName}_{jobId}", isSelected, ImGuiSelectableFlags.SpanAllColumns))
+                            if (table)
                             {
-                                SelectedJob = jobId;
+                                ImGui.TableSetupColumn(T("Icon"), ImGuiTableColumnFlags.WidthFixed, 24);
+                                ImGui.TableSetupColumn(T("Name"), ImGuiTableColumnFlags.WidthStretch);
+
+                                foreach (var jobId in JobOptions)
+                                {
+                                    var jobIcon = CosmicHelper.JobIconDict[jobId];
+                                    var jobName = CosmicHelper.GetJobName(jobId);
+                                    bool isSelected = jobId == SelectedJob;
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableNextColumn();
+
+                                    // Icon column
+                                    ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
+
+                                    ImGui.TableNextColumn();
+
+                                    // Name column with selectable
+                                    if (ImGui.Selectable($"{jobName}##{jobName}_{jobId}", isSelected, ImGuiSelectableFlags.SpanAllColumns))
+                                    {
+                                        SelectedJob = jobId;
+                                    }
+
+                                    if (isSelected)
+                                    {
+                                        ImGui.SetItemDefaultFocus();
+                                    }
+                                }
+                            }
+                        }
+
+                        ImGui.EndCombo();
+                    }
+
+                    ImGui.SameLine();
+                    var optionName = CosmicHelper.PlaylistOptionString(SelectedOption);
+
+                    ImGui.SetNextItemWidth(200);
+                    if (ImGui.BeginCombo("##Playlist Options", optionName))
+                    {
+                        foreach (PlaylistOptions option in Enum.GetValues<PlaylistOptions>())
+                        {
+                            var displayName = CosmicHelper.PlaylistOptionString(option);
+                            bool isSelected = SelectedOption == option;
+
+                            if (ImGui.Selectable($"{displayName}##{option}", isSelected))
+                            {
+                                SelectedOption = option;
                             }
 
                             if (isSelected)
@@ -76,65 +115,236 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 ImGui.SetItemDefaultFocus();
                             }
                         }
+
+                        ImGui.EndCombo();
                     }
+
+                    ImGui.SameLine();
+                    using (ImRaii.Disabled(SelectedOption == PlaylistOptions.None))
+                    {
+                        if (ImGui.Button("Add to Cosmic Agenda"))
+                        {
+                            var mode = ModeSelect.Standard;
+                            if (SelectedOption is PlaylistOptions.SinusMax or PlaylistOptions.PhaennaMax or PlaylistOptions.OizysMax or PlaylistOptions.SelectedRelicLv)
+                            {
+                                mode = ModeSelect.RelicMode;
+                            }
+                            else if (SelectedOption is PlaylistOptions.ClassLevel)
+                            {
+                                mode = ModeSelect.LevelMode;
+                            }
+
+                            var newAgenda = new AgendaInfo()
+                            {
+                                SelectedOption = SelectedOption,
+                                SelectedJob = SelectedJob,
+                                SelectedMode = mode
+                            };
+
+                            C.Cosmic_Agenda.Add(newAgenda);
+                            C.SaveDebounced();
+                        }
+                    }
+
+                    ImGui.SameLine();
+                    var validAgenda = C.Cosmic_Agenda.Count() > 0;
+                    using (ImRaii.Disabled(!validAgenda))
+                    {
+                        if (ImGui.Button("Save to Favorites"))
+                        {
+                            ImGui.OpenPopup("Agenda Info: Profile Save");
+                        }
+                    }
+                    if (ImGui.BeginPopup("Agenda Info: Profile Save"))
+                    {
+                        ImGui.InputText("Name", ref profileName);
+                        ImGui.InputTextMultiline("Description", ref profileDescription);
+                        using (ImRaii.Disabled(profileName == string.Empty))
+                        {
+                            if (ImGui.Button("Save"))
+                            {
+                                AgendaProfileInfo newProfile = new()
+                                {
+                                    Name = profileName,
+                                    Description = profileDescription,
+                                    MissionList = new List<AgendaInfo>(C.Cosmic_Agenda)
+                                };
+
+                                C.Agenda_Profiles.Add(newProfile);
+                                C.Save();
+
+                                profileName = "";
+                                profileDescription = "";
+                                ImGui.CloseCurrentPopup();
+                            }
+                        }
+
+                        ImGui.EndPopup();
+                    }
+
+                    CosmicAgendaTable();
+
+                    ImGui.EndTabItem();
                 }
 
-                ImGui.EndCombo();
-            }
-
-            ImGui.SameLine();
-            var optionName = CosmicHelper.PlaylistOptionString(SelectedOption);
-
-            ImGui.SetNextItemWidth(200);
-            if (ImGui.BeginCombo("##Playlist Options", optionName))
-            {
-                foreach (PlaylistOptions option in Enum.GetValues<PlaylistOptions>())
+                if (ImGui.BeginTabItem("Saved Agenda's"))
                 {
-                    var displayName = CosmicHelper.PlaylistOptionString(option);
-                    bool isSelected = SelectedOption == option;
+                    List<AgendaProfileInfo> listToRemove = new();
 
-                    if (ImGui.Selectable($"{displayName}##{option}", isSelected))
+                    // Export button — copies to clipboard
+                    if (ImGui.Button("Export to Clipboard"))
                     {
-                        SelectedOption = option;
+                        ImGui.SetClipboardText(ExportProfile(SelectedAgenda));
                     }
 
-                    if (isSelected)
+                    ImGui.SameLine();
+
+                    // Import
+                    ImGui.SetNextItemWidth(300);
+                    ImGui.InputText("##ImportBox", ref _importBuffer, 5028);
+                    ImGui.SameLine();
+                    if (ImGui.Button("Import"))
                     {
-                        ImGui.SetItemDefaultFocus();
+                        if (TryImportProfile(_importBuffer, out var imported))
+                        {
+                            // Avoid duplicate names
+                            imported.MissionList = new List<AgendaInfo>(imported.MissionList);
+                            C.Agenda_Profiles.Add(imported);
+                            C.Save();
+                            _importBuffer = "";
+                        }
+                        else
+                        {
+                            // Optional: show an error notification
+                            Notify.Error("Invalid import string.");
+                        }
                     }
+
+                    if (C.Agenda_Profiles.Count > 0)
+                    {
+                        float spacing = 10f;
+                        float leftPanelWidth = 200f;
+                        float rightPanelWidth = ImGui.GetContentRegionAvail().X - leftPanelWidth - spacing;
+                        float childHeight = ImGui.GetContentRegionAvail().Y;
+
+                        if (ImGui.BeginChild("Agenda List Viewer", new Vector2(leftPanelWidth, childHeight), true))
+                        {
+                            for (int i = 0; i < C.Agenda_Profiles.Count; i++)
+                            {
+                                var agenda = C.Agenda_Profiles[i];
+
+                                ImGui.PushID($"{agenda.Name}_{i}");
+
+                                bool isSeleced = SelectedAgenda == agenda;
+                                string label = isSeleced ? $"→ {agenda.Name}" : $"{agenda.Name}";
+
+                                if (ImGui.Selectable(label, isSeleced))
+                                {
+                                    SelectedAgenda = agenda;
+                                }
+
+                                ImGui.PopID();
+                            }
+                        }
+                        ImGui.EndChild();
+
+                        ImGui.SameLine(0, spacing);
+                        if (ImGui.BeginChild("Agenda Viewer: Details", new(rightPanelWidth, childHeight), true))
+                        {
+                            var agenda = SelectedAgenda;
+                            ImGui.Text($"Profile Name: {agenda.Name}");
+                            ImGui.TextWrapped($"Description: {agenda.Description}");
+
+                            bool held = ImGui.IsKeyDown(ImGuiKey.LeftShift) || ImGui.IsKeyDown(ImGuiKey.RightShift);
+                            using (ImRaii.Disabled(!held))
+                            {
+                                if (ImGui.Button("Apply to agenda"))
+                                {
+                                    C.Cosmic_Agenda = new(agenda.MissionList);
+                                    C.Save();
+                                }
+                            }
+                            if (!held && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+                            {
+                                ImGui.SetTooltip("Hold shift to allow applying");
+                            }
+
+                            ImGui.SameLine();
+                            bool cntrlHeld = ImGui.IsKeyDown(ImGuiKey.LeftCtrl) || ImGui.IsKeyDown(ImGuiKey.RightCtrl);
+                            using (ImRaii.Disabled(!cntrlHeld))
+                            {
+                                if (ImGui.Button("Delete Profile"))
+                                    listToRemove.Add(SelectedAgenda);
+                            }
+                            if (!cntrlHeld && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+                            {
+                                ImGui.SetTooltip("Hold Control to delete profile");
+                            }
+
+                            if (ImGui.BeginTable("Agenda Missions Table: Favorites Info", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
+                            {
+                                ImGui.TableSetupColumn("Job");
+                                ImGui.TableSetupColumn("Agenda");
+                                ImGui.TableSetupColumn("Run Until..");
+                                ImGui.TableSetupColumn("Mode Select");
+
+                                for (int i = 0; i < agenda.MissionList.Count; i++)
+                                {
+                                    var agendaInfo = agenda.MissionList[i];
+                                    var selectedOption = agendaInfo.SelectedOption;
+
+                                    ImGui.TableNextRow();
+
+                                    ImGui.TableSetColumnIndex(0);
+                                    var jobImage = CosmicHelper.JobIconDict[agendaInfo.SelectedJob];
+                                    float zoom = 0.15f;
+
+                                    ImGui.Image(jobImage.GetWrapOrEmpty().Handle, new Vector2(20, 20), new Vector2(zoom, zoom), new Vector2(1 - zoom, 1 - zoom));
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.SetNextItemWidth(200);
+                                    var optionName = CosmicHelper.PlaylistOptionString(selectedOption);
+                                    ImGui.Text(optionName);
+
+                                    ImGui.TableNextColumn();
+                                    string optionText = selectedOption switch
+                                    {
+                                        PlaylistOptions.SelectedRelicLv => $"{agendaInfo.SelectedRelicLevel}",
+                                        PlaylistOptions.CreditAmount => $"{agendaInfo.CreditAmount}",
+                                        PlaylistOptions.PlanetAmount => $"{agendaInfo.PlanetAmount}",
+                                        PlaylistOptions.DronebitAmount => $"{agendaInfo.DronebitAmount}",
+                                        PlaylistOptions.ClassLevel => $"{agendaInfo.ClassLevel}",
+                                        PlaylistOptions.ClassScore => $"{agendaInfo.ClassScore}",
+                                        _ => ""
+                                    };
+                                    ImGui.Text(optionText);
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{ModeSelectString(agendaInfo.SelectedMode)}");
+                                }
+
+                                ImGui.EndTable();
+                            }
+
+                            if (listToRemove.Count > 0)
+                            {
+                                C.Agenda_Profiles.Remove(SelectedAgenda);
+                                SelectedAgenda = new();
+                                C.Save();
+                            }
+                        }
+                        ImGui.EndChild();
+                    }
+                    else
+                    {
+                        ImGui.TextWrapped("You currently don't have any profiles saved! Please either make one and save, or import if you would like to populate this listing");
+                    }
+
+                    ImGui.EndTabItem();
                 }
 
-                ImGui.EndCombo();
+                ImGui.EndTabBar();
             }
-
-            ImGui.SameLine();
-            using (ImRaii.Disabled(SelectedOption == PlaylistOptions.None))
-            {
-                if (ImGui.Button(T("Add to Cosmic Agenda")))
-                {
-                    var mode = ModeSelect.Standard;
-                    if (SelectedOption is PlaylistOptions.SinusMax or PlaylistOptions.PhaennaMax or PlaylistOptions.OizysMax or PlaylistOptions.SelectedRelicLv)
-                    {
-                        mode = ModeSelect.RelicMode;
-                    }
-                    else if (SelectedOption is PlaylistOptions.ClassLevel)
-                    {
-                        mode = ModeSelect.LevelMode;
-                    }
-
-                    var newAgenda = new AgendaInfo()
-                    {
-                        SelectedOption = SelectedOption,
-                        SelectedJob = SelectedJob,
-                        SelectedMode = mode
-                    };
-
-                    C.Cosmic_Agenda.Add(newAgenda);
-                    C.SaveDebounced();
-                }
-            }
-
-            CosmicAgendaTable();
         }
 
         private static string ModeSelectString(ModeSelect mode)
@@ -151,7 +361,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         }
 
         private static ImGuiEx.RealtimeDragDrop<AgendaInfo>? _dragDrop;
-
         private static void CosmicAgendaTable()
         {
             // Initialize drag/drop if it doesn't exist
@@ -163,7 +372,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             _dragDrop.Begin(); // Step 1: Begin drag/drop tracking
 
-            using (var PlaylistTable = ImRaii.Table("Cosmic Agenda Table", 6, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg))
+            using (var PlaylistTable = ImRaii.Table("Cosmic Agenda Table", 7, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg))
             {
                 if (PlaylistTable)
                 {
@@ -173,6 +382,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.TableSetupColumn(T("Run Until.."));
                     ImGui.TableSetupColumn(T("Mode Select"));
                     ImGui.TableSetupColumn(T("Remove"));
+                    ImGui.TableSetupColumn(T("Progress"), ImGuiTableColumnFlags.WidthStretch);
 
                     ImGui.TableHeadersRow();
 
@@ -412,6 +622,83 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             C.Save();
                         }
 
+                        ImGui.TableNextColumn();
+                        if (PlayerHelper.IsInCosmicZone() && Player.Available)
+                        {
+                            int current = 0;
+                            int goal = 0;
+
+                            var job = agendaInfo.SelectedJob;
+                            var territory = Player.Territory.RowId;
+
+                            if (selectedOption is PlaylistOptions.SinusMax 
+                                               or PlaylistOptions.PhaennaMax 
+                                               or PlaylistOptions.OizysMax 
+                                               or PlaylistOptions.SelectedRelicLv 
+                                               or PlaylistOptions.ToolMaxExp)
+                            {
+                                var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
+
+                                var jobInfo = ScoreInfo[job];
+                                current = MaxToolProgress(job);
+                                goal = selectedOption switch
+                                {
+                                    PlaylistOptions.SinusMax => 9,
+                                    PlaylistOptions.PhaennaMax => 14,
+                                    PlaylistOptions.OizysMax => 17,
+                                    PlaylistOptions.ToolMaxExp => MaxToolProgress(job, false),
+                                    PlaylistOptions.SelectedRelicLv => agendaInfo.SelectedRelicLevel,
+                                    _ => 20
+                                };
+                            }
+                            else if (selectedOption is PlaylistOptions.ClassLevel)
+                            {
+                                current = Player.GetLevel((Job)job);
+                                goal = agendaInfo.ClassLevel;
+                            }
+                            else if (selectedOption is PlaylistOptions.CreditAmount)
+                            {
+                                uint cosmoCreditId = 45690;
+                                if (PlayerHelper.GetItemCount(cosmoCreditId, out var creditAmount))
+                                {
+                                    current = creditAmount;
+                                    goal = agendaInfo.CreditAmount;
+                                }
+                            }
+                            else if (selectedOption is PlaylistOptions.PlanetAmount)
+                            {
+                                if (CosmicHelper.PlanetCreditInfo.TryGetValue(territory, out var gambaCredits) && PlayerHelper.GetItemCount(gambaCredits, out var gambaAmount))
+                                {
+                                    current = gambaAmount;
+                                    goal = agendaInfo.PlanetAmount;
+                                }
+                            }
+                            else if (selectedOption is PlaylistOptions.DronebitAmount)
+                            {
+                                if (CosmicHelper.DronebitInfo.TryGetValue(territory, out var dronebitAmount))
+                                {
+                                    PlayerHelper.GetItemCount(dronebitAmount.creditId, out var count);
+
+                                    current = count;
+                                    goal = agendaInfo.DronebitAmount;
+                                }
+                            }
+
+                            var rowY = ImGui.GetCursorScreenPos().Y;
+                            var rowHeight = ImGui.GetTextLineHeightWithSpacing();
+                            var barHeight = ImGui.GetTextLineHeight();
+                            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (rowHeight - barHeight) / 2f);
+
+                            ImGui_Ice.Draw_XPBar(current, goal, goal, size: new Vector2(ImGui.GetContentRegionAvail().X, barHeight));
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.BeginTooltip();
+                                ImGui.Text($"Current: {current}");
+                                ImGui.Text($"Goal: {goal}");
+                                ImGui.EndTooltip();
+                            }
+                        }
+
                         ImGui.PopID();
                     }
                 }
@@ -419,10 +706,52 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             _dragDrop.End(); // Step 4: Process drag/drop outside the table
         }
-
-        private static void Option_RelicLv()
+        private static int MaxToolProgress(uint job, bool getCurrent = true)
         {
+            var max = 17;
 
+            var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
+            var jobInfo = ScoreInfo[job];
+            if (jobInfo.Stage_Current != jobInfo.Stage_Next && getCurrent)
+                return jobInfo.Stage_Current;
+
+            if (getCurrent)
+            {
+                foreach (var exp in jobInfo.CurrentExp)
+                {
+                    if (exp.Value.Current == exp.Value.Max)
+                        max += 1;
+                }
+                return max;
+            }
+            else
+            {
+                foreach (var exp in CosmicHelper.ExpDictionary)
+                    max += 1;
+
+                return max;
+            }
+        }
+
+
+        public static string ExportProfile(AgendaProfileInfo profile)
+        {
+            var json = JsonConvert.SerializeObject(profile);
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+        }
+        public static bool TryImportProfile(string base64, out AgendaProfileInfo profile)
+        {
+            profile = new();
+            try
+            {
+                var json = Encoding.UTF8.GetString(Convert.FromBase64String(base64));
+                profile = JsonConvert.DeserializeObject<AgendaProfileInfo>(json) ?? new();
+                return profile.Name != string.Empty;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

@@ -35,14 +35,14 @@ namespace ICE.Scheduler.Tasks
 
         public static bool? CheckJobSwap()
         {
-            if (C.Relic_SwapJob && C.Relic_BattleJob != 0)
+            if (Char_Info.Relic_SwapJob && Char_Info.Relic_BattleJob != 0)
             {
-                if (Player.Job != (Job)C.Relic_BattleJob)
+                if (Player.Job != (Job)Char_Info.Relic_BattleJob)
                 {
                     if (EzThrottler.Throttle("Swapping jobs", 1000))
                     {
-                        IceLogging.Verbose($"Telling the game to swap you to jobID: {C.Relic_BattleJob}");
-                        GearsetHandler.TaskClassChange((Job)C.Relic_BattleJob);
+                        IceLogging.Verbose($"Telling the game to swap you to jobID: {Char_Info.Relic_BattleJob}");
+                        GearsetHandler.TaskClassChange((Job)Char_Info.Relic_BattleJob);
                     }
 
                     return false;
@@ -207,7 +207,7 @@ namespace ICE.Scheduler.Tasks
             else if (!Player.IsBusy)
             {
                 IceLogging.Info("No longer busy talking to researchingway, to we're done");
-                if (C.Relic_SwapJob)
+                if (Char_Info.Relic_SwapJob)
                 {
                     if (C.Relic_Stylist)
                     {

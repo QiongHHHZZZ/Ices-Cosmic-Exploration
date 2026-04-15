@@ -5,7 +5,7 @@ using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ICE.Ui.MainUi;
-using ICE.Ui.MainUi.Settings.Settings_Table;
+using ICE.Ui.MainUi.Settings;
 using ICE.Utilities.ImGuiTools;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;

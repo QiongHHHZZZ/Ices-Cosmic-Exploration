@@ -9,7 +9,7 @@ using System.Text.Json;
 using static ICE.ConfigFiles.Config;
 using static ICE.Localization.L10n;
 
-namespace ICE.Ui.MainUi.Settings.Settings_Table
+namespace ICE.Ui.MainUi.Settings
 {
     internal class GatherSettings
     {

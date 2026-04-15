@@ -8,7 +8,6 @@ using ICE.Ui.MainUi.HelpFolder;
 using ICE.Ui.MainUi.ModeSelect_Modes;
 using ICE.Ui.MainUi.Settings;
 using ICE.Ui.MainUi.Settings.Settings_Table;
-using ICE.Ui.SettingTabs;
 using System.Collections.Generic;
 using System.Reflection;
 using static ICE.Localization.L10n;
@@ -86,6 +85,7 @@ namespace ICE.Ui
             ["setting_StopWhen"] = () => StopWhen.Draw(),
             ["setting_GatheringProfile"] = () => GatherSettings.Draw(),
             ["setting_MissionPriority"] = () => Priority_Settings.Draw(),
+            ["setting_Character"] = () => Character_Settings.Draw(),
             ["setting_Misc"] = () => Misc_Settings.Draw(),
             ["setting_Travel"] = () => TravelSettings.Draw(),
 

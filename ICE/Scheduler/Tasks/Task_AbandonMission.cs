@@ -1,13 +1,6 @@
 ﻿using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic_Helper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using YamlDotNet.Core.Tokens;
-using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -31,18 +24,14 @@ namespace ICE.Scheduler.Tasks
 
             if (CosmicHelper.CurrentLunarMission == 0)
             {
-                ForceAbandon = false;
-                if (WasAbandoned)
-                {
-                    IceLogging.Debug("Mission was abandoned", tag);
+                if (!ForceAbandon)
                     P.MissionTimer.AbandonMission();
-                }
 
+                ForceAbandon = false;
                 WasAbandoned = false;
+
                 if (P.AutoHook.Installed)
-                {
                     P.AutoHook.DeleteAllAnonymousPresets();
-                }
 
                 IceLogging.Info("Current mission is 0, checking to see where we need to be now", tag);
                 return true;

@@ -125,6 +125,38 @@ namespace ICE.Scheduler.Tasks
             }
             else if (currentMode == ModeSelect.AgendaMode)
             {
+                if (C.StopOnceHitLunarCredits)
+                {
+                    var territory = Player.Territory.RowId;
+                    var itemId = CosmicHelper.PlanetCreditInfo[territory];
+
+                    PlayerHelper.GetItemCount(itemId, out var credits);
+                    if (credits >= C.LunarCreditsCap)
+                    {
+                        IceLogging.ChatInfo($"You've either hit the Lunar Credit threshold, or gone above it.\n" +
+                                            $"Stopping I.C.E.", "[I.C.E.]");
+                        SchedulerMain.State = IceState.Idle;
+                        if (C.PlaySoundAlert)
+                        {
+                            _ = SoundPlayer.PlaySoundAsync();
+                        }
+                        return true;
+                    }
+                }
+                if (C.StopOnceHitCosmoCredits && !C.BuyItems)
+                {
+                    if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var hud) && hud.IsAddonReady && (hud.CosmoCredit >= C.CosmoCreditsCap))
+                    {
+                        IceLogging.ChatInfo($"Stopping the plugin as you have {hud.CosmoCredit} Cosmocredits.", "[I.C.E.]");
+                        SchedulerMain.State = IceState.Idle;
+                        if (C.PlaySoundAlert)
+                        {
+                            _ = SoundPlayer.PlaySoundAsync();
+                        }
+                        return true;
+                    }
+                }
+
                 IceLogging.Verbose("We're currently in agenda mode. We need to check to see if we have anything even in the agenda before we continue", tag);
                 if (C.Cosmic_Agenda.Count > 0)
                 {
@@ -391,13 +423,13 @@ namespace ICE.Scheduler.Tasks
             bool RepairVendor = false;
             bool TurninRelic = false;
 
-            bool repairSelfGear = PlayerHelper.NeedsRepair(C.RepairPercent);
-            bool repairAllGear = PlayerHelper.AnyNeedsRepair(C.RepairPercent) && C.RepairAllGear;
+            bool repairSelfGear = PlayerHelper.NeedsRepair(Char_Info.RepairPercent);
+            bool repairAllGear = PlayerHelper.AnyNeedsRepair(Char_Info.RepairPercent) && Char_Info.RepairAllGear;
 
             IceLogging.Verbose($"Repair Class: {repairSelfGear} | Repair All: {repairAllGear}", tag);
 
-            bool selfRepairCraft = C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
-            bool selfRepairGathering = C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains((uint)Player.Job);
+            bool selfRepairCraft = Char_Info.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
+            bool selfRepairGathering = Char_Info.SelfRepairGather && CosmicHelper.GatheringJobList.Contains((uint)Player.Job);
 
             bool spiritbonded = C.SelfSpiritbondGather 
                 && CosmicHelper.GatheringJobList.Contains((uint)Player.Job)
@@ -406,7 +438,7 @@ namespace ICE.Scheduler.Tasks
             if (repairSelfGear || repairAllGear)
             {
                 IceLogging.Verbose($"We were told we needed repairs, one of these should be true...", tag);
-                if (C.RepairAtVendor)
+                if (Char_Info.RepairAtVendor)
                 {
                     IceLogging.Debug("We were told to repair at the vendor, so we'll add that to the list of hub activities", tag);
                     RepairVendor = true;

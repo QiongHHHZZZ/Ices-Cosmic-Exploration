@@ -13,7 +13,7 @@ namespace ICE.Scheduler.Tasks
     {
         public static void Enqueue()
         {
-            if (PlayerHelper.AnyNeedsRepair(C.RepairPercent) && C.RepairAllGear)
+            if (PlayerHelper.AnyNeedsRepair(Char_Info.RepairPercent) && Char_Info.RepairAllGear)
             {
                 P.TaskManager.EnqueueMulti
                 (
@@ -23,7 +23,7 @@ namespace ICE.Scheduler.Tasks
                     new(() => SchedulerMain.State = IceState.GrabMission)
                 );
             }
-            else if (PlayerHelper.NeedsRepair(C.RepairPercent))
+            else if (PlayerHelper.NeedsRepair(Char_Info.RepairPercent))
             {
                 var currentJob = (uint)Player.Job;
 
@@ -128,18 +128,18 @@ namespace ICE.Scheduler.Tasks
             IGameObject? gameObject = null;
             Utils.TryGetObjectByDataId(npcEntry.NpcId, out gameObject);
             var currentTarget = Svc.Targets.Target;
-            var repairAmount = C.RepairPercent;
+            var repairAmount = Char_Info.RepairPercent;
 
-            IceLogging.Debug($"{!PlayerHelper.NeedsRepair(99.9f)} | {!(PlayerHelper.AnyNeedsRepair(99.9f) && C.RepairAllGear)}");
+            IceLogging.Debug($"{!PlayerHelper.NeedsRepair(99.9f)} | {!(PlayerHelper.AnyNeedsRepair(99.9f) && Char_Info.RepairAllGear)}");
 
-            if (!PlayerHelper.NeedsRepair(99.9f) && !(PlayerHelper.AnyNeedsRepair(99.9f) && C.RepairAllGear))
+            if (!PlayerHelper.NeedsRepair(99.9f) && !(PlayerHelper.AnyNeedsRepair(99.9f) && Char_Info.RepairAllGear))
             {
                 IceLogging.Debug("Repair Complete! Finishing task and closing window");
                 return true;
             }
             else if (GenericHelpers.TryGetAddonMaster<Repair>("Repair", out var repair) && repair.IsAddonReady)
             {
-                if (PlayerHelper.NeedsRepair(repairAmount) || (PlayerHelper.AnyNeedsRepair(99.9f) && C.RepairAllGear))
+                if (PlayerHelper.NeedsRepair(repairAmount) || (PlayerHelper.AnyNeedsRepair(99.9f) && Char_Info.RepairAllGear))
                 {
                     if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var Yesno) && Yesno.IsAddonReady)
                     {
@@ -182,7 +182,7 @@ namespace ICE.Scheduler.Tasks
         }
         public unsafe static bool? OpenSelfRepair()
         {
-            if (C.Stop_DarkMatter && PlayerHelper.GetItemCount(Utils.DarkMatter_8Id, out var dmCount) && dmCount < C.Minimum_DarkMatter)
+            if (C.Stop_DarkMatter && PlayerHelper.GetItemCount(Utils.DarkMatter_8Id, out var dmCount) && dmCount < Char_Info.Minimum_DarkMatter)
             {
                 IceLogging.ChatInfo(T("Dark matter is below the minimum we want to keep, so self repair is stopping."), "[I.C.E.] Task: Self Repair");
                 SchedulerMain.State = IceState.Idle;
@@ -201,7 +201,7 @@ namespace ICE.Scheduler.Tasks
         }
         public unsafe static bool? SelfRepair()
         {
-            if (!PlayerHelper.NeedsRepair(C.RepairPercent))
+            if (!PlayerHelper.NeedsRepair(Char_Info.RepairPercent))
             {
                 return true;
             }
@@ -235,7 +235,7 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "Self Repair: All";
 
-            if (!PlayerHelper.AnyNeedsRepair(C.RepairPercent))
+            if (!PlayerHelper.AnyNeedsRepair(Char_Info.RepairPercent))
             {
                 IceLogging.Debug("All gear has been repaired, continuing", tag);
                 return true;

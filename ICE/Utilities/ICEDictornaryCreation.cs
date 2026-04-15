@@ -1,6 +1,6 @@
 ﻿using ICE.ConfigFiles;
 using ICE.Ui.MainUi.ModeSelect_Modes;
-using ICE.Ui.MainUi.Settings.Settings_Table;
+using ICE.Ui.MainUi.Settings;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
@@ -875,6 +875,14 @@ public sealed partial class ICE
                 }
             }
             C.Config_Versioning = 1;
+            C.Save();
+        }
+        if (C.Config_Versioning == 1)
+        {
+            foreach (var mission in C.MissionConfig)
+                mission.Value.TotalAttempts = mission.Value.TotalCompletions + mission.Value.FailedCounters;
+
+            C.Config_Versioning = 2;
             C.Save();
         }
     }

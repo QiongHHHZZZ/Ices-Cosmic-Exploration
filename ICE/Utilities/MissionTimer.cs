@@ -104,6 +104,8 @@ public class MissionTimer
             stats.AverageCriticalTime = criticalRecords.Any() ? criticalRecords.Average(t => t.Time) : 0;
         }
 
+        stats.TotalAttempts += 1;
+
         C.Save();
     }
 
@@ -129,7 +131,7 @@ public class MissionTimer
         stats.SilverCompletions = 0;
         stats.GoldCompletions = 0;
         stats.CriticalCompletions = 0;
-        stats.FailedCounters = 0;
+        stats.TotalAttempts = 0;
 
         C.Save();
     }
@@ -199,7 +201,7 @@ public class MissionTimer
         }
 
         var stats = C.MissionConfig[currentMission];
-        stats.FailedCounters++;
+        stats.TotalAttempts++;
         C.Save();
         currentMission = 0;
     }

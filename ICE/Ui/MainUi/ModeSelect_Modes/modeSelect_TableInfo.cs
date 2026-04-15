@@ -1,7 +1,8 @@
-﻿using Dalamud.Interface;
+using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic;
 using ICE.Utilities.GatheringHelper;
@@ -1753,8 +1754,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.Text(T("Average Time: --:--:--"));
                     }
 
-                    ImGui.Text(T("Amount of times completed: {0}", config.TotalCompletions));
-                    ImGui.Text(T("Amount of timed abandoned: {0}", config.FailedCounters));
+                    ImGui.Text(T("Times Completed: {0}", config.TotalCompletions));
+                    ImGui.Text(T("Times Attempted: {0}", config.TotalAttempts));
 
                     if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var missionInfo))
                     {

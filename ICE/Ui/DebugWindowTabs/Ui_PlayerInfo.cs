@@ -158,6 +158,9 @@ namespace ICE.Ui.DebugWindowTabs
                 // 586 | Is unlocked for current class/ready to use
             }
 
+            var canUseSkill = ActionManager.Instance()->GetActionStatus(ActionType.Action, 272, checkRecastActive: false, checkCastingActive: false);
+            ImGui.Text($"Skill Status [272]: {canUseSkill}");
+
             ImGui.Separator();
             PlayerHelper.UpdateHasManip();
 

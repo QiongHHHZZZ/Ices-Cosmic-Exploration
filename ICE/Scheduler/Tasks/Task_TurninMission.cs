@@ -264,7 +264,18 @@ namespace ICE.Scheduler.Tasks
                 {
                     foreach (var mission in seqMissions)
                     {
-                        C.MissionConfig[mission].Enabled = false;
+                        if (CosmicHelper.SheetMissionDict.TryGetValue(mission, out var missionInfo))
+                        {
+                            bool special = missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
+                                            || missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
+                                            || missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather)
+                                            || missionInfo.Attributes.HasFlag(MissionAttributes.Critical);
+
+                            if (!special && C.KeepARanks)
+                                continue;
+
+                            C.MissionConfig[mission].Enabled = false;
+                        }
                     }
                     C.Save();
                 }

@@ -13,8 +13,8 @@ namespace ICE.Ui.DebugWindowTabs
         {
             if (ImGui.BeginTable("Leveling Table", 14, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchSame))
             {
-                ImGui.TableSetupColumn("Planet");
-                ImGui.TableSetupColumn("Lv");
+                ImGui.TableSetupColumn(T("Planet"));
+                ImGui.TableSetupColumn(T("Lv"));
                 for (int i = 1; i < 12; i++)
                 {
                     ImGui.TableSetupColumn($"##icon_{i}", ImGuiTableColumnFlags.WidthStretch);
@@ -24,11 +24,11 @@ namespace ICE.Ui.DebugWindowTabs
 
                 // Column 0 — "Planet" with proper header styling
                 ImGui.TableSetColumnIndex(0);
-                ImGui.TableHeader("Planet");
+                ImGui.TableHeader(T("Planet"));
 
                 // Column 1 — "Lv"
                 ImGui.TableNextColumn();
-                ImGui.TableHeader("Lv");
+                ImGui.TableHeader(T("Lv"));
 
                 // Icon columns
                 for (uint i = 8; i < 19; i++)

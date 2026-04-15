@@ -45,7 +45,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         {
             if (ImGui.BeginTabBar("Agenda Mode: Tabs"))
             {
-                if (ImGui.BeginTabItem("Current Agenda"))
+                if (ImGui.BeginTabItem(T("Current Agenda")))
                 {
                     var selectedJobIcon = CosmicHelper.JobIconDict[SelectedJob];
                     var selectedJobName = CosmicHelper.GetJobName(SelectedJob);
@@ -122,7 +122,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.SameLine();
                     using (ImRaii.Disabled(SelectedOption == PlaylistOptions.None))
                     {
-                        if (ImGui.Button("Add to Cosmic Agenda"))
+                        if (ImGui.Button(T("Add to Cosmic Agenda")))
                         {
                             var mode = ModeSelect.Standard;
                             if (SelectedOption is PlaylistOptions.SinusMax or PlaylistOptions.PhaennaMax or PlaylistOptions.OizysMax or PlaylistOptions.SelectedRelicLv)
@@ -150,18 +150,18 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     var validAgenda = C.Cosmic_Agenda.Count() > 0;
                     using (ImRaii.Disabled(!validAgenda))
                     {
-                        if (ImGui.Button("Save to Favorites"))
+                        if (ImGui.Button(T("Save to Favorites")))
                         {
                             ImGui.OpenPopup("Agenda Info: Profile Save");
                         }
                     }
                     if (ImGui.BeginPopup("Agenda Info: Profile Save"))
                     {
-                        ImGui.InputText("Name", ref profileName);
-                        ImGui.InputTextMultiline("Description", ref profileDescription);
+                        ImGui.InputText(T("Name"), ref profileName);
+                        ImGui.InputTextMultiline(T("Description"), ref profileDescription);
                         using (ImRaii.Disabled(profileName == string.Empty))
                         {
-                            if (ImGui.Button("Save"))
+                            if (ImGui.Button(T("Save")))
                             {
                                 AgendaProfileInfo newProfile = new()
                                 {
@@ -187,12 +187,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.EndTabItem();
                 }
 
-                if (ImGui.BeginTabItem("Saved Agenda's"))
+                if (ImGui.BeginTabItem(T("Saved Agenda's")))
                 {
                     List<AgendaProfileInfo> listToRemove = new();
 
                     // Export button — copies to clipboard
-                    if (ImGui.Button("Export to Clipboard"))
+                    if (ImGui.Button(T("Export to Clipboard")))
                     {
                         ImGui.SetClipboardText(ExportProfile(SelectedAgenda));
                     }
@@ -203,7 +203,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.SetNextItemWidth(300);
                     ImGui.InputText("##ImportBox", ref _importBuffer, 5028);
                     ImGui.SameLine();
-                    if (ImGui.Button("Import"))
+                    if (ImGui.Button(T("Import")))
                     {
                         if (TryImportProfile(_importBuffer, out var imported))
                         {
@@ -216,7 +216,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         else
                         {
                             // Optional: show an error notification
-                            Notify.Error("Invalid import string.");
+                            Notify.Error(T("Invalid import string."));
                         }
                     }
 
@@ -252,13 +252,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         if (ImGui.BeginChild("Agenda Viewer: Details", new(rightPanelWidth, childHeight), true))
                         {
                             var agenda = SelectedAgenda;
-                            ImGui.Text($"Profile Name: {agenda.Name}");
-                            ImGui.TextWrapped($"Description: {agenda.Description}");
+                            ImGui.Text(T("Profile Name: {0}", agenda.Name));
+                            ImGui.TextWrapped(T("Description: {0}", agenda.Description));
 
                             bool held = ImGui.IsKeyDown(ImGuiKey.LeftShift) || ImGui.IsKeyDown(ImGuiKey.RightShift);
                             using (ImRaii.Disabled(!held))
                             {
-                                if (ImGui.Button("Apply to agenda"))
+                                if (ImGui.Button(T("Apply to agenda")))
                                 {
                                     C.Cosmic_Agenda = new(agenda.MissionList);
                                     C.Save();
@@ -266,27 +266,27 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             if (!held && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
                             {
-                                ImGui.SetTooltip("Hold shift to allow applying");
+                                ImGui.SetTooltip(T("Hold shift to allow applying"));
                             }
 
                             ImGui.SameLine();
                             bool cntrlHeld = ImGui.IsKeyDown(ImGuiKey.LeftCtrl) || ImGui.IsKeyDown(ImGuiKey.RightCtrl);
                             using (ImRaii.Disabled(!cntrlHeld))
                             {
-                                if (ImGui.Button("Delete Profile"))
+                                if (ImGui.Button(T("Delete Profile")))
                                     listToRemove.Add(SelectedAgenda);
                             }
                             if (!cntrlHeld && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
                             {
-                                ImGui.SetTooltip("Hold Control to delete profile");
+                                ImGui.SetTooltip(T("Hold Control to delete profile"));
                             }
 
                             if (ImGui.BeginTable("Agenda Missions Table: Favorites Info", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
                             {
-                                ImGui.TableSetupColumn("Job");
-                                ImGui.TableSetupColumn("Agenda");
-                                ImGui.TableSetupColumn("Run Until..");
-                                ImGui.TableSetupColumn("Mode Select");
+                                ImGui.TableSetupColumn(T("Job"));
+                                ImGui.TableSetupColumn(T("Agenda"));
+                                ImGui.TableSetupColumn(T("Run Until.."));
+                                ImGui.TableSetupColumn(T("Mode Select"));
 
                                 for (int i = 0; i < agenda.MissionList.Count; i++)
                                 {
@@ -337,7 +337,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     }
                     else
                     {
-                        ImGui.TextWrapped("You currently don't have any profiles saved! Please either make one and save, or import if you would like to populate this listing");
+                        ImGui.TextWrapped(T("You currently don't have any profiles saved! Please either make one and save, or import if you would like to populate this listing"));
                     }
 
                     ImGui.EndTabItem();
@@ -693,8 +693,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text($"Current: {current}");
-                                ImGui.Text($"Goal: {goal}");
+                                ImGui.Text(T("Current: {0}", current));
+                                ImGui.Text(T("Goal: {0}", goal));
                                 ImGui.EndTooltip();
                             }
                         }

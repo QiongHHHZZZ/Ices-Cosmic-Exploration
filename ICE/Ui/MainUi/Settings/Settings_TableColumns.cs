@@ -147,7 +147,7 @@ if (ImGui.Checkbox(T("Remove Mission Upon Gold Completion"), ref removeGold))
         using (ImRaii.Disabled(!removeGold))
         {
             bool keepARanks = C.KeepARanks;
-            if (ImGui.Checkbox("Keep \"A Rank\" missions and below", ref keepARanks))
+            if (ImGui.Checkbox(T("Keep \"A Rank\" missions and below"), ref keepARanks))
             {
                 C.KeepARanks = keepARanks;
                 C.Save();
@@ -276,7 +276,7 @@ if (ImGui.Button(T("Apply")))
                 }
                 C.SaveDebounced();
 
-                Notify.Success($"Applied settings to: {amountApplied} missions, just for you buddy.");
+                Notify.Success(T("Applied settings to: {0} missions.", amountApplied));
                 ImGui.CloseCurrentPopup();
             }
 

@@ -127,10 +127,10 @@ namespace ICE.Scheduler.Tasks
                 .Where(x => x.Value.TerritoryId == 1310);
 
             IceLogging.Info("This is just general message to let me know WHAT planet you're on, and where you have things enabled\n" +
-                "If you're not running things that requires these to be enabled, you can ignore this if you're reading this." +
+                "If you're not running things that requires these to be enabled, you can ignore this if you're reading this.\n" +
                 $"Sinus [1237] = [{SinusCount.Count()}]\n" +
                 $"Phaenna [1291] = [{PhaennaCount.Count()}]\n" +
-                $"Oizys [1310] = [{OizysCount}]\n" +
+                $"Oizys [1310] = [{OizysCount.Count()}]\n" +
                 $"Current TerritoryID: {playerTerritory}");
 
             var modeSelected = Mission_Settings.Mode;

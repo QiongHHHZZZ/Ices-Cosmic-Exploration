@@ -66,9 +66,9 @@ internal static unsafe class PlayerHandlers
 
     private static bool? InitiateFirstCosmic()
     {
-        if (Player.Interactable)
+        if (Player.Interactable && Player.Available)
         {
-            SchedulerMain.State = IceState.Start;
+            SchedulerMain.EnablePlugin();
             return true;
         }
 

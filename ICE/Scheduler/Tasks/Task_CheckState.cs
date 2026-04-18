@@ -180,7 +180,7 @@ namespace ICE.Scheduler.Tasks
 
                 IceLogging.Info("We have a pre-selected mode enabled. So we're just going to run that down till we're told to stop\n" +
                     $"Selected Mode: {currentMode}\n" +
-                    $"Main job for basic missions: {Player.Job}", tag);
+                    $"Main job for basic missions: {jobId}", tag);
                 IceLogging.Info("We're going to do our standard check of [If we need to stop] and [What we need to do before a mission]", tag);
 
                 var cosmicClassInfo = CosmicHelper.Cosmic_ClassInfo();

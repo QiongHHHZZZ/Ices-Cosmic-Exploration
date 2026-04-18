@@ -4,6 +4,7 @@ using ICE.Sounds;
 using ICE.Utilities.Cosmic;
 using ICE.Utilities.Cosmic_Helper;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Localization.L10n;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -133,8 +134,7 @@ namespace ICE.Scheduler.Tasks
                     PlayerHelper.GetItemCount(itemId, out var credits);
                     if (credits >= C.LunarCreditsCap)
                     {
-                        IceLogging.ChatInfo($"You've either hit the Lunar Credit threshold, or gone above it.\n" +
-                                            $"Stopping I.C.E.", "[I.C.E.]");
+                        IceLogging.ChatInfo(T("You've either hit the Lunar Credit threshold, or gone above it.\nStopping I.C.E."), "[I.C.E.]");
                         SchedulerMain.State = IceState.Idle;
                         if (C.PlaySoundAlert)
                         {
@@ -147,7 +147,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var hud) && hud.IsAddonReady && (hud.CosmoCredit >= C.CosmoCreditsCap))
                     {
-                        IceLogging.ChatInfo($"Stopping the plugin as you have {hud.CosmoCredit} Cosmocredits.", "[I.C.E.]");
+                        IceLogging.ChatInfo(T("Stopping the plugin as you have {0} Cosmocredits.", hud.CosmoCredit), "[I.C.E.]");
                         SchedulerMain.State = IceState.Idle;
                         if (C.PlaySoundAlert)
                         {
@@ -190,8 +190,7 @@ namespace ICE.Scheduler.Tasks
                     if (level >= C.TargetLevel)
                     {
                         SchedulerMain.State = IceState.Idle;
-                        IceLogging.ChatInfo("Stop At Player Level is enabled. \n" +
-                                           $"Your current level is: {Player.Level} and Goal: {C.TargetLevel}", "[I.C.E.]");
+                        IceLogging.ChatInfo(T("Stop At Player Level is enabled.\nYour current level is: {0} and Goal: {1}", Player.Level, C.TargetLevel), "[I.C.E.]");
                         if (C.PlaySoundAlert)
                         {
                             _ = SoundPlayer.PlaySoundAsync();
@@ -206,8 +205,7 @@ namespace ICE.Scheduler.Tasks
                     if (currentScore >= C.CosmicScoreCap)
                     {
                         SchedulerMain.State = IceState.Idle;
-                        IceLogging.ChatInfo("Stop At Cosmic Score is enabled. \n" +
-                            $"Your current level is: {currentScore} and Goal: {C.CosmicScoreCap}", "[I.C.E.]");
+                        IceLogging.ChatInfo(T("Stop At Cosmic Score is enabled.\nYour current level is: {0} and Goal: {1}", currentScore, C.CosmicScoreCap), "[I.C.E.]");
                         if (C.PlaySoundAlert)
                         {
                             _ = SoundPlayer.PlaySoundAsync();
@@ -223,8 +221,7 @@ namespace ICE.Scheduler.Tasks
                     PlayerHelper.GetItemCount(itemId, out var credits);
                     if (credits >= C.LunarCreditsCap)
                     {
-                        IceLogging.ChatInfo($"You've either hit the Lunar Credit threshold, or gone above it.\n" +
-                                            $"Stopping I.C.E.", "[I.C.E.]");
+                        IceLogging.ChatInfo(T("You've either hit the Lunar Credit threshold, or gone above it.\nStopping I.C.E."), "[I.C.E.]");
                         SchedulerMain.State = IceState.Idle;
                         if (C.PlaySoundAlert)
                         {
@@ -237,7 +234,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var hud) && hud.IsAddonReady && (hud.CosmoCredit >= C.CosmoCreditsCap))
                     {
-                        IceLogging.ChatInfo($"Stopping the plugin as you have {hud.CosmoCredit} Cosmocredits.", "[I.C.E.]");
+                        IceLogging.ChatInfo(T("Stopping the plugin as you have {0} Cosmocredits.", hud.CosmoCredit), "[I.C.E.]");
                         SchedulerMain.State = IceState.Idle;
                         if (C.PlaySoundAlert)
                         {
@@ -273,7 +270,7 @@ namespace ICE.Scheduler.Tasks
                             }
                             else
                             {
-                                IceLogging.ChatInfo("We're at the point we can turn in the relic! Please do so, or disable stop when at relic turnin", tag);
+                                IceLogging.ChatInfo(T("We're at the point we can turn in the relic! Please do so, or disable stop when at relic turnin"), tag);
                                 SchedulerMain.State = IceState.Idle;
                                 if (C.PlaySoundAlert)
                                 {

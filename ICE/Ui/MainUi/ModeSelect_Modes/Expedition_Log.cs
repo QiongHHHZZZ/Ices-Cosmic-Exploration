@@ -275,8 +275,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.TableSetupColumn(T("Enabled"));
                     ImGui.TableSetupColumn(T("Job"));
                     ImGui.TableSetupColumn(T("Kind"));
-                    ImGui.TableSetupColumn("ID");
-                    ImGui.TableSetupColumn("✓");
+                    ImGui.TableSetupColumn(T("ID"));
+                    ImGui.TableSetupColumn("完成");
                     ImGui.TableSetupColumn(T("Mission Name"));
                     ImGui.TableSetupColumn(T("Turnin Mode"));
                     ImGui.TableSetupColumn(T("Profile Setting"));
@@ -847,7 +847,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 {
                                     string presetName = missionConfig.AutoHookPresetName;
                                     ImGui.SetNextItemWidth(200);
-                                    if (ImGui.InputText("Preset Name", ref presetName))
+                                    if (ImGui.InputText(T("Preset Name"), ref presetName))
                                     {
                                         missionConfig.AutoHookPresetName = presetName;
                                         C.Save();
@@ -1132,7 +1132,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             }
             else
             {
-                var jobStatus = expInfo[SelectedJob];
+                if (!expInfo.TryGetValue(SelectedJob, out var jobStatus))
+                {
+                    ImGui.TextWrapped(T("No expedition data is available for this class yet."));
+                    return;
+                }
+
                 if (ImGui.BeginTable("Specific Class Details", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
                 {
                     ImGui.TableSetupColumn(T("Info"));

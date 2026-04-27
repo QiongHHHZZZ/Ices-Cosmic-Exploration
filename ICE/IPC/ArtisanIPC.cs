@@ -41,8 +41,8 @@ namespace ICE.IPC
         [EzIPC] public Action<uint, uint, bool> ChangeExpertMaxSteadyUses;
         [EzIPC] public Action<uint> SetTempExpertMaxSteadyUsesBackToNormal;
 
-        [EzIPC] public Action<uint, uint, bool> ChangeExpertUseMaterialMiracle;
-        [EzIPC] public Action<uint> SetTempExpertUseMaterialMiracleBackToNormal;
+        [EzIPC] public Action<uint, uint, bool> ChangeExpertMaxMaterialMiracleUses;
+        [EzIPC] public Action<uint> SetTempExpertMaxMaterialMiracleUsesBackToNormal;
 
         [EzIPC] public Action<uint, uint, bool> ChangeExpertMinimumStepsBeforeMiracle;
         [EzIPC] public Action<uint> SetTempExpertMinimumStepsBeforeMiracleBackToNormal;

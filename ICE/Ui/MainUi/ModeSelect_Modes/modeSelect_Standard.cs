@@ -70,6 +70,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 bool standard = C.SelectedMode == ModeSelect.Standard;
                 bool relicMode = C.SelectedMode == ModeSelect.RelicMode;
                 bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
+                bool goldMode = C.SelectedMode == ModeSelect.MissionGoldMode;
                 bool agendaMode = C.SelectedMode == ModeSelect.AgendaMode;
 
 
@@ -84,6 +85,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 {
                     modeType = "Leveling Grind";
                     modeIcon = FontAwesomeIcon.Leaf;
+                }
+                else if (goldMode)
+                {
+                    modeType = "Gold Completion Grind";
+                    modeIcon = FontAwesomeIcon.Trophy;
                 }
                 else if (agendaMode)
                 {
@@ -140,6 +146,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                        "-> For crafters it's whatever missions take the least amount of progress" +
                                        "-> For gathering, it's whatever is the least pain to do w/ the minimum amount of skills\n" +
                                        "**These will automatically set settings for using these modes temporarily**"));
+                    if (ImGui.RadioButton(T("Gold Completion Grind"), goldMode))
+                    {
+                        C.SelectedMode = ModeSelect.MissionGoldMode;
+                        C.Save();
+                    }
+                    ImGuiEx.HelpMarker(T("Gold Completion Mode\n-> Will automatically pick all the missions that you do not have currently gold, AND ONLY THOSE MISSIONS.\n-> If it is apart of a sequence chain, it will grab the mission that are needed previously to help complete it, and the missions post if necessary\n-> If it runs out of missions to reroll, it will just continually swap tabs until the mission is available (via provisional or critical)\n**This will respect the want to grind off class provisionals, and criticals if you have those enabled"));
                     if (ImGui.RadioButton(T("Agenda Mode"), agendaMode))
                     {
                         C.SelectedMode = ModeSelect.AgendaMode;

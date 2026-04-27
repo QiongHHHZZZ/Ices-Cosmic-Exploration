@@ -23,6 +23,12 @@
 
 	<ItemGroup>
 		<Content Include="ICE.json" />
+		<EmbeddedResource Include="Resources\ResearchIcons\advance.png" />
+		<EmbeddedResource Include="Resources\ResearchIcons\expert.png" />
+		<EmbeddedResource Include="Resources\ResearchIcons\novice.png" />
+		<EmbeddedResource Include="Resources\ResearchIcons\intermediate.png" />
+		<EmbeddedResource Include="Resources\CosmicClassTracker.png" />
+		<EmbeddedResource Include="Resources\Red_Alert.png" />
 		<EmbeddedResource Include="Resources\Oizys.png" />
 		<Content Include="utilities\Z_RandomNotes.yaml" />
 		<EmbeddedResource Include="Resources\GreyscaleJobs\ALC.png" />

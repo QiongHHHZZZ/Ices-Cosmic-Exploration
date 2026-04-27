@@ -24,6 +24,7 @@ namespace ICE.Ui.DebugWindowTabs
         }
 
         internal static uint RecipeId = 0;
+        private static uint MaxSkillUsage = 0;
 
         public static void Draw()
         {
@@ -167,6 +168,35 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 P.Artisan.ChangeSquadronManual(RecipeId, SelectedSquadronManual.Id, true);
             }
+
+            var mission = CosmicHelper.SheetMissionDict.FirstOrNull(kvp => kvp.Value.Crafts_Main.ContainsKey((ushort)RecipeId)
+                                                                    || kvp.Value.Crafts_Pre.ContainsKey((ushort)RecipeId));
+
+            if (mission != null)
+            {
+                var sheetInfo = mission.Value.Value;
+
+                if (sheetInfo.TemporaryActionCount != 0)
+                {
+                    var actionInfo = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>().GetRow(sheetInfo.TemporaryActionId);
+                    var name = actionInfo.Name;
+                    var icon = Svc.Texture.GetFromGameIcon((int)actionInfo.Icon).GetWrapOrEmpty();
+                    ImGui.Image(icon.Handle, new(24, 24));
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.SameLine();
+                    ImGui.Text($"{name}");
+
+                    ImGui.SliderUInt("Max Usage", ref MaxSkillUsage, 0, 2);
+                    if (ImGui.Button("Apply Temp"))
+                    {
+                        if (sheetInfo.TemporaryActionId == 41269)
+                        {
+                            P.Artisan.ChangeExpertMaxMaterialMiracleUses(RecipeId, MaxSkillUsage, false);
+                        }
+                    }
+                }
+            }
+
         }
     }
 }

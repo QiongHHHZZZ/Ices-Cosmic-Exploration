@@ -5,8 +5,6 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection.Metadata.Ecma335;
-using YamlDotNet.Core.Tokens;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
 
@@ -226,6 +224,43 @@ namespace ICE.Scheduler.Tasks
                                 MissionLibrary[LibraryInfo(mission)].Add(missionId);
                         }
                     }
+                    else if (modeSelected == ModeSelect.MissionGoldMode)
+                    {
+                        if (MissionGolded(missionId))
+                            continue;
+
+                        if (mission.Value.Attributes.HasFlag(MissionAttributes.Critical))
+                        {
+                            if (C.GrindOffClassRedAlert)
+                                MissionLibrary[LibraryInfo(mission)].Add(missionId);
+                            else if (mission.Value.Jobs.Contains(Mission_Settings.SelectedJob))
+                                MissionLibrary[LibraryInfo(mission)].Add(missionId);
+                        }
+                        else if (provisional)
+                        {
+                            if (C.GrindAllProvisionals || mission.Value.Jobs.Contains(Mission_Settings.SelectedJob))
+                            {
+                                if (mission.Value.SequenceMissions_Previous.Count() != 0 || mission.Value.SequenceMissions_Next.Count() != 0)
+                                {
+                                    foreach (var prevSeqMission in mission.Value.SequenceMissions_Previous)
+                                    {
+                                        var seqMission = CosmicHelper.SheetMissionDict.Where(x => x.Key == prevSeqMission).FirstOrDefault();
+                                        if (!MissionLibrary[LibraryInfo(seqMission)].Contains(prevSeqMission))
+                                            MissionLibrary[LibraryInfo(seqMission)].Add(prevSeqMission);
+                                    }
+                                    foreach (var nextSeqMission in mission.Value.SequenceMissions_Next)
+                                    {
+                                        var seqMission = CosmicHelper.SheetMissionDict.Where(x => x.Key == nextSeqMission).FirstOrDefault();
+                                        if (!MissionLibrary[LibraryInfo(seqMission)].Contains(nextSeqMission))
+                                            MissionLibrary[LibraryInfo(seqMission)].Add(nextSeqMission);
+                                    }
+                                }
+                                MissionLibrary[LibraryInfo(mission)].Add(missionId);
+                            }
+                        }
+                        else if (mission.Value.Jobs.Contains(Mission_Settings.SelectedJob))
+                            MissionLibrary[LibraryInfo(mission)].Add(missionId);
+                    }
                 }
                 else
                 {
@@ -291,6 +326,8 @@ namespace ICE.Scheduler.Tasks
 
                 if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && hud.IsAddonReady)
                 {
+                    IceLogging.Info($"Opening Tab: {type}", tag);
+
                     switch (type)
                     {
                         case MissionTypes.RedAlert:
@@ -456,36 +493,58 @@ namespace ICE.Scheduler.Tasks
                 return jobTab[job];
             }
 
+            bool OnCorrectTabV2(MissionTypes type, WKSMission missionAddon)
+            {
+                bool correct = missionAddon.CurrentTab == type switch
+                {
+                    MissionTypes.Standard => 0,
+                    MissionTypes.Provisional => 1,
+                    MissionTypes.RedAlert => 2,
+                    _ => 0
+                };
+
+                if (correct)
+                    return true;
+                else
+                {
+                    if (FrameThrottler.Throttle("Selecting Tab", 8))
+                    {
+                        switch (type)
+                        {
+                            case MissionTypes.Standard:
+                                missionAddon.BasicMissions();
+                                break;
+                            case MissionTypes.Provisional:
+                                missionAddon.ProvisionalMissions();
+                                break;
+                            case MissionTypes.RedAlert:
+                                missionAddon.CriticalMissions();
+                                break;
+                            default:
+                                missionAddon.BasicMissions();
+                                break;
+                        }
+                    }
+
+                    return false;
+                }
+            }
+
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var missionInfo) && missionInfo.IsAddonReady)
             {
-                if (type == MissionTypes.Standard)
+                if (type == MissionTypes.Standard && OnCorrectTabV2(type, missionInfo))
                 {
                     IceLogging.Verbose($"Checking Standard missions. Mission Count: {missionList.Count()}", tag);
-                    bool OnCorrectTab()
+                    bool CorrectJob()
                     {
                         foreach (var mission in missionInfo.StellerMissions)
                         {
                             var sheetInfo = CosmicHelper.SheetMissionDict[mission.MissionId];
                             bool isCritical = sheetInfo.Attributes.HasFlag(MissionAttributes.Critical);
                             bool isProvisional = sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
-                                || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
-                                || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
+                                              || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
+                                              || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
 
-
-                            if (isCritical || isProvisional)
-                            {
-                                if (EzThrottler.Throttle("We're on the wrong tab... changing"))
-                                {
-                                    IceLogging.Verbose("Current Tab (Atleast what we think it is):\n" +
-                                        $"Critical? {isCritical}\n" +
-                                        $"Provisional? {isProvisional}\n" +
-                                        $"MissionID: {mission.MissionId}");
-                                    IceLogging.Info("Selecting basic tab", tag);
-                                    missionInfo.BasicMissions();
-                                }
-
-                                return false;
-                            }
                             if (!sheetInfo.Jobs.Contains(Mission_Settings.SelectedJob))
                             {
                                 var jobTab = JobTab(Mission_Settings.SelectedJob);
@@ -502,7 +561,7 @@ namespace ICE.Scheduler.Tasks
                         return true;
                     }
 
-                    if (OnCorrectTab())
+                    if (CorrectJob())
                     {
                         var mode = Mission_Settings.Mode;
                         if (mode == ModeSelect.Standard)
@@ -715,7 +774,7 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
                 }
-                else if (type == MissionTypes.Provisional)
+                else if (type == MissionTypes.Provisional && OnCorrectTabV2(type, missionInfo))
                 {
                     if (missionInfo.StellerMissions.Count() > 0)
                     {
@@ -734,7 +793,7 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Info("No missions were found in the provisional tab, continuing on", tag);
                     return true;
                 }
-                else if (type == MissionTypes.RedAlert)
+                else if (type == MissionTypes.RedAlert && OnCorrectTabV2(type, missionInfo))
                 {
                     if (missionInfo.StellerMissions.Count() > 0)
                     {
@@ -902,6 +961,38 @@ namespace ICE.Scheduler.Tasks
                         $"Mission ID: {missionId} | Map Position: {location} | Moon Territory: {territory}\n" +
                         $"Adding to the unsupported list so it's marked on your side for now", tag);
                     UnsupportedMissions.Ids.Add(missionId);
+                }
+
+                var customFishingHole = C.Personal_FishLocation.Where(x => x.MapCoords == location).FirstOrDefault();
+                if (customFishingHole != null)
+                {
+                    var fishingLoc = customFishingHole.WorldPosition;
+
+                    if (fishingLoc != null)
+                    {
+                        if (Player.DistanceTo(fishingLoc.Value) < 3)
+                        {
+                            IceLogging.Info($"We have a custom fishing hole set, and we're close to it. {fishingLoc.Value}", tag);
+                            Task_Fishing.MarkMissionEntryPrepared(missionId);
+                            randomFishingHole = Vector3.Zero;
+                            return true;
+                        }
+                        else
+                        {
+                            if (Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(fishingLoc.Value, tag))
+                            {
+                                Task_Fishing.MarkMissionEntryPrepared(missionId);
+                                randomFishingHole = Vector3.Zero;
+                                return false;
+                            }
+
+                            IceLogging.Verbose($"We have a custom fishing hole set, and we're not within fishing range. Queueing up moving to it: {fishingLoc.Value}");
+                            Task_NavmeshMove.Enqueue_NavmeshTask(fishingLoc.Value);
+                            Task_Fishing.MarkMissionEntryPrepared(missionId);
+                            randomFishingHole = Vector3.Zero;
+                            return true;
+                        }
+                    }
                 }
 
                 if (Task_Fishing.IsInsideMissionFishingCircle(sheetInfo))

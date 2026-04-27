@@ -5,6 +5,7 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
+using TerraFX.Interop.Windows;
 using static ICE.ConfigFiles.Config;
 using static ICE.Utilities.CosmicHelper;
 using static ICE.Utilities.ExcelHelper;
@@ -521,6 +522,29 @@ public sealed partial class ICE
             uint rewardItemId = 0;
             uint rewardItemAmount = 0;
 
+            // Enum for the ranking type (makes it easier vs having to do "Flag Contains X")
+            MissionClass enumRank = MissionClass.D;
+            if (attributes.HasFlag(MissionAttributes.ProvisionalWeather))
+                enumRank = MissionClass.Weather;
+            else if (attributes.HasFlag(MissionAttributes.ProvisionalTimed))
+                enumRank = MissionClass.Timed;
+            else if (attributes.HasFlag(MissionAttributes.ProvisionalSequential))
+                enumRank = MissionClass.Sequence;
+            else if (attributes.HasFlag(MissionAttributes.Critical))
+                enumRank = MissionClass.Critical;
+            else
+            {
+                enumRank = rank switch
+                {
+                    5 => MissionClass.Ex,
+                    4 => MissionClass.A,
+                    3 => MissionClass.B,
+                    2 => MissionClass.C,
+                    1 => MissionClass.D,
+                    _ => MissionClass.Unknown,
+                };
+            }
+
             if (rewardSheet.ItemCount != 0)
             {
                 rewardItemId = rewardSheet.ItemCount;
@@ -535,6 +559,7 @@ public sealed partial class ICE
                     Jobs = jobs,
                     ToDoId = missionToDo.RowId,
                     Rank = rank,
+                    Rankv2 = enumRank,
                     Level = level,
                     Attributes = attributes,
                     Weather = weather,
@@ -886,8 +911,6 @@ public sealed partial class ICE
             C.Save();
         }
     }
-
-
     public static void EnsureAllMission()
     {
         IceLogging.Debug("Starting Mission Updater");

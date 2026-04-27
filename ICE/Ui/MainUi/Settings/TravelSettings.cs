@@ -1,33 +1,48 @@
 using Dalamud.Interface;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using ICE.Ui.DebugWindowTabs;
+using ICE.Utilities.GatheringHelper;
+using ICE.Utilities.ImGuiTools;
 using Lumina.Excel.Sheets;
 using Pictomancy;
 using System.Collections.Generic;
+using static ICE.ConfigFiles.Config;
 using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
     internal class TravelSettings
     {
+        private static FishingDebug _fishingDebug = null;
+
         public static unsafe void Draw()
+        {
+            if (_fishingDebug == null)
+            {
+                _fishingDebug = new FishingDebug();
+            }
+
+            PathfindingSettings();
+
+            Separator();
+            StuckSettings();
+
+            Separator();
+            CraftingLocations();
+
+            Separator();
+            FishingLocations();
+
+            Separator();
+            DailyRoutinesExtensions();
+        }
+
+        private static void Separator()
         {
             ImGui.Dummy(new Vector2(0, 5));
             ImGui.Separator();
             ImGui.Dummy(new Vector2(0, 5));
-            PathfindingSettings();
-            ImGui.Dummy(new Vector2(0, 5));
-            ImGui.Separator();
-            ImGui.Dummy(new Vector2(0, 5));
-            StuckSettings();
-            ImGui.Dummy(new Vector2(0, 5));
-            ImGui.Separator();
-            ImGui.Dummy(new Vector2(0, 5));
-            CraftingLocations();
-            ImGui.Dummy(new Vector2(0, 5));
-            ImGui.Separator();
-            ImGui.Dummy(new Vector2(0, 5));
-            DailyRoutinesExtensions();
         }
 
         private static void PathfindingSettings()
@@ -279,6 +294,76 @@ ImGui.Text(T("No location set"));
             if (C.FishingUseDailyRoutinesTP || C.GatherUseDailyRoutinesTP || C.PersonalReturnUseDailyRoutinesTP || C.HubReturnUseDailyRoutinesTP || C.Cosmodrone_UseDailyRoutinesTP)
             {
                 ImGui.TextWrapped(T("Tip: Ensure Daily Routines 'Quick Teleport Panel' is enabled. If teleport fails, it automatically falls back to normal navigation."));
+            }
+        }
+
+        private static void FishingLocations()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Fish, T("Personalized Fishing Spots"));
+            ImGui.SameLine();
+            ImGui_Ice.IconWithTooltip(FontAwesomeIcon.QuestionCircle, T("A way for you to save your own positions if you choose to not use a randomized spot that's included in the plugin\nYou don't have to use this, it will just use a random spot if:\n1: A position is saved:\n2: A random spot even is saved"), false);
+            ImGui.Dummy(new Vector2(0, 5));
+
+            var currentTerritory = Player.Territory.RowId;
+
+            if (GatheringUtil.MoonFishingLocations.TryGetValue(currentTerritory, out var fishingHoles))
+            {
+                ImGui.Text(T("Planet: {0}", Player.Territory.Value.PlaceName.Value.Name.ToString()));
+                ImGui.Checkbox(T("Show fishing spot raycast"), ref _fishingDebug.ShowFishRay);
+                if (PlayerHelper.LocalPlayer is { } player && _fishingDebug.ShowFishRay)
+                {
+                    _fishingDebug.Draw();
+                }
+
+                ImGui.Separator();
+
+                foreach (var hole in fishingHoles.Keys)
+                {
+                    // Find existing entry for this zone + map coord, or creating a new one if one doesn't exist
+                    var entry = C.Personal_FishLocation.FirstOrDefault(f => f.ZoneId == currentTerritory && f.MapCoords == hole);
+
+                    if (entry == null)
+                    {
+                        entry = new FishingLocations
+                        {
+                            ZoneId = currentTerritory,
+                            X = hole.X,
+                            Y = hole.Y,
+                            WorldPosition = null
+                        };
+                        C.Personal_FishLocation.Add(entry);
+                        C.SaveDebounced();
+                    }
+
+                    ImGui.PushID($"{hole}_Flag");
+
+                    if (ImGuiEx.IconButtonWithText(FontAwesomeIcon.Flag, T("  X: {0:N2} Y: {1:N2}", hole.X, hole.Y)))
+                    {
+                        var mission = CosmicHelper.SheetMissionDict.Where(x => x.Value.MapPosition == hole).FirstOrDefault();
+                        Utils.SetGatheringRing(mission.Value.TerritoryId, (int)hole.X, (int)hole.Y, mission.Value.Radius, $"{hole.X:N2} {hole.Y:N2}");
+                    }
+                    ImGui.SameLine();
+
+                    string currentPos = entry.WorldPosition == null ? T("Add New") : T("Remove");
+
+                    if (ImGui.Button(currentPos))
+                    {
+                        entry.WorldPosition = entry.WorldPosition == null ? Player.Position : null;
+                        C.Save();
+                    }
+
+                    if (entry.WorldPosition != null)
+                    {
+                        ImGui.SameLine();
+                        ImGui.Text($"{entry.WorldPosition.Value:N2}");
+                    }
+
+                    ImGui.PopID();
+                }
+            }
+            else
+            {
+                ImGui.Text(T("Current planet has no stored fishing holes in the sheets. (Might need to be added?)"));
             }
         }
     }

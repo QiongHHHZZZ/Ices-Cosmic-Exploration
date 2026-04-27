@@ -2143,7 +2143,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text($"RecipeID: {craft.Value.RecipeId}");
+                                ImGui.Text($"Key / RecipeId: {craft.Key}");
                                 ImGui.Text($"ItemID: {craft.Value.ItemId}");
                                 ImGui.EndTooltip();
                             }
@@ -2648,7 +2648,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 Table_FullCenterText(FontAwesome.Cross, EColor.Red);
             }
         }
-        private static unsafe void CompletionStatus_Normal(uint id)
+        public static unsafe void CompletionStatus_Normal(uint id)
         {
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return;

@@ -38,6 +38,7 @@ namespace ICE.Ui.MainUi
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.List, T("Mission Setup"), "modeSelect_MissionSetup");
                     // ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, "Complete Overview", "modeSelect_Completion");
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.ClipboardList, T("Cosmic Agenda"), "modeSelect_CosmicAgenda");
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, T("Expedition Log"), "modeSelect_ExpeditionLogs");
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader(T("Planet Selection"), FontAwesomeIcon.Moon))
                 {

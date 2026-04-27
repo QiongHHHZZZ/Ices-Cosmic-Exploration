@@ -110,12 +110,12 @@ namespace ICE.Scheduler.Tasks
                     if (skillUsage != -1)
                     {
                         P.Artisan.ChangeExpertMaxSteadyUses(recipeId, (uint)skillUsage, true);
-                        P.Artisan.ChangeExpertUseMaterialMiracle(recipeId, (uint)skillUsage, true);
+                        P.Artisan.ChangeExpertMaxMaterialMiracleUses(recipeId, (uint)skillUsage, true);
                     }
                     else
                     {
                         P.Artisan.SetTempExpertMaxSteadyUsesBackToNormal(recipeId);
-                        P.Artisan.SetTempExpertUseMaterialMiracleBackToNormal(recipeId);
+                        P.Artisan.SetTempExpertMaxMaterialMiracleUsesBackToNormal(recipeId);
                     }
 
                     if (miracleSteps != -1)

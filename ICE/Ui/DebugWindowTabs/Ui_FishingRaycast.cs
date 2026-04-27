@@ -8,7 +8,7 @@ namespace ICE.Ui.DebugWindowTabs
     public unsafe class FishingDebug : IDisposable
     {
         private delegate* unmanaged<BGCollisionModule*, RaycastHit*, Vector3*, Vector3*, float, int, byte> _raycastSimple;
-        public bool ShowFishRay = true;
+        public bool ShowFishRay = false;
 
         public const uint Success = 0xFF00FF00;
         public const uint Failure = 0xFF00FFFF;

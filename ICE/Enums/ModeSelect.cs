@@ -11,6 +11,7 @@ namespace ICE.Enums
         RelicMode = 1,
         LevelMode = 2,
         // ScoreMode = 3,
+        MissionGoldMode = 4,
 
         AgendaMode = 10,
     }

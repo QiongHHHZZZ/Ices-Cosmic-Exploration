@@ -1,5 +1,6 @@
 ﻿using ICE.OldYamlConfig;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using YamlDotNet.Serialization;
 
 namespace ICE.ConfigFiles;
@@ -99,4 +100,17 @@ public partial class Config
             public uint ExpertProfileId = 0;
         };
     }
+
+    public class FishingLocations
+    {
+        public uint ZoneId { get; set; } = 0;
+        public float X { get; set; } = 0.0f;
+        public float Y { get; set; } = 0.0f;
+        public Vector3? WorldPosition { get; set; } = null;
+
+        [JsonIgnore]
+        public Vector2 MapCoords => new(X, Y);
+    }
+
+    public List<FishingLocations> Personal_FishLocation = new();
 }

@@ -122,9 +122,9 @@ public sealed partial class ICE
             }
 
             // Map Marker Information
-            var marker = Svc.Data.GetExcelSheet<WKSMissionMapMarker>().GetRow(missionToDo.Unknown13);
-            Vector2 mapFlag = new(marker.Unknown1 - 1024, (marker.Unknown2 - 1024));
-            int radius = marker.Unknown3;
+            var marker = missionToDo.MapMarker;
+            Vector2 mapFlag = new(marker.Value.X - 1024, (marker.Value.Y - 1024));
+            int radius = marker.Value.Radius;
 
             // Oizys decided they were going to perfectly overlap 2 of the markers *-perfectly-*
             // So specific missions have their positions changed *-ever-* so slightly to make them different for personal use
@@ -502,7 +502,7 @@ public sealed partial class ICE
 
             uint Cosmo = rewardSheet.CosmoCredits;
             uint Lunar = rewardSheet.PlanetCredits;
-            uint dronebitAmount = rewardSheet.Unknown20;
+            uint dronebitAmount = rewardSheet.BaseDronebits;
 
             // - - - Exp Modifiers - - - //
             uint expModifier_1 = rewardSheet.ExpModifier[0].ToUInt();

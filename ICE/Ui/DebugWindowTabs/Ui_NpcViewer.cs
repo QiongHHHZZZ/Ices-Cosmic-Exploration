@@ -72,7 +72,7 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.EndTable();
                     }
 
-                    using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
+                    using (var drawList = PctService.Draw())
                     {
                         foreach (var location in pictoCircles)
                         {

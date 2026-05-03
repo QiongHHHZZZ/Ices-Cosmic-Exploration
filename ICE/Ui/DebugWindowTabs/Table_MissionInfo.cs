@@ -386,7 +386,7 @@ namespace ICE.Ui.DebugWindowTabs
                     }
 
                     ImGui.TableSetColumnIndex(33);
-                    var manager = (WKSManagerCustom*)WKSManager.Instance();
+                    var manager = WKSManager.Instance();
                     var isCompleted = manager->IsMissionCompleted(entry.Key);
                     var isGold = manager->IsMissionGolded(entry.Key);
                     Completion(entry.Key);
@@ -528,7 +528,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         private static unsafe void Completion(uint id)
         {
-            var manager = (WKSManagerCustom*)WKSManager.Instance();
+            var manager = WKSManager.Instance();
             var isCompleted = manager->IsMissionCompleted(id);
             var isGold = manager->IsMissionGolded(id);
 

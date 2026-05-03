@@ -321,13 +321,13 @@ namespace ICE.Ui.DebugWindowTabs
 
                         uint holeNumber = 1;
 
-                        using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
+                        using (var drawList = PctService.Draw())
                         {
                             if (viewAllFishingSpots)
                             {
                                 foreach (var location in fishingHole)
                                 {
-                                    PictoService.VfxRenderer.AddCircle($"Location: {location.FishingSpot.X}", location.FishingSpot, 1f, Utils.FromUintABGR(C.PictoColor_Circle));
+                                    PctService.VfxRenderer.AddCircle($"Location: {location.FishingSpot.X}", location.FishingSpot, 1f, Utils.FromUintABGR(C.PictoColor_Circle));
 
                                     var floatPos = new Vector3(location.FishingSpot.X, location.FishingSpot.Y + 3.5f, location.FishingSpot.Z);
                                     drawList.AddText(floatPos, 2667577343, $"Spot #: {holeNumber}", 1);

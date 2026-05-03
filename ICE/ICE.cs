@@ -21,6 +21,7 @@ public sealed partial class ICE : IDalamudPlugin
     internal static ICE P = null!;
     private Config config;
     public static Config C => P.config;
+    public static PctContext PictoService;
 
     // Missing ECommons PluginService. Update to Svc when ECommons get updated
     [PluginService] public static IUnlockState UnlockState { get; set; } = null!;
@@ -52,7 +53,7 @@ public sealed partial class ICE : IDalamudPlugin
         P = this;
         ECommonsMain.Init(pi, P, Module.DalamudReflector, ECommons.Module.ObjectFunctions);
         new ECommons.Schedulers.TickScheduler(Load);
-        PictoService.Initialize(pi);
+        PictoService = PctService.Initialize(pi);
     }
     public void Load()
     {
@@ -166,6 +167,7 @@ public sealed partial class ICE : IDalamudPlugin
         GenericHelpers.Safe(() => Svc.PluginInterface.UiBuilder.Draw -= windowSystem.Draw);
         GenericHelpers.Safe(TextAdvancedManager.UnlockTA);
         GenericHelpers.Safe(YesAlreadyManager.Unlock);
+        GenericHelpers.Safe(PictoService.Dispose);
         ECommonsMain.Dispose();
         PictoService.Dispose();
     }

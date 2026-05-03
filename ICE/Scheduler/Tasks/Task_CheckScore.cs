@@ -2,13 +2,7 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic_Helper;
-using ICE.Utilities.GatheringHelper;
-using System.Reflection.Metadata;
-using TerraFX.Interop.Windows;
-using YamlDotNet.Core.Tokens;
-using static Dalamud.Interface.Utility.Raii.ImRaii;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
 using static ICE.Utilities.WKSManagerCustom;
 
 namespace ICE.Scheduler.Tasks
@@ -508,8 +502,7 @@ namespace ICE.Scheduler.Tasks
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return 0;
 
-            var manager = (WKSManagerCustom*)managerPtr;
-            return manager->CollectedTotal;
+            return managerPtr->CollectedTotal;
         }
 
         private static unsafe uint CurrentIndividualTotal()
@@ -517,8 +510,7 @@ namespace ICE.Scheduler.Tasks
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return 0;
 
-            var manager = (WKSManagerCustom*)managerPtr;
-            return manager->CollectedIndividual;
+            return managerPtr->CollectedIndividual;
         }
 
         private static unsafe uint CurrentScore()
@@ -526,7 +518,7 @@ namespace ICE.Scheduler.Tasks
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return 0;
 
-            var manager = (WKSManagerCustom*)managerPtr;
+            var manager = managerPtr;
             return manager->CurrentScore;
         }
 
@@ -535,8 +527,7 @@ namespace ICE.Scheduler.Tasks
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return MissionRank.None;
 
-            var manager = (WKSManagerCustom*)managerPtr;
-            return manager->CurrentRank;
+            return (MissionRank)(ushort)managerPtr->CurrentRank;
         }
 
         public static TurninState DetermineTurninState()

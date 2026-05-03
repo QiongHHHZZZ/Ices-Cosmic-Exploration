@@ -33,7 +33,7 @@ namespace ICE.Scheduler.Handlers
         {
             try
             {
-                using (var pictoDraw = PictoService.Draw())
+                using (var pictoDraw = PctService.Draw())
                 {
                     if (pictoDraw == null)
                         return;
@@ -418,12 +418,14 @@ namespace ICE.Scheduler.Handlers
             pictoDraw.AddLine(headRight, arrowTip, lineHalfWidth, outlineColor, 2.0f);
         }
 
+        // TODO: Fix later. Can't be asked at the second because it's not breaking to much
+        /*
         public static void DrawIcon(ImTextureID textureHandle, Vector3 worldPos, Vector2? size = null)
         {
             AddDrawCommand(_ =>
             {
                 var iconSize = size ?? new Vector2(24, 24);
-                if (!PictoService.GameGui.WorldToScreen(worldPos, out var screenPos)) return;
+                if (!PctService.GameGui.WorldToScreen(worldPos, out var screenPos)) return;
 
                 var topLeft = screenPos - iconSize / 2;
                 ImGui.GetForegroundDrawList().AddImage(textureHandle, topLeft, topLeft + iconSize);
@@ -456,6 +458,7 @@ namespace ICE.Scheduler.Handlers
                 ImGui.GetForegroundDrawList().AddImage(textureHandle, topLeft, topLeft + iconSize, Vector2.Zero, Vector2.One, tintColor);
             });
         }
+        */
 
         public static float DegreesToRadians(float degrees)
         {

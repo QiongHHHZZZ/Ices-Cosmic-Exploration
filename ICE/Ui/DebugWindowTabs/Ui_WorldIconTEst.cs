@@ -17,8 +17,8 @@ internal class Ui_WorldIconTEst
 
     public static void DrawOverlay()
     {
-        if (_markerPos != Vector3.Zero)
-            PictoManager.DrawIcon(CosmicHelper.JobIconDict[8].GetWrapOrEmpty().Handle, _markerPos, new(24, 24));
+        // if (_markerPos != Vector3.Zero)
+            // PictoManager.DrawIcon(CosmicHelper.JobIconDict[8].GetWrapOrEmpty().Handle, _markerPos, new(24, 24));
     }
 
     // --- Map Helpers ---

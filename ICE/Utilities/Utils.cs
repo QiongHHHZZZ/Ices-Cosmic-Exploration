@@ -191,6 +191,4 @@ public static unsafe class Utils
         if (EzThrottler.Throttle("Vnavmesh throttle message", 1000))
             IceLogging.Debug($"Navmesh isn't ready. % built is at: {P.Navmesh.BuildProgress}");
     }
-
-    public static PctDrawHints GetPictoHints() => new(clipNativeUI: !C.DisableHudClipping);
 }

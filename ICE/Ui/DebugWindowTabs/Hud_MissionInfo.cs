@@ -172,8 +172,7 @@ namespace ICE.Ui.DebugWindowTabs
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return 0;
 
-            var manager = (WKSManagerCustom*)managerPtr;
-            return manager->ReturnCurrentScore();
+            return managerPtr->CurrentScore;
         }
     }
 }

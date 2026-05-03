@@ -218,7 +218,7 @@ namespace ICE.Ui.DebugWindowTabs
                 var icon = CosmicHelper.JobIconDict[8].GetWrapOrDefault();
                 if (icon != null)
                 {
-                    PictoManager.DrawIcon(icon.Handle, new(WorldPos.X, WorldPos.Y + Height, WorldPos.Z), size);
+                    // PictoManager.DrawIcon(icon.Handle, new(WorldPos.X, WorldPos.Y + Height, WorldPos.Z), size);
                     ImGui.Image(icon.Handle, new(24, 24));
                 }
             }

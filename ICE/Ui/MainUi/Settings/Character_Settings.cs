@@ -921,15 +921,15 @@ namespace ICE.Ui.MainUi.Settings
             }
 
             // Pictomancy visualisation (always uses resolved values)
-            using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
+            using (var drawList = PctService.Draw())
             {
                 if (drawList == null) return;
                 var playerPos = Player.Position;
                 if (_visualizeRadius)
-                    PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", playerPos,
+                    PctService.VfxRenderer.AddCircle("Mount_Radius Circle", playerPos,
                         C.MountRadius, Utils.FromUintABGR(2616716297));
                 if (_visualizeDismountRadius)
-                    PictoService.VfxRenderer.AddCircle("Dismount_Radius Circle", playerPos,
+                    PctService.VfxRenderer.AddCircle("Dismount_Radius Circle", playerPos,
                         C.DismountRadius, Utils.FromUintABGR(2601121571));
             }
         }

@@ -241,9 +241,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return false;
 
-            var manager = (WKSManagerCustom*)managerPtr;
-
-            return manager->IsMissionGolded(missionId);
+            return managerPtr->IsMissionGolded(missionId);
         }
 
         public static void MissionTable(List<uint> missions)
@@ -1200,7 +1198,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return;
 
-            var manager = (WKSManagerCustom*)managerPtr;
+            var manager = managerPtr;
             var isCompleted = manager->IsMissionCompleted(id);
             var isGold = manager->IsMissionGolded(id);
 

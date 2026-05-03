@@ -100,7 +100,7 @@ namespace ICE.Scheduler.Handlers
 
             for (var i = 1; i <= 24; i++)
             {
-                byte weatherId = wm->GetWeatherForDaytime(Svc.ClientState.TerritoryType, i);
+                byte weatherId = wm->GetWeatherForDaytime((ushort)Svc.ClientState.TerritoryType, i);
                 var weather = ExcelHelper.WeatherSheet.GetRow(weatherId)!;
                 var time = GetRootTime(i * WeatherPeriod);
 

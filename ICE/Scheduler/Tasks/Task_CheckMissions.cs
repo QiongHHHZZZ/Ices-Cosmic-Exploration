@@ -1454,8 +1454,7 @@ namespace ICE.Scheduler.Tasks
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return false;
 
-            var manager = (WKSManagerCustom*)managerPtr;
-            var isCompleted = manager->IsMissionCompleted(id);
+            var isCompleted = managerPtr->IsMissionCompleted(id);
 
             return isCompleted;
         }
@@ -1464,8 +1463,7 @@ namespace ICE.Scheduler.Tasks
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return false;
 
-            var manager = (WKSManagerCustom*)managerPtr;
-            var isGolded = manager->IsMissionGolded(id);
+            var isGolded = managerPtr->IsMissionGolded(id);
 
             return isGolded;
         }

@@ -21,9 +21,9 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 var agent = AgentMap.Instance();
 
-                int _x = MapInfo.GetRow((uint)TableRow).Unknown1.ToInt() - 1024;
-                int _y = MapInfo.GetRow((uint)TableRow).Unknown2.ToInt() - 1024;
-                int _radius = MapInfo.GetRow((uint)TableRow).Unknown3.ToInt();
+                int _x = MapInfo.GetRow((uint)TableRow).X.ToInt() - 1024;
+                int _y = MapInfo.GetRow((uint)TableRow).Y.ToInt() - 1024;
+                int _radius = MapInfo.GetRow((uint)TableRow).Radius.ToInt();
                 IceLogging.Debug($"X: {_x} Y: {_y} Radius: {_radius}");
 
                 Utils.SetGatheringRing(1237, _x, _y, _radius);

@@ -94,6 +94,8 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.SetClipboardText(sb.ToString());
                 }
 
+                ImGui.Text($"Number of entries: {shopExchange.NumEntries}");
+
                 if (ImGui.BeginTable("Item Exchange Window", 5, tableFlags))
                 {
                     ImGui.TableSetupColumn("##ItemId");

@@ -843,9 +843,7 @@ namespace ICE.Scheduler.Tasks
                 else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
                 {
                     if (EzThrottler.Throttle("Opening the desynth window"))
-                    {
                         missionInfo.StellerReduction();
-                    }
                 }
                 else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
                 {

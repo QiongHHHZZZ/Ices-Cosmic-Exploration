@@ -11,77 +11,75 @@ namespace ICE.Scheduler.Tasks
         public static readonly List<Gamba> DefaultGambaItems = new()
         {
             // Mounts
-            new Gamba { ItemId = 44505, Weight = 200, Type = GambaType.Mount }, // Vacuum Suit Identification Key
-            new Gamba { ItemId = 47973, Weight = 200, Type = GambaType.Mount }, // Warp Loader Identification Key
-            new Gamba { ItemId = 50441, Weight = 200, Type = GambaType.Mount},  // Volatile Gravity Vacuum Suit Identification Key
+            new() { ItemId = 44505, Weight = 200, Type = GambaType.Mount },   // Vacuum Suit Identification Key
+            new() { ItemId = 47973, Weight = 200, Type = GambaType.Mount },   // Warp Loader Identification Key
+            new() { ItemId = 50441, Weight = 200, Type = GambaType.Mount },   // Volatile Gravity Vacuum Suit Identification Key
 
             // Emotes
-            new Gamba { ItemId = 44509, Weight = 25, Type = GambaType.Emote }, // Ballroom Etiquette - Personal Perfection
-            new Gamba { ItemId = 46795, Weight = 25, Type = GambaType.Emote }, // Ballroom Etiquette - Anticipating Exertion
+            new() { ItemId = 44509, Weight = 25, Type = GambaType.Emote },    // Ballroom Etiquette - Personal Perfection
+            new() { ItemId = 46795, Weight = 25, Type = GambaType.Emote },    // Ballroom Etiquette - Anticipating Exertion
 
             // Outfits
-            new Gamba { ItemId = 47937, Weight = 50, Type = GambaType.Outfit }, // Cosmosuit Coffer
-            new Gamba { ItemId = 47095, Weight = 50, Type = GambaType.Outfit }, // Star Pilot Attire Coffer
-            new Gamba { ItemId = 50828, Weight = 50, Type = GambaType.Outfit }, // Powersuit Coffer
+            new() { ItemId = 47937, Weight = 50, Type = GambaType.Outfit },   // Cosmosuit Coffer
+            new() { ItemId = 47095, Weight = 50, Type = GambaType.Outfit },   // Star Pilot Attire Coffer
+            new() { ItemId = 50828, Weight = 50, Type = GambaType.Outfit },   // Powersuit Coffer
 
             // Minions
-            new Gamba { ItemId = 47966, Weight = 25, Type = GambaType.Minion }, // Micro Rover
-            new Gamba { ItemId = 46782, Weight = 25, Type = GambaType.Minion }, // Model Suit
-            new Gamba { ItemId = 50323, Weight = 25, Type = GambaType.Minion }, // Droningway
+            new() { ItemId = 47966, Weight = 25, Type = GambaType.Minion },   // Micro Rover
+            new() { ItemId = 46782, Weight = 25, Type = GambaType.Minion },   // Model Suit
+            new() { ItemId = 50323, Weight = 25, Type = GambaType.Minion },   // Droningway
 
             // Accessories
-            new Gamba { ItemId = 48154, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Tinted Sunglasses
-            new Gamba { ItemId = 48160, Weight = 5, Type = GambaType.Accessory }, // Loparasol
-            new Gamba { ItemId = 46840, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Scaevan Headgear
-            new Gamba { ItemId = 50458, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Holovisor
-            new Gamba { ItemId = 50455, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Holospecs
+            new() { ItemId = 48154, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Tinted Sunglasses
+            new() { ItemId = 48160, Weight = 5, Type = GambaType.Accessory }, // Loparasol
+            new() { ItemId = 46840, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Scaevan Headgear
+            new() { ItemId = 50458, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Holovisor
+            new() { ItemId = 50455, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Holospecs
 
             // Orchestration
-            new Gamba { ItemId = 48210, Weight = 0, Type = GambaType.Orchestrion }, // Stargazers Orchestrion Roll
-            new Gamba { ItemId = 48220, Weight = 0, Type = GambaType.Orchestrion }, // Echoes in the Distance Orchestrion Roll
-            new Gamba { ItemId = 48221, Weight = 0, Type = GambaType.Orchestrion }, // Close in the Distance (Instrumental) Orchestrion Roll
-            new Gamba { ItemId = 46155, Weight = 0, Type = GambaType.Orchestrion }, // Kaleidoscope Orchestrion Roll
-            new Gamba { ItemId = 50803, Weight = 0, Type = GambaType.Orchestrion }, // The Uncharted Way Orchestrion Roll
+            new() { ItemId = 48210, Weight = 0, Type = GambaType.Orchestrion }, // Stargazers Orchestrion Roll
+            new() { ItemId = 48220, Weight = 0, Type = GambaType.Orchestrion }, // Echoes in the Distance Orchestrion Roll
+            new() { ItemId = 48221, Weight = 0, Type = GambaType.Orchestrion }, // Close in the Distance (Instrumental) Orchestrion Roll
+            new() { ItemId = 46155, Weight = 0, Type = GambaType.Orchestrion }, // Kaleidoscope Orchestrion Roll
+            new() { ItemId = 50803, Weight = 0, Type = GambaType.Orchestrion }, // The Uncharted Way Orchestrion Roll
 
             // Housing Items
-            new Gamba { ItemId = 23892, Weight = 0, Type = GambaType.Housing }, // Verdant Partition
-            new Gamba { ItemId = 48733, Weight = 0, Type = GambaType.Housing }, // Cosmotable
-            new Gamba { ItemId = 48734, Weight = 0, Type = GambaType.Housing }, // Cosmolamp
-            new Gamba { ItemId = 48136, Weight = 0, Type = GambaType.Housing }, // Drafting Table
-            new Gamba { ItemId = 32215, Weight = 0, Type = GambaType.Housing }, // Spring Meadow Partition
-            new Gamba { ItemId = 46175, Weight = 0, Type = GambaType.Housing }, // Portable Exoterminal
-            new Gamba { ItemId = 46174, Weight = 0, Type = GambaType.Housing }, // Cosmokitchen Partition
-            new Gamba { ItemId = 46173, Weight = 0, Type = GambaType.Housing }, // Cosmoseat
-            new Gamba { ItemId = 49849, Weight = 0, Type = GambaType.Housing }, // Imitation Cosmoportal
-            new Gamba { ItemId = 49850, Weight = 0, Type = GambaType.Housing }, // Cosmomodule Floor Panel
+            new() { ItemId = 23892, Weight = 0, Type = GambaType.Housing }, // Verdant Partition
+            new() { ItemId = 48733, Weight = 0, Type = GambaType.Housing }, // Cosmotable
+            new() { ItemId = 48734, Weight = 0, Type = GambaType.Housing }, // Cosmolamp
+            new() { ItemId = 48136, Weight = 0, Type = GambaType.Housing }, // Drafting Table
+            new() { ItemId = 32215, Weight = 0, Type = GambaType.Housing }, // Spring Meadow Partition
+            new() { ItemId = 46175, Weight = 0, Type = GambaType.Housing }, // Portable Exoterminal
+            new() { ItemId = 46174, Weight = 0, Type = GambaType.Housing }, // Cosmokitchen Partition
+            new() { ItemId = 46173, Weight = 0, Type = GambaType.Housing }, // Cosmoseat
+            new() { ItemId = 49849, Weight = 0, Type = GambaType.Housing }, // Imitation Cosmoportal
+            new() { ItemId = 49850, Weight = 0, Type = GambaType.Housing }, // Cosmomodule Floor Panel
 
             // Dyes
-            new Gamba { ItemId = 48169, Weight = 0, Type = GambaType.Dye }, // Metallic Pink Dye
-            new Gamba { ItemId = 48170, Weight = 0, Type = GambaType.Dye }, // Metallic Ruby Red Dye
-            new Gamba { ItemId = 48171, Weight = 0, Type = GambaType.Dye }, // Metallic Cobalt Green Dye
-            new Gamba { ItemId = 48172, Weight = 0, Type = GambaType.Dye }, // Metallic Dark Blue Dye
+            new() { ItemId = 52255, Weight = 0, Type = GambaType.Dye }, // Wide Spectrum #1 Dye
+            new() { ItemId = 52256, Weight = 0, Type = GambaType.Dye }, // Wide Spectrum #2 Dye
 
             // Materia
-            new Gamba { ItemId = 41762, Weight = 0, Type = GambaType.Materia }, // Gatherer's Guerdon Materia XI
-            new Gamba { ItemId = 41763, Weight = 0, Type = GambaType.Materia }, // Gatherer's Guile Materia XI
-            new Gamba { ItemId = 41764, Weight = 0, Type = GambaType.Materia }, // Gatherer's Grasp Materia XI
-            new Gamba { ItemId = 41765, Weight = 0, Type = GambaType.Materia }, // Craftsman's Competence Materia XI
-            new Gamba { ItemId = 41766, Weight = 0, Type = GambaType.Materia }, // Craftsman's Cunning Materia XI
-            new Gamba { ItemId = 41767, Weight = 0, Type = GambaType.Materia }, // Craftsman's Command Materia XI
-            new Gamba { ItemId = 41775, Weight = 0, Type = GambaType.Materia }, // Gatherer's Guerdon Materia XII
-            new Gamba { ItemId = 41776, Weight = 0, Type = GambaType.Materia }, // Gatherer's Guile Materia XII
-            new Gamba { ItemId = 41777, Weight = 0, Type = GambaType.Materia }, // Gatherer's Grasp Materia XII
-            new Gamba { ItemId = 41778, Weight = 0, Type = GambaType.Materia }, // Craftsman's Competence Materia XII
-            new Gamba { ItemId = 41779, Weight = 0, Type = GambaType.Materia }, // Craftsman's Cunning Materia XII
-            new Gamba { ItemId = 41780, Weight = 0, Type = GambaType.Materia }, // Craftsman's Command Materia XII
+            new() { ItemId = 41762, Weight = 0, Type = GambaType.Materia }, // Gatherer's Guerdon Materia XI
+            new() { ItemId = 41763, Weight = 0, Type = GambaType.Materia }, // Gatherer's Guile Materia XI
+            new() { ItemId = 41764, Weight = 0, Type = GambaType.Materia }, // Gatherer's Grasp Materia XI
+            new() { ItemId = 41765, Weight = 0, Type = GambaType.Materia }, // Craftsman's Competence Materia XI
+            new() { ItemId = 41766, Weight = 0, Type = GambaType.Materia }, // Craftsman's Cunning Materia XI
+            new() { ItemId = 41767, Weight = 0, Type = GambaType.Materia }, // Craftsman's Command Materia XI
+            new() { ItemId = 41775, Weight = 0, Type = GambaType.Materia }, // Gatherer's Guerdon Materia XII
+            new() { ItemId = 41776, Weight = 0, Type = GambaType.Materia }, // Gatherer's Guile Materia XII
+            new() { ItemId = 41777, Weight = 0, Type = GambaType.Materia }, // Gatherer's Grasp Materia XII
+            new() { ItemId = 41778, Weight = 0, Type = GambaType.Materia }, // Craftsman's Competence Materia XII
+            new() { ItemId = 41779, Weight = 0, Type = GambaType.Materia }, // Craftsman's Cunning Materia XII
+            new() { ItemId = 41780, Weight = 0, Type = GambaType.Materia }, // Craftsman's Command Materia XII
 
             // Other
-            new Gamba { ItemId = 43943, Weight = 0, Type = GambaType.Other }, // Cracked Prismaticrystal
-            new Gamba { ItemId = 43944, Weight = 0, Type = GambaType.Other }, // Cracked Novacrystal
-            new Gamba { ItemId = 28724, Weight = 0, Type = GambaType.Other }, // Crafter's Delineation
-            new Gamba { ItemId = 6141,  Weight = 0, Type = GambaType.Other }, // Cordial HQ
-            new Gamba { ItemId = 48158, Weight = 0, Type = GambaType.Other }, // Magicked Prism (Cosmic Exploration)
-            new Gamba { ItemId = 50450, Weight = 0, Type = GambaType.Other }, // Cosmic Barding
+            new() { ItemId = 43943, Weight = 0, Type = GambaType.Other }, // Cracked Prismaticrystal
+            new() { ItemId = 43944, Weight = 0, Type = GambaType.Other }, // Cracked Novacrystal
+            new() { ItemId = 28724, Weight = 0, Type = GambaType.Other }, // Crafter's Delineation
+            new() { ItemId = 6141,  Weight = 0, Type = GambaType.Other }, // Cordial HQ
+            new() { ItemId = 48158, Weight = 0, Type = GambaType.Other }, // Magicked Prism (Cosmic Exploration)
+            new() { ItemId = 50450, Weight = 0, Type = GambaType.Other }, // Cosmic Barding
         };
         public static void EnsureGambaWeightsInitialized(bool force = false)
         {

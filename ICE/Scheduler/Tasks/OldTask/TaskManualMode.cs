@@ -1,4 +1,6 @@
-﻿namespace ICE.Scheduler.Tasks.OldTask
+﻿using ICE.Utilities.Cosmic_Helper;
+
+namespace ICE.Scheduler.Tasks.OldTask
 {
     internal class TaskManualMode
     {

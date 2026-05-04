@@ -10,7 +10,6 @@ using Pictomancy;
 using System.Collections.Generic;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
-using static ICE.Utilities.CosmicHelper;
 
 namespace ICE;
 
@@ -109,7 +108,7 @@ public sealed partial class ICE : IDalamudPlugin
 
         DictionaryCreation();
         Task_Gamba.EnsureGambaWeightsInitialized();
-        GatheringUtil.UpdateCriticalWeather();
+        CosmicHelper.UpdateCriticalWeather();
         TestLoadRoutes();
 
         MigrateConfigSettings();
@@ -285,7 +284,7 @@ public sealed partial class ICE : IDalamudPlugin
             if (!PlayerHelper.IsInCosmicZone()) return;
 
             int missionId = int.Parse(subcommands[1]);
-            var info = SheetMissionDict.FirstOrDefault(mission => mission.Key == missionId);
+            var info = CosmicHelper.SheetMissionDict.FirstOrDefault(mission => mission.Key == missionId);
             if (info.Value == default) return;
             if (info.Value.MarkerId == 0) return;
 

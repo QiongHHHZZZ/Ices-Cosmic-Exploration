@@ -46,7 +46,7 @@ namespace ICE.Scheduler.Handlers
                 P.Pandora.SetFeatureEnabled("Pandora Quick Gather", false);
             if (PandoraInteractState)
                 P.Pandora.SetFeatureEnabled("Auto-interact with Gathering Nodes", false);
-            if (PandoraCordialState)
+            if (PandoraCordialState && C.AutoCordial)
                 P.Pandora.SetFeatureEnabled("Auto-Cordial", false);
         }
 

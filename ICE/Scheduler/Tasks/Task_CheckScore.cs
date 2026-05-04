@@ -3,7 +3,7 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic_Helper;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.Utilities.WKSManagerCustom;
+using static FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSManager;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -59,7 +59,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     var rank = CurrentRank();
 
-                    if (rank == MissionRank.Depleted)
+                    if (rank == MissionRank.Failed)
                     {
                         IceLogging.Debug("Mission is either timed out, or out of resources. So going to force a turnin", tag);
                         SchedulerMain.State = IceState.AbandonMission;
@@ -208,7 +208,7 @@ namespace ICE.Scheduler.Tasks
             var currentScore = CurrentScore();
             var rank = CurrentRank();
 
-            if (rank == MissionRank.Depleted)
+            if (rank == MissionRank.Failed)
             {
                 IceLogging.Debug("Mission is either timed out, or out of resources. So going to force a turnin", tag);
                 SchedulerMain.State = IceState.AbandonMission;
@@ -324,7 +324,7 @@ namespace ICE.Scheduler.Tasks
             var currentScore = CurrentScore();
             var rank = CurrentRank();
 
-            if (rank == MissionRank.Depleted)
+            if (rank == MissionRank.Failed)
             {
                 IceLogging.Debug("Mission is either timed out, or out of resources. So going to force a turnin", tag);
                 SchedulerMain.State = IceState.AbandonMission;
@@ -454,7 +454,7 @@ namespace ICE.Scheduler.Tasks
                     P.TaskManager.Tasks.Clear();
                     return true;
                 }
-                else if (rank == MissionRank.Depleted)
+                else if (rank == MissionRank.Failed)
                 {
                     SchedulerMain.State = IceState.AbandonMission;
                     P.TaskManager.Tasks.Clear();

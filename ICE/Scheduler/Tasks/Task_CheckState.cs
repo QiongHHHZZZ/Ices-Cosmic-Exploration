@@ -1,7 +1,6 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using ICE.Sounds;
-using ICE.Utilities.Cosmic;
 using ICE.Utilities.Cosmic_Helper;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Localization.L10n;

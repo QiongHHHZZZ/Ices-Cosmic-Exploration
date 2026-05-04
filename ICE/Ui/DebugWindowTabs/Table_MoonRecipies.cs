@@ -1,10 +1,4 @@
-﻿using Lumina.Excel.Sheets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static ICE.Localization.L10n;
+﻿using ICE.Utilities.Cosmic_Helper;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -15,7 +9,7 @@ namespace ICE.Ui.DebugWindowTabs
         public static unsafe void Draw()
         {
             ImGui.SetNextItemWidth(250);
-            ImGui.InputText(T("Search by Name"), ref RecipeTableSearchText, 100);
+            ImGui.InputText("Search by Name", ref RecipeTableSearchText, 100);
 
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                             ImGuiTableFlags.Borders |
@@ -26,20 +20,20 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Mission Info List", 14, tableFlags))
             {
-                ImGui.TableSetupColumn(T("Key"));
-                ImGui.TableSetupColumn(T("Mission Name"));
-                ImGui.TableSetupColumn(T("Main-Craft 1"));
-                ImGui.TableSetupColumn(T("Amount [1]"));
-                ImGui.TableSetupColumn(T("Main-Craft 2"));
-                ImGui.TableSetupColumn(T("Amount [2]"));
-                ImGui.TableSetupColumn(T("Main-Craft 3"));
-                ImGui.TableSetupColumn(T("Amount [3]"));
-                ImGui.TableSetupColumn(T("Pre-Craft [1]"));
-                ImGui.TableSetupColumn(T("Amount [1]"));
-                ImGui.TableSetupColumn(T("Pre-Craft [2]"));
-                ImGui.TableSetupColumn(T("Amount [2]"));
-                ImGui.TableSetupColumn(T("Pre-Craft [3]"));
-                ImGui.TableSetupColumn(T("Amount [3]"));
+                ImGui.TableSetupColumn("Key");
+                ImGui.TableSetupColumn("Mission Name");
+                ImGui.TableSetupColumn("Main-Craft 1");
+                ImGui.TableSetupColumn("Amount [1]");
+                ImGui.TableSetupColumn("Main-Craft 2");
+                ImGui.TableSetupColumn("Amount [2]");
+                ImGui.TableSetupColumn("Main-Craft 3");
+                ImGui.TableSetupColumn("Amount [3]");
+                ImGui.TableSetupColumn("Pre-Craft [1]");
+                ImGui.TableSetupColumn("Amount [1]");
+                ImGui.TableSetupColumn("Pre-Craft [2]");
+                ImGui.TableSetupColumn("Amount [2]");
+                ImGui.TableSetupColumn("Pre-Craft [3]");
+                ImGui.TableSetupColumn("Amount [3]");
 
                 ImGui.TableHeadersRow();
 

@@ -1,12 +1,9 @@
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Ui.MainUi.Settings.Settings_Table;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
-using Lumina.Excel.Sheets;
-using Pictomancy;
 using System.Collections.Generic;
 using static ICE.ConfigFiles.Config;
 using static ICE.Localization.L10n;
@@ -122,7 +119,7 @@ namespace ICE.Ui.MainUi.Settings
             }
             if (!filterByCurrentJob)
             {
-                float scale = ImGuiHelpers.GlobalScaleSafe;
+                float scale = ImGuiHelpers.GlobalScale;
                 float iconSize = 26 * scale;
                 float iconSpacing = 4;
                 var classDict = new Dictionary<uint, string>

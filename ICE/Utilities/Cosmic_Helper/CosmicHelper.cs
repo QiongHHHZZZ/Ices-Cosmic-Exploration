@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using static ICE.Localization.L10n;
 
-namespace ICE.Utilities;
+namespace ICE.Utilities.Cosmic_Helper;
 
 public static unsafe partial class CosmicHelper
 {

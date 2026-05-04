@@ -45,6 +45,7 @@ internal class DebugWindow : Window
         ["Table: Fish Info"] = () => Table_FishInfo.Draw(),
 
         // UI Elements
+        ["Ui: Select String"] = () => Ui_RedAlertString.Draw(),
         ["Ui: Fishing Hole Editor"] = () => Ui_Fish_HoleEditor.Draw(),
         ["Ui: Fishing Preset Editor"] = () => Ui_FishPresets.Draw(),
         ["Ui: Gather Editor"] = () => Ui_GatherRoute_Editor.Draw(),

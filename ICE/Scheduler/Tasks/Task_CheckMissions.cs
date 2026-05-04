@@ -1,12 +1,10 @@
 ﻿using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
-using ICE.Utilities.Cosmic;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using System.Globalization;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
 
 namespace ICE.Scheduler.Tasks
 {

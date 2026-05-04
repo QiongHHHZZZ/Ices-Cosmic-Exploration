@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace ICE.ConfigFiles;
 
@@ -15,6 +16,7 @@ public partial class Config
         public int DronebitAmount { get; set; } = 5_000;
         public int ClassLevel { get; set; } = 100;
         public int ClassScore { get; set; } = 500_000;
+        public AgendaInfo Clone() => JsonConvert.DeserializeObject<AgendaInfo>(JsonConvert.SerializeObject(this))!;
     }
 
     public List<AgendaInfo> Cosmic_Agenda { get; set; } = new();

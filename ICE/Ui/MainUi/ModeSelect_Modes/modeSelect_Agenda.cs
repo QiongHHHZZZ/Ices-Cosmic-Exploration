@@ -1,15 +1,12 @@
-﻿using Dalamud.Interface;
-using Dalamud.Interface.Utility.Raii;
+﻿using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
-using ICE.ConfigFiles;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TerraFX.Interop.Windows;
 using static ICE.ConfigFiles.Config;
-using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.ModeSelect_Modes
 {
@@ -45,7 +42,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         {
             if (ImGui.BeginTabBar("Agenda Mode: Tabs"))
             {
-                if (ImGui.BeginTabItem(T("Current Agenda")))
+                if (ImGui.BeginTabItem("Current Agenda"))
                 {
                     var selectedJobIcon = CosmicHelper.JobIconDict[SelectedJob];
                     var selectedJobName = CosmicHelper.GetJobName(SelectedJob);
@@ -60,8 +57,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         {
                             if (table)
                             {
-                                ImGui.TableSetupColumn(T("Icon"), ImGuiTableColumnFlags.WidthFixed, 24);
-                                ImGui.TableSetupColumn(T("Name"), ImGuiTableColumnFlags.WidthStretch);
+                                ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 24);
+                                ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
 
                                 foreach (var jobId in JobOptions)
                                 {
@@ -122,7 +119,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.SameLine();
                     using (ImRaii.Disabled(SelectedOption == PlaylistOptions.None))
                     {
-                        if (ImGui.Button(T("Add to Cosmic Agenda")))
+                        if (ImGui.Button("Add to Cosmic Agenda"))
                         {
                             var mode = ModeSelect.Standard;
                             if (SelectedOption is PlaylistOptions.SinusMax or PlaylistOptions.PhaennaMax or PlaylistOptions.OizysMax or PlaylistOptions.SelectedRelicLv)
@@ -150,24 +147,24 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     var validAgenda = C.Cosmic_Agenda.Count() > 0;
                     using (ImRaii.Disabled(!validAgenda))
                     {
-                        if (ImGui.Button(T("Save to Favorites")))
+                        if (ImGui.Button("Save to Favorites"))
                         {
                             ImGui.OpenPopup("Agenda Info: Profile Save");
                         }
                     }
                     if (ImGui.BeginPopup("Agenda Info: Profile Save"))
                     {
-                        ImGui.InputText(T("Name"), ref profileName);
-                        ImGui.InputTextMultiline(T("Description"), ref profileDescription);
+                        ImGui.InputText("Name", ref profileName);
+                        ImGui.InputTextMultiline("Description", ref profileDescription);
                         using (ImRaii.Disabled(profileName == string.Empty))
                         {
-                            if (ImGui.Button(T("Save")))
+                            if (ImGui.Button("Save"))
                             {
                                 AgendaProfileInfo newProfile = new()
                                 {
                                     Name = profileName,
                                     Description = profileDescription,
-                                    MissionList = new List<AgendaInfo>(C.Cosmic_Agenda)
+                                    MissionList = C.Cosmic_Agenda.Select(a => a.Clone()).ToList()
                                 };
 
                                 C.Agenda_Profiles.Add(newProfile);
@@ -187,12 +184,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.EndTabItem();
                 }
 
-                if (ImGui.BeginTabItem(T("Saved Agenda's")))
+                if (ImGui.BeginTabItem("Saved Agenda's"))
                 {
                     List<AgendaProfileInfo> listToRemove = new();
 
                     // Export button — copies to clipboard
-                    if (ImGui.Button(T("Export to Clipboard")))
+                    if (ImGui.Button("Export to Clipboard"))
                     {
                         ImGui.SetClipboardText(ExportProfile(SelectedAgenda));
                     }
@@ -203,7 +200,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.SetNextItemWidth(300);
                     ImGui.InputText("##ImportBox", ref _importBuffer, 5028);
                     ImGui.SameLine();
-                    if (ImGui.Button(T("Import")))
+                    if (ImGui.Button("Import"))
                     {
                         if (TryImportProfile(_importBuffer, out var imported))
                         {
@@ -216,7 +213,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         else
                         {
                             // Optional: show an error notification
-                            Notify.Error(T("Invalid import string."));
+                            Notify.Error("Invalid import string.");
                         }
                     }
 
@@ -252,41 +249,41 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         if (ImGui.BeginChild("Agenda Viewer: Details", new(rightPanelWidth, childHeight), true))
                         {
                             var agenda = SelectedAgenda;
-                            ImGui.Text(T("Profile Name: {0}", agenda.Name));
-                            ImGui.TextWrapped(T("Description: {0}", agenda.Description));
+                            ImGui.Text($"Profile Name: {agenda.Name}");
+                            ImGui.TextWrapped($"Description: {agenda.Description}");
 
                             bool held = ImGui.IsKeyDown(ImGuiKey.LeftShift) || ImGui.IsKeyDown(ImGuiKey.RightShift);
                             using (ImRaii.Disabled(!held))
                             {
-                                if (ImGui.Button(T("Apply to agenda")))
+                                if (ImGui.Button("Apply to agenda"))
                                 {
-                                    C.Cosmic_Agenda = new(agenda.MissionList);
+                                    C.Cosmic_Agenda = agenda.MissionList.Select(a => a.Clone()).ToList();
                                     C.Save();
                                 }
                             }
                             if (!held && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
                             {
-                                ImGui.SetTooltip(T("Hold shift to allow applying"));
+                                ImGui.SetTooltip("Hold shift to allow applying");
                             }
 
                             ImGui.SameLine();
                             bool cntrlHeld = ImGui.IsKeyDown(ImGuiKey.LeftCtrl) || ImGui.IsKeyDown(ImGuiKey.RightCtrl);
                             using (ImRaii.Disabled(!cntrlHeld))
                             {
-                                if (ImGui.Button(T("Delete Profile")))
+                                if (ImGui.Button("Delete Profile"))
                                     listToRemove.Add(SelectedAgenda);
                             }
                             if (!cntrlHeld && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
                             {
-                                ImGui.SetTooltip(T("Hold Control to delete profile"));
+                                ImGui.SetTooltip("Hold Control to delete profile");
                             }
 
                             if (ImGui.BeginTable("Agenda Missions Table: Favorites Info", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
                             {
-                                ImGui.TableSetupColumn(T("Job"));
-                                ImGui.TableSetupColumn(T("Agenda"));
-                                ImGui.TableSetupColumn(T("Run Until.."));
-                                ImGui.TableSetupColumn(T("Mode Select"));
+                                ImGui.TableSetupColumn("Job");
+                                ImGui.TableSetupColumn("Agenda");
+                                ImGui.TableSetupColumn("Run Until..");
+                                ImGui.TableSetupColumn("Mode Select");
 
                                 for (int i = 0; i < agenda.MissionList.Count; i++)
                                 {
@@ -337,7 +334,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     }
                     else
                     {
-                        ImGui.TextWrapped(T("You currently don't have any profiles saved! Please either make one and save, or import if you would like to populate this listing"));
+                        ImGui.TextWrapped("You currently don't have any profiles saved! Please either make one and save, or import if you would like to populate this listing");
                     }
 
                     ImGui.EndTabItem();
@@ -351,12 +348,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         {
             return mode switch
             {
-                ModeSelect.Standard => T("Standard"),
-                ModeSelect.RelicMode => T("Relic Grind Mode"),
-                ModeSelect.LevelMode => T("Leveling Mode"),
+                ModeSelect.Standard => "Standard",
+                ModeSelect.RelicMode => "Relic Grind Mode",
+                ModeSelect.LevelMode => "Leveling Mode",
                 // ModeSelect.ScoreMode => "Scoring Mode",
-                ModeSelect.AgendaMode => T("Cosmic Agenda Mode"),
-                _ => T("??? {0}", mode)
+                ModeSelect.AgendaMode => "Cosmic Agenda Mode",
+                _ => $"??? {mode}"
             };
         }
 
@@ -377,12 +374,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 if (PlaylistTable)
                 {
                     ImGui.TableSetupColumn("##Reorder");
-                    ImGui.TableSetupColumn(T("Job"));
-                    ImGui.TableSetupColumn(T("Agenda"));
-                    ImGui.TableSetupColumn(T("Run Until.."));
-                    ImGui.TableSetupColumn(T("Mode Select"));
-                    ImGui.TableSetupColumn(T("Remove"));
-                    ImGui.TableSetupColumn(T("Progress"), ImGuiTableColumnFlags.WidthStretch);
+                    ImGui.TableSetupColumn("Job");
+                    ImGui.TableSetupColumn("Agenda");
+                    ImGui.TableSetupColumn("Run Until..");
+                    ImGui.TableSetupColumn("Mode Select");
+                    ImGui.TableSetupColumn("Remove");
+                    ImGui.TableSetupColumn("Progress", ImGuiTableColumnFlags.WidthStretch);
 
                     ImGui.TableHeadersRow();
 
@@ -413,8 +410,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         {
                             if (ImGui.BeginTable("JobTable", 2, ImGuiTableFlags.BordersInnerV))
                             {
-                                ImGui.TableSetupColumn(T("Icon"), ImGuiTableColumnFlags.WidthFixed, 24);
-                                ImGui.TableSetupColumn(T("Name"), ImGuiTableColumnFlags.WidthStretch);
+                                ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 24);
+                                ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
 
                                 foreach (var jobId in JobOptions)
                                 {
@@ -532,11 +529,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 var classScore = CosmicHelper.Cosmic_ClassInfo();
                                 if (classScore.TryGetValue(agendaInfo.SelectedJob, out var job))
                                 {
-                                    ImGui.SetTooltip(T("Current Score: {0:N0}", job.Score));
+                                    ImGui.SetTooltip($"Current Score: {job.Score:N0}");
                                 }
                                 else
                                 {
-                                    ImGui.SetTooltip(T("No score can be loaded"));
+                                    ImGui.SetTooltip($"No score can be loaded");
                                 }
                             }
                         }
@@ -599,24 +596,26 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                             if (sinusWarning || phaennaWarning || oizysWarning)
                             {
-                                string tooltip = T("No standard missions are enabled for your current planet/moon and selected job.\nPlease enable some so the agenda does not stall when there are no timed or weather missions.\nCurrently enabled on this planet/moon:");
+                                string tooltip = "Hey! You seem to not have any standardard missions enabled on the planet/moon you're currently on.\n" +
+                                    "Please make sure to do so for this job if you don't want it to stall out when there is no timed/weather missions.\n" +
+                                    "Currently enabled on the planet you're on:";
                                     
 
                                 if (PlayerHelper.IsInSinusArdorum())
-                                    tooltip += T("\nSinus = {0}", SinusStandard);
+                                    tooltip += "\nSinus = {SinusStandard}";
                                 else if (PlayerHelper.IsInPhaenna())
-                                    tooltip += T("\nPhaenna = {0}", PhaennaStandard);
+                                    tooltip += $"\nPhaenna = {PhaennaStandard}";
                                 else if (PlayerHelper.IsInOizys())
-                                    tooltip += T("\nOizys = {0}", OizysStandard);
+                                    tooltip += $"\nOizys = {OizysStandard}";
 
                                 ImGui.SameLine();
                                 ImGui.AlignTextToFramePadding();
-                                ImGui_Ice.IconWithTooltip(FontAwesomeIcon.ExclamationTriangle, tooltip, false);
+                                ImGui_Ice.IconWithTooltip(Dalamud.Interface.FontAwesomeIcon.ExclamationTriangle, tooltip, false);
                             }
                         }
 
                         ImGui.TableNextColumn();
-                        if (ImGuiEx.IconButton(FontAwesomeIcon.Trash))
+                        if (ImGuiEx.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash))
                         {
                             C.Cosmic_Agenda.Remove(agendaInfo);
                             C.Save();
@@ -693,8 +692,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text(T("Current: {0}", current));
-                                ImGui.Text(T("Goal: {0}", goal));
+                                ImGui.Text($"Current: {current}");
+                                ImGui.Text($"Goal: {goal}");
                                 ImGui.EndTooltip();
                             }
                         }
@@ -732,8 +731,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 return max;
             }
         }
-
-
         public static string ExportProfile(AgendaProfileInfo profile)
         {
             var json = JsonConvert.SerializeObject(profile);

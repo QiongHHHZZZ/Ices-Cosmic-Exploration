@@ -2,7 +2,7 @@
 using ICE.Utilities.Cosmic_Helper;
 using System.Runtime.InteropServices;
 
-namespace ICE.Utilities;
+namespace ICE.Utilities.Cosmic_Helper;
 
 [StructLayout(LayoutKind.Explicit, Size = 0xF90)]
 public unsafe struct WKSManagerCustom

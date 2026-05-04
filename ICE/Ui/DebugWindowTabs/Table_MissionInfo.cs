@@ -3,6 +3,7 @@ using Dalamud.Interface.Textures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using ICE.Utilities.Cosmic_Helper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.IO;
@@ -206,7 +207,10 @@ namespace ICE.Ui.DebugWindowTabs
 
                     // Mission ID
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text($"{entry.Key}");
+                    if (ImGui.Button($"{entry.Key}"))
+                    {
+                        ImGui.SetClipboardText($"{entry.Key}");
+                    }
 
                     // Job Icons (for quick reference)
                     ImGui.TableNextColumn();

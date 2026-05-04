@@ -1,12 +1,9 @@
 using Dalamud.Interface;
 using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Ui.DebugWindowTabs;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
-using Lumina.Excel.Sheets;
-using Pictomancy;
-using System.Collections.Generic;
 using static ICE.ConfigFiles.Config;
 using static ICE.Localization.L10n;
 

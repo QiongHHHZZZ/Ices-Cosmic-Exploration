@@ -4,7 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic_Helper;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
-namespace ICE.Utilities;
+namespace ICE.Utilities.Cosmic_Helper;
 
 public static partial class CosmicHelper
 {

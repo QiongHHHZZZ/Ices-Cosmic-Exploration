@@ -71,9 +71,8 @@ namespace ICE.Scheduler.Tasks
         {
             string handle = "[Task_Credits: PathTo]";
             var zoneId = Player.Territory.RowId;
-            var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Credit).FirstOrDefault();
 
-            if (npcEntry != null)
+            if (NpcData.MoonNpcs[Player.Territory.RowId].TryGetValue(NpcData.NpcType.Credit, out var npcEntry))
             {
                 Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 0.5f);
                 if (!Task_NavmeshMove.Task_NavTo(randomPos, distance: 6, npcLoc: npcEntry.Location_Npc).Value)
@@ -105,20 +104,21 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                var researchId = NpcData.MoonNpcs[Player.Territory.RowId].Where(x => x.type == NpcData.NpcType.Credit).FirstOrDefault().NpcId;
-
-                Utils.TryGetObjectByDataId(researchId, out var researchNpc);
-                if (EzThrottler.Throttle("Interacting with researchingway"))
+                if (NpcData.MoonNpcs[Player.Territory.RowId].TryGetValue(NpcData.NpcType.Credit, out var researchInfo))
                 {
-                    Utils.TargetgameObject(researchNpc);
-                    Utils.InteractWithObject(researchNpc);
-                }
-
-                if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
-                {
-                    if (EzThrottler.Throttle("Closing shop menu"))
+                    Utils.TryGetObjectByDataId(researchInfo.NpcId, out var researchNpc);
+                    if (EzThrottler.Throttle("Interacting with researchingway"))
                     {
-                        ECommons.Automation.Callback.Fire(shopExchange.Base, true, -1);
+                        Utils.TargetgameObject(researchNpc);
+                        Utils.InteractWithObject(researchNpc);
+                    }
+
+                    if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
+                    {
+                        if (EzThrottler.Throttle("Closing shop menu"))
+                        {
+                            ECommons.Automation.Callback.Fire(shopExchange.Base, true, -1);
+                        }
                     }
                 }
             }

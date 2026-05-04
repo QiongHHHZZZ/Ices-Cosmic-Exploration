@@ -1,5 +1,4 @@
-using static ICE.Localization.L10n;
-﻿
+﻿using ICE.Utilities.Cosmic_Helper;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -18,9 +17,9 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Item List: Craft + Gathering", 3, tableFlags))
             {
-                ImGui.TableSetupColumn(T("Name"));
-                ImGui.TableSetupColumn(T("Ids"));
-                ImGui.TableSetupColumn(T("Kind"));
+                ImGui.TableSetupColumn("Name");
+                ImGui.TableSetupColumn("Ids");
+                ImGui.TableSetupColumn("Kind");
 
                 ImGui.TableHeadersRow();
 

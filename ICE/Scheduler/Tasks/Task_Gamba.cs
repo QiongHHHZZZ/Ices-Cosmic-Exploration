@@ -125,9 +125,8 @@ namespace ICE.Scheduler.Tasks
         {
             string handle = "Task_Gamba: PathTo";
             var zoneId = Player.Territory;
-            var npcEntry = NpcData.MoonNpcs[zoneId.RowId].Where(x => x.type == NpcData.NpcType.Gamba).FirstOrDefault();
 
-            if (npcEntry != null)
+            if (NpcData.MoonNpcs[Player.Territory.RowId].TryGetValue(NpcData.NpcType.Gamba, out var npcEntry))
             {
                 Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 0.5f);
                 if (!Task_NavmeshMove.Task_NavTo(randomPos, distance: 5, npcLoc: npcEntry.Location_Npc).Value)
@@ -164,13 +163,14 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                var researchId = NpcData.MoonNpcs[Player.Territory.RowId].Where(x => x.type == NpcData.NpcType.Gamba).FirstOrDefault().NpcId;
-
-                Utils.TryGetObjectByDataId(researchId, out var researchNpc);
-                if (EzThrottler.Throttle("Interacting with gambaNpc!"))
+                if (NpcData.MoonNpcs[Player.Territory.RowId].TryGetValue(NpcData.NpcType.Gamba, out var gambaNpc))
                 {
-                    Utils.TargetgameObject(researchNpc);
-                    Utils.InteractWithObject(researchNpc);
+                    Utils.TryGetObjectByDataId(gambaNpc.NpcId, out var researchNpc);
+                    if (EzThrottler.Throttle("Interacting with gambaNpc!"))
+                    {
+                        Utils.TargetgameObject(researchNpc);
+                        Utils.InteractWithObject(researchNpc);
+                    }
                 }
             }
 

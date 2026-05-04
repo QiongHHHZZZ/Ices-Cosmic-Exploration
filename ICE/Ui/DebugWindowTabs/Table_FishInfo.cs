@@ -1,9 +1,6 @@
 ﻿using Dalamud.Interface;
+using ICE.Utilities.Cosmic_Helper;
 using Lumina.Excel.Sheets;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -17,12 +14,12 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Fishing Info", 6, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn(T("MissionID"));
-                ImGui.TableSetupColumn(T("Mission Name"));
-                ImGui.TableSetupColumn(T("Attribute"));
-                ImGui.TableSetupColumn(T("Specific"));
-                ImGui.TableSetupColumn(T("Total Req"));
-                ImGui.TableSetupColumn(T("Variety Req"), ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("MissionID");
+                ImGui.TableSetupColumn("Mission Name");
+                ImGui.TableSetupColumn("Attribute");
+                ImGui.TableSetupColumn("Specific");
+                ImGui.TableSetupColumn("Total Req");
+                ImGui.TableSetupColumn("Variety Req", ImGuiTableColumnFlags.WidthStretch);
 
                 ImGui.TableHeadersRow();
 
@@ -72,7 +69,7 @@ namespace ICE.Ui.DebugWindowTabs
                     }
                     else
                     {
-                        ImGui.Text(T("-"));
+                        ImGui.Text("-");
                     }
 
                     ImGui.TableNextColumn();

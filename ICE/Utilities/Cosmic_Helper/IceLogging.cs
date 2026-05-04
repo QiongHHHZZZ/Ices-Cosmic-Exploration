@@ -27,17 +27,15 @@ internal static class IceLogging
         }
         return string.Empty;
     }
-
     private static string FormatMessage(string message, string prefix = null)
     {
         var callerPrefix = prefix ?? GetCallerPrefix();
         return $"{callerPrefix} {message}";
     }
-
     public static void Verbose(string message, string prefix = null, bool debugOnly = false)
     {
         var formattedMessage = FormatMessage(message, prefix);
-        PluginLog.Verbose(formattedMessage);
+        // PluginLog.Verbose(formattedMessage);
         LogSystem.Log(LogLevel.Verbose, message, prefix);
     }
 
@@ -54,7 +52,7 @@ internal static class IceLogging
         else
         {
             var formattedMessage = FormatMessage(message, prefix);
-            PluginLog.Debug(formattedMessage);
+            // PluginLog.Debug(formattedMessage);
         }
     }
 
@@ -71,7 +69,7 @@ internal static class IceLogging
         else
         {
             var formattedMessage = FormatMessage(message, prefix);
-            PluginLog.Information(formattedMessage);
+            // PluginLog.Information(formattedMessage);
         }
     }
 
@@ -83,7 +81,7 @@ internal static class IceLogging
             if (EzThrottler.Throttle($"Throttling chat message: {s}", 1000))
             {
                 Svc.Chat.Print(s);
-                PluginLog.Information(s);
+                // PluginLog.Information(s);
             }
         }
         else
@@ -91,7 +89,7 @@ internal static class IceLogging
             if (EzThrottler.Throttle($"Throttling chat message: {s}", 1000))
             {
                 Svc.Chat.Print($"{prefix} {s}");
-                PluginLog.Information($"{prefix} {s}");
+                // PluginLog.Information($"{prefix} {s}");
             }
         }
     }

@@ -4,12 +4,9 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
-using System.Reflection;
-using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
-using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -25,28 +22,28 @@ namespace ICE.Ui.DebugWindowTabs
         public static unsafe void Draw()
         {
             ImGui.SetNextItemWidth(200);
-            ImGui.InputInt(T("Current XP"), ref currentXp);
+            ImGui.InputInt("Current XP", ref currentXp);
             ImGui.SetNextItemWidth(200);
-            ImGui.InputInt(T("Needed XP"), ref neededXp);
+            ImGui.InputInt("Needed XP", ref neededXp);
             ImGui.SetNextItemWidth(200);
-            ImGui.InputInt(T("Max XP"), ref maxXp);
+            ImGui.InputInt("Max XP", ref maxXp);
             ImGui_Ice.Draw_XPBar(currentXp, neededXp, maxXp, size: new Vector2(200, 10));
 
             ImGui.Separator();
             var currentProgress = WorldProgress();
             ImGui.Text($"World Stage: {currentProgress}");
 
-            ImGui.Text(T("Need to actually put the player info here. It got lost"));
+            ImGui.Text("Need to actually put the player info here. It got lost");
             ImGui.Spacing();
             ImGui.AlignTextToFramePadding();
             ImGui.Text($"Player Position: X:{Player.Position.X:N2}, Y:{Player.Position.Y:N2}, Z:{Player.Position.Z:N2}");
             ImGui.SameLine();
-            if (ImGui.Button(T("Copy Vector2")))
+            if (ImGui.Button("Copy Vector2"))
             {
                 ImGui.SetClipboardText($"{Player.Position.X:N2}f, {Player.Position.Z:N2}f");
             }
             ImGui.SameLine();
-            if (ImGui.Button(T("Copy Vector3")))
+            if (ImGui.Button("Copy Vector3"))
             {
                 ImGui.SetClipboardText($"{Player.Position.X:N2}f, {Player.Position.Y:N2}f, {Player.Position.Z:N2}f");
             }
@@ -84,11 +81,11 @@ namespace ICE.Ui.DebugWindowTabs
                 if (PlayerHelper.GetItemCount(item.Id, out var count) && count > 0)
                     ImGui.Text($"{item.Name} | {item.Id}");
             }
-            if (ImGui.Button(T("Use Gathering Food")))
+            if (ImGui.Button("Use Gathering Food"))
             {
                 P.TaskManager.Enqueue(() => Task_Gather.UseFood());
             }
-            if (ImGui.Button(T("Set all leveling missions")))
+            if (ImGui.Button("Set all leveling missions"))
             {
                 foreach (var mission in C.MissionConfig)
                 {
@@ -100,8 +97,8 @@ namespace ICE.Ui.DebugWindowTabs
                 C.SaveDebounced();
             }
 
-            ImGui.SliderUInt(T("Player Level"), ref playerLevel, 10, 100);
-            if (ImGui.Button(T("Update best mission")))
+            ImGui.SliderUInt("Player Level", ref playerLevel, 10, 100);
+            if (ImGui.Button("Update best mission"))
             {
                 best_LevelMission = LevelTest();
             }
@@ -112,18 +109,18 @@ namespace ICE.Ui.DebugWindowTabs
 
             DroidCheck();
 
-            if (ImGui.CollapsingHeader(T("Test Picto")))
+            if (ImGui.CollapsingHeader("Test Picto"))
             {
                 PictoManager.DrawPicto();
             }
 
             ImGui.Text($"Drone Ready: {DroneReady()}");
 
-            if (ImGui.Button(T("Use Drone")))
+            if (ImGui.Button("Use Drone"))
             {
                 UseDrone();
             }
-            if (ImGui.Button(T("Test Pathing to position")))
+            if (ImGui.Button("Test Pathing to position"))
             {
                 P.TaskManager.Enqueue(() => MovetoFlag());
             }
@@ -133,14 +130,15 @@ namespace ICE.Ui.DebugWindowTabs
                 customDestination = Player.Position;
             }
 
-            ImGui.Text(T("Any need repaired: {0}", PlayerHelper.AnyNeedsRepair(99)));
+            ImGui.Text($"Any need repaired: {PlayerHelper.AnyNeedsRepair(99)}");
+
             ImGui.Separator();
             TimerUpdate();
         }
 
         private static unsafe void ClassInfo()
         {
-            ImGui.Text(T("Manipulation Check"));
+            ImGui.Text("Manipulation Check");
             Dictionary<uint, uint> ManipClassInfo = new()
             {
                 [8] = 4574,
@@ -210,7 +208,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         private static void DroidCheck()
         {
-            if (ImGui.CollapsingHeader(T("Object info")))
+            if (ImGui.CollapsingHeader("Object info"))
             {
                 foreach (var obect in Svc.Objects.OrderBy(x => Player.DistanceTo(x.Position)))
                 {

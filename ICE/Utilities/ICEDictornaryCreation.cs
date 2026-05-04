@@ -5,9 +5,8 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
-using TerraFX.Interop.Windows;
 using static ICE.ConfigFiles.Config;
-using static ICE.Utilities.CosmicHelper;
+using static ICE.Utilities.Cosmic_Helper.CosmicHelper;
 using static ICE.Utilities.ExcelHelper;
 
 namespace ICE;
@@ -551,9 +550,9 @@ public sealed partial class ICE
                 rewardItemAmount = rewardSheet.ItemCount;
             }
 
-            if (!SheetMissionDict.ContainsKey(keyId))
+            if (!CosmicHelper.SheetMissionDict.ContainsKey(keyId))
             {
-                SheetMissionDict[keyId] = new CosmicInfo()
+                CosmicHelper.SheetMissionDict[keyId] = new CosmicInfo()
                 {
                     Name = missionName,
                     Jobs = jobs,
@@ -664,7 +663,7 @@ public sealed partial class ICE
             }
         }
 
-        for (int i = 0; i < GreyIconList.Count; i++)
+        for (int i = 0; i < CosmicHelper.GreyIconList.Count; i++)
         {
             var slot = i + 8;
             var iconId = GreyIconList[i];
@@ -679,15 +678,15 @@ public sealed partial class ICE
 
         foreach (var entry in C.ScoreKeeper)
         {
-            if (SheetMissionDict.TryGetValue(entry.Key, out var missionEntry) && missionEntry.ClassScore == 0)
+            if (CosmicHelper.SheetMissionDict.TryGetValue(entry.Key, out var missionEntry) && missionEntry.ClassScore == 0)
                 missionEntry.ClassScore = entry.Value;
         }
 
-        foreach (var entry in SheetMissionDict)
+        foreach (var entry in CosmicHelper.SheetMissionDict)
         {
             var missionId = entry.Key;
 
-            if (MissionScoreDict.TryGetValue(missionId, out var score) && score != 0)
+            if (CosmicHelper.MissionScoreDict.TryGetValue(missionId, out var score) && score != 0)
             {
                 entry.Value.ClassScore = score;
             }
@@ -725,7 +724,7 @@ public sealed partial class ICE
             }
         }
 
-        foreach (var weather in WeatherIds)
+        foreach (var weather in CosmicHelper.WeatherIds)
         {
             if (Svc.Texture.TryGetFromGameIcon(weather.Value, out var texture))
             {
@@ -910,41 +909,14 @@ public sealed partial class ICE
             C.Config_Versioning = 2;
             C.Save();
         }
-        if (C.Config_Versioning == 2)
+        if (C.Config_Versioning < 4)
         {
-            // List of ALL the old dyes that were in the shops/gamba wheel. Need to just remove them all lol
-            List<uint> oldDyes = new()
-            {
-                30116, 30117, 48227, 48163, 48164, 30118, 30119,
-                48166, 48165, 30120, 30121, 48168, 48167, 30122,
-                30123, 30124,
-            };
+            Shop_DepreciatedItems();
 
-            foreach (var dye in oldDyes)
-            {
-                if (C.CosmoShoppingOrder.Contains(dye))
-                    C.CosmoShopping.Remove(dye);
+            // had to version bump this up to atleast 4 due to not removing proper thing the first time
+            // updated function/covers up to the right version for this now
 
-                if (C.CosmoShopping.ContainsKey(dye))
-                    C.CosmoShopping.Remove(dye);
-
-                var gambaDye = C.GambaItemWeights.Where(x => x.ItemId == dye).FirstOrDefault();
-                if (gambaDye != null)
-                    C.GambaItemWeights.Remove(gambaDye);
-            }
-
-            foreach (var dye in C.GambaItemWeights.Where(x => x.Type == GambaType.Dye).ToList())
-                C.GambaItemWeights.Remove(dye);
-
-            var dye1 = Task_Gamba.DefaultGambaItems.Where(x => x.ItemId == 52255).FirstOrDefault();
-            if (dye1 != null && !C.GambaItemWeights.Contains(dye1))
-                C.GambaItemWeights.Add(dye1);
-
-            var dye2 = Task_Gamba.DefaultGambaItems.Where(x => x.ItemId == 52256).FirstOrDefault();
-            if (dye2 != null && !C.GambaItemWeights.Contains(dye2))
-                C.GambaItemWeights.Add(dye2);
-
-            C.Config_Versioning = 3;
+            C.Config_Versioning = 4;
             C.SaveDebounced();
         }
     }
@@ -976,5 +948,35 @@ public sealed partial class ICE
         }
         C.MigratedOldArtisan = true;
         C.Save();
+    }
+    public static void Shop_DepreciatedItems()
+    {
+        // List of ALL the old dyes that were in the shops/gamba wheel. Need to just remove them all lol
+        List<uint> oldDyes = new()
+        {
+            30116, 30117, 48227, 48163, 48164, 30118, 30119,
+            48166, 48165, 30120, 30121, 48168, 48167, 30122,
+            30123, 30124,
+        };
+
+        foreach (var dye in oldDyes)
+        {
+            if (C.CosmoShoppingOrder.Contains(dye))
+                C.CosmoShoppingOrder.Remove(dye);
+
+            if (C.CosmoShopping.ContainsKey(dye))
+                C.CosmoShopping.Remove(dye);
+        }
+
+        foreach (var dye in C.GambaItemWeights.Where(x => x.Type == GambaType.Dye).ToList())
+            C.GambaItemWeights.Remove(dye);
+
+        var dye1 = Task_Gamba.DefaultGambaItems.Where(x => x.ItemId == 52255).FirstOrDefault();
+        if (dye1 != null && !C.GambaItemWeights.Contains(dye1))
+            C.GambaItemWeights.Add(dye1);
+
+        var dye2 = Task_Gamba.DefaultGambaItems.Where(x => x.ItemId == 52256).FirstOrDefault();
+        if (dye2 != null && !C.GambaItemWeights.Contains(dye2))
+            C.GambaItemWeights.Add(dye2);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ICE.Utilities.Cosmic
+namespace ICE.Utilities.Cosmic_Helper
 {
     /// <summary>
     /// IDs of missions that should be disabled and shown as unsupported.

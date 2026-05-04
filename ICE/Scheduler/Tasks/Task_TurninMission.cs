@@ -1,17 +1,12 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
-using ECommons.Automation;
 using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Sounds;
-using ICE.Ui;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
-using TerraFX.Interop.Windows;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.ConfigFiles.Config;
-using static ICE.Utilities.WKSManagerCustom;
+using static FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSManager;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -85,7 +80,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         Mission_Settings.TurninState = TurninState.Critical;
 
-                        if (GatheringUtil.CriticalLocations.TryGetValue(id, out var location) && location.RawLocation != Vector3.Zero)
+                        if (CosmicHelper.CriticalLocations.TryGetValue(id, out var location) && location.RawLocation != Vector3.Zero)
                         {
                             if (Player.DistanceTo(location.RawLocation) > 75)
                             {

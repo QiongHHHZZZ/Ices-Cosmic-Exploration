@@ -36,7 +36,7 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.TableSetupColumn(T("Move To"));
                         ImGui.TableSetupColumn(T("Set To Current"));
 
-                        foreach (var npcEntry in moonNpcs)
+                        foreach (var npcEntry in moonNpcs.Values)
                         {
                             ImGui.TableNextRow();
                             ImGui.TableSetColumnIndex(0);

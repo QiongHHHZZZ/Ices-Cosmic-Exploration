@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ICE.Utilities;
+namespace ICE.Utilities.Cosmic_Helper;
 
 public static partial class CosmicHelper
 {

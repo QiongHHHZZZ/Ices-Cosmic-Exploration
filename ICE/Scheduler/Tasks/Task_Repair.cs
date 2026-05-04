@@ -95,9 +95,8 @@ namespace ICE.Scheduler.Tasks
             string handle = "[Task_Repair: PathTo]";
 
             var zoneId = Player.Territory;
-            var npcEntry = NpcData.MoonNpcs[zoneId.RowId].Where(x => x.type == NpcData.NpcType.Repair).FirstOrDefault();
 
-            if (npcEntry != null)
+            if (NpcData.MoonNpcs[Player.Territory.RowId].TryGetValue(NpcData.NpcType.Repair, out var npcEntry))
             {
                 Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 0.5f);
                 if (!Task_NavmeshMove.Task_NavTo(randomPos, distance: 5, npcLoc: npcEntry.Location_Npc).Value)
@@ -123,10 +122,13 @@ namespace ICE.Scheduler.Tasks
         public static unsafe bool? RepairAtNpc()
         {
             var zoneId = Player.Territory;
-            var npcEntry = NpcData.MoonNpcs[zoneId.RowId].Where(x => x.type == NpcData.NpcType.Repair).FirstOrDefault();
-
             IGameObject? gameObject = null;
-            Utils.TryGetObjectByDataId(npcEntry.NpcId, out gameObject);
+
+            if (NpcData.MoonNpcs[Player.Territory.RowId].TryGetValue(NpcData.NpcType.Repair, out var npcEntry))
+            {
+                Utils.TryGetObjectByDataId(npcEntry.NpcId, out gameObject);
+            }
+
             var currentTarget = Svc.Targets.Target;
             var repairAmount = Char_Info.RepairPercent;
 

@@ -80,7 +80,7 @@ namespace ICE.Ui.DebugWindowTabs
                     }
 
                     ImGui.TableNextColumn();
-                    if (GatheringUtil.CriticalLocations.TryGetValue(entry.Key, out var critical))
+                    if (CosmicHelper.CriticalLocations.TryGetValue(entry.Key, out var critical))
                     {
                         ImGuiEx.Icon(FontAwesomeIcon.FlagCheckered);
                         if (ImGui.IsItemClicked())

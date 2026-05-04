@@ -1,11 +1,6 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.Event;
-using ICE.Ui.MainUi.ModeSelect_Modes;
-using System;
+﻿using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using Dalamud.Interface.Textures;
-using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -15,8 +10,8 @@ namespace ICE.Ui.DebugWindowTabs
         {
             if (ImGui.BeginTable("Leveling Table", 14, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchSame))
             {
-                ImGui.TableSetupColumn(T("Planet"));
-                ImGui.TableSetupColumn(T("Lv"));
+                ImGui.TableSetupColumn("Planet");
+                ImGui.TableSetupColumn("Lv");
                 for (int i = 1; i < 12; i++)
                 {
                     ImGui.TableSetupColumn($"##icon_{i}", ImGuiTableColumnFlags.WidthStretch);
@@ -26,11 +21,11 @@ namespace ICE.Ui.DebugWindowTabs
 
                 // Column 0 — "Planet" with proper header styling
                 ImGui.TableSetColumnIndex(0);
-                ImGui.TableHeader(T("Planet"));
+                ImGui.TableHeader("Planet");
 
                 // Column 1 — "Lv"
                 ImGui.TableNextColumn();
-                ImGui.TableHeader(T("Lv"));
+                ImGui.TableHeader("Lv");
 
                 // Icon columns
                 for (uint i = 8; i < 19; i++)

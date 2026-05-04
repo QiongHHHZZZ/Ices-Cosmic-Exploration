@@ -1,13 +1,7 @@
 ﻿using Dalamud.Interface.Utility;
 using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Utilities.Cosmic_Helper;
 using Lumina.Excel.Sheets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static ICE.ConfigFiles.Config;
 using static ICE.Localization.L10n;
 

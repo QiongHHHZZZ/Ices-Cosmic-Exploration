@@ -1,4 +1,5 @@
 ﻿using ICE.Utilities.Cosmic_Helper;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -15,11 +16,11 @@ namespace ICE.Ui.DebugWindowTabs
                                 .OrderBy(kvp => kvp.Value.Type)
                                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            if (ImGui.BeginTable("Item List: Craft + Gathering", 3, tableFlags))
+            if (ImGui.BeginTable(T("Item List: Craft + Gathering"), 3, tableFlags))
             {
-                ImGui.TableSetupColumn("Name");
-                ImGui.TableSetupColumn("Ids");
-                ImGui.TableSetupColumn("Kind");
+                ImGui.TableSetupColumn(T("Name"));
+                ImGui.TableSetupColumn(T("Ids"));
+                ImGui.TableSetupColumn(T("Kind"));
 
                 ImGui.TableHeadersRow();
 
@@ -28,16 +29,16 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableNextRow();
 
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text($"{item.Key}");
+                    ImGui.Text(T("{0}", item.Key));
 
                     ImGui.TableNextColumn();
                     var idsText = item.Value.itemIds.Count > 0
                         ? string.Join(", ", item.Value.itemIds)
-                        : "No items";
+                        : T("No items");
                     ImGui.Text(idsText);
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{Type(item.Value.Type)}");
+                    ImGui.Text(Type(item.Value.Type));
                 }
 
                 ImGui.EndTable();
@@ -51,25 +52,25 @@ namespace ICE.Ui.DebugWindowTabs
             switch (kind)
             {
                 case 1:
-                    type = "Raw Materials";
+                    type = T("Raw Materials");
                     break;
                 case 2:
-                    type = "Seafood";
+                    type = T("Seafood");
                     break;
                 case 3:
-                    type = "Crafting Material";
+                    type = T("Crafting Material");
                     break;
                 case 4:
-                    type = "Handicraft";
+                    type = T("Handicraft");
                     break;
                 case 5:
-                    type = "Bait";
+                    type = T("Bait");
                     break;
                 case 7:
-                    type = "Items";
+                    type = T("Items");
                     break;
                 default:
-                    type = "???";
+                    type = T("???");
                     break;
             }
 

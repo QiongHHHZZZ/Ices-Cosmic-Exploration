@@ -14,11 +14,11 @@ namespace ICE.Ui.DebugWindowTabs
 
         public static void Draw()
         {
-            ImGui.Text($"Running task: {P.TaskManager.NumQueuedTasks != 0} | Amount of queue'd task: {P.TaskManager.NumQueuedTasks}");
+            ImGui.Text(T("Running task: {0} | Amount of queue'd task: {1}", P.TaskManager.NumQueuedTasks != 0, P.TaskManager.NumQueuedTasks));
             string currentTask = P.TaskManager.CurrentTask?.Name ?? "";
-            ImGui.Text($"Current task running: {currentTask}");
-            ImGui.Text($"Current State: {SchedulerMain.State}");
-            ImGui.Text($"Task Count: {P.TaskManager.Tasks.Count}");
+            ImGui.Text(T("Current task running: {0}", currentTask));
+            ImGui.Text(T("Current State: {0}", T(SchedulerMain.State.ToString())));
+            ImGui.Text(T("Task Count: {0}", P.TaskManager.Tasks.Count));
             if (ImGui.Button(T("Set State to Idle")))
             {
                 SchedulerMain.State = IceState.Idle; 
@@ -31,7 +31,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.SetNextItemWidth(100);
-            ImGui.InputUInt("Mission", ref mission);
+            ImGui.InputUInt(T("Mission"), ref mission);
 
             if (ImGui.Button(T("Abandon Mission")))
             {
@@ -45,10 +45,10 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 Task_Repair.Enqueue();
             }
-            ImGui.Text($"Current waypoint list count: {pathTo.Count}");
+            ImGui.Text(T("Current waypoint list count: {0}", pathTo.Count));
 
             ImGui.SetNextItemWidth(250);
-            ImGui.InputFloat3("Destination", ref pathToArea);
+            ImGui.InputFloat3(T("Destination"), ref pathToArea);
             if (ImGui.Button(T("Set Area")))
             {
                 pathToArea = ECommons.GameHelpers.Player.Position;

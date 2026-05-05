@@ -55,3 +55,4 @@ namespace ICE.Ui.MainUi.HelpFolder
         }
     }
 }
+

@@ -33,21 +33,21 @@ namespace ICE.Ui.DebugWindowTabs
                     lotto.ConfirmButton();
                 }
 
-                if (ImGui.Button($"Auto Gamba"))
+                if (ImGui.Button(T("Auto Gamba")))
                 {
                     Task_Gamba.Enqueue();
                 }
 
-                ImGui.Text($"Items in left wheel");
+                ImGui.Text(T("Items in left wheel"));
                 foreach (var l in lotto.LeftWheelItems)
                 {
-                    ImGui.Text($"Name: {l.itemName} | Id: {l.itemId} | Amount: {l.itemAmount}");
+                    ImGui.Text(T("Name: {0} | Id: {1} | Amount: {2}", l.itemName, l.itemId, l.itemAmount));
                 }
 
                 ImGui.Spacing();
                 foreach (var m in lotto.RightWheelItems)
                 {
-                    ImGui.Text($"Name: {m.itemName} | Id: {m.itemId} | Amount: {m.itemAmount}");
+                    ImGui.Text(T("Name: {0} | Id: {1} | Amount: {2}", m.itemName, m.itemId, m.itemAmount));
                 }
             }
             else

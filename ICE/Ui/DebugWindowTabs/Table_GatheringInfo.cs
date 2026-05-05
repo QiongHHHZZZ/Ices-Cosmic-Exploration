@@ -58,7 +58,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text($"Id: {item.Key}");
+                            ImGui.Text(T("Id: {0}", item.Key));
                             ImGui.EndTooltip();
                         }
 

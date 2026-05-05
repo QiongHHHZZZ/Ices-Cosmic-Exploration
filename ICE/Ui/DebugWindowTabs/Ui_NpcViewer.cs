@@ -21,8 +21,8 @@ namespace ICE.Ui.DebugWindowTabs
             var territoryid = Player.Territory.RowId;
             if (NpcData.MoonNpcs.TryGetValue(territoryid, out var moonNpcs))
             {
-                ImGui.Text($"Territory Id: {territoryid}");
-                ImGui.Text($"Valid Moon NPC Info: {moonNpcs != null}");
+                ImGui.Text(T("Territory Id: {0}", territoryid));
+                ImGui.Text(T("Valid Moon NPC Info: {0}", moonNpcs != null));
                 if (moonNpcs != null)
                 {
                     List<Vector3> pictoCircles = new();
@@ -44,7 +44,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                             ImGui.TableNextColumn();
                             ImGui.Text($"{npcEntry.Location_Npc:N2}");
-                            ImGui.Text($"Distance: {Player.DistanceTo(npcEntry.Location_Npc):N2}");
+                            ImGui.Text(T("Distance: {0:N2}", Player.DistanceTo(npcEntry.Location_Npc)));
 
                             ImGui.TableNextColumn();
                             ImGui.Text($"{npcEntry.Location_Circle:N2}");

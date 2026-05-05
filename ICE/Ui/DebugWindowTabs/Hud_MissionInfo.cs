@@ -86,7 +86,7 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);
-                        ImGui.Text("Current Bait");
+                        ImGui.Text(T("Current Bait"));
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{CosmicHelper.CurrentBait}");

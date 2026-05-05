@@ -88,7 +88,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.SameLine();
-            ImGui.Text($"Player Moving: {Player.IsMoving}");
+            ImGui.Text(T("Player Moving: {0}", Player.IsMoving));
 
             if (ImGui.BeginTable("Event Markers", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
             {

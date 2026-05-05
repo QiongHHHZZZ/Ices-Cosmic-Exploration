@@ -18,7 +18,7 @@ namespace ICE.Ui.DebugWindowTabs
                 using var tabItem = ImRaii.TabItem($"Job {item.Key}");
                 if (!tabItem) continue;
 
-                ImGui.Text($"Score: {item.Value.Score}");
+                ImGui.Text(T("Score: {0}", item.Value.Score));
                 ImGui.Separator();
 
                 using var table = ImRaii.Table($"ClassInfo_{item.Key}", 2,
@@ -51,7 +51,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableNextColumn();
                     ImGui.Text(exp.Value.Name);
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{exp.Value.Current} / {exp.Value.Needed} (Max: {exp.Value.Max})");
+                    ImGui.Text($"{exp.Value.Current} / {exp.Value.Needed} ({T("Max: {0}", exp.Value.Max)})");
                 }
             }
         }

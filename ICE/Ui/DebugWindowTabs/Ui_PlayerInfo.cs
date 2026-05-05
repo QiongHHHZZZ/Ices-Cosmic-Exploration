@@ -7,6 +7,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -22,70 +23,70 @@ namespace ICE.Ui.DebugWindowTabs
         public static unsafe void Draw()
         {
             ImGui.SetNextItemWidth(200);
-            ImGui.InputInt("Current XP", ref currentXp);
+            ImGui.InputInt(T("Current XP"), ref currentXp);
             ImGui.SetNextItemWidth(200);
-            ImGui.InputInt("Needed XP", ref neededXp);
+            ImGui.InputInt(T("Needed XP"), ref neededXp);
             ImGui.SetNextItemWidth(200);
-            ImGui.InputInt("Max XP", ref maxXp);
+            ImGui.InputInt(T("Max XP"), ref maxXp);
             ImGui_Ice.Draw_XPBar(currentXp, neededXp, maxXp, size: new Vector2(200, 10));
 
             ImGui.Separator();
             var currentProgress = WorldProgress();
-            ImGui.Text($"World Stage: {currentProgress}");
+            ImGui.Text(T("World Stage: {0}", currentProgress));
 
-            ImGui.Text("Need to actually put the player info here. It got lost");
+            ImGui.Text(T("Need to actually put the player info here. It got lost"));
             ImGui.Spacing();
             ImGui.AlignTextToFramePadding();
-            ImGui.Text($"Player Position: X:{Player.Position.X:N2}, Y:{Player.Position.Y:N2}, Z:{Player.Position.Z:N2}");
+            ImGui.Text(T("Player Position: X:{0:N2}, Y:{1:N2}, Z:{2:N2}", Player.Position.X, Player.Position.Y, Player.Position.Z));
             ImGui.SameLine();
-            if (ImGui.Button("Copy Vector2"))
+            if (ImGui.Button(T("Copy Vector2")))
             {
                 ImGui.SetClipboardText($"{Player.Position.X:N2}f, {Player.Position.Z:N2}f");
             }
             ImGui.SameLine();
-            if (ImGui.Button("Copy Vector3"))
+            if (ImGui.Button(T("Copy Vector3")))
             {
                 ImGui.SetClipboardText($"{Player.Position.X:N2}f, {Player.Position.Y:N2}f, {Player.Position.Z:N2}f");
             }
-            ImGui.Text($"Job: {Player.Job}");
-            ImGui.Text($"JobId: {(uint)Player.Job}");
-            ImGui.Text($"Current Territory/ZoneId: {Player.Territory.RowId}");
+            ImGui.Text(T("Job: {0}", Player.Job));
+            ImGui.Text(T("JobId: {0}", (uint)Player.Job));
+            ImGui.Text(T("Current Territory/ZoneId: {0}", Player.Territory.RowId));
             if (PlayerHelper.IsInCosmicZone())
             {
                 var manager = WKSManager.Instance();
                 var currentMission = manager->CurrentMissionUnitRowId;
 
-                ImGui.Text($"Current Mission: {currentMission}");
+                ImGui.Text(T("Current Mission: {0}", currentMission));
             }
             if (Svc.Targets.Target != null)
             {
                 var currentTarget = Svc.Targets.Target;
-                if (ImGui.Button($"Name: {currentTarget.Name}"))
+                if (ImGui.Button(T("Name: {0}", currentTarget.Name)))
                 {
                     ImGui.SetClipboardText(currentTarget.Name.ToString());
                 }
-                if (ImGui.Button($"Id: {currentTarget.BaseId}"))
+                if (ImGui.Button(T("Id: {0}", currentTarget.BaseId)))
                 {
                     ImGui.SetClipboardText(currentTarget.BaseId.ToString());
                 }
-                if (ImGui.Button($"Position: X: {currentTarget.Position.X:N2}, Y: {currentTarget.Position.Y:N2}, Z: {currentTarget.Position.Z:N2}"))
+                if (ImGui.Button(T("Position: X: {0:N2}, Y: {1:N2}, Z: {2:N2}", currentTarget.Position.X, currentTarget.Position.Y, currentTarget.Position.Z)))
                 {
                     ImGui.SetClipboardText($"{currentTarget.Position.X:N2}f, {currentTarget.Position.Y:N2}f, {currentTarget.Position.Z:N2}f");
                 }
-                ImGui.Text($"Distance: {Player.DistanceTo(currentTarget):N2}");
+                ImGui.Text(T("Distance: {0:N2}", Player.DistanceTo(currentTarget)));
             }
 
-            ImGui.Text($"Items on person: ");
+            ImGui.Text(T("Items on person: "));
             foreach (var item in ConsumableInfo.GatherFood)
             {
                 if (PlayerHelper.GetItemCount(item.Id, out var count) && count > 0)
-                    ImGui.Text($"{item.Name} | {item.Id}");
+                    ImGui.Text(T("{0} | {1}", item.Name, item.Id));
             }
-            if (ImGui.Button("Use Gathering Food"))
+            if (ImGui.Button(T("Use Gathering Food")))
             {
                 P.TaskManager.Enqueue(() => Task_Gather.UseFood());
             }
-            if (ImGui.Button("Set all leveling missions"))
+            if (ImGui.Button(T("Set all leveling missions")))
             {
                 foreach (var mission in C.MissionConfig)
                 {
@@ -97,40 +98,40 @@ namespace ICE.Ui.DebugWindowTabs
                 C.SaveDebounced();
             }
 
-            ImGui.SliderUInt("Player Level", ref playerLevel, 10, 100);
-            if (ImGui.Button("Update best mission"))
+            ImGui.SliderUInt(T("Player Level"), ref playerLevel, 10, 100);
+            if (ImGui.Button(T("Update best mission")))
             {
                 best_LevelMission = LevelTest();
             }
-            ImGui.Text($"Best Mission for leveling: [{best_LevelMission}]");
+            ImGui.Text(T("Best Mission for leveling: [{0}]", best_LevelMission));
 
 
             ClassInfo();
 
             DroidCheck();
 
-            if (ImGui.CollapsingHeader("Test Picto"))
+            if (ImGui.CollapsingHeader(T("Test Picto")))
             {
                 PictoManager.DrawPicto();
             }
 
-            ImGui.Text($"Drone Ready: {DroneReady()}");
+            ImGui.Text(T("Drone Ready: {0}", DroneReady()));
 
-            if (ImGui.Button("Use Drone"))
+            if (ImGui.Button(T("Use Drone")))
             {
                 UseDrone();
             }
-            if (ImGui.Button("Test Pathing to position"))
+            if (ImGui.Button(T("Test Pathing to position")))
             {
                 P.TaskManager.Enqueue(() => MovetoFlag());
             }
             ImGui.SameLine();
-            if (ImGui.Button($"Set position: {customDestination:N2}"))
+            if (ImGui.Button(T("Set position: {0:N2}", customDestination)))
             {
                 customDestination = Player.Position;
             }
 
-            ImGui.Text($"Any need repaired: {PlayerHelper.AnyNeedsRepair(99)}");
+            ImGui.Text(T("Any need repaired: {0}", PlayerHelper.AnyNeedsRepair(99)));
 
             ImGui.Separator();
             TimerUpdate();
@@ -138,7 +139,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         private static unsafe void ClassInfo()
         {
-            ImGui.Text("Manipulation Check");
+            ImGui.Text(T("Manipulation Check"));
             Dictionary<uint, uint> ManipClassInfo = new()
             {
                 [8] = 4574,
@@ -154,22 +155,22 @@ namespace ICE.Ui.DebugWindowTabs
             foreach (var job in ManipClassInfo)
             {
                 var isUnlocked = ActionManager.Instance()->GetActionStatus(ActionType.Action, job.Value, checkRecastActive: false, checkCastingActive: false) is 574 or 586;
-                ImGui.Text($"JobId: {job.Key} | Unlocked: {isUnlocked}");
+                ImGui.Text(T("JobId: {0} | Unlocked: {1}", job.Key, isUnlocked));
                 // 573 | Not unlocked??? 
                 // 574 | Is unlocked
                 // 586 | Is unlocked for current class/ready to use
             }
 
             var canUseSkill = ActionManager.Instance()->GetActionStatus(ActionType.Action, 272, checkRecastActive: false, checkCastingActive: false);
-            ImGui.Text($"Skill Status [272]: {canUseSkill}");
+            ImGui.Text(T("Skill Status [272]: {0}", canUseSkill));
 
             ImGui.Separator();
             PlayerHelper.UpdateHasManip();
 
-            ImGui.Text($"Custom Is Busy: {PlayerHelper.CustomIsBusy}");
+            ImGui.Text(T("Custom Is Busy: {0}", PlayerHelper.CustomIsBusy));
             foreach (var job in PlayerHelper.ManipClassInfo)
             {
-                ImGui.Text($"JobID: {job.Key} | HasUnlocked: {job.Value.HasUnlocked}");
+                ImGui.Text(T("JobID: {0} | HasUnlocked: {1}", job.Key, job.Value.HasUnlocked));
             }
         }
 
@@ -208,11 +209,11 @@ namespace ICE.Ui.DebugWindowTabs
 
         private static void DroidCheck()
         {
-            if (ImGui.CollapsingHeader("Object info"))
+            if (ImGui.CollapsingHeader(T("Object info")))
             {
                 foreach (var obect in Svc.Objects.OrderBy(x => Player.DistanceTo(x.Position)))
                 {
-                    ImGui.Text($"Name: {obect.Name} : {obect.BaseId}");
+                    ImGui.Text(T("Name: {0} : {1}", obect.Name, obect.BaseId));
                 }
             }
         }

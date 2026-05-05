@@ -1,6 +1,7 @@
 ﻿using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using System.Reflection;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -8,10 +9,10 @@ namespace ICE.Ui.DebugWindowTabs
     {
         public static void Draw()
         {
-            if (ImGui.BeginTable("Leveling Table", 14, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchSame))
+            if (ImGui.BeginTable(T("Leveling Table"), 14, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchSame))
             {
-                ImGui.TableSetupColumn("Planet");
-                ImGui.TableSetupColumn("Lv");
+                ImGui.TableSetupColumn(T("Planet"));
+                ImGui.TableSetupColumn(T("Lv"));
                 for (int i = 1; i < 12; i++)
                 {
                     ImGui.TableSetupColumn($"##icon_{i}", ImGuiTableColumnFlags.WidthStretch);
@@ -21,17 +22,17 @@ namespace ICE.Ui.DebugWindowTabs
 
                 // Column 0 — "Planet" with proper header styling
                 ImGui.TableSetColumnIndex(0);
-                ImGui.TableHeader("Planet");
+                ImGui.TableHeader(T("Planet"));
 
                 // Column 1 — "Lv"
                 ImGui.TableNextColumn();
-                ImGui.TableHeader("Lv");
+                ImGui.TableHeader(T("Lv"));
 
                 // Icon columns
                 for (uint i = 8; i < 19; i++)
                 {
                     ImGui.TableNextColumn();
-                    ImGui.TableHeader("##icon_header_" + i);
+                    ImGui.TableHeader($"##icon_header_{i}");
                     ImGui.SameLine(0, 0);
 
                     float colWidth = ImGui.GetColumnWidth();

@@ -6,6 +6,7 @@ using Dalamud.Interface.Utility.Raii;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using System.Reflection;
+using static ICE.Localization.L10n;
 
 namespace ICE.Utilities.ImGuiTools;
 
@@ -134,7 +135,7 @@ public static partial class ImGui_Ice
 
         // Actual label here
         ImGui.PushStyleColor(ImGuiCol.Text, textColor);
-        ImGui.Text(label);
+        ImGui.Text(T(label));
         ImGui.PopStyleColor();
 
         // Replace the badge count section with the caret icon (scaled padding)
@@ -203,7 +204,7 @@ public static partial class ImGui_Ice
 
         ImGuiEx.Icon(icon);
         ImGui.SameLine();
-        ImGui.Text(label);
+        ImGui.Text(T(label));
 
         // Add small spacing between items (scaled)
         ImGui.Dummy(new Vector2(0, 2 * scale));
@@ -265,7 +266,7 @@ public static partial class ImGui_Ice
         }
 
         ImGui.SameLine();
-        ImGui.Text(label);
+        ImGui.Text(T(label));
     }
     public static bool DrawStyledImageButton(IDalamudTextureWrap? icon, Vector2 size, bool enabled = true)
     {
@@ -397,7 +398,7 @@ public static partial class ImGui_Ice
             ImGui.SameLine(0, iconTextSpacing);
         }
 
-        ImGui.Text(label);
+        ImGui.Text(T(label));
         ImGui.SameLine(0, 8);
 
         // Draw caret icon based on expanded state
@@ -454,7 +455,7 @@ public static partial class ImGui_Ice
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text(tooltip);
+            ImGui.Text(T(tooltip));
             ImGui.EndTooltip();
         }
     }
@@ -463,7 +464,7 @@ public static partial class ImGui_Ice
         // If we want it to have a standard label above the bar. Not required but for small things it's nice to just have the option
         if (label != null)
         {
-            ImGui.TextWrapped(label);
+            ImGui.TextWrapped(T(label));
         }
 
         // Setting the dimensions of the custom bar/drawing it.
@@ -618,7 +619,7 @@ public static partial class ImGui_Ice
             ImGui.SameLine(0, iconTextSpacing);
         }
 
-        ImGui.Text(label);
+        ImGui.Text(T(label));
         ImGui.PopStyleColor();
 
         // Create an invisible button to properly reserve space and handle layout
@@ -703,7 +704,7 @@ public static partial class ImGui_Ice
             float textYOffset = contentVerticalCenter - (textSize.Y / 2);
             float textXPos = cursorPos.X + horizontalPadding + imageSize + iconTextSpacing;
             ImGui.SetCursorScreenPos(new Vector2(textXPos, textYOffset));
-            ImGui.Text(label);
+            ImGui.Text(T(label));
         }
 
         // Create an invisible button to properly reserve space and handle layout (matches DrawCategoryButton)
@@ -731,7 +732,7 @@ public static partial class ImGui_Ice
         {
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip(tooltip);
+                ImGui.SetTooltip(T(tooltip));
             }
         }
     }
@@ -747,7 +748,7 @@ public static partial class ImGui_Ice
         {
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip(tooltip);
+                ImGui.SetTooltip(T(tooltip));
             }
         }
     }
@@ -787,7 +788,7 @@ public static partial class ImGui_Ice
         if (!string.IsNullOrEmpty(label))
         {
             ImGui.SameLine();
-            ImGui.Text(label);
+            ImGui.Text(T(label));
         }
 
         return pressed;
@@ -801,7 +802,7 @@ public static partial class ImGui_Ice
         {
             foreach (var exp in jobInfo.CurrentExp.Values)
             {
-                ImGui.Text($"Exp {exp.Name}: {exp.Current} / {exp.Needed}");
+                ImGui.Text(T("Exp {0}: {1} / {2}", exp.Name, exp.Current, exp.Needed));
                 if (Barsize == null)
                     Draw_XPBar(exp.Current, exp.Needed, exp.Max);
                 else
@@ -810,12 +811,12 @@ public static partial class ImGui_Ice
                 {
                     using (var expTooltip = ImRaii.Tooltip())
                     {
-                        ImGui.Text($"Type: {exp.Name}");
+                        ImGui.Text(T("Type: {0}", exp.Name));
                         ImGui.Separator();
 
-                        ImGui.Text($"Current: {exp.Current}");
-                        ImGui.Text($"Need: {exp.Needed}");
-                        ImGui.Text($"Max: {exp.Max}");
+                        ImGui.Text(T("Current: {0}", exp.Current));
+                        ImGui.Text(T("Need: {0}", exp.Needed));
+                        ImGui.Text(T("Max: {0}", exp.Max));
                     }
                 }
             }

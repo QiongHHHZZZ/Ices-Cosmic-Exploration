@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface;
 using ICE.Utilities.Cosmic_Helper;
 using Lumina.Excel.Sheets;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -12,14 +13,14 @@ namespace ICE.Ui.DebugWindowTabs
                 .OrderBy(x => x.Key)
                 .ToDictionary();
 
-            if (ImGui.BeginTable("Fishing Info", 6, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
+            if (ImGui.BeginTable(T("Fishing Info"), 6, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("MissionID");
-                ImGui.TableSetupColumn("Mission Name");
-                ImGui.TableSetupColumn("Attribute");
-                ImGui.TableSetupColumn("Specific");
-                ImGui.TableSetupColumn("Total Req");
-                ImGui.TableSetupColumn("Variety Req", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn(T("MissionID"));
+                ImGui.TableSetupColumn(T("Mission Name"));
+                ImGui.TableSetupColumn(T("Attribute"));
+                ImGui.TableSetupColumn(T("Specific"));
+                ImGui.TableSetupColumn(T("Total Req"));
+                ImGui.TableSetupColumn(T("Variety Req"), ImGuiTableColumnFlags.WidthStretch);
 
                 ImGui.TableHeadersRow();
 
@@ -27,13 +28,13 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text($"{mission.Key}");
+                    ImGui.Text(T("{0}", mission.Key));
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{mission.Value.Name}");
+                    ImGui.Text(T("{0}", mission.Value.Name));
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{mission.Value.Attributes}");
+                    ImGui.Text(T("{0}", mission.Value.Attributes));
 
                     ImGui.TableNextColumn();
                     if (mission.Value.Gathering_Min.Count > 0)
@@ -43,7 +44,7 @@ namespace ICE.Ui.DebugWindowTabs
                         {
                             ImGui.BeginTooltip();
 
-                            if (ImGui.BeginTable("Fish Item Info", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+                            if (ImGui.BeginTable(T("Fish Item Info"), 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
                             {
                                 foreach (var fishItem in mission.Value.Gathering_Min)
                                 {
@@ -51,14 +52,14 @@ namespace ICE.Ui.DebugWindowTabs
                                     ImGui.TableSetColumnIndex(0);
                                     if (Svc.Data.GetExcelSheet<Item>().TryGetRow(fishItem.Key, out var fishInfo))
                                     {
-                                        ImGui.Text($"{fishInfo.Name.ToString()}");
+                                        ImGui.Text(T("{0}", fishInfo.Name.ToString()));
                                     }
 
                                     ImGui.TableNextColumn();
-                                    ImGui.Text($"{fishItem.Value}");
+                                    ImGui.Text(T("{0}", fishItem.Value));
 
                                     ImGui.TableNextColumn();
-                                    ImGui.Text($"{fishItem.Key}");
+                                    ImGui.Text(T("{0}", fishItem.Key));
                                 }
 
                                 ImGui.EndTable();
@@ -73,10 +74,10 @@ namespace ICE.Ui.DebugWindowTabs
                     }
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{mission.Value.Fish_AmountRequired}");
+                    ImGui.Text(T("{0}", mission.Value.Fish_AmountRequired));
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{mission.Value.Fish_VarietyAmount}");
+                    ImGui.Text(T("{0}", mission.Value.Fish_VarietyAmount));
                 }
 
                 ImGui.EndTable();

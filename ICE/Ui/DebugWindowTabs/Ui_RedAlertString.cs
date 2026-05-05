@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -23,7 +24,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
             else
             {
-                ImGui.Text("Select string not visible");
+                ImGui.Text(T("Select string not visible"));
             }
         }
     }

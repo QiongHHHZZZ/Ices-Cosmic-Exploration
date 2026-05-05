@@ -29,7 +29,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         public static void Draw()
         {
-            ImGui.Text($"Selected Food: [{SelectedFood.Id}] {SelectedFood.Name}");
+            ImGui.Text(T("Selected Food: [{0}] {1}", SelectedFood.Id, SelectedFood.Name));
             ImGui.SameLine();
             if (ImGui.Button(T("Select Food")))
             {
@@ -54,7 +54,7 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.EndPopup();
             }
 
-            ImGui.Text($"Selected Pot: [{SelectedPot.Id}] {SelectedPot.Name}");
+            ImGui.Text(T("Selected Pot: [{0}] {1}", SelectedPot.Id, SelectedPot.Name));
             ImGui.SameLine();
             if (ImGui.Button(T("Select Pot")))
             {
@@ -79,7 +79,7 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.EndPopup();
             }
 
-            ImGui.Text($"Selected Manual: [{SelectedManual.Id}] {SelectedManual.Name}");
+            ImGui.Text(T("Selected Manual: [{0}] {1}", SelectedManual.Id, SelectedManual.Name));
             ImGui.SameLine();
             if (ImGui.Button(T("Select Manual")))
             {
@@ -104,7 +104,7 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.EndPopup();
             }
 
-            ImGui.Text($"Selected Squadron Manual: [{SelectedSquadronManual.Id}] {SelectedSquadronManual.Name}");
+            ImGui.Text(T("Selected Squadron Manual: [{0}] {1}", SelectedSquadronManual.Id, SelectedSquadronManual.Name));
             ImGui.SameLine();
             if (ImGui.Button(T("Select Squadron Manual")))
             {
@@ -130,7 +130,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.Separator();
-            ImGui.InputUInt("Recipe Id", ref RecipeId);
+            ImGui.InputUInt(T("Recipe Id"), ref RecipeId);
 
             if (ImGui.Button(T("Reset Temp")))
             {
@@ -187,8 +187,8 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.SameLine();
                     ImGui.Text($"{name}");
 
-                    ImGui.SliderUInt("Max Usage", ref MaxSkillUsage, 0, 2);
-                    if (ImGui.Button("Apply Temp"))
+                    ImGui.SliderUInt(T("Max Usage"), ref MaxSkillUsage, 0, 2);
+                    if (ImGui.Button(T("Apply Temp")))
                     {
                         if (sheetInfo.TemporaryActionId == 41269)
                         {

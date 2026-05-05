@@ -8,6 +8,7 @@ using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -42,12 +43,12 @@ namespace ICE.Ui.DebugWindowTabs
                 if (!quickAccess.Success)
                     return;
 
-                ImGui.Text("Export Settings");
+                ImGui.Text(T("Export Settings"));
                 ImGui.Separator();
                 ImGui.Dummy(new Vector2(0, 5));
 
                 // Author Name Input
-                ImGui.Text("Author Name:");
+                ImGui.Text(T("Author Name:"));
                 ImGui.SetNextItemWidth(200);
                 string authorName = C.AuthorName;
                 if (ImGui.InputText("##AuthorName", ref authorName, 100))
@@ -65,9 +66,9 @@ namespace ICE.Ui.DebugWindowTabs
                     return;
 
                 // Custom Path Display
-                ImGui.Text("Export Location:");
+                ImGui.Text(T("Export Location:"));
                 string displayPath = string.IsNullOrEmpty(C.CustomRoutePath)
-                    ? "Using default plugin config folder"
+                    ? T("Using default plugin config folder")
                     : C.CustomRoutePath;
 
                 ImGui.TextWrapped(displayPath);
@@ -75,9 +76,9 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.Dummy(new Vector2(0, 5));
 
                 // Browse button to set custom path
-                if (ImGui.Button("Browse for Export Folder"))
+                if (ImGui.Button(T("Browse for Export Folder")))
                 {
-                    fileDialogManager.OpenFolderDialog("Select Export Folder", (success, path) =>
+                    fileDialogManager.OpenFolderDialog(T("Select Export Folder"), (success, path) =>
                     {
                         if (success && !string.IsNullOrEmpty(path))
                         {
@@ -93,7 +94,7 @@ namespace ICE.Ui.DebugWindowTabs
                 // Clear custom path button
                 if (!string.IsNullOrEmpty(C.CustomRoutePath))
                 {
-                    if (ImGui.Button("Use Default"))
+                    if (ImGui.Button(T("Use Default")))
                     {
                         C.CustomRoutePath = string.Empty;
                         C.Save();
@@ -101,7 +102,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                     if (ImGui.IsItemHovered())
                     {
-                        ImGui.SetTooltip("Clear custom path and use default plugin config folder");
+                        ImGui.SetTooltip(T("Clear custom path and use default plugin config folder"));
                     }
                 }
             }
@@ -123,7 +124,7 @@ namespace ICE.Ui.DebugWindowTabs
                     GatheringRouteExportUI.DrawExportSelectedButton(selectedZone, selectedRoute);
                 }
 
-                if (ImGui.Button("Add missing routes"))
+                if (ImGui.Button(T("Add missing routes")))
                 {
                     try
                     {
@@ -150,7 +151,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (ImGui.IsItemHovered())
                 {
-                    ImGui.SetTooltip("Scan CosmicHelper missions and create YAML files for any missing gathering routes (MIN/BTN only)");
+                    ImGui.SetTooltip(T("Scan CosmicHelper missions and create YAML files for any missing gathering routes (MIN/BTN only)"));
                 }
             }
 
@@ -162,7 +163,7 @@ namespace ICE.Ui.DebugWindowTabs
                 foreach (var planet in routes)
                 {
                     var planetTerritory = planet.Key;
-                    ImGui.Text($"Zone: {planetTerritory}");
+                    ImGui.Text(T("Zone: {0}", planetTerritory));
                     foreach (var mapLocation in planet.Value)
                     {
                         var location = mapLocation.Key;
@@ -200,14 +201,14 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (selectedRoute == Vector2.Zero)
                 {
-                    ImGui.Text("No route is selected");
+                    ImGui.Text(T("No route is selected"));
                 }
                 else
                 {
                     string missions = string.Join(", ", GetMissionsForFlag(selectedZone, selectedRoute));
-                    ImGui.Text($"Location: {MoonName(selectedZone)}");
-                    ImGui.Text($"Missions: {missions}");
-                    ImGui.Text($"Map Zone: X:{selectedRoute.X}, Z: {selectedRoute.Y}");
+                    ImGui.Text(T("Location: {0}", T(MoonName(selectedZone))));
+                    ImGui.Text(T("Missions: {0}", missions));
+                    ImGui.Text(T("Map Zone: X:{0}, Z: {1}", selectedRoute.X, selectedRoute.Y));
 
                     ImGui.Dummy(new Vector2(0, 5));
 
@@ -246,11 +247,11 @@ namespace ICE.Ui.DebugWindowTabs
 
                             if (ImGui.BeginPopup("Options for node"))
                             {
-                                if (ImGui.Selectable("Remove Node"))
+                                if (ImGui.Selectable(T("Remove Node")))
                                 {
                                     routeList.Remove(routeItem);
                                 }
-                                if (ImGui.Selectable("Path to node"))
+                                if (ImGui.Selectable(T("Path to node")))
                                 {
                                     P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(routeItem.LandZone, stayMounted: true), Utils.TaskConfig);
                                 }
@@ -268,7 +269,7 @@ namespace ICE.Ui.DebugWindowTabs
                                     ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(dataPtr, sizeof(int));
                                     ImGui.SetDragDropPayload("ROUTE_REORDER", data);
                                 }
-                                ImGui.Text($"Moving: {nodeId}");
+                                ImGui.Text(T("Moving: {0}", nodeId));
                                 ImGui.EndDragDropSource();
                             }
 
@@ -305,14 +306,14 @@ namespace ICE.Ui.DebugWindowTabs
                         if (!allNodeViewer.Success)
                             return;
 
-                        ImGui.Text("All Node Viewer");
+                        ImGui.Text(T("All Node Viewer"));
 
                         foreach (var x in Svc.Objects.Where(x => x.ObjectKind == ObjectKind.GatheringPoint && Player.DistanceTo(x.Position) <= maxDistance)
                                                      .OrderBy(x => Player.DistanceTo(x.Position)))
                         {
                             ImGui.PushID($"{x.BaseId}_{x.Position}_NodeViewer");
 
-                            ImGui.Text($"Id: {x.BaseId} | Distance: {Player.DistanceTo(x.Position):N2}");
+                            ImGui.Text(T("Id: {0} | Distance: {1:N2}", x.BaseId, Player.DistanceTo(x.Position)));
                             if (ImGui.IsMouseClicked(ImGuiMouseButton.Right) && ImGui.IsItemHovered())
                             {
                                 ImGui.OpenPopup("Node Viewer Popup");
@@ -320,7 +321,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                             if (ImGui.BeginPopup("Node Viewer Popup"))
                             {
-                                if (ImGui.Selectable("Add node to list"))
+                                if (ImGui.Selectable(T("Add node to list")))
                                 {
                                     routeList.Add(new Resources.GatheringRoutes.GathNodeInfo()
                                     {
@@ -352,9 +353,9 @@ namespace ICE.Ui.DebugWindowTabs
                                 {
                                     if (localPlayer.TargetObject.BaseId == x.BaseId && localPlayer.TargetObject.ObjectKind == ObjectKind.GatheringPoint)
                                     {
-                                        ImGui.Text($"ID: {x.BaseId}");
-                                        ImGui.Text($"Position: {x.Position}");
-                                        if (ImGui.Button($"Add"))
+                                        ImGui.Text(T("ID: {0}", x.BaseId));
+                                        ImGui.Text(T("Position: {0}", x.Position));
+                                        if (ImGui.Button(T("Add")))
                                         {
                                             routeList.Add(new Resources.GatheringRoutes.GathNodeInfo()
                                             {
@@ -378,12 +379,12 @@ namespace ICE.Ui.DebugWindowTabs
                         if (!nodeEditorUi.Success)
                             return;
 
-                        if (ImGui.Button("Generate Path Nodes"))
+                        if (ImGui.Button(T("Generate Path Nodes")))
                         {
                             UpdateCache(routeList);
                         }
                         ImGui.SameLine();
-                        if (ImGui.Button("Clear Path"))
+                        if (ImGui.Button(T("Clear Path")))
                         {
                             cachedWaypointPath = null;
                         }
@@ -391,78 +392,78 @@ namespace ICE.Ui.DebugWindowTabs
                         var route = routeList.Where(x => x.NodeId == selectedNode).FirstOrDefault();
                         if (route != null)
                         {
-                            ImGui.Text($"Node Id: {route.NodeId}");
-                            ImGui.Text($"Node Position: {route.Position}");
+                            ImGui.Text(T("Node Id: {0}", route.NodeId));
+                            ImGui.Text(T("Node Position: {0}", route.Position));
 
                             // Player Land Zone (currently static, might change this later)
                             Vector3 playerLandZone = route.LandZone;
-                            ImGui.Text("Player Land Zone");
+                            ImGui.Text(T("Player Land Zone"));
                             ImGui.SetNextItemWidth(200);
                             if (ImGui.InputFloat3("##Player Land Zone", ref playerLandZone))
                             {
                                 route.LandZone = playerLandZone;
                             }
                             ImGui.SameLine();
-                            if (ImGui.Button("Set to current position"))
+                            if (ImGui.Button(T("Set to current position")))
                             {
                                 route.LandZone = Player.Position;
                             }
 
                             // Radius Start/End
-                            ImGui.Text("Radius Info");
+                            ImGui.Text(T("Radius Info"));
                             float radiusStart = route.Radius_Start;
                             float radiusEnd = route.Radius_End;
                             float height = route.FanHeight;
 
                             ImGui.SetNextItemWidth(100);
-                            if (ImGui.DragFloat("Start##radiusStart", ref radiusStart, 1, 0, 360))
+                            if (ImGui.DragFloat(T("Start") + "##radiusStart", ref radiusStart, 1, 0, 360))
                             {
                                 route.Radius_Start = radiusStart;
                             }
 
                             ImGui.SameLine();
                             ImGui.SetNextItemWidth(100);
-                            if (ImGui.DragFloat("End##radiusEnd", ref radiusEnd, 1, 0, 360))
+                            if (ImGui.DragFloat(T("End") + "##radiusEnd", ref radiusEnd, 1, 0, 360))
                             {
                                 route.Radius_End = radiusEnd;
                             }
 
                             ImGui.SameLine();
                             ImGui.SetNextItemWidth(100);
-                            if (ImGui.DragFloat("Height", ref height, 0.1f, 0, 3))
+                            if (ImGui.DragFloat(T("Height"), ref height, 0.1f, 0, 3))
                             {
                                 route.FanHeight = height;
                             }
 
                             // Min/Max Distance
-                            ImGui.Text("Distance to Node");
+                            ImGui.Text(T("Distance to Node"));
                             float minDistance = route.Distance_Min;
                             float maxDistance = route.Distance_Max;
 
                             ImGui.SetNextItemWidth(100);
-                            if (ImGui.DragFloat("Start##minDistance", ref minDistance, 0.1f, 0, 5))
+                            if (ImGui.DragFloat(T("Start") + "##minDistance", ref minDistance, 0.1f, 0, 5))
                             {
                                 route.Distance_Min = minDistance;
                             }
 
                             ImGui.SameLine();
                             ImGui.SetNextItemWidth(100);
-                            if (ImGui.DragFloat("End##maxDistance", ref maxDistance, 0.1f, 0, 5))
+                            if (ImGui.DragFloat(T("End") + "##maxDistance", ref maxDistance, 0.1f, 0, 5))
                             {
                                 route.Distance_Max = maxDistance;
                             }
 
-                            if (ImGui.Button("Path to node"))
+                            if (ImGui.Button(T("Path to node")))
                             {
                                 P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_GatherMove(route, stayMounted: true), Utils.TaskConfig);
                             }
                             ImGui.SameLine();
-                            if (ImGui.Button("Test Massive Pathfinding"))
+                            if (ImGui.Button(T("Test Massive Pathfinding")))
                             {
                                 Task_NavmeshMove.Enqueue_NavmeshTask(route.LandZone);
                             }
 
-                            if (ImGui.Button("Test Path to all Nodes"))
+                            if (ImGui.Button(T("Test Path to all Nodes")))
                             {
                                 var firstPosition = Vector3.Zero;
                                 foreach (var routeItem in routeList)
@@ -475,7 +476,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(firstPosition, stayMounted: true), Utils.TaskConfig);
                             }
 
-                            if (ImGui.Button("Stop Task"))
+                            if (ImGui.Button(T("Stop Task")))
                             {
                                 P.TaskManager.Tasks.Clear();
                                 P.TaskManager.Abort();
@@ -484,11 +485,11 @@ namespace ICE.Ui.DebugWindowTabs
 
                             ImGui.Dummy(new Vector2(0, 5));
                             ImGui.Separator();
-                            ImGui.Text("Fan Auto-Generation");
+                            ImGui.Text(T("Fan Auto-Generation"));
 
                             using (var disabled = ImRaii.Disabled(_isGeneratingFan))
                             {
-                                if (ImGui.Button("Generate Fan from Navmesh"))
+                                if (ImGui.Button(T("Generate Fan from Navmesh")))
                                 {
                                     _ = GenerateFanForNode(route);
                                 }
@@ -497,7 +498,7 @@ namespace ICE.Ui.DebugWindowTabs
                             if (_isGeneratingFan)
                             {
                                 ImGui.SameLine();
-                                ImGui.TextColored(new Vector4(1f, 1f, 0f, 1f), "Sampling...");
+                                ImGui.TextColored(new Vector4(1f, 1f, 0f, 1f), T("Sampling..."));
                             }
 
                             if (!string.IsNullOrEmpty(_fanGenStatus))
@@ -566,20 +567,20 @@ namespace ICE.Ui.DebugWindowTabs
 
             public static void DrawExportAllButton()
             {
-                if (ImGui.Button("Export All Routes"))
+                if (ImGui.Button(T("Export All Routes")))
                 {
                     try
                     {
                         GatheringRouteLoader.ExportAllRoutes();
                         var exportPath = GetDefaultExportPath();
-                        _lastExportMessage = $"Successfully exported all routes to:\n{exportPath}";
+                        _lastExportMessage = T("Successfully exported all routes to:\n{0}", exportPath);
                         _lastExportSuccess = true;
                         _lastExportMessageTime = DateTime.Now;
                     }
                     catch (Exception ex)
                     {
                         PluginLog.Error($"Export failed: {ex.Message}");
-                        _lastExportMessage = $"Export failed: {ex.Message}";
+                        _lastExportMessage = T("Export failed: {0}", ex.Message);
                         _lastExportSuccess = false;
                         _lastExportMessageTime = DateTime.Now;
                     }
@@ -587,7 +588,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (ImGui.IsItemHovered())
                 {
-                    ImGui.SetTooltip("Export all routes to plugin config folder");
+                    ImGui.SetTooltip(T("Export all routes to plugin config folder"));
                 }
 
                 DrawExportMessage();
@@ -595,20 +596,20 @@ namespace ICE.Ui.DebugWindowTabs
 
             public static void DrawExportSelectedButton(uint zoneId, Vector2 flag)
             {
-                if (ImGui.Button("Export Selected Route"))
+                if (ImGui.Button(T("Export Selected Route")))
                 {
                     try
                     {
                         GatheringRouteLoader.ExportRoute(zoneId, flag);
                         var exportPath = GetDefaultExportPath();
-                        _lastExportMessage = $"Successfully exported route to:\n{exportPath}";
+                        _lastExportMessage = T("Successfully exported route to:\n{0}", exportPath);
                         _lastExportSuccess = true;
                         _lastExportMessageTime = DateTime.Now;
                     }
                     catch (Exception ex)
                     {
                         PluginLog.Error($"Export failed: {ex.Message}");
-                        _lastExportMessage = $"Export failed: {ex.Message}";
+                        _lastExportMessage = T("Export failed: {0}", ex.Message);
                         _lastExportSuccess = false;
                         _lastExportMessageTime = DateTime.Now;
                     }
@@ -616,7 +617,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (ImGui.IsItemHovered())
                 {
-                    ImGui.SetTooltip("Export this route to plugin config folder");
+                    ImGui.SetTooltip(T("Export this route to plugin config folder"));
                 }
 
                 DrawExportMessage();
@@ -624,7 +625,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             public static void DrawExportAllButtonWithCustomPath()
             {
-                if (ImGui.Button("Export All Routes (Choose Location)"))
+                if (ImGui.Button(T("Export All Routes (Choose Location)")))
                 {
                     // TODO: Add file picker dialog integration
                     ImGui.OpenPopup("export_path_picker");
@@ -632,21 +633,21 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (ImGui.IsItemHovered())
                 {
-                    ImGui.SetTooltip("Export all routes to a custom location");
+                    ImGui.SetTooltip(T("Export all routes to a custom location"));
                 }
 
                 // Placeholder for file picker popup
                 if (ImGui.BeginPopup("export_path_picker"))
                 {
-                    ImGui.Text("File picker not yet implemented");
-                    ImGui.Text("Use default location button for now");
+                    ImGui.Text(T("File picker not yet implemented"));
+                    ImGui.Text(T("Use default location button for now"));
                     ImGui.EndPopup();
                 }
             }
 
             public static void DrawExportSelectedButtonWithCustomPath(uint zoneId, Vector2 flag)
             {
-                if (ImGui.Button("Export Selected Route (Choose Location)"))
+                if (ImGui.Button(T("Export Selected Route (Choose Location)")))
                 {
                     // TODO: Add file picker dialog integration
                     ImGui.OpenPopup("export_path_picker_selected");
@@ -654,14 +655,14 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (ImGui.IsItemHovered())
                 {
-                    ImGui.SetTooltip("Export this route to a custom location");
+                    ImGui.SetTooltip(T("Export this route to a custom location"));
                 }
 
                 // Placeholder for file picker popup
                 if (ImGui.BeginPopup("export_path_picker_selected"))
                 {
-                    ImGui.Text("File picker not yet implemented");
-                    ImGui.Text("Use default location button for now");
+                    ImGui.Text(T("File picker not yet implemented"));
+                    ImGui.Text(T("Use default location button for now"));
                     ImGui.EndPopup();
                 }
             }
@@ -851,7 +852,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (validDistances.Count == 0)
                 {
-                    _fanGenStatus = "No reachable points found around this node.";
+                    _fanGenStatus = T("No reachable points found around this node.");
                     return;
                 }
 
@@ -889,7 +890,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (bestLen == 0)
                 {
-                    _fanGenStatus = "Could not find a contiguous arc of reachable angles.";
+                    _fanGenStatus = T("Could not find a contiguous arc of reachable angles.");
                     return;
                 }
 
@@ -935,12 +936,12 @@ namespace ICE.Ui.DebugWindowTabs
                 route.Distance_Max = MathF.Round(allMax, 1);
                 route.FanHeight = fanHeight;
 
-                _fanGenStatus = $"Generated! Angles: {pictoStart:F0}→{pictoEnd:F0} (arc {bestLen}°), Distance: {allMin:F1}→{allMax:F1}, Height: {fanHeight:F2}";
+                _fanGenStatus = T("Generated! Angles: {0:F0}→{1:F0} (arc {2}°), Distance: {3:F1}→{4:F1}, Height: {5:F2}", pictoStart, pictoEnd, bestLen, allMin, allMax, fanHeight);
                 IceLogging.Info($"[FanGen] Node {route.NodeId}: Picto {pictoStart:F0}→{pictoEnd:F0}, dist {allMin:F1}→{allMax:F1}, height {fanHeight:F2}");
             }
             catch (Exception ex)
             {
-                _fanGenStatus = $"Error: {ex.Message}";
+                _fanGenStatus = T("Error: {0}", ex.Message);
                 IceLogging.Error($"[FanGen] Failed: {ex.Message}");
             }
             finally

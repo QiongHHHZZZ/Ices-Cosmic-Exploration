@@ -1,4 +1,5 @@
 ﻿using ICE.Utilities.Cosmic_Helper;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -9,7 +10,7 @@ namespace ICE.Ui.DebugWindowTabs
         public static unsafe void Draw()
         {
             ImGui.SetNextItemWidth(250);
-            ImGui.InputText("Search by Name", ref RecipeTableSearchText, 100);
+            ImGui.InputText(T("Search by Name"), ref RecipeTableSearchText, 100);
 
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                             ImGuiTableFlags.Borders |
@@ -18,22 +19,22 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGuiTableFlags.Reorderable |         // Allow column reordering
                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable("Mission Info List", 14, tableFlags))
+            if (ImGui.BeginTable(T("Mission Info List"), 14, tableFlags))
             {
-                ImGui.TableSetupColumn("Key");
-                ImGui.TableSetupColumn("Mission Name");
-                ImGui.TableSetupColumn("Main-Craft 1");
-                ImGui.TableSetupColumn("Amount [1]");
-                ImGui.TableSetupColumn("Main-Craft 2");
-                ImGui.TableSetupColumn("Amount [2]");
-                ImGui.TableSetupColumn("Main-Craft 3");
-                ImGui.TableSetupColumn("Amount [3]");
-                ImGui.TableSetupColumn("Pre-Craft [1]");
-                ImGui.TableSetupColumn("Amount [1]");
-                ImGui.TableSetupColumn("Pre-Craft [2]");
-                ImGui.TableSetupColumn("Amount [2]");
-                ImGui.TableSetupColumn("Pre-Craft [3]");
-                ImGui.TableSetupColumn("Amount [3]");
+                ImGui.TableSetupColumn(T("Key"));
+                ImGui.TableSetupColumn(T("Mission Name"));
+                ImGui.TableSetupColumn(T("Main-Craft 1"));
+                ImGui.TableSetupColumn(T("Amount [1]"));
+                ImGui.TableSetupColumn(T("Main-Craft 2"));
+                ImGui.TableSetupColumn(T("Amount [2]"));
+                ImGui.TableSetupColumn(T("Main-Craft 3"));
+                ImGui.TableSetupColumn(T("Amount [3]"));
+                ImGui.TableSetupColumn(T("Pre-Craft [1]"));
+                ImGui.TableSetupColumn(T("Amount [1]"));
+                ImGui.TableSetupColumn(T("Pre-Craft [2]"));
+                ImGui.TableSetupColumn(T("Amount [2]"));
+                ImGui.TableSetupColumn(T("Pre-Craft [3]"));
+                ImGui.TableSetupColumn(T("Amount [3]"));
 
                 ImGui.TableHeadersRow();
 
@@ -47,41 +48,41 @@ namespace ICE.Ui.DebugWindowTabs
 
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);
-                        ImGui.Text($"{entry.Key}");
+                        ImGui.Text(T("{0}", entry.Key));
 
                         ImGui.TableNextColumn();
                         var missionName = CosmicHelper.SheetMissionDict.First(x => x.Key == entry.Key).Value.Name;
-                        ImGui.Text($"{missionName}");
+                        ImGui.Text(T("{0}", missionName));
 
                         // Column #2
                         foreach (var mainCraft in entry.Value.Crafts_Main)
                         {
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{mainCraft.Value.ItemId}");
+                            ImGui.Text(T("{0}", mainCraft.Value.ItemId));
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text($"RecipeID: {mainCraft.Key}");
+                                ImGui.Text(T("RecipeID: {0}", mainCraft.Key));
                                 string itemName = ExcelHelper.ItemSheet.GetRow(mainCraft.Value.ItemId).Name.ToString();
-                                ImGui.Text($"Item Name: {itemName}");
+                                ImGui.Text(T("Item Name: {0}", itemName));
                                 ImGui.Separator();
-                                ImGui.Text($"Item ID: {mainCraft.Value.ItemId}");
-                                ImGui.Text($"Necessary Amount: {mainCraft.Value.RequiredAmount}");
-                                ImGui.Text($"Recipe ID: {mainCraft.Value.RecipeId}");
-                                ImGui.Text($"Expert Craft: {mainCraft.Value.ExpertCraft}");
+                                ImGui.Text(T("Item ID: {0}", mainCraft.Value.ItemId));
+                                ImGui.Text(T("Necessary Amount: {0}", mainCraft.Value.RequiredAmount));
+                                ImGui.Text(T("Recipe ID: {0}", mainCraft.Value.RecipeId));
+                                ImGui.Text(T("Expert Craft: {0}", mainCraft.Value.ExpertCraft));
                                 ImGui.Separator();
-                                ImGui.Text($"Required Item");
+                                ImGui.Text(T("Required Item"));
                                 foreach (var item in mainCraft.Value.RequiredItems)
                                 {
-                                    ImGui.Text($"Id: {item.Key}");
-                                    ImGui.Text($"Amount: {item.Value}");
+                                    ImGui.Text(T("Id: {0}", item.Key));
+                                    ImGui.Text(T("Amount: {0}", item.Value));
                                 }
 
                                 ImGui.EndTooltip();
                             }
 
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{mainCraft.Value.RequiredAmount}");
+                            ImGui.Text(T("{0}", mainCraft.Value.RequiredAmount));
                         }
 
                         ImGui.TableSetColumnIndex(7);
@@ -90,33 +91,33 @@ namespace ICE.Ui.DebugWindowTabs
                             foreach (var preCraft in entry.Value.Crafts_Pre)
                             {
                                 ImGui.TableNextColumn();
-                                ImGui.Text($"{preCraft.Value.ItemId}");
+                                ImGui.Text(T("{0}", preCraft.Value.ItemId));
                                 if (ImGui.IsItemHovered())
                                 {
                                     ImGui.BeginTooltip();
-                                    ImGui.Text($"RecipeID: {preCraft.Key}");
+                                    ImGui.Text(T("RecipeID: {0}", preCraft.Key));
                                     string itemName = ExcelHelper.ItemSheet.GetRow(preCraft.Value.ItemId).Name.ToString();
-                                    ImGui.Text($"Item Name: {itemName}");
+                                    ImGui.Text(T("Item Name: {0}", itemName));
                                     ImGui.Separator();
-                                    ImGui.Text($"Item ID: {preCraft.Value.ItemId}");
-                                    ImGui.Text($"Necessary Amount: {preCraft.Value.RequiredAmount}");
-                                    ImGui.Text($"Recipe ID: {preCraft.Value.RecipeId}");
-                                    ImGui.Text($"Expert Craft: {preCraft.Value.ExpertCraft}");
+                                    ImGui.Text(T("Item ID: {0}", preCraft.Value.ItemId));
+                                    ImGui.Text(T("Necessary Amount: {0}", preCraft.Value.RequiredAmount));
+                                    ImGui.Text(T("Recipe ID: {0}", preCraft.Value.RecipeId));
+                                    ImGui.Text(T("Expert Craft: {0}", preCraft.Value.ExpertCraft));
                                     ImGui.Separator();
-                                    ImGui.Text($"Required Item");
+                                    ImGui.Text(T("Required Item"));
                                     foreach (var item in preCraft.Value.RequiredItems)
                                     {
                                         string itemNameC = ExcelHelper.ItemSheet.GetRow(item.Key).Name.ToString();
-                                        ImGui.Text($"{itemNameC}");
-                                        ImGui.Text($"Id: {item.Key}");
-                                        ImGui.Text($"Amount: {item.Value}");
+                                        ImGui.Text(T("{0}", itemNameC));
+                                        ImGui.Text(T("Id: {0}", item.Key));
+                                        ImGui.Text(T("Amount: {0}", item.Value));
                                     }
 
                                     ImGui.EndTooltip();
                                 }
 
                                 ImGui.TableNextColumn();
-                                ImGui.Text($"{preCraft.Value.RequiredAmount}");
+                                ImGui.Text(T("{0}", preCraft.Value.RequiredAmount));
                             }
                         }
                     }

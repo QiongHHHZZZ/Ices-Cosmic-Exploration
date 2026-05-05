@@ -58,7 +58,7 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 var exportData = ExportAllFishingData();
                 ImGui.SetClipboardText(exportData);
-                Svc.Chat.Print("All fishing data exported to clipboard!");
+                Svc.Chat.Print(T("All fishing data exported to clipboard!"));
             }
 
             ImGui.SameLine();
@@ -68,7 +68,7 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     var exportData = ExportSingleFishingFlag(selectedZone, selectedFlag);
                     ImGui.SetClipboardText(exportData);
-                    Svc.Chat.Print($"Fishing flag data for Zone {selectedZone} at ({selectedFlag.X}, {selectedFlag.Y}) exported to clipboard!");
+                    Svc.Chat.Print(T("Fishing flag data for Zone {0} at ({1}, {2}) exported to clipboard!", selectedZone, selectedFlag.X, selectedFlag.Y));
                 }
             }
 
@@ -93,7 +93,7 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     foreach (var moon in GatheringUtil.MoonFishingLocations)
                     {
-                        ImGui.Text($"Zone: {moon.Key}");
+                        ImGui.Text(T("Zone: {0}", moon.Key));
                         var sortedFlags = moon.Value.OrderBy(flag => flag.Key.X);
                         foreach (var flag in sortedFlags)
                         {
@@ -184,10 +184,10 @@ namespace ICE.Ui.DebugWindowTabs
                             P.TaskManager.Tasks.Clear();
                             P.TaskManager.Abort();
                         }
-                        ImGui.Text($"Viable fishing spot: {_fishingDebug.IsFishable()}");
+                        ImGui.Text(T("Viable fishing spot: {0}", _fishingDebug.IsFishable()));
                         if (_fishingDebug.FindFishableLocation(out var fishablePosition))
                         {
-                            ImGui.Text($"First Available Fishing Spot: {fishablePosition.Value.X:N2}, {fishablePosition.Value.Y:N2}, {fishablePosition.Value.Z:N2}");
+                            ImGui.Text(T("First Available Fishing Spot: {0:N2}, {1:N2}, {2:N2}", fishablePosition.Value.X, fishablePosition.Value.Y, fishablePosition.Value.Z));
                             if (ImGui.Button(T("Face toward spot")))
                             {
                                 if (_fishingDebug.FindFishableLocation(out var fishPosition, searchSteps: 128))

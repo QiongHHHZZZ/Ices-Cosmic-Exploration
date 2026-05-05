@@ -7,6 +7,7 @@ using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -58,7 +59,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         public static void Draw()
         {
-            if (ImGui.Button("Get Active List"))
+            if (ImGui.Button(T("Get Active List")))
             {
                 TeleportList();
             }
@@ -69,7 +70,7 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text("ID:");
+                    ImGui.Text(T("ID:"));
 
                     ImGui.TableNextColumn();
                     ImGui.Text($"{zone.Key}");

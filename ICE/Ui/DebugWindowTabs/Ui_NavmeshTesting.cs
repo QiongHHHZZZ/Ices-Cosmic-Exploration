@@ -28,7 +28,7 @@ namespace ICE.Ui.DebugWindowTabs
             else
                 currentPos = new Vector3(0, 0, 0);
 
-            ImGui.Text($"Current pos: {currentPos.X:N2} | {currentPos.Y:N2} | {currentPos.Z:N2}");
+            ImGui.Text(T("Current pos: {0:N2} | {1:N2} | {2:N2}", currentPos.X, currentPos.Y, currentPos.Z));
 
             if (ImGui.Button(T("Add Position")))
             {

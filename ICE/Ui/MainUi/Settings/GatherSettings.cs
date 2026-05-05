@@ -193,7 +193,7 @@ namespace ICE.Ui.MainUi.Settings
                     C.Save();
                 }
             }
-            ImGuiEx.HelpMarker("Enabling this will make it to where pandora's cordial feature won't be auto-paused.");
+            ImGuiEx.HelpMarker(T("Enabling this will make it to where pandora's cordial feature won't be auto-paused."));
 
             bool AutoCordial = C.AutoCordial;
             if (ImGui.Checkbox(T("Auto Cordial"), ref AutoCordial))

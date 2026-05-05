@@ -219,7 +219,7 @@ namespace ICE.Ui.MainUi.Settings
                 ImGui.TableSetupColumn(T("Keep"), ImGuiTableColumnFlags.WidthFixed);
                 ImGui.TableSetupColumn(T("Buy"), ImGuiTableColumnFlags.WidthFixed);
                 ImGui.TableSetupColumn(T("Keep Buying"), ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn(T(""), ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
 
                 ImGui.TableHeadersRow();
 

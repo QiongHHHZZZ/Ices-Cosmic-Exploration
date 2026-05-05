@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.Settings
 {
@@ -8,23 +9,23 @@ namespace ICE.Ui.MainUi.Settings
     {
         public static void Draw()
         {
-            if (ImGui.BeginTabBar("Mission Priority Settings"))
+            if (ImGui.BeginTabBar(T("Mission Priority Settings")))
             {
-                if (ImGui.BeginTabItem("Mission Priority Order"))
+                if (ImGui.BeginTabItem(T("Mission Priority Order")))
                 {
                     MissionTypeOrderUi();
 
                     ImGui.EndTabItem();
                 }
 
-                if (ImGui.BeginTabItem("Provisional: Type Order"))
+                if (ImGui.BeginTabItem(T("Provisional: Type Order")))
                 {
                     TypePriorityUi();
 
                     ImGui.EndTabItem();
                 }
 
-                if (ImGui.BeginTabItem("Provisional: Job Order"))
+                if (ImGui.BeginTabItem(T("Provisional: Job Order")))
                 {
                     JobPriorityUi();
 
@@ -47,11 +48,11 @@ namespace ICE.Ui.MainUi.Settings
 
             _dragDrop_ProvisionalType.Begin();
 
-            if (ImGui.BeginTable("Type Priority Table", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+            if (ImGui.BeginTable(T("Type Priority Table"), 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("ReOrder");
-                ImGui.TableSetupColumn("Icon");
-                ImGui.TableSetupColumn("Type");
+                ImGui.TableSetupColumn(T("ReOrder"));
+                ImGui.TableSetupColumn(T("Icon"));
+                ImGui.TableSetupColumn(T("Type"));
 
                 ImGui.TableHeadersRow();
 
@@ -88,7 +89,7 @@ namespace ICE.Ui.MainUi.Settings
                         ProvisionalTypes.ProvisionalWeather => "Weather",
                         _ => entry.ToString()
                     };
-                    ImGui.Text($"{type}");
+                    ImGui.Text(T(type));
 
                     ImGui.PopID();
                 }
@@ -103,11 +104,11 @@ namespace ICE.Ui.MainUi.Settings
 
         private static void MissionTypeOrderUi()
         {
-            ImGui.Text("Mission Search Priority");
+            ImGui.Text(T("Mission Search Priority"));
             ImGui_Ice.IconWithTooltip(
                 FontAwesomeIcon.InfoCircle, 
-                "Order you would like to do the actions. It will work from the top down.\n" +
-                "So if you Have Red Arert -> Drone Search, if a red alert isn't available, it will proceed to use a drone box if it can");
+                T("Order you would like to do the actions. It will work from the top down.\n" +
+                "So if you Have Red Arert -> Drone Search, if a red alert isn't available, it will proceed to use a drone box if it can"));
 
             _dragDrop_MissionType ??= new ImGuiEx.RealtimeDragDrop<MissionTypes>(
                 "MissionTypeDragDrop",
@@ -117,11 +118,11 @@ namespace ICE.Ui.MainUi.Settings
 
             _dragDrop_MissionType.Begin();
 
-            if (ImGui.BeginTable("Mission Type Table", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+            if (ImGui.BeginTable(T("Mission Type Table"), 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("ReOrder");
-                ImGui.TableSetupColumn("Icon");
-                ImGui.TableSetupColumn("Type");
+                ImGui.TableSetupColumn(T("ReOrder"));
+                ImGui.TableSetupColumn(T("Icon"));
+                ImGui.TableSetupColumn(T("Type"));
 
                 ImGui.TableHeadersRow();
 
@@ -159,12 +160,12 @@ namespace ICE.Ui.MainUi.Settings
                         MissionTypes.Standard => "Standard Missions [A->D]",
                         _ => $"{entry}"
                     };
-                    ImGui.Text($"{name}");
+                    ImGui.Text(T(name));
                     if (entry == MissionTypes.DroneSearch && !C.Cosmodrone_Run)
                     {
                         ImGui.SameLine();
                         ImGui_Ice.IconWithTooltip(FontAwesomeIcon.ExclamationTriangle,
-                            "Finding drone locations is turned off, so we're just going to ignore this. If you want to run this, please enable it");
+                            T("Finding drone locations is turned off, so we're just going to ignore this. If you want to run this, please enable it"));
                     }
 
                     ImGui.PopID();
@@ -180,12 +181,12 @@ namespace ICE.Ui.MainUi.Settings
 
         private static void JobPriorityUi()
         {
-            ImGui.Text("Provisional Job Priority");
+            ImGui.Text(T("Provisional Job Priority"));
             ImGui_Ice.IconWithTooltip(FontAwesomeIcon.InfoCircle,
-                "Order you would like to do the provisional mission in, if multiple are selected and the option to do multiple classes is enabled");
+                T("Order you would like to do the provisional mission in, if multiple are selected and the option to do multiple classes is enabled"));
 
             bool provisionalAllJobs = C.GrindAllProvisionals;
-            if (ImGui_Ice.SliderButton("##Provisional_AllJobsToggle", "Allow for all Provisional Jobs", ref provisionalAllJobs))
+            if (ImGui_Ice.SliderButton("##Provisional_AllJobsToggle", T("Allow for all Provisional Jobs"), ref provisionalAllJobs))
             {
                 C.GrindAllProvisionals = provisionalAllJobs;
                 C.Save();
@@ -199,11 +200,11 @@ namespace ICE.Ui.MainUi.Settings
 
             _dragDrop_JobPrio.Begin();
 
-            if (ImGui.BeginTable("Job Priority Order", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+            if (ImGui.BeginTable(T("Job Priority Order"), 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("ReOrder");
-                ImGui.TableSetupColumn("Icon");
-                ImGui.TableSetupColumn("Type");
+                ImGui.TableSetupColumn(T("ReOrder"));
+                ImGui.TableSetupColumn(T("Icon"));
+                ImGui.TableSetupColumn(T("Type"));
 
                 ImGui.TableHeadersRow();
 
@@ -241,7 +242,7 @@ namespace ICE.Ui.MainUi.Settings
         // Job name helper
         private static string GetJobName(uint jobId)
         {
-            return jobId switch
+            return T(jobId switch
             {
                 8 => "Carpenter",
                 9 => "Blacksmith",
@@ -254,8 +255,9 @@ namespace ICE.Ui.MainUi.Settings
                 16 => "Miner",
                 17 => "Botanist",
                 18 => "Fisher",
-                _ => "Unknown Job"
-            };
+                _ => "Unknown"
+            });
         }
     }
 }
+

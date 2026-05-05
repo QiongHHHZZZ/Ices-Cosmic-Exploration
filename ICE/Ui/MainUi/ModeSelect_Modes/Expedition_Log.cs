@@ -160,7 +160,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             if (selectedTab is ExpeditionTabs.Progress)
             {
-                if (ImGui.BeginChild("Class Progress"))
+                if (ImGui.BeginChild(T("Class Progress")))
                 {
                     ClassProgress();
                 }
@@ -358,7 +358,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text(T("Weather: {0}", missionInfo.Weather));
+                                ImGui.Text(T("Weather: {0}", T(CosmicHelper.GetCosmicWeatherName(missionInfo.Weather))));
                                 ImGui.EndTooltip();
                             }
                         }
@@ -790,7 +790,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 profileName = "???";
                             }
 
-                            if (ImGui_Ice.Table_CenteredButton($"{profileName}"))
+                            if (ImGui_Ice.Table_CenteredButton(T(profileName)))
                             {
                                 ImGui.OpenPopup("Selecting Gathering Profile");
                             }
@@ -802,7 +802,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             if (ImGui.BeginPopup("Selecting Gathering Profile"))
                             {
-                                ImGui.Text(T("Currently Selected: {0}", profileName));
+                                ImGui.Text(T("Currently Selected: {0}", T(profileName)));
                                 ImGui.Separator();
 
                                 foreach (var profile in C.GatherProfiles)
@@ -810,7 +810,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     var id = profile.Key;
                                     bool profileSelected = missionConfig.GProfileId == id;
                                     ImGui.PushID($"{id}_{profile.Value.Name}");
-                                    if (ImGui.RadioButton(profile.Value.Name, profileSelected))
+                                    if (ImGui.RadioButton($"{T(profile.Value.Name)}##{profile.Value.Name}", profileSelected))
                                     {
                                         missionConfig.GProfileId = id;
                                         C.Save();
@@ -943,7 +943,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text(T("Weather: {0}", missionInfo.Weather));
+                                ImGui.Text(T("Weather: {0}", T(CosmicHelper.GetCosmicWeatherName(missionInfo.Weather))));
                                 ImGui.EndTooltip();
                             }
                             notesCount++;
@@ -1247,3 +1247,4 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         }
     }
 }
+

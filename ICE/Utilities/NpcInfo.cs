@@ -60,6 +60,14 @@ internal static class NpcData // Renamed the class to avoid conflict
                 Location_Npc = new Vector3(18.84f, 2.24f, -18.91f),
                 Location_Circle = new Vector3(15.92f, 1.69f, -16.16f),
             },
+            [NpcType.RedAlert] = new()
+            {
+                NpcId = 1052663,
+                Name = "Lefleda",
+                Location_Npc = new(16.74f, 1.71f, -3.86f),
+                Location_Circle = new(15.28f, 1.64f, -3.83f),
+
+            }
         },
         [1291] = new Dictionary<NpcType, NPCInfo>
         {
@@ -91,6 +99,13 @@ internal static class NpcData // Renamed the class to avoid conflict
                 Location_Npc = new Vector3(358.82f, 53.19f, -438.86f),
                 Location_Circle = new Vector3(355.97f, 52.69f, -436.08f),
             },
+            [NpcType.RedAlert] = new NPCInfo()
+            {
+                NpcId = 1052626,
+                Name = "Lefleda",
+                Location_Npc = new(343.89f, 52.64f, -443.47f),
+                Location_Circle = new(343.46f, 52.64f, -441.80f),
+            }
         },
         [1310] = new Dictionary<NpcType, NPCInfo>
         {
@@ -129,6 +144,13 @@ internal static class NpcData // Renamed the class to avoid conflict
                 Location_Npc = new Vector3(-206.38f, 0.50f, 131.09f),
                 Location_Circle = new(-205.85f, 0.65f, 134.19f),
             },
+            [NpcType.RedAlert] = new NPCInfo()
+            {
+                NpcId = 1052645,
+                Name = "Lefleda",
+                Location_Circle = new(-156.91f, 0.50f, 143.07f),
+                Location_Npc = new(-155.02f, 0.50f, 144.58f),
+            }
         },
     };
 

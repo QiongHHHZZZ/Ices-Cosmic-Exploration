@@ -562,7 +562,7 @@ namespace ICE.Scheduler.Tasks
                     if (CorrectJob())
                     {
                         var mode = Mission_Settings.Mode;
-                        if (mode == ModeSelect.Standard)
+                        if (mode is ModeSelect.Standard or ModeSelect.MissionGoldMode)
                         {
                             foreach (var missionId in missionList)
                             {
@@ -770,6 +770,11 @@ namespace ICE.Scheduler.Tasks
                                 return true;
                             }
                         }
+                    }
+                    else
+                    {
+                        if (EzThrottler.Throttle("Not correct job"))
+                            IceLogging.Verbose("Not on correct job tab, swapping it for standard");
                     }
                 }
                 else if (type == MissionTypes.Provisional && OnCorrectTabV2(type, missionInfo))

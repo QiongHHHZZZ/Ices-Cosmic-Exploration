@@ -32,6 +32,16 @@ namespace ICE.Scheduler.Tasks
 
         private static FishingDebug _fishingDebug = null;
 
+        public enum TravelTypes
+        {
+            Direct,
+            Aethernet,
+            RedAlert,
+            Hub_Return,
+            Hub_Aethernet,
+            Hub_RedAlert,
+        }
+
         #region Navmesh Stuff
 
         public static bool? Task_NavTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null, bool mountBeforeMove = false)
@@ -337,12 +347,14 @@ namespace ICE.Scheduler.Tasks
             public uint Aethernet_TravelTo { get; set; } = 0;
             public uint Aethernet_TravelFrom { get; set; } = 0;
         }
-        private static Dictionary<string, PathInfo> TravelMethods = new()
+        private static Dictionary<TravelTypes, PathInfo> TravelMethods = new()
         {
-            ["Direct"] = new(),
-            ["Aethernet"] = new(),
-            ["HubReturn"] = new(),
-            ["HubAethernet"] = new(),
+            [TravelTypes.Direct] = new(),
+            [TravelTypes.Aethernet] = new(),
+            [TravelTypes.RedAlert] = new(),
+            [TravelTypes.Hub_Return] = new(),
+            [TravelTypes.Hub_Aethernet] = new(),
+            [TravelTypes.Hub_RedAlert] = new(),
         };
         public class AethernetSystem
         {
@@ -484,6 +496,17 @@ namespace ICE.Scheduler.Tasks
                     new(() => FindBestTravel(destination, waitForBusy, distance), "Finding best pathing method")
                 );
         }
+        public static void Enqueue_RedAlertNavmesh(Vector3 destination, bool waitForBusy = true, float distance = 2.0f, uint missionId = 0)
+        {
+            P.TaskManager.InsertMulti
+                (
+                    new(() => Paths_Clear(), "Clearing all Navmesh Paths"),
+                    new(() => CalculateDirect(destination), "Calculating Direct Path"),
+                    new(() => CalculateRedAlert(missionId, destination), "Calculating Red Alert Direct Travel [Direct -> NPC -> RE]"),
+                    new(() => CalculateRedAlertHub(missionId, destination), "Calculating Red Alert Hub Travel [Hub -> NPC -> RE]"),
+                    new(() => FindBestTravel(destination, waitForBusy, distance, missionId))
+                );
+        }
 
         private static bool? Paths_Clear()
         {
@@ -564,7 +587,7 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
 
-            var aethernet = TravelMethods["Aethernet"];
+            var aethernet = TravelMethods[TravelTypes.Aethernet];
 
             var playerPosition = Player.Position;
 
@@ -629,7 +652,7 @@ namespace ICE.Scheduler.Tasks
         private static bool? CalculateDirect(Vector3 destination)
         {
             string tag = "[Navmesh: Calculate Direct]";
-            var method = TravelMethods["Direct"];
+            var method = TravelMethods[TravelTypes.Direct];
 
             var playerPosition = Player.Position;
 
@@ -677,13 +700,95 @@ namespace ICE.Scheduler.Tasks
             IceLogging.Info($"Direct Pathing Complete", tag);
             return true;
         }
+        private static bool? CalculateRedAlert(uint missionId, Vector3 destination)
+        {
+            string tag = "Navmesh: Position -> Red Alert";
+            var territoryId = Player.Territory.RowId;
+
+            if (!C.UseRedAlertNpc)
+            {
+                IceLogging.Info("We were told not to use the red alert NPC travel method, so we're going to just nope out of here", tag);
+                return true;
+            }
+            else if (NpcData.MoonNpcs.TryGetValue(territoryId, out var planetInfo))
+            {
+                if (planetInfo.TryGetValue(NpcData.NpcType.RedAlert, out var npcInfo))
+                {
+                    var method = TravelMethods[TravelTypes.RedAlert];
+                    var approxStart = CosmicHelper.CriticalLocations[missionId];
+
+                    if (_PathCalculations == null)
+                    {
+                        var start = Player.Position;
+
+                        _PathCalculations = Task.Run(async () =>
+                        {
+                            method.pathTo = await FindPath(start, npcInfo.Location_Circle);
+                            method.pathFrom = await FindPath(approxStart.RawLocation, destination);
+                        });
+                        if (EzThrottler.Throttle("Started task: Direct"))
+                            IceLogging.Verbose("Started to calculate path", tag);
+                        return false;
+                    }
+
+                    if (!_PathCalculations.IsCompleted)
+                    {
+                        if (EzThrottler.Throttle("Calculating path message", 1000))
+                            IceLogging.Verbose("Still calculating path for red alert (via navmesh)", tag);
+
+                        return false; // Still calculating
+                    }
+
+                    // Done!
+                    _PathCalculations = null; // Reset for next use
+                    float distance = 0;
+                    if (method.pathTo != null && method.pathTo.Count > 1)
+                    {
+                        for (int i = 0; i < method.pathTo.Count - 1; i++)
+                        {
+                            var start = method.pathTo[i];
+                            var end = method.pathTo[i + 1];
+                            distance += Vector3.Distance(start, end);
+                        }
+                    }
+
+                    if (method.pathFrom != null && method.pathFrom.Count > 1)
+                    {
+                        for (int i = 0; i < method.pathFrom.Count - 1; i++)
+                        {
+                            var start = method.pathFrom[i];
+                            var end = method.pathFrom[i + 1];
+                            distance += Vector3.Distance(start, end);
+                        }
+                    }
+
+                    if (distance > 0 && method.pathTo != null && method.pathFrom != null)
+                    {
+                        method.distance = distance;
+                    }
+
+                    IceLogging.Info($"Hub -> Aethernet Complete", tag);
+                    return true;
+                }
+                else
+                {
+                    IceLogging.Error("This territory doesn't exist... which means I fucked up and haven't added it, or it's the new planet. Lmk", tag);
+                }
+            }
+            else
+            {
+                IceLogging.Error("This territory doesn't exist... which means I fucked up and haven't added it, or it's the new planet. Lmk", tag);
+            }
+
+            return true;
+        }
         private static bool? CalculateHub(Vector3 destination)
         {
             string tag = "[Navmesh: Calculate Hub Path]";
 
             if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
-                var method = TravelMethods["HubReturn"];
+                var method = TravelMethods[TravelTypes.Hub_Return];
 
                 if (!C.UseHubReturn)
                 {
@@ -696,7 +801,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         _PathCalculations = Task.Run(async () =>
                         {
-                            TravelMethods["HubReturn"].pathTo = await FindPath(HubCenter, destination);
+                            TravelMethods[TravelTypes.Hub_Return].pathTo = await FindPath(HubCenter, destination);
                         });
                         if (EzThrottler.Throttle("Started task"))
                             IceLogging.Verbose("Started to calculate path", tag);
@@ -759,14 +864,13 @@ namespace ICE.Scheduler.Tasks
 
             if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
-                var method = TravelMethods["HubAethernet"];
+                var method = TravelMethods[TravelTypes.Hub_Aethernet];
 
                 if (!C.UseHubReturn)
                 {
                     IceLogging.Info("We were told no hub return, so not going to do so", tag);
                     return true;
                 }
-
                 if (!C.UseAethernet)
                 {
                     IceLogging.Info("We were told no teleporting via aethernet, so we shall respect this decision");
@@ -873,10 +977,109 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
         }
-        private static bool? FindBestTravel(Vector3 destination, bool waitForBusy, float distance)
+        private static bool? CalculateRedAlertHub(uint missionId, Vector3 destination)
+        {
+            string tag = "Navmesh: Calculate Hub -> Red Alert";
+            var territoryId = Player.Territory.RowId;
+            var method = TravelMethods[TravelTypes.Hub_RedAlert];
+
+            if (!C.UseHubReturn)
+                return true;
+
+            if (!C.UseRedAlertNpc)
+                return true;
+
+            if (!CosmicHelper.SheetMissionDict[missionId].IsCritical)
+                return true;
+
+            var approxStart = CosmicHelper.CriticalLocations[missionId];
+
+            if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
+            {
+                if (NpcData.MoonNpcs.TryGetValue(territoryId, out var planetInfo))
+                {
+                    if (planetInfo.TryGetValue(NpcData.NpcType.RedAlert, out var npcInfo))
+                    {
+                        if (Player.DistanceTo(HubCenter) > C.HubReturn_Distance)
+                        {
+                            if (_PathCalculations == null)
+                            {
+                                IceLogging.Verbose("Doing the following calculations:\n" +
+                                    "Hub Center -> Npc\n" +
+                                    "Npc -> Teleport spot\n" +
+                                    "Teleport spot -> Destination");
+
+                                _PathCalculations = Task.Run(async () =>
+                                {
+                                    method.pathTo = await FindPath(HubCenter, npcInfo.Location_Circle);
+                                    method.pathFrom = await FindPath(approxStart.RawLocation, destination);
+                                });
+                                if (EzThrottler.Throttle("Started task: Direct"))
+                                    IceLogging.Verbose("Started to calculate path", tag);
+                                return false; // Keep checking
+                            }
+
+                            if (!_PathCalculations.IsCompleted)
+                            {
+                                if (EzThrottler.Throttle("Calculating path message", 1000))
+                                    IceLogging.Verbose("Still calculating path for red alert (via navmesh)", tag);
+
+                                return false; // Still calculating
+                            }
+
+                            // Done!
+                            _PathCalculations = null; // Reset for next use
+                            float distance = 0;
+                            if (method.pathTo != null && method.pathTo.Count > 1)
+                            {
+                                for (int i = 0; i < method.pathTo.Count - 1; i++)
+                                {
+                                    var start = method.pathTo[i];
+                                    var end = method.pathTo[i + 1];
+                                    distance += Vector3.Distance(start, end);
+                                }
+                            }
+
+                            if (method.pathFrom != null && method.pathFrom.Count > 1)
+                            {
+                                for (int i = 0; i < method.pathFrom.Count - 1; i++)
+                                {
+                                    var start = method.pathFrom[i];
+                                    var end = method.pathFrom[i + 1];
+                                    distance += Vector3.Distance(start, end);
+                                }
+                            }
+
+                            if (distance > 0 && method.pathTo != null && method.pathFrom != null)
+                            {
+                                method.distance = distance * 1.2f;
+                            }
+
+                            IceLogging.Info($"Hub -> Aethernet Complete", tag);
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        IceLogging.Error("This territory doesn't exist... which means I fucked up and haven't added it, or it's the new planet. Lmk", tag);
+                    }
+                }
+                else
+                {
+                    IceLogging.Error("This territory doesn't exist... which means I fucked up and haven't added it, or it's the new planet. Lmk", tag);
+                }
+            }
+            else
+            {
+                IceLogging.Error("We don't have any record for this hub center, so we're going to ignore it for now", tag);
+            }
+
+            return true;
+        }
+        private static bool? FindBestTravel(Vector3 destination, bool waitForBusy, float distance, uint missionId = 0)
         {
             var bestTravel = TravelMethods.Where(x => x.Value.distance != 0)
-                .Where(x => !C.AvoidStellarReturn || (x.Key != "HubReturn" && x.Key != "HubAethernet"))
+                .Where(x => !C.AvoidStellarReturn || (x.Key != TravelTypes.Hub_Return && x.Key != TravelTypes.Hub_Aethernet))
                 .OrderBy(x => x.Value.distance)
                 .FirstOrDefault();
 
@@ -885,7 +1088,7 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Verbose($"[{travelKind.Key}] = {travelKind.Value.distance}");
             }
 
-            if (bestTravel.Key == "Aethernet")
+            if (bestTravel.Key == TravelTypes.Aethernet)
             {
                 var targetAether = bestTravel.Value.Aethernet_TravelTo;
                 var AethernetLoc = PlanetAethernet[Player.Territory.RowId].Where(x => x.AethernetId == targetAether).FirstOrDefault();
@@ -896,7 +1099,7 @@ namespace ICE.Scheduler.Tasks
                         new(() => DestinationPathing(destination, waitForBusy, distance, mountBeforeMove: true), "Pathing to our destination: Aethernet")
                     );
             }
-            else if (bestTravel.Key == "HubReturn")
+            else if (bestTravel.Key == TravelTypes.Hub_Return)
             {
                 P.TaskManager.InsertMulti
                     (
@@ -904,7 +1107,7 @@ namespace ICE.Scheduler.Tasks
                         new(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: Hub Return")
                     );
             }
-            else if (bestTravel.Key == "HubAethernet")
+            else if (bestTravel.Key == TravelTypes.Hub_Aethernet)
             {
                 var targetAether = bestTravel.Value.Aethernet_TravelTo;
                 var AethernetLoc = PlanetAethernet[Player.Territory.RowId].Where(x => x.AethernetId == targetAether).FirstOrDefault();
@@ -914,6 +1117,27 @@ namespace ICE.Scheduler.Tasks
                         new(() => DestinationPathing(AethernetLoc.LandZone), "Traveling to the hub aetheryte"),
                         new(() => TravelToAethershard(bestTravel.Value), "Travel Via Aethernet"),
                         new(() => DestinationPathing(destination, waitForBusy, distance, mountBeforeMove: true), "Pathing to our destination: HubAethernet")
+                    );
+            }
+            else if (bestTravel.Key == TravelTypes.RedAlert)
+            {
+                var redAlertNpc = NpcData.MoonNpcs[Player.Territory.RowId][NpcData.NpcType.RedAlert];
+                P.TaskManager.InsertMulti
+                    (
+                        new(() => DestinationPathing(redAlertNpc.Location_Circle), "Traveling to the Red Alert NPC"),
+                        new(() => TravelToRedAlertNpc(redAlertNpc, missionId), "Interacting + Traveling Via RedAlert NPC"),
+                        new(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: Red Alert")
+                    );
+            }
+            else if (bestTravel.Key == TravelTypes.Hub_RedAlert)
+            {
+                var redAlertNpc = NpcData.MoonNpcs[Player.Territory.RowId][NpcData.NpcType.RedAlert];
+                P.TaskManager.InsertMulti
+                    (
+                        new(() => Task_Repair.HubCheck(), "Returning back to hub"),
+                        new(() => DestinationPathing(redAlertNpc.Location_Circle), "Traveling to the Red Alert NPC"),
+                        new(() => TravelToRedAlertNpc(redAlertNpc, missionId), "Interacting + Traveling Via RedAlert NPC"),
+                        new(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: Red Alert")
                     );
             }
             else
@@ -980,6 +1204,67 @@ namespace ICE.Scheduler.Tasks
                     return true;
                 }
             }
+
+            return false;
+        }
+        private static unsafe bool? TravelToRedAlertNpc(NpcData.NPCInfo redAlertNpc, uint missionId)
+        {
+            string tag = "Travel: Via RedAlert NPC";
+
+            if (CosmicHelper.CriticalLocations.TryGetValue(missionId, out var redAlert))
+            {
+                if (Player.DistanceTo(redAlertNpc.Location_Circle) < 5)
+                {
+                    if (GenericHelpers.TryGetAddonMaster<SelectString>(out var selectString))
+                    {
+                        if (EzThrottler.Throttle("Selecting teleport option"))
+                        {
+                            IceLogging.Verbose($"Selecting Option: {redAlert.NpcSelection} for mission: {missionId}", tag);
+                            selectString.Entries[redAlert.NpcSelection].Select();
+                        }
+                    }
+                    else if (GenericHelpers.TryGetAddonMaster<Talk>(out var talk))
+                    {
+                        if (EzThrottler.Throttle("Clicking on talk", 100))
+                        {
+                            talk.Click();
+                        }
+                    }
+                    else
+                    {
+                        var npc = Svc.Objects.Where(x => x.BaseId == redAlertNpc.NpcId).FirstOrDefault();
+                        if (npc != null)
+                        {
+                            if (Player.Mounted || Player.IsJumping)
+                                Utils.Dismount();
+                            return false;
+                        }
+                        else if (!Player.IsBusy)
+                        {
+                            if (EzThrottler.Throttle("Target + Interact"))
+                            {
+                                Utils.TargetgameObject(npc);
+                                Utils.InteractWithObject(npc);
+                            }
+                        }
+                    }
+                }
+                else if (Player.DistanceTo(redAlert.RawLocation) < 20)
+                {
+                    if (!PlayerHelper.IsScreenReady())
+                        return false;
+                    else
+
+                    IceLogging.Info("We've reached the red alert destination, need to just do the final pathing", tag);
+                    return true;
+                }
+            }
+            else
+            {
+                return true;
+            }
+
+
 
             return false;
         }

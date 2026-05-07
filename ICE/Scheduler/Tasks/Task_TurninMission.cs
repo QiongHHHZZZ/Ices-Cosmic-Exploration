@@ -29,6 +29,82 @@ namespace ICE.Scheduler.Tasks
                 );
         }
 
+        public static bool CheckRedAlert()
+        {
+            string tag = "Red Alert Check";
+
+
+            var id = CosmicHelper.CurrentLunarMission;
+            if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var sheetInfo))
+            {
+                if (sheetInfo.IsCritical)
+                {
+                    if (CosmicHelper.CriticalLocations.TryGetValue(id, out var location) && location.RawLocation != Vector3.Zero)
+                    {
+                        if (Player.DistanceTo(location.RawLocation) < 75)
+                        {
+                            IceLogging.Verbose("We're close enough to the base location that we don't need to do any fancy traveling, going to check if we need to interact", tag);
+                            P.TaskManager.Insert(() => RedAlert_CloseToTurnin(), "Checking to make sure we're close enough");
+                        }
+                        else
+                        {
+                            IceLogging.Verbose("We're far enough away that we need to consider taking the npc for getting there, so going to do so");
+                            P.TaskManager.Insert(() => RedAlert_CloseToTurnin(), "Checking to make sure we're close enough");
+                        }
+                    }
+                    else
+                    {
+                        if (EzThrottler.Throttle("No recorded site: 2000"))
+                            IceLogging.Error("There is currently not a preset destination that we have recorded, so this means it's a new red alert. Please give me time to add this", tag);
+
+                        P.TaskManager.Insert(() => RedAlert_CloseToTurnin(), "Checking to make sure we have a turnin that is close");
+                    }
+                }
+                else
+                {
+                    IceLogging.Info("We don't need to worry about a turnin point, so we're good. Continuing on");
+                }
+            }
+            else
+            {
+                IceLogging.Info($"Somehow we found a mission that doesn't exist? Please report this: {id}", tag);
+            }
+
+            return true;
+        }
+        public static bool RedAlert_CloseToTurnin()
+        {
+            string tag = "Red Alert: Traveling to turnin";
+
+            if (Utils.TryGetObjectCollectionPoint() is { } collectionPoint)
+            {
+                if (!Task_NavmeshMove.Task_NavTo(collectionPoint.Position, false, 4).Value)
+                {
+                    return false;
+                }
+                else
+                {
+                    if (P.Navmesh.IsRunning())
+                    {
+                        if (EzThrottler.Throttle("Telling navmesh to stop"))
+                            P.Navmesh.Stop();
+
+                        return false;
+                    }
+
+                    IceLogging.Info("We've reached a point where we can turnin, doing so", tag);
+                    return true;
+                }
+            }
+            else
+            {
+                if (EzThrottler.Throttle("Null collection point found"))
+                    IceLogging.Verbose("You're not close to the collection point, we need to get closer", tag);
+            }
+
+            return false;
+        }
+
         public static bool? Mission_TurninV2()
         {
             string tag = "[Mission Turnin]";
@@ -76,79 +152,60 @@ namespace ICE.Scheduler.Tasks
                 {
                     PreviousMissionId = id;
 
-                    if (sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
+                    if (sheetInfo.IsCritical)
                     {
                         Mission_Settings.TurninState = TurninState.Critical;
-
-                        if (CosmicHelper.CriticalLocations.TryGetValue(id, out var location) && location.RawLocation != Vector3.Zero)
+                        if (!PathfoundToRed)
                         {
-                            if (Player.DistanceTo(location.RawLocation) > 75)
+                            PathfoundToRed = true;
+                            P.Navmesh.Stop();
+                        }
+
+                        var collectionPoint = Utils.TryGetObjectCollectionPoint();
+                        if (!Task_NavmeshMove.Task_NavTo(collectionPoint.Position, false, 4).Value)
+                        {
+                            return false;
+                        }
+
+                        if (EzThrottler.Throttle("Log Throttle", 1000))
+                        {
+                            IceLogging.Debug("Attempting to turnin/chekcing if we need to navmesh stop");
+                        }
+
+                        if (P.Navmesh.IsRunning())
+                        {
+                            if (EzThrottler.Throttle("Telling navmesh to stop"))
+                                P.Navmesh.Stop();
+
+                            return false;
+                        }
+
+                        if (!HasInteracted)
+                        {
+                            if (Svc.Condition[ConditionFlag.OccupiedInQuestEvent] || Svc.Condition[ConditionFlag.OccupiedInEvent])
                             {
-                                if (!Task_NavmeshMove.Task_NavTo(location.RawLocation, false, 75, true).Value)
-                                {
-                                    // We're to far away from the turnin location to get a turnin point, continuing on
-                                    return false;
-                                }
+                                HasInteracted = true;
                             }
                             else
                             {
-                                if (!PathfoundToRed)
+                                if (EzThrottler.Throttle("Interacting with thing", 500))
                                 {
-                                    PathfoundToRed = true;
-                                    P.Navmesh.Stop();
-                                }
-
-                                var collectionPoint = Utils.TryGetObjectCollectionPoint();
-                                if (!Task_NavmeshMove.Task_NavTo(collectionPoint.Position, false, 4).Value)
-                                {
-                                    return false;
-                                }
-
-                                if (EzThrottler.Throttle("Log Throttle", 1000))
-                                {
-                                    IceLogging.Debug("Attempting to turnin/chekcing if we need to navmesh stop");
-                                }
-
-                                if (P.Navmesh.IsRunning())
-                                {
-                                    if (EzThrottler.Throttle("Telling navmesh to stop"))
-                                        P.Navmesh.Stop();
-
-                                    return false;
-                                }
-
-                                if (!HasInteracted)
-                                {
-                                    if (Svc.Condition[ConditionFlag.OccupiedInQuestEvent] || Svc.Condition[ConditionFlag.OccupiedInEvent])
-                                    {
-                                        HasInteracted = true;
-                                    }
-                                    else
-                                    {
-                                        if (EzThrottler.Throttle("Interacting with thing", 500))
-                                        {
-                                            Utils.TargetgameObject(collectionPoint);
-                                            Utils.InteractWithObject(collectionPoint);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    if (EzThrottler.Throttle("Telling it to wait this much before turning it off", 6000))
-                                    {
-                                        TickRate += 1;
-                                    }
-                                    if (TickRate > 1)
-                                    {
-                                        TickRate = 0;
-                                        HasInteracted = false;
-                                    }
+                                    Utils.TargetgameObject(collectionPoint);
+                                    Utils.InteractWithObject(collectionPoint);
                                 }
                             }
                         }
                         else
                         {
-
+                            if (EzThrottler.Throttle("Telling it to wait this much before turning it off", 6000))
+                            {
+                                TickRate += 1;
+                            }
+                            if (TickRate > 1)
+                            {
+                                TickRate = 0;
+                                HasInteracted = false;
+                            }
                         }
                     }
                     else

@@ -170,6 +170,12 @@ public static unsafe partial class CosmicHelper
         public uint TemporaryActionCount { get; set; } = 0;
         public List<uint> SequenceMissions_Previous { get; set; } = new();
         public List<uint> SequenceMissions_Next { get; set; } = new();
+
+        public bool IsProvisional => Attributes.HasFlag(MissionAttributes.ProvisionalWeather) 
+            || Attributes.HasFlag(MissionAttributes.ProvisionalSequential) 
+            || Attributes.HasFlag(MissionAttributes.ProvisionalTimed);
+
+        public bool IsCritical => Attributes.HasFlag(MissionAttributes.Critical);
     }
 
     public static Dictionary<uint, CosmicInfo> SheetMissionDict = new();

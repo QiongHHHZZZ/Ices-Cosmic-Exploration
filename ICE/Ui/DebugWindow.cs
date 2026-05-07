@@ -53,6 +53,7 @@ internal class DebugWindow : Window
         ["Ui: Player Gearsets"] = () => Ui_Gearsets.Draw(),
 
         // Non-labeled Elements
+        ["CS: Tiemr Info"] = () => CS_TimerInfo.Draw(),
         ["Player Info"] = () => Ui_PlayerInfo.Draw(),
         ["Test Buttons"] = () => Ui_TestButtons.Draw(),
         ["IPC Testing"] = () => Ui_IPCTesting.Draw(),

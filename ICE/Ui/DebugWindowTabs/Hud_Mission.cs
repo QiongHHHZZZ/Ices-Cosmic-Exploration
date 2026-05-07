@@ -11,7 +11,7 @@ namespace ICE.Ui.DebugWindowTabs
         private static int BestMission = 0;
         private static string MissionName = "";
 
-        public static List<int> XpKinds = new() { 1, 2, 3, 4, 5 };
+        public static List<int> XpKinds = new() { 1, 2, 3, 4, 5, 6, 7 };
 
         public static void Draw()
         {

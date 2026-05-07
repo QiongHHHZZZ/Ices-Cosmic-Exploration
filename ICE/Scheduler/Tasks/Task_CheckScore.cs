@@ -200,7 +200,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static bool? Craft_V2()
         {
             string tag = "[Check Score: Craft]";
@@ -496,7 +495,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         private static unsafe uint CurrentCollectedTotal()
         {
             var managerPtr = WKSManager.Instance();
@@ -504,7 +502,6 @@ namespace ICE.Scheduler.Tasks
 
             return managerPtr->CollectedTotal;
         }
-
         private static unsafe uint CurrentIndividualTotal()
         {
             var managerPtr = WKSManager.Instance();
@@ -512,7 +509,6 @@ namespace ICE.Scheduler.Tasks
 
             return managerPtr->CollectedIndividual;
         }
-
         private static unsafe uint CurrentScore()
         {
             var managerPtr = WKSManager.Instance();
@@ -521,107 +517,12 @@ namespace ICE.Scheduler.Tasks
             var manager = managerPtr;
             return manager->CurrentScore;
         }
-
         public static unsafe MissionRank CurrentRank()
         {
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return MissionRank.None;
 
             return (MissionRank)(ushort)managerPtr->CurrentRank;
-        }
-
-        public static TurninState DetermineTurninState()
-        {
-            string timerString = ActiveTimerAddon();
-            TimeSpan silverRequirement = ParseRequirementTime(SilverTimerAddon());
-            TimeSpan goldRequirement = ParseRequirementTime(GoldTimerAddon());
-
-            // Parse the timer string to get remaining time (left side of /)
-            var remainingTime = ParseCurrentTime(timerString);
-
-            IceLogging.Info($"Timer Info:\n" +
-                $"Current Timer: {remainingTime}\n" +
-                $"Silver Requirement: {silverRequirement}\n" +
-                $"Gold Requirement: {goldRequirement}");
-
-            if (remainingTime >= goldRequirement)
-                return TurninState.Gold;
-            else if (remainingTime >= silverRequirement)
-                return TurninState.Silver;
-            else
-                return TurninState.Bronze;
-        }
-
-        private static TimeSpan ParseCurrentTime(string timerString)
-        {
-            IceLogging.Verbose($"Raw timer string: '{timerString}'");
-
-            // Trim to remove the clock icon and any whitespace
-            var currentTimeStr = timerString.Trim();
-
-            // Remove any non-numeric characters except ':' (like the clock icon)
-            currentTimeStr = new string(currentTimeStr.Where(c => char.IsDigit(c) || c == ':').ToArray());
-
-            IceLogging.Verbose($"Cleaned time string: '{currentTimeStr}'");
-
-            // Parse the time (format: M:SS or MM:SS)
-            var timeParts = currentTimeStr.Split(':');
-            IceLogging.Verbose($"Time parts count: {timeParts.Length}");
-
-            if (timeParts.Length != 2)
-            {
-                IceLogging.Verbose($"Time split failed - got {timeParts.Length} parts");
-                return new TimeSpan(0, 0, 0);
-            }
-
-            if (!int.TryParse(timeParts[0], out var minutes) ||
-                !int.TryParse(timeParts[1], out var seconds))
-            {
-                IceLogging.Verbose($"Failed to parse time values");
-                return new TimeSpan(0, 0, 0);
-            }
-
-            IceLogging.Verbose($"Successfully parsed - Minutes: {minutes}, Seconds: {seconds}");
-            return new TimeSpan(0, minutes, seconds);
-        }
-
-        private static TimeSpan ParseRequirementTime(string requirementString)
-        {
-            if (string.IsNullOrWhiteSpace(requirementString))
-                return TimeSpan.Zero;
-
-            // Split on whitespace and take the first part (the time)
-            var parts = requirementString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 0)
-                return TimeSpan.Zero;
-
-            var timeStr = parts[0];
-
-            // Parse the time (format: M:SS or MM:SS)
-            var timeParts = timeStr.Split(':');
-            if (timeParts.Length != 2)
-                return TimeSpan.Zero;
-
-            if (!int.TryParse(timeParts[0], out var minutes) ||
-                !int.TryParse(timeParts[1], out var seconds))
-                return TimeSpan.Zero;
-
-            return new TimeSpan(0, minutes, seconds);
-        }
-
-        private static unsafe string ActiveTimerAddon()
-        {
-            return AddonHelper.GetNodeText("WKSMissionInfomation", 24);
-        }
-
-        private static string SilverTimerAddon()
-        {
-            return AddonHelper.GetNodeText("WKSMissionInfomation", 15);
-        }
-
-        private static string GoldTimerAddon()
-        {
-            return AddonHelper.GetNodeText("WKSMissionInfomation", 11);
         }
     }
 }

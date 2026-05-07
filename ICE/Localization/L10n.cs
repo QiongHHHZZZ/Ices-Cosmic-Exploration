@@ -1096,6 +1096,8 @@ internal static class L10n
         ["Each planet has a dedicated set of missions are deemed the most \"Optimal\" when it comes to farming score.\nThere's certain missions that are worth grinding more than others. Weather/time also plays a part of it all. Below is what I would recommend on a per class basis."] = "每个星球都有一组在刷技巧点时被认为更“高效”的任务。\n有些任务明显比其他任务更值得刷，天气和时间也会影响选择。下面是我按职业给出的建议。",
         ["Planet"] = "星球",
         ["Lv"] = "等级",
+        ["Use Red Alert NPC for travel"] = "使用红色警报 NPC 进行移动",
+        ["Beta, might not work"] = "测试功能，可能无法正常工作",
         ["Any need repaired: {0}"] = "是否有装备需要修理：{0}",
         ["Dark matter is below the minimum we want to keep, so self repair is stopping."] = "暗物质数量低于保留阈值，已停止自修。",
         ["Please note. This will ONLY grind for relic Exp under the basic mission tab. \n"] = "请注意：这只会在基础任务页里刷遗物经验。\n",

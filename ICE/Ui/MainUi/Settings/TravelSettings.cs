@@ -107,6 +107,15 @@ if (ImGui.Checkbox(T("Use Aethernet"), ref useAethernet))
                 C.Save();
             }
 
+            bool useRedAlertNpc = C.UseRedAlertNpc;
+            if (ImGui.Checkbox(T("Use Red Alert NPC for travel"), ref useRedAlertNpc))
+            {
+                C.UseRedAlertNpc = useRedAlertNpc;
+                C.Save();
+            }
+            ImGui.SameLine();
+            ImGui.TextDisabled(T("Beta, might not work"));
+
             bool avoidStellarReturn = C.AvoidStellarReturn;
 if (ImGui.Checkbox(T("Avoid Stellar Return for pathing"), ref avoidStellarReturn))
             {
@@ -147,7 +156,6 @@ if (ImGui.Checkbox(T("Disable Pathfinding to Red Alerts"), ref DisableRedAlertPa
                 C.Save();
             }
         }
-
         private static void StuckSettings()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.ExclamationTriangle, T("Stuck Detection"));
@@ -202,7 +210,6 @@ if (ImGui.RadioButton(T("Retarget"), C.RetargetIfStuck))
             ImGui.Text(T("ms stuck"));
             if (!unstuckEnabled) ImGui.EndDisabled();
         }
-
         private static void CraftingLocations()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.MapPin, T("Crafting Return Spot"));
@@ -241,7 +248,6 @@ ImGui.Text(T("No location set"));
                 }
             }
         }
-
         private static void DailyRoutinesExtensions()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.Plug, T("Daily Routines Extensions"));
@@ -293,7 +299,6 @@ ImGui.Text(T("No location set"));
                 ImGui.TextWrapped(T("Tip: Ensure Daily Routines 'Quick Teleport Panel' is enabled. If teleport fails, it automatically falls back to normal navigation."));
             }
         }
-
         private static void FishingLocations()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.Fish, T("Personalized Fishing Spots"));

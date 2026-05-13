@@ -216,9 +216,7 @@ namespace ICE.Scheduler.Tasks
             var id = CosmicHelper.CurrentLunarMission;
             var mission = CosmicHelper.SheetMissionDict[id];
 
-            bool provisional = mission.Attributes.HasFlag(MissionAttributes.ProvisionalWeather)
-                            || mission.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
-                            || mission.Attributes.HasFlag(MissionAttributes.ProvisionalTimed);
+            bool provisional = mission.IsProvisional;
 
             var rank = mission.Rank;
 

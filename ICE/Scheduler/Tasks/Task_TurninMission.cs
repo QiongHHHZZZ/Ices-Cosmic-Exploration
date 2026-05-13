@@ -22,6 +22,7 @@ namespace ICE.Scheduler.Tasks
         {
             P.TaskManager.EnqueueMulti
                 (
+                    new(() => CheckRedAlert(), "Checking for Red Alert Info"),
                     new(() => Mission_TurninV2(), "Turning in the mission to the moon gods", Utils.TaskConfig),
                     new(() => GoldCheck(), "Checking if Gold Check Task needs to be completed"),
                     new(() => CommandCheck(), "Checking for post mission commands"),
@@ -33,12 +34,13 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "Red Alert Check";
 
-
             var id = CosmicHelper.CurrentLunarMission;
             if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var sheetInfo))
             {
                 if (sheetInfo.IsCritical)
                 {
+                    IceLogging.Verbose("Critical mission was found, checking for location info", tag);
+
                     if (CosmicHelper.CriticalLocations.TryGetValue(id, out var location) && location.RawLocation != Vector3.Zero)
                     {
                         if (Player.DistanceTo(location.RawLocation) < 75)
@@ -49,7 +51,7 @@ namespace ICE.Scheduler.Tasks
                         else
                         {
                             IceLogging.Verbose("We're far enough away that we need to consider taking the npc for getting there, so going to do so");
-                            P.TaskManager.Insert(() => RedAlert_CloseToTurnin(), "Checking to make sure we're close enough");
+                            P.TaskManager.Insert(() => Task_NavmeshMove.Enqueue_RedAlertNavmesh(location.RawLocation, distance: 75, missionId: id), "Checking to make sure we're close enough");
                         }
                     }
                     else
@@ -317,10 +319,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         if (CosmicHelper.SheetMissionDict.TryGetValue(mission, out var missionInfo))
                         {
-                            bool special = missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
-                                            || missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
-                                            || missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather)
-                                            || missionInfo.Attributes.HasFlag(MissionAttributes.Critical);
+                            bool special = missionInfo.IsCritical || missionInfo.IsProvisional;
 
                             if (!special && C.KeepARanks)
                                 continue;

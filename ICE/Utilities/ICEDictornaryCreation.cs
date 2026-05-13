@@ -208,6 +208,8 @@ public sealed partial class ICE
 
             if (CosmicHelper.CrafterJobList.Any(x => jobs.Contains(x)))
             {
+                var craftJob = jobs.Where(x => CosmicHelper.CrafterJobList.Contains(x)).FirstOrDefault();
+
                 if (isCritical)
                 {
                     var requiredAmount = 3; // Sinus Specifically
@@ -221,12 +223,17 @@ public sealed partial class ICE
                         var itemId = item.RowId;
                         var itemName = item.Value.Name.ToString();
                         var itemRecipeId = (ushort)RecipeRow.RowId;
+                        var recipeInfo = CosmicHelper.SpecificRecipeInfo(craftJob, itemRecipeId);
+                        var itemIcon = item.Value.Icon;
 
                         crafts_Main[itemRecipeId] = new()
                         {
                             ItemId = itemId,
                             RecipeId = wksRecipeRowId,
                             RequiredAmount = requiredAmount,
+                            RecipeInfo = recipeInfo,
+                            ItemName = itemName,
+                            IconId = itemIcon,
                         };
                     }
                 }
@@ -261,6 +268,10 @@ public sealed partial class ICE
                         var requiredAmount2 = recipeRow.AmountIngredient[1];
                         bool expertMat = recipeRow.IsExpert;
 
+                        var recipeInfo = CosmicHelper.SpecificRecipeInfo(craftJob, recipeId);
+                        var itemIcon = recipeRow.ItemResult.Value.Icon;
+                        var itemName = recipeRow.ItemResult.Value.Name.ToString();
+
                         if (requiredItem2 != 0)
                         {
                             crafts_Main[recipeId] = new()
@@ -273,7 +284,10 @@ public sealed partial class ICE
                                 {
                                     [requiredItem] = requiredAmount,
                                     [requiredItem2] = requiredAmount2
-                                }
+                                },
+                                IconId = itemIcon,
+                                ItemName = itemName,
+                                RecipeInfo = recipeInfo,
                             };
                         }
                         else
@@ -287,7 +301,10 @@ public sealed partial class ICE
                                 RequiredItems = new()
                                 {
                                     [requiredItem] = requiredAmount
-                                }
+                                },
+                                IconId = itemIcon,
+                                ItemName = itemName,
+                                RecipeInfo = recipeInfo,
                             };
                         }
 
@@ -311,6 +328,10 @@ public sealed partial class ICE
                         var requiredItem = recipeRow.Ingredient[0].RowId;
                         var requiredAmount = recipeRow.AmountIngredient[0];
                         bool requiredItemExpert = recipeRow.IsExpert;
+                        var req_recipeInfo = CosmicHelper.SpecificRecipeInfo(craftJob, recipeId);
+                        var req_itemIcon = recipeRow.ItemResult.Value.Icon;
+                        var req_itemName = recipeRow.ItemResult.Value.Name.ToString();
+
                         crafts_Main[recipeId] = new()
                         {
                             ItemId = itemId,
@@ -320,7 +341,10 @@ public sealed partial class ICE
                             RequiredItems = new()
                             {
                                 [requiredItem] = requiredAmount
-                            }
+                            },
+                            IconId = req_itemIcon,
+                            ItemName = req_itemName,
+                            RecipeInfo = req_recipeInfo,
                         };
 
                         // if (isExpert)
@@ -334,6 +358,9 @@ public sealed partial class ICE
                         var preCraftExpert = preRecipeRow.IsExpert;
 
                         var crateId = preRecipeRow.Ingredient[0].RowId;
+                        var pre_recipeInfo = CosmicHelper.SpecificRecipeInfo(craftJob, preRecipeId);
+                        var pre_itemIcon = preRecipeRow.ItemResult.Value.Icon;
+                        var pre_itemName = preRecipeRow.ItemResult.Value.Name.ToString();
 
                         crafts_Pre[preRecipeId] = new()
                         {
@@ -344,7 +371,10 @@ public sealed partial class ICE
                             RequiredItems = new()
                             {
                                 [crateId] = preAmountNeeded
-                            }
+                            },
+                            IconId = pre_itemIcon,
+                            ItemName = pre_itemName,
+                            RecipeInfo = pre_recipeInfo,
                         };
 
                         isExpert |= requiredItemExpert || preCraftExpert;
@@ -369,6 +399,11 @@ public sealed partial class ICE
                             var requiredItem = recipeRow.Ingredient[0].RowId;
                             var requiredAmount = recipeRow.AmountIngredient[0];
                             bool expertCraft = recipeRow.IsExpert;
+
+                            var recipeInfo = CosmicHelper.SpecificRecipeInfo(craftJob, recipeId);
+                            var itemIcon = recipeRow.ItemResult.Value.Icon;
+                            var itemName = recipeRow.ItemResult.Value.Name.ToString();
+
                             crafts_Main[recipeId] = new()
                             {
                                 ItemId = itemId,
@@ -378,7 +413,10 @@ public sealed partial class ICE
                                 RequiredItems = new()
                                 {
                                     [requiredItem] = requiredAmount
-                                }
+                                },
+                                IconId = itemIcon,
+                                ItemName = itemName,
+                                RecipeInfo = recipeInfo,
                             };
                             isExpert |= expertCraft;
                             isCollectable |= recipeRow.CollectableMetadataKey == 1;
@@ -521,29 +559,6 @@ public sealed partial class ICE
             uint rewardItemId = 0;
             uint rewardItemAmount = 0;
 
-            // Enum for the ranking type (makes it easier vs having to do "Flag Contains X")
-            MissionClass enumRank = MissionClass.D;
-            if (attributes.HasFlag(MissionAttributes.ProvisionalWeather))
-                enumRank = MissionClass.Weather;
-            else if (attributes.HasFlag(MissionAttributes.ProvisionalTimed))
-                enumRank = MissionClass.Timed;
-            else if (attributes.HasFlag(MissionAttributes.ProvisionalSequential))
-                enumRank = MissionClass.Sequence;
-            else if (attributes.HasFlag(MissionAttributes.Critical))
-                enumRank = MissionClass.Critical;
-            else
-            {
-                enumRank = rank switch
-                {
-                    5 => MissionClass.Ex,
-                    4 => MissionClass.A,
-                    3 => MissionClass.B,
-                    2 => MissionClass.C,
-                    1 => MissionClass.D,
-                    _ => MissionClass.Unknown,
-                };
-            }
-
             if (rewardSheet.ItemCount != 0)
             {
                 rewardItemId = rewardSheet.ItemCount;
@@ -558,7 +573,6 @@ public sealed partial class ICE
                     Jobs = jobs,
                     ToDoId = missionToDo.RowId,
                     Rank = rank,
-                    Rankv2 = enumRank,
                     Level = level,
                     Attributes = attributes,
                     Weather = weather,

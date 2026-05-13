@@ -113,7 +113,22 @@ public static partial class CosmicHelper
         public int Max { get; set; } = 0;
     }
 
-    public unsafe static Dictionary<uint, ClassInfo> Cosmic_ClassInfo()
+    public static Dictionary<uint, ClassInfo> Cosmic_ClassInfo = new()
+    {
+        [8] = new(),
+        [9] = new(),
+        [10] = new(),
+        [11] = new(),
+        [12] = new(),
+        [13] = new(),
+        [14] = new(),
+        [15] = new(),
+        [16] = new(),
+        [17] = new(),
+        [18] = new(),
+    };
+
+    public unsafe static void UpdateClassInfo()
     {
         Dictionary<uint, ClassInfo> cosmicClassInfo = new()
         {
@@ -133,9 +148,12 @@ public static partial class CosmicHelper
         var wksManagerPtr = WKSManager.Instance();
         if (wksManagerPtr == null)
         {
-            if (EzThrottler.Throttle("Throttling log message", 3000))
-                IceLogging.Error("WKSManager returned null");
-            return cosmicClassInfo;
+            if (PlayerHelper.IsInCosmicZone())
+            {
+                if (EzThrottler.Throttle("Throttling log message", 3000))
+                    IceLogging.Error("WKSManager returned null");
+            }
+            return;
         }
 
         var wks = wksManagerPtr;
@@ -145,7 +163,7 @@ public static partial class CosmicHelper
         {
             if (EzThrottler.Throttle("Throttling log message", 3000))
                 IceLogging.Error("Research Module has returned null");
-            return cosmicClassInfo;
+            return;
         }
 
         // Use original pointer only for member function calls
@@ -167,7 +185,7 @@ public static partial class CosmicHelper
             {
                 Score = score,
                 Stage_Current = currentStage,
-                Stage_Next = nextStage
+                Stage_Next = nextStage,
             };
 
             for (byte type = 1; type <= MaxXpKind; type++)
@@ -187,6 +205,40 @@ public static partial class CosmicHelper
             cosmicClassInfo[jobId] = entry;
         }
 
-        return cosmicClassInfo;
+        Cosmic_ClassInfo = cosmicClassInfo;
+    }
+    public unsafe static void UpdateMissionStatus()
+    {
+        foreach (var mission in CosmicHelper.SheetMissionDict)
+            mission.Value.MissionStatus = CosmicHandler.MissionStatus(mission.Key);
+    }
+
+    public static unsafe bool SendCosmicUpdate()
+    {
+        string tag = "Task: Update Cosmic Info";
+
+        if (PlayerHelper.IsInCosmicZone())
+        {
+            var wksManagerPtr = WKSManager.Instance();
+            if (wksManagerPtr == null)
+            {
+                if (EzThrottler.Throttle("Update Stats"))
+                    IceLogging.Verbose("Waiting for the wksManager to be loaded", tag);
+
+                return false;
+            }
+            else
+            {
+                UpdateClassInfo();
+                UpdateMissionStatus();
+                IceLogging.Verbose("Updated cosmic dictionary to have proper values", tag);
+                return true;
+            }
+        }
+        else
+        {
+            IceLogging.Verbose("We're not in a cosmic area, so we're going to just exit this check", tag);
+            return true;
+        }
     }
 }

@@ -5,6 +5,7 @@ using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using System.Globalization;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -135,9 +136,7 @@ namespace ICE.Scheduler.Tasks
                 if (mission.Value.TerritoryId != Player.Territory.RowId)
                     continue;
 
-                bool provisional = mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
-                                || mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
-                                || mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
+                bool provisional = mission.Value.IsProvisional;
 
                 var missionId = mission.Key;
 
@@ -171,7 +170,7 @@ namespace ICE.Scheduler.Tasks
                         if (provisional)
                             continue;
 
-                        if (mission.Value.Attributes.HasFlag(MissionAttributes.Critical) && !C.Relic_IncludeCriticals)
+                        if (mission.Value.IsCritical && !C.Relic_IncludeCriticals)
                             continue;
 
                         var jobLevel = Math.Min(Player.GetLevel((Job)mission.Value.Jobs.First()), Player.GetLevel((Job)mission.Value.Jobs.Last()));
@@ -318,33 +317,6 @@ namespace ICE.Scheduler.Tasks
         }
         public static bool? CheckTabs()
         {
-            static bool? OpenSpecificTab(MissionTypes type)
-            {
-                string tag = "Opening Tab";
-
-                if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && hud.IsAddonReady)
-                {
-                    IceLogging.Info($"Opening Tab: {type}", tag);
-
-                    switch (type)
-                    {
-                        case MissionTypes.RedAlert:
-                            hud.CriticalMissions(); break;
-                        case MissionTypes.Provisional:
-                            hud.ProvisionalMissions(); break;
-                        case MissionTypes.Standard:
-                            hud.BasicMissions(); break;
-                    }
-                    return true;
-                }
-                else
-                {
-                    ReOpenMissionUi(tag);
-                }
-
-                return false;
-            }
-
             string tag = "Check Missions: Check Tabs";
             var priority = C.MissionTypePrio;
 
@@ -358,12 +330,7 @@ namespace ICE.Scheduler.Tasks
                             {
                                 if (MissionLibrary["Critical"].Count > 0)
                                 {
-                                    P.TaskManager.EnqueueMulti
-                                    (
-                                        new(() => OpenSpecificTab(type), $"Opening {type}"),
-                                        new(() => FrameDelay(8), "Delaying 8 frames for tab"),
-                                        new(() => CheckMissions(MissionLibrary["Critical"], type), "Checking Critical tab for missions")
-                                    );
+                                    P.TaskManager.Enqueue(() => CheckMissions(MissionLibrary["Critical"], type), "Checking Critical tab for missions");
                                 }
                                 break;
                             }
@@ -397,12 +364,7 @@ namespace ICE.Scheduler.Tasks
                                 }
                                 if (provisionals.Count > 0)
                                 {
-                                    P.TaskManager.EnqueueMulti
-                                    (
-                                        new(() => OpenSpecificTab(type), $"Opening {type}"),
-                                        new(() => FrameDelay(8), "Delaying 8 frames for tab"),
-                                        new(() => CheckMissions(provisionals, type), "Checking Provisional tab for missions")
-                                    );
+                                   P.TaskManager.Enqueue(() => CheckMissions(provisionals, type), "Checking Provisional tab for missions");
                                 }
                                 break;
                             }
@@ -421,12 +383,7 @@ namespace ICE.Scheduler.Tasks
                                         }
                                     }
                                 }
-                                P.TaskManager.EnqueueMulti
-                                (
-                                    new(() => OpenSpecificTab(type), $"Opening {type}"),
-                                    new(() => FrameDelay(8), "Delaying 8 frames for tab"),
-                                    new(() => CheckMissions(basicMissions, type), "Checking Basic Mission tab for missions")
-                                );
+                                P.TaskManager.Enqueue(() => CheckMissions(basicMissions, type), "Checking Basic Mission tab for missions");
                                 break;
                             }
                         case MissionTypes.DroneSearch:
@@ -454,10 +411,8 @@ namespace ICE.Scheduler.Tasks
             void LogInfo(uint missionId)
             {
                 var sheetInfo = CosmicHelper.SheetMissionDict[missionId];
-                bool provisional = sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
-                    || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
-                    || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
-                var redAlert = sheetInfo.Attributes.HasFlag(MissionAttributes.Critical);
+                bool provisional = sheetInfo.IsProvisional;
+                var redAlert = sheetInfo.IsCritical;
                 string jobs = string.Join(", ", sheetInfo.Jobs);
 
                 IceLogging.Info($"We found a mission! We're going to exit out of this task and grab the following\n: " +
@@ -468,351 +423,246 @@ namespace ICE.Scheduler.Tasks
                     $"Provisional: {provisional}", tag);
             }
 
-            int JobTab(uint job)
-            {
-                int jobUnlocked = 0;
-                Dictionary<uint, int> jobTab = new();
-                for (int i = 0; i < CosmicHelper.SupportedJobs.Count(); i++)
-                {
-                    var currentJob = CosmicHelper.SupportedJobs[i];
-                    var level = Player.GetLevel((Job)currentJob);
-                    if (level != 0)
-                    {
-                        IceLogging.Verbose($"{currentJob} - tab: {jobUnlocked}");
-                        jobTab[currentJob] = jobUnlocked;
-                        jobUnlocked++;
-                    }
-                    else
-                    {
-                        jobTab[currentJob] = 0;
-                    }
-                }
-
-                return jobTab[job];
-            }
-
-            bool OnCorrectTabV2(MissionTypes type, WKSMission missionAddon)
-            {
-                bool correct = missionAddon.CurrentTab == type switch
-                {
-                    MissionTypes.Standard => 0,
-                    MissionTypes.Provisional => 1,
-                    MissionTypes.RedAlert => 2,
-                    _ => 0
-                };
-
-                if (correct)
-                    return true;
-                else
-                {
-                    if (FrameThrottler.Throttle("Selecting Tab", 8))
-                    {
-                        switch (type)
-                        {
-                            case MissionTypes.Standard:
-                                missionAddon.BasicMissions();
-                                break;
-                            case MissionTypes.Provisional:
-                                missionAddon.ProvisionalMissions();
-                                break;
-                            case MissionTypes.RedAlert:
-                                missionAddon.CriticalMissions();
-                                break;
-                            default:
-                                missionAddon.BasicMissions();
-                                break;
-                        }
-                    }
-
-                    return false;
-                }
-            }
-
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var missionInfo) && missionInfo.IsAddonReady)
             {
-                if (type == MissionTypes.Standard && OnCorrectTabV2(type, missionInfo))
+                var basicMissionList = CosmicHandler.Basic_AvailableMissions();
+                var specialMissionList = CosmicHandler.Provisional_AvailableMissions();
+                var visibleMissions = CosmicHandler.VisibleMissions();
+                var mode = Mission_Settings.Mode;
+
+                if (OpenCorrectTab(missionList, missionInfo))
                 {
-                    IceLogging.Verbose($"Checking Standard missions. Mission Count: {missionList.Count()}", tag);
-                    bool CorrectJob()
+                    if (mode == ModeSelect.LevelMode)
                     {
-                        foreach (var mission in missionInfo.StellerMissions)
+                        var levelingMission = missionList.FirstOrDefault();
+                        if (basicMissionList.Contains(levelingMission))
                         {
-                            var sheetInfo = CosmicHelper.SheetMissionDict[mission.MissionId];
-                            bool isCritical = sheetInfo.Attributes.HasFlag(MissionAttributes.Critical);
-                            bool isProvisional = sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
-                                              || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
-                                              || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
-
-                            if (!sheetInfo.Jobs.Contains(Mission_Settings.SelectedJob))
-                            {
-                                var jobTab = JobTab(Mission_Settings.SelectedJob);
-
-                                if (EzThrottler.Throttle("Selecting job tab"))
-                                {
-                                    IceLogging.Verbose($"Selecting tab: {jobTab}");
-                                    missionInfo.SelectClass[jobTab].Select();
-                                }
-                                return false;
-                            }
-                        }
-
-                        return true;
-                    }
-
-                    if (CorrectJob())
-                    {
-                        var mode = Mission_Settings.Mode;
-                        if (mode is ModeSelect.Standard or ModeSelect.MissionGoldMode)
-                        {
-                            foreach (var missionId in missionList)
-                            {
-                                var mission = missionInfo.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
-                                if (mission != null)
-                                {
-                                    LogInfo(missionId);
-                                    Insert_GrabMissionTask(missionId);
-                                    return true;
-                                }
-                            }
-
-                            IceLogging.Info("No missions were found for basic missions. Continuing on", tag);
+                            LogInfo(levelingMission);
+                            Insert_GrabMissionTask(levelingMission);
                             return true;
                         }
-                        else if (mode == ModeSelect.LevelMode)
+
+                        IceLogging.Verbose($"We seem to have not found the mission. Going to double check to make sure we have the tab unlocked", tag);
+
+                        var highestMission = basicMissionList.OrderByDescending(x => CosmicHelper.SheetMissionDict[x].Rank).FirstOrDefault();
+                        var TestMissionLevel = CosmicHelper.SheetMissionDict[highestMission].Level;
+                        var ListMissionLevel = CosmicHelper.SheetMissionDict[missionList.First()].Level;
+
+                        if (EzThrottler.Throttle("Level message info"))
                         {
-                            foreach (var missionId in missionList)
+                            IceLogging.Verbose($"The very first available mission is visible. Checking the level\n" +
+                                $"Test level: {TestMissionLevel}\n" +
+                                $"List Mission level: {ListMissionLevel}", tag);
+                        }
+
+                        if (TestMissionLevel < ListMissionLevel)
+                        {
+                            IceLogging.Verbose("We need to actually grab a mission that hasn't been completed for the purpose of getting the next rank unlocked", tag);
+                            uint missionToSelect = 0;
+
+                            if (ListMissionLevel == 90)
                             {
-                                // Ideally... there's only 1 mission here if it filters out properly. 
-                                var mission = missionInfo.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
-                                if (mission != null)
+                                if (TestMissionLevel == 50)
                                 {
-                                    LogInfo(missionId);
-                                    Insert_GrabMissionTask(missionId);
-                                    return true;
+                                    missionToSelect = basicMissionList
+                                        .Where(m => CosmicHelper.Unlock_MissionList.Contains(m))
+                                        .Where(m => CosmicHelper.SheetMissionDict[m].Level == 50)
+                                        .Where(m => !MissionCompleted(m))
+                                        .FirstOrDefault();
+                                }
+                                else if (TestMissionLevel == 10)
+                                {
+                                    missionToSelect = basicMissionList
+                                        .Where(m => CosmicHelper.Unlock_MissionList.Contains(m))
+                                        .Where(m => CosmicHelper.SheetMissionDict[m].Level == 50)
+                                        .Where(m => !MissionCompleted(m))
+                                        .FirstOrDefault();
                                 }
                             }
-                            IceLogging.Verbose($"We seem to have not found the mission. Going to double check to make sure we have the tab unlocked", tag);
-                            var firstMission = missionInfo.StellerMissions.FirstOrDefault();
-                            if (firstMission != null)
+                            else if (ListMissionLevel == 50)
                             {
-                                var TestMissionLevel = CosmicHelper.SheetMissionDict[firstMission.MissionId].Level;
-                                var ListMissionLevel = CosmicHelper.SheetMissionDict[missionList.First()].Level;
-
-                                if (EzThrottler.Throttle("Level message info"))
+                                if (TestMissionLevel == 10)
                                 {
-                                    IceLogging.Verbose($"The very first available mission is visible. Checking the level\n" +
-                                        $"Test level: {TestMissionLevel}\n" +
-                                        $"List Mission level: {ListMissionLevel}", tag);
+                                    missionToSelect = basicMissionList
+                                        .Where(m => CosmicHelper.Unlock_MissionList.Contains(m))
+                                        .Where(m => CosmicHelper.SheetMissionDict[m].Level == 50)
+                                        .Where(m => !MissionCompleted(m))
+                                        .FirstOrDefault();
                                 }
+                            }
 
-                                if (TestMissionLevel < ListMissionLevel)
-                                {
-                                    IceLogging.Verbose("We need to actually grab a mission that hasn't been completed for the purpose of getting the next rank unlocked", tag);
-                                    if (ListMissionLevel == 90)
-                                    {
-                                        if (TestMissionLevel == 50)
-                                        {
-                                            var mission = missionInfo.StellerMissions
-                                                .Where(m => CosmicHelper.Unlock_MissionList.Contains(m.MissionId))
-                                                .Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 50)
-                                                .Where(m => !MissionCompleted(m.MissionId))
-                                                .FirstOrDefault();
+                            if (missionToSelect != 0)
+                            {
+                                LogInfo(levelingMission);
+                                Insert_GrabMissionTask(levelingMission);
+                                return true;
+                            }
 
-                                            if (mission != null)
-                                            {
-                                                mission.Select();
-                                                Insert_GrabMissionTask(mission.MissionId);
-                                                IceLogging.Verbose($"Mission was found to unlock lv. 90 tab {mission.MissionId}", tag);
-                                                return true;
-                                            }
-                                        }
-                                        else if (TestMissionLevel == 10)
-                                        {
-                                            var mission = missionInfo.StellerMissions
-                                                .Where(m => CosmicHelper.Unlock_MissionList.Contains(m.MissionId))
-                                                .Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 10)
-                                                .Where(m => !MissionCompleted(m.MissionId))
-                                                .FirstOrDefault();
-
-                                            if (mission != null)
-                                            {
-                                                mission.Select();
-                                                Insert_GrabMissionTask(mission.MissionId);
-                                                IceLogging.Verbose($"Mission was found to unlock lv. 90 tab {mission.MissionId}", tag);
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                    else if (ListMissionLevel == 50)
-                                    {
-                                        if (TestMissionLevel == 10)
-                                        {
-                                            var mission = missionInfo.StellerMissions
-                                                .Where(m => CosmicHelper.Unlock_MissionList.Contains(m.MissionId))
-                                                .Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 10)
-                                                .Where(m => !MissionCompleted(m.MissionId))
-                                                .FirstOrDefault();
-
-                                            if (mission != null)
-                                            {
-                                                mission.Select();
-                                                Insert_GrabMissionTask(mission.MissionId);
-                                                IceLogging.Verbose($"Mission was found to unlock lv. 90 tab {mission.MissionId}", tag);
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    return true;
-                                }
+                            if (EzThrottler.Throttle("Leveling Log Message", 2000))
+                            {
+                                IceLogging.Info("So this didn't have an exit... and I'm just using this to track to see if this even properly returns. (Proabably not)\n" +
+                                    "If you're seeing this, that means it might of broken if it's repeating more than x1\n" +
+                                    "Please report this! ICE. It's the leveling mode thing you were checking", tag);
                             }
                         }
-                        else if (mode == ModeSelect.RelicMode)
+                        else
                         {
-                            var job = Mission_Settings.SelectedJob;
-                            var relicInfo = CosmicHelper.Cosmic_ClassInfo();
-                            var classInfo = relicInfo[job];
+                            IceLogging.Info("We seem to have the proper level for the missions, we just don't have the mission available, so going to find a rereoll", tag);
+                            return true;
+                        }
+                    }
+                    else if (mode == ModeSelect.RelicMode)
+                    {
+                        var job = Mission_Settings.SelectedJob;
+                        var relicInfo = CosmicHelper.Cosmic_ClassInfo;
+                        var classInfo = relicInfo[job];
 
-                            var jobLv = Player.GetLevel((Job)job);
+                        var jobLv = Player.GetLevel((Job)job);
 
-                            var urgency = new Dictionary<int, float>();
-                            foreach (var exp in classInfo.CurrentExp)
-                            {
-                                if (classInfo.Stage_Current != classInfo.Stage_Next)
-                                    urgency[exp.Key] = exp.Value.Needed > 0 ? 1f - (float)exp.Value.Current / exp.Value.Needed : 0f;
-                                else
-                                    urgency[exp.Key] = 1f - (float)exp.Value.Current / exp.Value.Max;
-                            }
-                            IceLogging.Verbose($"Urgency Exp Values");
-                            foreach (var exp in urgency)
-                            {
-                                IceLogging.Verbose($"{exp.Key} : Value: {exp.Value:N2}");
-                            }
+                        var urgency = new Dictionary<int, float>();
+                        IceLogging.Verbose("Relic mode was enabled. So going to do checks to see what exp we need", tag);
+                        IceLogging.Verbose($"Current Stage is the max stage? {classInfo.Stage_Current == classInfo.Stage_Next}", tag);
 
-                            uint? bestMissionId = null;
-                            float bestScore = float.NegativeInfinity;
-                            foreach (var missionId in missionList)
+                        foreach (var exp in classInfo.CurrentExp)
+                        {
+                            if (classInfo.Stage_Current != classInfo.Stage_Next)
+                                urgency[exp.Key] = exp.Value.Needed > 0 ? 1f - (float)exp.Value.Current / exp.Value.Needed : 0f;
+                            else
+                                urgency[exp.Key] = 1f - (float)exp.Value.Current / exp.Value.Max;
+                        }
+                        IceLogging.Verbose($"Relic Mode, Exp Requirements/Results", tag);
+                        foreach (var exp in urgency)
+                        {
+                            IceLogging.Verbose($"{exp.Key} : Value: {exp.Value:N2}", tag);
+                        }
+
+                        var filteredList = missionList.Where(x => CosmicHelper.SheetMissionDict[x].RelicXpInfo.Any(kvp => urgency.ContainsKey(kvp.Key) && urgency[kvp.Key] > 0));
+                        if (filteredList.Count() == 0)
+                        {
+                            if (EzThrottler.Throttle("No viable missions throttle"))
+                                IceLogging.Info("We've hit a point where somehow, there's no possible missions that could be grabbed to help you increase your exp to the point it's needed\n" +
+                                                "So... this is an interesting spot... check to make sure that you're on the right planet to ", tag);
+
+                            return true;
+                        }
+                        else
+                        {
+                            uint bestMissionId = 0;
+                            float bestScore = 0;
+
+                            foreach (var missionId in filteredList)
                             {
-                                var mission = missionInfo.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
-                                if (mission != null)
+                                if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var sheetInfo) && (basicMissionList.Contains(missionId) || specialMissionList.Contains(missionId)))
                                 {
-                                    if (CosmicHelper.SheetMissionDict.TryGetValue(mission.MissionId, out var sheetInfo))
+                                    if (jobLv < sheetInfo.Level)
                                     {
-                                        if (jobLv < sheetInfo.Level)
-                                        {
-                                            IceLogging.Verbose($"Skipping Mission: {mission.MissionId} due to not high enough lv [Player: {jobLv} | Mission: {sheetInfo.Level}].\n");
-                                            continue;
-                                        }
+                                        IceLogging.Verbose($"Skipping Mission: {missionId} due to not high enough lv [Player: {jobLv} | Mission: {sheetInfo.Level}].\n");
+                                        continue;
+                                    }
 
-                                        float score = 0;
-                                        foreach (var reward in sheetInfo.RelicXpInfo)
+                                    float score = 0;
+                                    foreach (var reward in sheetInfo.RelicXpInfo)
+                                    {
+                                        if (urgency.TryGetValue(reward.Key, out var info))
                                         {
-                                            if (urgency.TryGetValue(reward.Key, out var info))
+                                            float contribution = info * reward.Value;
+                                            if (contribution > 0)
                                             {
-                                                float contribution = info * reward.Value;
-                                                if (contribution > 0)
-                                                {
-                                                    score += contribution;
-                                                }
+                                                score += contribution;
                                             }
                                         }
-                                        if (score > bestScore)
-                                        {
-                                            bestScore = score;
-                                            bestMissionId = missionId;
-                                        }
                                     }
-                                }
-                            }
-
-
-                            var firstMission = missionInfo.StellerMissions.FirstOrDefault();
-                            var TestMissionLevel = CosmicHelper.SheetMissionDict[firstMission.MissionId].Level;
-                            var ListMissionLevel = CosmicHelper.SheetMissionDict[missionList.First()].Level;
-
-                            /*
-                            if (TestMissionLevel != 100 && ListMissionLevel == 100)
-                            {
-                                IceLogging.Debug("We're lv. 100 (or... atleast the mission list expects us to be lv. 100)\n" +
-                                    "And we seem to be missing the lv. 100 tab so, we gonna see what we need to do", tag);
-
-                                var Lv90Missions = missionList.Where(x => CosmicHelper.SheetMissionDict[x].Level == 90).ToList();
-                                if (Lv90Missions != null)
-                                {
-                                    var totalCompleted = Lv90Missions.Where(x => MissionCompleted(x)).Count();
-                                    var totalGolded = Lv90Missions.Where(x => MissionGolded(x)).Count();
-
-                                    if (totalCompleted < 5)
+                                    if (score > bestScore)
                                     {
-                                        IceLogging.Debug("We are missing a minimum amount of completed missions");
-                                        var mission = missionInfo.StellerMissions.Where(x => !MissionCompleted(x.MissionId)).FirstOrDefault();
+                                        bestScore = score;
+                                        bestMissionId = missionId;
                                     }
-                                }
-
-                                foreach (var mission in missionInfo.StellerMissions.Where(x => CosmicHelper.SheetMissionDict[x.MissionId].Level == 90))
-                                {
-                                    // if ()
                                 }
                             }
 
-                            */
-                            if (bestMissionId != null)
+                            if (bestMissionId != 0)
                             {
-                                LogInfo(bestMissionId.Value);
-                                Insert_GrabMissionTask(bestMissionId.Value);
+                                LogInfo(bestMissionId);
+                                Insert_GrabMissionTask(bestMissionId);
                                 return true;
                             }
                             else
                             {
-                                IceLogging.Info("Enabled only mode was set to on in the Relic grind mode. So we have to reroll WOOO");
+                                IceLogging.Info("We've searched through all the missions and none had the exp we needed, which means time to reoll WOOOO!\n" +
+                                    $"Best Score: {bestScore}\n" +
+                                    $"Best Mission (not): {bestMissionId}", tag);
+
                                 return true;
                             }
+                        }
+                    }
+                    else if (mode is ModeSelect.Standard or ModeSelect.MissionGoldMode)
+                    {
+                        if (type is MissionTypes.Standard)
+                        {
+                            IceLogging.Verbose($"Checking Standard missions.\n" +
+                                $"Loaded mission Count: {missionList.Count()}\n" +
+                                $"Amount of viable missions: {basicMissionList.Count()}", tag);
+
+                            foreach (var missionId in missionList)
+                            {
+                                if (basicMissionList.Contains(missionId))
+                                {
+                                    LogInfo(missionId);
+                                    Insert_GrabMissionTask(missionId);
+                                    return true;
+                                }
+                            }
+
+                            IceLogging.Info("No missions were found for basic missions tab. Continuing on", tag);
+                            return true;
+                        }
+                        else if (type is MissionTypes.Provisional)
+                        {
+                            IceLogging.Verbose($"Checking missions for the following mode:\n" +
+                                $"Mode: {type}\n" +
+                                $"Loaded mission count: {missionList.Count()}\n" +
+                                $"Amount of viable missions: {specialMissionList.Count()}", tag);
+
+                            foreach (var missionId in missionList)
+                            {
+                                if (specialMissionList.Contains(missionId))
+                                {
+                                    LogInfo(missionId);
+                                    Insert_GrabMissionTask(missionId);
+                                    return true;
+                                }
+                            }
+
+                            IceLogging.Verbose($"No missions were found for: {type}. Continuing on", tag);
+                            return true;
+                        }
+                        else if (type is MissionTypes.RedAlert)
+                        {
+                            IceLogging.Verbose($"Checking missions for the following mode:\n" +
+                                $"Mode: {type}\n" +
+                                $"Loaded mission count: {missionList.Count()}\n" +
+                                $"Amount of viable missions: {visibleMissions.Count()}", tag);
+
+                            foreach (var missionId in missionList)
+                            {
+                                if (visibleMissions.Contains(missionId))
+                                {
+                                    LogInfo(missionId);
+                                    Insert_GrabMissionTask(missionId);
+                                    return true;
+                                }
+                            }
+
+                            IceLogging.Info("No missions were found for the critical missions, so continuing on", tag);
+                            return true;
                         }
                     }
                     else
                     {
-                        if (EzThrottler.Throttle("Not correct job"))
-                            IceLogging.Verbose("Not on correct job tab, swapping it for standard");
+                        if (EzThrottler.Throttle("Dumb dumb message"))
+                            IceLogging.Verbose("Not a valid mode was found. ICE. FIX THIS", tag);
                     }
-                }
-                else if (type == MissionTypes.Provisional && OnCorrectTabV2(type, missionInfo))
-                {
-                    if (missionInfo.StellerMissions.Count() > 0)
-                    {
-                        foreach (var missionId in missionList)
-                        {
-                            var mission = missionInfo.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
-                            if (mission != null)
-                            {
-                                LogInfo(missionId);
-                                Insert_GrabMissionTask(missionId);
-                                return true;
-                            }
-                        }
-                    }
-
-                    IceLogging.Info("No missions were found in the provisional tab, continuing on", tag);
-                    return true;
-                }
-                else if (type == MissionTypes.RedAlert && OnCorrectTabV2(type, missionInfo))
-                {
-                    if (missionInfo.StellerMissions.Count() > 0)
-                    {
-                        foreach (var missionId in missionList)
-                        {
-                            var mission = missionInfo.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
-                            if (mission != null)
-                            {
-                                LogInfo(missionId);
-                                Insert_GrabMissionTask(missionId);
-                                return true;
-                            }
-                        }
-                    }
-                    IceLogging.Info("No missions were found in the red alert tab, continuing on", tag);
-                    return true;
                 }
             }
             else
@@ -1096,38 +946,22 @@ namespace ICE.Scheduler.Tasks
             {
                 if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var missionInfo) && missionInfo.IsAddonReady)
                 {
-                    var selectMission = missionInfo.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
-                    if (selectMission != null)
+                    List<uint> viableMissions = new();
+                    viableMissions.Add(missionId);
+
+                    if (OpenCorrectTab(viableMissions, missionInfo))
                     {
-                        if (EzThrottler.Throttle("Selecting mission", 500))
-                            InitiateMission(missionId);
+                        var allmissions = CosmicHandler.AllMissions();
+                        if (allmissions.Contains(missionId))
+                        {
+                            if (EzThrottler.Throttle("Selecting Mission"))
+                                InitiateMission(missionId);
+                        }
                     }
                     else
                     {
-                        if (EzThrottler.Throttle("Selecting tab info correctly", 500))
-                        {
-                            if (EzThrottler.Throttle("Selecting the proper tab", 2000))
-                            {
-                                var sheetInfo = CosmicHelper.SheetMissionDict[missionId];
-                                if (sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential) || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather) 
-                                    || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
-                                {
-                                    missionInfo.ProvisionalMissions();
-                                }
-                                else if (sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
-                                {
-                                    missionInfo.CriticalMissions();
-                                }
-                                else
-                                {
-                                    missionInfo.BasicMissions();
-                                }
-                            }
-                            if (EzThrottler.Throttle("Counter Adder"))
-                            {
-                                retryCheck += 1;
-                            }
-                        }
+                        if (FrameThrottler.Throttle("Counter added", 8))
+                            retryCheck += 1;
 
                         if (retryCheck >= 4)
                         {
@@ -1470,6 +1304,78 @@ namespace ICE.Scheduler.Tasks
 
             return isGolded;
         }
+
+        // functions that are used across things
+        private static int JobTab(uint job)
+        {
+            int jobUnlocked = 0;
+            Dictionary<uint, int> jobTab = new();
+            for (int i = 0; i < CosmicHelper.SupportedJobs.Count(); i++)
+            {
+                var currentJob = CosmicHelper.SupportedJobs[i];
+                var level = Player.GetLevel((Job)currentJob);
+                if (level != 0)
+                {
+                    IceLogging.Verbose($"{currentJob} - tab: {jobUnlocked}");
+                    jobTab[currentJob] = jobUnlocked;
+                    jobUnlocked++;
+                }
+                else
+                {
+                    jobTab[currentJob] = 0;
+                }
+            }
+
+            return jobTab[job];
+        }
+        private static bool OpenCorrectTab(List<uint> missionList, WKSMission missionAddon)
+        {
+            string tag = "Opening Correct Tab";
+
+            var hudInfo = CosmicHandler.HudInfo();
+
+            var goalTab = 0;
+            foreach (var mission in missionList)
+            {
+                if (CosmicHelper.SheetMissionDict[mission].IsCritical)
+                {
+                    goalTab = 2;
+                    break;
+                }
+            }
+
+            if (hudInfo.SelectedTabIndex != goalTab)
+            {
+                if (FrameThrottler.Throttle("Selecting job", 8))
+                {
+                    IceLogging.Verbose("Selecting the basic tab because hard requirement for it (and we're needing basic missions)", tag);
+                    if (goalTab == 2)
+                        missionAddon.CriticalMissions();
+                    else
+                        missionAddon.BasicMissions();
+                }
+                return false;
+            }
+            else
+            {
+                var selectedJobTab = Mission_Settings.SelectedJob - 8;
+                if (hudInfo.SelectedJobIndex != selectedJobTab)
+                {
+                    if (FrameThrottler.Throttle("Tab swapping", 8))
+                    {
+                        IceLogging.Verbose("We're not on the standard tab, so we're going to initate swapping to it", tag);
+                        missionAddon.SelectClass[JobTab(Mission_Settings.SelectedJob)].Select();
+                    }
+                    return false;
+                }
+                else
+                {
+                    IceLogging.Verbose($"Job tab is on the correct one. Goal was job: {Mission_Settings.SelectedJob}", tag);
+                    return true;
+                }
+            }
+        }
+
         private static void Notes()
         {
             /*

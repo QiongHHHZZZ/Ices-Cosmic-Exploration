@@ -188,7 +188,7 @@ internal static class IceLogging
     public static class DestinationLogs
     {
         private static List<DestinationEntry> logs = new();
-        private static int maxDestinationCount = 3000;
+        private static int maxDestinationCount = 5000;
 
         public static IReadOnlyList<DestinationEntry> Logs => logs.AsReadOnly();
         public static void Log(Vector3 end)
@@ -203,7 +203,7 @@ internal static class IceLogging
     {
         private static List<LogEntry> logs = new();
         private static Dictionary<string, LogEntry> recentLogs = new(); // Track recent logs for time-window matching
-        private static int maxLogCount = 1000;
+        private static int maxLogCount = 10000;
         private static TimeSpan consolidationWindow = TimeSpan.FromMilliseconds(250); // Merge duplicates within 500ms
 
         public static IReadOnlyList<LogEntry> Logs => logs.AsReadOnly();

@@ -1,5 +1,6 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.ImGuiTools;
 using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.Settings;
@@ -62,20 +63,55 @@ if (ImGui.Checkbox(T("Auto Hide/Show Planet Tokens"), ref autoShowToken))
             C.Save();
         }
 
-        bool showManualMode = C.ShowManualMode;
-if (ImGui.Checkbox(T("Show Manual Mode Column"), ref showManualMode))
+        bool allowCriticalsAllClass = C.GrindOffClassRedAlert;
+        if (ImGui.Checkbox(T("Allow Criticals for all Classes"), ref allowCriticalsAllClass))
         {
-            C.ShowManualMode = showManualMode;
-            if (!showManualMode)
-            {
-                foreach (var mission in C.MissionConfig)
-                {
-                    mission.Value.ManualMode = false;
-                }
-            }
+            C.GrindOffClassRedAlert = allowCriticalsAllClass;
             C.Save();
         }
-        ImGuiEx.HelpMarker(T("Only enable this if you want plan on doing missions YOURSELF. AND NOT AUTOMATING IT. Or if you're letting a different plugin do all the automating of turning in, craftings, gathering... and not letting I.C.E. handle interacting with those plugins"));
+        ImGui_Ice.IconWithTooltip(Dalamud.Interface.FontAwesomeIcon.InfoCircle,
+            T("This will allow you to grind other classes for criticals/red alerts. (So if you're on crp, but a bsm red alert pops up)"));
+
+        bool showManualMode = C.ShowManualMode;
+        if (!showManualMode)
+        {
+            using (ImRaii.Disabled(!(ImGui.IsKeyDown(ImGuiKey.LeftShift) || ImGui.IsKeyDown(ImGuiKey.RightShift))))
+            {
+                if (ImGui.Checkbox(T("Show Manual Mode Column"), ref showManualMode))
+                {
+                    C.ShowManualMode = showManualMode;
+                    if (!showManualMode)
+                    {
+                        foreach (var mission in C.MissionConfig)
+                            mission.Value.ManualMode = false;
+                    }
+                    C.Save();
+                }
+            }
+            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(T("MAKE SURE TO READ THE INFO ON THE RIGHT !"));
+                ImGui.Text(T("If you've done so, you can hold shift to allow enabling this"));
+                ImGui.EndTooltip();
+            }
+        }
+        else
+        {
+            if (ImGui.Checkbox(T("Show Manual Mode Column"), ref showManualMode))
+            {
+                C.ShowManualMode = showManualMode;
+                if (!showManualMode)
+                {
+                    foreach (var mission in C.MissionConfig)
+                        mission.Value.ManualMode = false;
+                }
+                C.Save();
+            }
+        }
+
+        ImGuiEx.HelpMarker(T("Only enable this if you want plan on doing missions YOURSELF. AND NOT AUTOMATING IT. " +
+                             "Or if you're letting a different plugin do all the automating of turning in, craftings, gathering... and not letting I.C.E. handle interacting with those plugins"));
     }
 
     private static bool ApplyToAllClasses = true;

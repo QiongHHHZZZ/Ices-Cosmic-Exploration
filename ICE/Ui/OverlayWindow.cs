@@ -571,7 +571,7 @@ namespace ICE.Ui
         }
         private void ClassExpDetails()
         {
-            var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
+            var ScoreInfo = CosmicHelper.Cosmic_ClassInfo;
 
             if (C.ShowCurrentScore)
             {
@@ -657,7 +657,7 @@ namespace ICE.Ui
 
             if (C.ShowExpBars_HideWhenMaxed)
             {
-                var expInfo = CosmicHelper.Cosmic_ClassInfo();
+                var expInfo = CosmicHelper.Cosmic_ClassInfo;
                 var currentJobId = (uint)Player.Job;
                 if (expInfo.TryGetValue(currentJobId, out var jobInfo)
                     && jobInfo.CurrentExp.Count > 0

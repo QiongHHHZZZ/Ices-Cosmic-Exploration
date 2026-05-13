@@ -58,7 +58,7 @@ namespace ICE.Scheduler.Tasks
         private static bool? AgendaCheck()
         {
             var agenda = C.Cosmic_Agenda;
-            var relicProgress = CosmicHelper.Cosmic_ClassInfo();
+            var relicProgress = CosmicHelper.Cosmic_ClassInfo;
             PlayerHelper.GetItemCount(45690, out var creditAmount);
             int planetCreditAmount = 10000;
             var territory = Player.Territory.RowId;

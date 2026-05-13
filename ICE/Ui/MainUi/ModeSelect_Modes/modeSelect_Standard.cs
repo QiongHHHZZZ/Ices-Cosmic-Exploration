@@ -345,7 +345,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                             ImGui.Separator();
                             bool relic_AllowRedAlert = C.Relic_IncludeCriticals;
-                            if (ImGui.Checkbox(T("Allow Red Alerts for Relic"), ref relicGrindExpanded))
+                            if (ImGui.Checkbox(T("Allow Red Alerts for Relic"), ref relic_AllowRedAlert))
                             {
                                 C.Relic_IncludeCriticals = relic_AllowRedAlert;
                                 C.Save();
@@ -560,9 +560,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     if (!oizysEnabled && territoryId == 1310)
                         continue;
 
-                    bool provisional = mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather)
-                                    || mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
-                                    || mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential);
+                    bool provisional = mission.Value.IsProvisional;
+                    bool critical = mission.Value.IsCritical;
 
                     if (provisional)
                     {
@@ -584,14 +583,21 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             modeSelect_TableInfo.missionList["All Enabled"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
                         }
                     }
+                    else if (critical)
+                    {
+                        if (!C.GrindOffClassRedAlert && !Jobs.Contains(selectedJob))
+                            continue;
+                        else
+                            modeSelect_TableInfo.missionList["Critical"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
+
+
+                    }
                     else
                     {
                         if (!Jobs.Contains(selectedJob))
                             continue;
 
-                        if (mission.Value.Attributes.HasFlag(MissionAttributes.Critical))
-                            modeSelect_TableInfo.missionList["Critical"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        else if (mission.Value.Rank > 3)
+                        if (mission.Value.Rank > 3)
                             modeSelect_TableInfo.missionList["ARank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
                         else if (mission.Value.Rank == 3)
                             modeSelect_TableInfo.missionList["BRank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });

@@ -98,22 +98,20 @@ public static unsafe partial class CosmicHelper
         public uint ItemId { get; set; } 
         public int RequiredAmount { get; set; } 
         public uint RecipeId { get; set; }
+        public RecipeInfo RecipeInfo { get; set; } = new();
         public bool ExpertCraft { get; set; } = false;
         public Dictionary<uint, int> RequiredItems { get; set; } = new();
+        public int IconId { get; set; } = 0;
+        public string ItemName { get; set; } = "???";
     }
 
-    /// <summary>
-    /// Some things to note that I didn't realize until after I really dug into the sheet a bit more/cleaned this up. <br />
-    /// Sheet is: WKSMissionUnit <br />
-    /// <b>- Row 0:</b> Mission Name <br />
-    /// <b>- Row 2:</b> JobId attached to the quest (so 8 is CRP, 9 is BSM, etc.) <br />
-    /// <b>- Row 3:</b> 2nd Required job??? <br />
-    /// <b>- Row 4:</b> 3rd Required job??? <br />
-    /// <b>- Row 5:</b> Bool → Is it a critical mission? <br />
-    /// <b>- Row 6:</b> Rank → D = 1 | C = 2 | B = 3 | 4 = A-1 | 5 = A-2 | 6 = A-3 <br />
-    /// <b>- Row 7:</b> Mission time limit (seconds) <br />
-    /// <b>- Row 18:</b> Recipe # → Corresponds to the RecipeID
-    /// </summary>
+    public enum CompletionStatus
+    {
+        None,
+        Completed,
+        Gold,
+    }
+
     public class CosmicInfo
     {
         // - - - Crafter Specific - - - //
@@ -168,6 +166,7 @@ public static unsafe partial class CosmicHelper
         public uint GoldScore { get; set; } = 0;
         public uint TemporaryActionId { get; set; } = 0;
         public uint TemporaryActionCount { get; set; } = 0;
+        public CompletionStatus MissionStatus { get; set; } = CompletionStatus.None;
         public List<uint> SequenceMissions_Previous { get; set; } = new();
         public List<uint> SequenceMissions_Next { get; set; } = new();
 
@@ -176,6 +175,14 @@ public static unsafe partial class CosmicHelper
             || Attributes.HasFlag(MissionAttributes.ProvisionalTimed);
 
         public bool IsCritical => Attributes.HasFlag(MissionAttributes.Critical);
+        public bool IsWeather => Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
+        public bool IsTimed => Attributes.HasFlag(MissionAttributes.ProvisionalTimed);
+        public bool IsSequence => Attributes.HasFlag(MissionAttributes.ProvisionalSequential);
+        public bool ARank => Rank is 5 or 4;
+        public bool BRank => Rank is 3;
+        public bool CRank => Rank is 2;
+        public bool Drank => Rank is 1;
+
     }
 
     public static Dictionary<uint, CosmicInfo> SheetMissionDict = new();

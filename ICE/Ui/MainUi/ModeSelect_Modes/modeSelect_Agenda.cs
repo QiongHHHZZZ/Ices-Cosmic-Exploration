@@ -29,6 +29,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             PlaylistOptions.DronebitAmount,
 
             PlaylistOptions.ClassLevel,
+            PlaylistOptions.GoldClassMissions,
         };
 
         public static uint SelectedJob = 8;
@@ -528,7 +529,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             if (ImGui.IsItemHovered())
                             {
-                                var classScore = CosmicHelper.Cosmic_ClassInfo();
+                                var classScore = CosmicHelper.Cosmic_ClassInfo;
                                 if (classScore.TryGetValue(agendaInfo.SelectedJob, out var job))
                                 {
                                     ImGui.SetTooltip(T("Current Score: {0:N0}", job.Score));
@@ -636,7 +637,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                                or PlaylistOptions.SelectedRelicLv 
                                                or PlaylistOptions.ToolMaxExp)
                             {
-                                var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
+                                var ScoreInfo = CosmicHelper.Cosmic_ClassInfo;
 
                                 var jobInfo = ScoreInfo[job];
                                 current = MaxToolProgress(job);
@@ -682,6 +683,24 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     goal = agendaInfo.DronebitAmount;
                                 }
                             }
+                            else if (selectedOption is PlaylistOptions.ClassScore)
+                            {
+                                var ScoreInfo = CosmicHelper.Cosmic_ClassInfo;
+                                current = ScoreInfo[job].Score;
+                                goal = agendaInfo.ClassScore;
+                            }
+                            else if (selectedOption is PlaylistOptions.GoldClassMissions)
+                            {
+                                var totalCompleted = CosmicHelper.Cosmic_ClassInfo;
+                                var planet = Player.Territory.RowId;
+                                /*
+                                if (totalCompleted[job].MissionCompleted.TryGetValue(planet, out var completionRate))
+                                {
+                                    current = completionRate.TotalCompleted;
+                                    goal = completionRate.AllMissions.Count();
+                                }
+                                */
+                            }
 
                             var rowY = ImGui.GetCursorScreenPos().Y;
                             var rowHeight = ImGui.GetTextLineHeightWithSpacing();
@@ -692,8 +711,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text(T("Current: {0}", current));
-                                ImGui.Text(T("Goal: {0}", goal));
+                                ImGui.Text(T("Current: {0:N0}", current));
+                                ImGui.Text(T("Goal: {0:N0}", goal));
                                 ImGui.EndTooltip();
                             }
                         }
@@ -709,7 +728,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         {
             var max = 17;
 
-            var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
+            var ScoreInfo = CosmicHelper.Cosmic_ClassInfo;
             var jobInfo = ScoreInfo[job];
             if (jobInfo.Stage_Current != jobInfo.Stage_Next && getCurrent)
                 return jobInfo.Stage_Current;

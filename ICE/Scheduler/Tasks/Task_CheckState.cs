@@ -182,7 +182,7 @@ namespace ICE.Scheduler.Tasks
                     $"Main job for basic missions: {jobId}", tag);
                 IceLogging.Info("We're going to do our standard check of [If we need to stop] and [What we need to do before a mission]", tag);
 
-                var cosmicClassInfo = CosmicHelper.Cosmic_ClassInfo();
+                var cosmicClassInfo = CosmicHelper.Cosmic_ClassInfo;
                 if (C.StopWhenLevel)
                 {
                     var level = Player.GetLevel((Job)jobId);
@@ -320,7 +320,7 @@ namespace ICE.Scheduler.Tasks
             string tag = "[Agenda Check]";
 
             var agenda = C.Cosmic_Agenda;
-            var relicProgress = CosmicHelper.Cosmic_ClassInfo();
+            var relicProgress = CosmicHelper.Cosmic_ClassInfo;
             PlayerHelper.GetItemCount(45690, out var creditAmount);
             int planetCreditAmount = 10000;
             var territory = Player.Territory.RowId;
@@ -411,7 +411,7 @@ namespace ICE.Scheduler.Tasks
             string tag = "Task Check State: Hub Activity Check";
 
             var territoryId = Player.Territory.RowId;
-            var relicProgress = CosmicHelper.Cosmic_ClassInfo();
+            var relicProgress = CosmicHelper.Cosmic_ClassInfo;
 
             bool BuyDrones = false;
             bool GambaWheel = false;
@@ -421,6 +421,18 @@ namespace ICE.Scheduler.Tasks
 
             bool repairSelfGear = PlayerHelper.NeedsRepair(Char_Info.RepairPercent);
             bool repairAllGear = PlayerHelper.AnyNeedsRepair(Char_Info.RepairPercent) && Char_Info.RepairAllGear;
+
+            var eventInfo = CosmicHandler.EventInfo();
+            var worldState = eventInfo.Value.wksEvent;
+
+            if (C.DisableHub_Critical && worldState is CosmicHandler.WKSEvents.RedAlert_Progressing)
+            {
+                IceLogging.Info("We currently have a red alert up, and we were told NOT to go to the hub for hub related activities, so we're not going to do so\n" +
+                    "Progressing to grabbing missions", tag);
+                SchedulerMain.State = IceState.GrabMission;
+
+                return true;
+            }
 
             IceLogging.Verbose($"Repair Class: {repairSelfGear} | Repair All: {repairAllGear}", tag);
 

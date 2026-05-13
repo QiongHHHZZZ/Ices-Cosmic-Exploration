@@ -155,6 +155,13 @@ if (ImGui.Checkbox(T("Disable Pathfinding to Red Alerts"), ref DisableRedAlertPa
                 C.DisablePathfindingToRedAlert = DisableRedAlertPathing;
                 C.Save();
             }
+
+            bool DisableHubActivies_RE = C.DisableHub_Critical;
+            if (ImGui.Checkbox(T("Don't do hub activities when a red alert is active"), ref DisableHubActivies_RE))
+            {
+                C.DisableHub_Critical = DisableHubActivies_RE;
+                C.Save();
+            }
         }
         private static void StuckSettings()
         {

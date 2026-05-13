@@ -1211,11 +1211,15 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "Travel: Via RedAlert NPC";
 
+            IceLogging.Verbose("Travel via Npc commenced", tag);
+
             if (CosmicHelper.CriticalLocations.TryGetValue(missionId, out var redAlert))
             {
                 if (Player.DistanceTo(redAlertNpc.Location_Circle) < 5)
                 {
-                    if (GenericHelpers.TryGetAddonMaster<SelectString>(out var selectString))
+                    IceLogging.Verbose("Close enough to npc to travel", tag);
+
+                    if (GenericHelpers.TryGetAddonMaster<SelectString>(out var selectString) && selectString.IsAddonReady)
                     {
                         if (EzThrottler.Throttle("Selecting teleport option"))
                         {
@@ -1223,7 +1227,12 @@ namespace ICE.Scheduler.Tasks
                             selectString.Entries[redAlert.NpcSelection].Select();
                         }
                     }
-                    else if (GenericHelpers.TryGetAddonMaster<Talk>(out var talk))
+                    else if (GenericHelpers.TryGetAddonMaster<SelectYesno>(out var yesNo) && yesNo.IsAddonReady)
+                    {
+                        if (EzThrottler.Throttle("Selecting yes"))
+                            yesNo.Yes();
+                    }
+                    else if (GenericHelpers.TryGetAddonMaster<Talk>(out var talk) && talk.IsAddonReady)
                     {
                         if (EzThrottler.Throttle("Clicking on talk", 100))
                         {
@@ -1232,24 +1241,29 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
+                        if (EzThrottler.Throttle("Log Message"))
+                            IceLogging.Verbose("Should be interacting here...", tag);
+
                         var npc = Svc.Objects.Where(x => x.BaseId == redAlertNpc.NpcId).FirstOrDefault();
                         if (npc != null)
                         {
                             if (Player.Mounted || Player.IsJumping)
+                            {
                                 Utils.Dismount();
-                            return false;
-                        }
-                        else if (!Player.IsBusy)
-                        {
+                                return false;
+                            }
+
                             if (EzThrottler.Throttle("Target + Interact"))
                             {
                                 Utils.TargetgameObject(npc);
                                 Utils.InteractWithObject(npc);
                             }
+
+                            return false;
                         }
                     }
                 }
-                else if (Player.DistanceTo(redAlert.RawLocation) < 20)
+                else if (Player.DistanceTo(redAlert.RawLocation) < 75)
                 {
                     if (!PlayerHelper.IsScreenReady())
                         return false;

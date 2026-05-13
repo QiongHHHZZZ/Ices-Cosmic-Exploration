@@ -30,14 +30,24 @@ public static partial class CosmicHelper
         info.Durability = RecipeDurability(recipeSheet);
         info.Quality = recipeLevelValue == 0 ? RecipeMaxQuality(recipeSheet, levelTable) : RecipeMaxQuality(recipeSheet);
 
+        /*
+        var recipe = Svc.Data.GetExcelSheet<Recipe>().GetRow(recipeId);
+        var level = 100;
+        var lt = recipe.Number == 0 && level < 100 ? Svc.Data.GetExcelSheet<RecipeLevelTable>().First(x => x.ClassJobLevel == 100) : recipe.RecipeLevelTable.Value;
+
+        info.Durability = RecipeDurability(recipe);
+        info.Progress = recipe.Number == 0 ? RecipeDifficulty(recipe, lt) : RecipeDifficulty(recipe);
+        info.Quality = recipe.Number == 0 ? RecipeMaxQuality(recipe, lt) : RecipeMaxQuality(recipe);
+        */
+
         return info;
     }
-
-    public static int RecipeDifficulty(Recipe recipe, RecipeLevelTable leveltable) => leveltable.Difficulty * recipe.DifficultyFactor / 100;
-    public static int RecipeMaxQuality(Recipe recipe, RecipeLevelTable leveltable) => (int)(leveltable.Quality * recipe.QualityFactor / 100);
-    public static int RecipeDurability(Recipe recipe, RecipeLevelTable leveltable) => leveltable.Durability * recipe.DurabilityFactor / 100;
 
     public static int RecipeDifficulty(Recipe recipe) => recipe.RecipeLevelTable.Value.Difficulty * recipe.DifficultyFactor / 100;
     public static int RecipeMaxQuality(Recipe recipe) => (int)(recipe.RecipeLevelTable.Value.Quality * recipe.QualityFactor / 100);
     public static int RecipeDurability(Recipe recipe) => recipe.RecipeLevelTable.Value.Durability * recipe.DurabilityFactor / 100;
+
+    public static int RecipeDifficulty(Recipe recipe, RecipeLevelTable leveltable) => leveltable.Difficulty * recipe.DifficultyFactor / 100;
+    public static int RecipeMaxQuality(Recipe recipe, RecipeLevelTable leveltable) => (int)(leveltable.Quality * recipe.QualityFactor / 100);
+    public static int RecipeDurability(Recipe recipe, RecipeLevelTable leveltable) => leveltable.Durability * recipe.DurabilityFactor / 100;
 }

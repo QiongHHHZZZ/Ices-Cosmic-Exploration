@@ -21,7 +21,7 @@ public static unsafe partial class CosmicHelper
             PlaylistOptions.DronebitAmount => T("Planetary Dronebit Amount"),
             PlaylistOptions.ClassLevel => T("Class Level"),
             PlaylistOptions.ClassScore => T("Class Score"),
-            // PlaylistOptions.GoldClassMissions => "All Missions Golded",
+            PlaylistOptions.GoldClassMissions => T("All Missions Golded"),
             PlaylistOptions.ToolMaxExp => T("Max Tool Exp"),
             _ => T("???")
         };

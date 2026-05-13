@@ -52,7 +52,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             }
             ImGui.EndChild();
         }
-
         private static void ClassSelection()
         {
             if (ImGui.BeginTable("Class Selection Table", 2, ImGuiTableFlags.SizingFixedFit))
@@ -90,14 +89,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 ImGui.EndTable();
             }
         }
-
         private static Dictionary<ExpeditionTabs, List<uint>> MissionList = new()
         {
             [ExpeditionTabs.Sinus] = new(),
             [ExpeditionTabs.Phaenna] = new(),
             [ExpeditionTabs.Oizys] = new(),
         };
-
         private static void ClassDetails()
         {
             float scale = ImGuiHelpers.GlobalScale;
@@ -134,7 +131,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(SelectedJob)).Where(x => x.Value.TerritoryId == moon.Territory))
                         {
                             missions.Add(mission.Key);
-                            if (MissionGold(mission.Key))
+                            if (mission.Value.MissionStatus is CosmicHelper.CompletionStatus.Gold)
                                 completed += 1;
                         }
                     }
@@ -143,7 +140,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == moon.Territory))
                         {
                             missions.Add(mission.Key);
-                            if (MissionGold(mission.Key))
+                            if (mission.Value.MissionStatus is CosmicHelper.CompletionStatus.Gold)
                                 completed += 1;
                         }
                     }
@@ -176,7 +173,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 ImGui.EndChild();
             }
         }
-
         public static bool DrawImageTabButton(string label, ExpeditionTabs tab, ref ExpeditionTabs selectedTab, IDalamudTextureWrap? image = null, float spacingAfter = 5, bool disabled = false, Vector2? uv0 = null, Vector2? uv1 = null)
         {
             float scale = ImGuiHelpers.GlobalScale;
@@ -236,15 +232,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             return isSelected;
         }
-
-        public static unsafe bool MissionGold(uint missionId)
-        {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return false;
-
-            return managerPtr->IsMissionGolded(missionId);
-        }
-
         public static void MissionTable(List<uint> missions)
         {
             int GetMissionPriority(CosmicHelper.CosmicInfo info) => info.Attributes switch
@@ -291,7 +278,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         var missionConfig = C.MissionConfig[Id];
                         var missionInfo = CosmicHelper.SheetMissionDict[Id];
 
-                        if (HideCompleted && MissionGold(Id))
+                        if (HideCompleted && missionInfo.MissionStatus is CosmicHelper.CompletionStatus.Gold)
                             continue;
 
                         ImGui.TableNextRow();
@@ -336,85 +323,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
 
                         ImGui.TableNextColumn();
-                        if (missionInfo.Rankv2 == MissionClass.Critical)
-                        {
-                            string asset = "ICE.Resources.Red_Alert.png";
-                            var texture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), asset).GetWrapOrEmpty();
-                            ImGui.Image(texture.Handle, new(23, 23));
-                        }
-                        else if (missionInfo.Rankv2 == MissionClass.Weather)
-                        {
-                            if (CosmicHelper.WeatherIds.ContainsKey(missionInfo.Weather))
-                            {
-                                ISharedImmediateTexture? weatherIcon = CosmicHelper.WeatherIconDict[missionInfo.Weather];
-                                Vector2 ImageSize = new Vector2(23, 23);
-                                ImGui.Image(weatherIcon.GetWrapOrEmpty().Handle, ImageSize);
-                            }
-                            else
-                            {
-                                ImGui_Ice.Table_FontCenter(FontAwesomeIcon.Cloud);
-                            }
-
-                            if (ImGui.IsItemHovered())
-                            {
-                                ImGui.BeginTooltip();
-                                ImGui.Text(T("Weather: {0}", T(CosmicHelper.GetCosmicWeatherName(missionInfo.Weather))));
-                                ImGui.EndTooltip();
-                            }
-                        }
-                        else if (missionInfo.Rankv2 == MissionClass.Timed)
-                        {
-                            ImGui_Ice.Table_FontCenter(FontAwesomeIcon.Clock);
-                            if (ImGui.IsItemHovered())
-                            {
-                                ImGui.BeginTooltip();
-                                ImGui.Text($"{missionInfo.StartTime}:00 - {missionInfo.EndTime - 1}:59");
-                                ImGui.EndTooltip();
-                            }
-                        }
-                        else if (missionInfo.Rankv2 == MissionClass.Sequence)
-                        {
-                            ImGui_Ice.Table_FontCenter(FontAwesomeIcon.ListOl);
-                            if (ImGui.IsItemHovered())
-                            {
-                                ImGui.BeginTooltip();
-                                ImGui.Text(T("Sequence Missions"));
-                                if (missionInfo.SequenceMissions_Previous.Count() != 0)
-                                {
-                                    ImGui.Separator();
-                                    ImGui.Text(T("Previous Missions"));
-                                    foreach (var prevMission in missionInfo.SequenceMissions_Previous)
-                                    {
-                                        ImGui.Text($"[{prevMission}] - {CosmicHelper.SheetMissionDict[prevMission].Name}");
-                                    }
-                                }
-
-                                if (missionInfo.SequenceMissions_Next.Count() != 0)
-                                {
-                                    ImGui.Separator();
-                                    ImGui.Text(T("Next Missions"));
-                                    foreach (var nextMission in missionInfo.SequenceMissions_Next)
-                                    {
-                                        ImGui.Text($"[{nextMission}] - {CosmicHelper.SheetMissionDict[nextMission].Name}");
-                                    }
-                                }
-                                ImGui.EndTooltip();
-                            }
-                        }
-                        else
-                        {
-                            var rankText = missionInfo.Rankv2 switch
-                            {
-                                MissionClass.Ex => "A",
-                                MissionClass.A => "A",
-                                MissionClass.B => "B",
-                                MissionClass.C => "C",
-                                MissionClass.D => "D",
-                                _ => "???",
-                            };
-                            ImGui.AlignTextToFramePadding();
-                            ImGui.Text(rankText);
-                        }
+                        MissionTypeButton(missionInfo);
 
                         ImGui.TableNextColumn();
                         if (C.HighlightVisibleMissions)
@@ -431,7 +340,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui_Ice.Table_FullCenterText(Id.ToString());
 
                         ImGui.TableNextColumn();
-                        CompletionStatus_Formatted(Id);
+                        ImGui_Ice.CompletionStatusButton(missionInfo);
 
                         ImGui.TableNextColumn();
                         ImGui.TextColored(ImGuiColors.DalamudWhite2, missionInfo.Name);
@@ -966,7 +875,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 ImGui.Text(T("The following missions are required to have gold before you can do this one"));
                                 foreach (var mission in unlock)
                                 {
-                                    modeSelect_TableInfo.CompletionStatus_Normal(mission);
+                                    ImGui_Ice.CompletionStatusIcon(CosmicHelper.SheetMissionDict[mission]);
                                     ImGui.SameLine();
                                     ImGui.Text($"[{mission}] - {CosmicHelper.SheetMissionDict[mission].Name}");
                                 }
@@ -1016,7 +925,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         }
         public static void ClassProgress()
         {
-            var expInfo = CosmicHelper.Cosmic_ClassInfo();
+            var expInfo = CosmicHelper.Cosmic_ClassInfo;
 
             if (SelectedJob == 0)
             {
@@ -1194,56 +1103,93 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 }
             }
         }
-        private static unsafe void CompletionStatus_Formatted(uint id)
+        private static void MissionTypeButton(CosmicHelper.CosmicInfo missionInfo)
         {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return;
-
-            var manager = managerPtr;
-            var isCompleted = manager->IsMissionCompleted(id);
-            var isGold = manager->IsMissionGolded(id);
-
-            float availableWidth = ImGui.GetContentRegionAvail().X;
-
-            if (isCompleted)
+            if (missionInfo.IsCritical)
             {
-                if (isGold)
+                var texture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), "ICE.Resources.Red_Alert.png").GetWrapOrEmpty();
+                DrawCenteredImage(texture, 23f);
+            }
+            else if (missionInfo.IsWeather)
+            {
+                if (CosmicHelper.WeatherIds.ContainsKey(missionInfo.Weather))
                 {
-                    // Center the image
-                    float imageWidth = 23f;
-                    float offsetX = (availableWidth - imageWidth) * 0.5f;
-
-                    if (offsetX > 0)
-                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offsetX);
-
-                    if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex)
-                    {
-                        if (tex.TryGetWrap(out var wrap, out var exc))
-                        {
-                            var cursorPos = ImGui.GetCursorPos();
-                            var availWidth = ImGui.GetContentRegionAvail().X;
-                            var availHeight = ImGui.GetFrameHeight();
-
-                            // Center horizontally
-                            ImGui.SetCursorPosX(cursorPos.X + (availWidth - 23) * 0.5f);
-
-                            // Center vertically
-                            ImGui.SetCursorPosY(cursorPos.Y + (availHeight - 23) * 0.5f);
-                            ImGui.Image(wrap.Handle, new Vector2(23, 23), new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
-                        }
-                    }
+                    var weatherIcon = CosmicHelper.WeatherIconDict[missionInfo.Weather].GetWrapOrEmpty();
+                    DrawCenteredImage(weatherIcon, 23f);
                 }
                 else
                 {
-                    ImGui.AlignTextToFramePadding();
-                    ImGui_Ice.Table_FullCenterText(FontAwesome.Check, EColor.Green);
+                    ImGui_Ice.Table_FullCenterFont(FontAwesomeIcon.Cloud);
+                }
+
+                if (ImGui.IsItemHovered())
+                    DrawTooltip(() => ImGui.Text(T("Weather: {0}", T(CosmicHelper.GetCosmicWeatherName(missionInfo.Weather)))));
+            }
+            else if (missionInfo.IsTimed)
+            {
+                ImGui_Ice.Table_FullCenterFont(FontAwesomeIcon.Clock);
+
+                if (ImGui.IsItemHovered())
+                    DrawTooltip(() => ImGui.Text($"{missionInfo.StartTime}:00 - {missionInfo.EndTime - 1}:59"));
+            }
+            else if (missionInfo.IsSequence)
+            {
+                ImGui_Ice.Table_FullCenterFont(FontAwesomeIcon.ListOl);
+
+                if (ImGui.IsItemHovered())
+                {
+                    DrawTooltip(() =>
+                    {
+                        ImGui.Text(T("Sequence Missions"));
+
+                        if (missionInfo.SequenceMissions_Previous.Any())
+                        {
+                            ImGui.Separator();
+                            ImGui.Text(T("Previous Missions"));
+                            foreach (var prev in missionInfo.SequenceMissions_Previous)
+                                ImGui.Text($"[{prev}] - {CosmicHelper.SheetMissionDict[prev].Name}");
+                        }
+
+                        if (missionInfo.SequenceMissions_Next.Any())
+                        {
+                            ImGui.Separator();
+                            ImGui.Text(T("Next Missions"));
+                            foreach (var next in missionInfo.SequenceMissions_Next)
+                                ImGui.Text($"[{next}] - {CosmicHelper.SheetMissionDict[next].Name}");
+                        }
+                    });
                 }
             }
             else
             {
-                ImGui.AlignTextToFramePadding();
-                ImGui_Ice.Table_FullCenterText(FontAwesome.Cross, EColor.Red);
+                var rank = missionInfo switch
+                {
+                    { ARank: true } => "A",
+                    { BRank: true } => "B",
+                    { CRank: true } => "C",
+                    { Drank: true } => "D",
+                    _ => ""
+                };
+
+                if (rank.Length > 0)
+                    ImGui_Ice.Table_FullCenterText(rank);
             }
+        }
+        private static void DrawCenteredImage(IDalamudTextureWrap image, float size)
+        {
+            var cellWidth = ImGui.GetContentRegionAvail().X;
+            var cellHeight = ImGui.GetFrameHeight();
+            var cursor = ImGui.GetCursorPos();
+
+            ImGui.SetCursorPosX(cursor.X + (cellWidth - size) * 0.5f);
+            ImGui.SetCursorPosY(cursor.Y + (cellHeight - size) * 0.5f);
+            ImGui.Image(image.Handle, new Vector2(size));
+        }
+        private static void DrawTooltip(Action content)
+        {
+            ImGui.BeginTooltip();
+            content();
+            ImGui.EndTooltip();
         }
     }
 }

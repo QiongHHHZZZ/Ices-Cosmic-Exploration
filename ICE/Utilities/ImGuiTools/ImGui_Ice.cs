@@ -797,7 +797,7 @@ public static partial class ImGui_Ice
     // Quick access functions that are used in multiple places
     public static void Draw_ExpTable(uint jobId, Vector2? Barsize = null)
     {
-        var ExpInfo = CosmicHelper.Cosmic_ClassInfo();
+        var ExpInfo = CosmicHelper.Cosmic_ClassInfo;
         if (ExpInfo.TryGetValue(jobId, out var jobInfo))
         {
             foreach (var exp in jobInfo.CurrentExp.Values)
@@ -822,77 +822,10 @@ public static partial class ImGui_Ice
             }
         }
     }
-    public static bool Table_CenterCheckbox(string id, ref bool value)
+    public static void WindowSpacer()
     {
-        var cursorPos = ImGui.GetCursorPos();
-        var availWidth = ImGui.GetContentRegionAvail().X;
-
-        var checkboxSize = ImGui.GetFrameHeight();
-        ImGui.SetCursorPosX(cursorPos.X + (availWidth - checkboxSize) * 0.5f);
-        ImGui.AlignTextToFramePadding();
-
-        return ImGui.Checkbox($"##{id}", ref value);
-    }
-    public static void Table_FullCenterText(string text)
-    {
-        var cursorPosX = ImGui.GetCursorPosX();
-        var availWidth = ImGui.GetContentRegionAvail().X;
-        var textWidth = ImGui.CalcTextSize(text).X;
-
-        ImGui.SetCursorPosX(cursorPosX + (availWidth - textWidth) * 0.5f);
-        ImGui.AlignTextToFramePadding();
-
-        ImGui.TextUnformatted(text);
-    }
-    public static void Table_FullCenterText(string icon, Vector4 color)
-    {
-        var cursorPosX = ImGui.GetCursorPosX();
-        var availWidth = ImGui.GetContentRegionAvail().X;
-        var textWidth = ImGui.CalcTextSize(icon).X;
-
-        ImGui.SetCursorPosX(cursorPosX + (availWidth - textWidth) * 0.5f);
-        ImGui.AlignTextToFramePadding();
-
-        FontAwesome.Print(color, icon);
-    }
-    public static void Table_FontFullCenter(FontAwesomeIcon icon)
-    {
-        var cursorPosX = ImGui.GetCursorPosX();
-        var availWidth = ImGui.GetContentRegionAvail().X;
-        var textWidth = ImGui.CalcTextSize(icon.ToIconString()).X;
-
-        ImGui.SetCursorPosX(cursorPosX + (availWidth - textWidth) * 0.5f);
-        ImGui.AlignTextToFramePadding();
-
-        ImGui.PushFont(UiBuilder.IconFont);
-        ImGui.Text(icon.ToIconString());
-        ImGui.PopFont();
-    }
-    public static bool Table_CenteredButton(string label, Vector2? buttonSize = null)
-    {
-        var cursorPosX = ImGui.GetCursorPosX();
-        var availWidth = ImGui.GetContentRegionAvail().X;
-
-        Vector2 actualButtonSize;
-        if (buttonSize.HasValue)
-        {
-            actualButtonSize = buttonSize.Value;
-        }
-        else
-        {
-            var textSize = ImGui.CalcTextSize(label);
-            var framePadding = ImGui.GetStyle().FramePadding;
-            actualButtonSize = new Vector2(textSize.X + framePadding.X * 2 + 10f, textSize.Y + framePadding.Y * 2);
-        }
-
-        ImGui.SetCursorPosX(cursorPosX + (availWidth - actualButtonSize.X) * 0.5f);
-        return ImGui.Button(label, actualButtonSize);
-    }
-    public static void Table_FontCenter(FontAwesomeIcon icon)
-    {
-        ImGui.AlignTextToFramePadding();
-        ImGui.PushFont(UiBuilder.IconFont);
-        ImGui.Text(icon.ToIconString());
-        ImGui.PopFont();
+        ImGui.Dummy(new Vector2(0, 5));
+        ImGui.Separator();
+        ImGui.Dummy(new Vector2(0, 5));
     }
 }

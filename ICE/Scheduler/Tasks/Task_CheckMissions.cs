@@ -1,5 +1,6 @@
 ﻿using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Sounds;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
@@ -179,7 +180,7 @@ namespace ICE.Scheduler.Tasks
 
                         if (C.XPRelicOnlyEnabled)
                         {
-                            if (config.Enabled)
+                            if (config.Enabled && mission.Value.Jobs.Contains(Mission_Settings.SelectedJob))
                                 MissionLibrary[LibraryInfo(mission)].Add(missionId);
                         }
                         else
@@ -274,8 +275,19 @@ namespace ICE.Scheduler.Tasks
 
             if (MissionLibrary.All(x => x.Value.Count == 0))
             {
-                IceLogging.Verbose("We currently have no viable missions... which is odd. Please make sure you have some enabled, or report back if this is incorrect\n" +
-                    $"Config Mode: {C.SelectedMode} | Mode going into this: {Mission_Settings.Mode}", tag);
+                if (modeSelected == ModeSelect.RelicMode && C.XPRelicOnlyEnabled)
+                {
+                    IceLogging.ChatInfo("\"Only selected missions\" is enabled for Relic Grind, but no selected missions match your current job. Please select missions for this job, switch jobs, or disable the option.", "[I.C.E.]");
+                    if (C.PlaySoundAlert)
+                    {
+                        _ = SoundPlayer.PlaySoundAsync();
+                    }
+                }
+                else
+                {
+                    IceLogging.Verbose("We currently have no viable missions... which is odd. Please make sure you have some enabled, or report back if this is incorrect\n" +
+                        $"Config Mode: {C.SelectedMode} | Mode going into this: {Mission_Settings.Mode}", tag);
+                }
 
                 SchedulerMain.State = IceState.Idle;
                 P.TaskManager.Tasks.Clear();

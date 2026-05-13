@@ -551,65 +551,71 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     bool phaennaEnabled = C.ShowPhaennaMissions;
                     bool oizysEnabled = C.ShowOizysMissions;
 
-                    if (!sinusEnabled && territoryId == 1237)
-                        continue;
-
-                    if (!phaennaEnabled && territoryId == 1291)
-                        continue;
-
-                    if (!oizysEnabled && territoryId == 1310)
-                        continue;
-
-                    bool provisional = mission.Value.IsProvisional;
-                    bool critical = mission.Value.IsCritical;
-
-                    if (provisional)
+                    if (C.MissionConfig.TryGetValue(mission.Key, out var config))
                     {
-                        if (!C.GrindAllProvisionals)
+                        if (!sinusEnabled && territoryId == 1237)
+                            continue;
+
+                        if (!phaennaEnabled && territoryId == 1291)
+                            continue;
+
+                        if (!oizysEnabled && territoryId == 1310)
+                            continue;
+
+                        bool provisional = mission.Value.IsProvisional;
+                        bool critical = mission.Value.IsCritical;
+
+                        if (provisional)
+                        {
+                            if (!C.GrindAllProvisionals)
+                            {
+                                if (!Jobs.Contains(selectedJob))
+                                    continue;
+                            }
+
+                            if (mission.Value.IsWeather)
+                                modeSelect_TableInfo.missionList["Weather"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = config.Enabled });
+                            else if (mission.Value.IsTimed)
+                                modeSelect_TableInfo.missionList["Timed"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = config.Enabled });
+                            else if (mission.Value.IsSequence)
+                                modeSelect_TableInfo.missionList["Sequence"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = config.Enabled });
+
+                            if (C.MissionConfig.ContainsKey(mission.Key) && config.Enabled)
+                            {
+                                modeSelect_TableInfo.missionList["All Enabled"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = config.Enabled });
+                            }
+                        }
+                        else if (critical)
+                        {
+                            if (!C.GrindOffClassRedAlert && !Jobs.Contains(selectedJob))
+                                continue;
+                            else
+                                modeSelect_TableInfo.missionList["Critical"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = config.Enabled });
+                        }
+                        else
                         {
                             if (!Jobs.Contains(selectedJob))
                                 continue;
+
+                            if (mission.Value.Rank > 3)
+                                modeSelect_TableInfo.missionList["ARank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = config.Enabled });
+                            else if (mission.Value.Rank == 3)
+                                modeSelect_TableInfo.missionList["BRank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = config.Enabled });
+                            else if (mission.Value.Rank == 2)
+                                modeSelect_TableInfo.missionList["CRank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = config.Enabled });
+                            else if (mission.Value.Rank == 1)
+                                modeSelect_TableInfo.missionList["DRank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = config.Enabled });
+
+                            if (C.MissionConfig.ContainsKey(mission.Key) && config.Enabled)
+                            {
+                                modeSelect_TableInfo.missionList["All Enabled"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = config.Enabled });
+                            }
                         }
-
-                        if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
-                            modeSelect_TableInfo.missionList["Weather"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
-                            modeSelect_TableInfo.missionList["Timed"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
-                            modeSelect_TableInfo.missionList["Sequence"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-
-                        if (C.MissionConfig.ContainsKey(mission.Key) && C.MissionConfig[mission.Key].Enabled)
-                        {
-                            modeSelect_TableInfo.missionList["All Enabled"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        }
-                    }
-                    else if (critical)
-                    {
-                        if (!C.GrindOffClassRedAlert && !Jobs.Contains(selectedJob))
-                            continue;
-                        else
-                            modeSelect_TableInfo.missionList["Critical"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-
-
                     }
                     else
                     {
-                        if (!Jobs.Contains(selectedJob))
-                            continue;
-
-                        if (mission.Value.Rank > 3)
-                            modeSelect_TableInfo.missionList["ARank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        else if (mission.Value.Rank == 3)
-                            modeSelect_TableInfo.missionList["BRank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        else if (mission.Value.Rank == 2)
-                            modeSelect_TableInfo.missionList["CRank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        else if (mission.Value.Rank == 1)
-                            modeSelect_TableInfo.missionList["DRank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-
-                        if (C.MissionConfig.ContainsKey(mission.Key) && C.MissionConfig[mission.Key].Enabled)
-                        {
-                            modeSelect_TableInfo.missionList["All Enabled"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        }
+                        C.MissionConfig[mission.Key] = new();
+                        C.SaveDebounced();
                     }
                 }
 

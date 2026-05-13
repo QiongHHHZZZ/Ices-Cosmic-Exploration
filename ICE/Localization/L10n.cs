@@ -682,6 +682,7 @@ internal static class L10n
         ["Turnin if relic is complete##RelicTurnin_RelicGrind"] = "宇宙工具完成时自动交付##RelicTurnin_RelicGrind",
         ["Turnin if relic is complete##RelicTurnin_GeneralSetting"] = "宇宙工具完成时自动交付##RelicTurnin_GeneralSetting",
         ["Only selected missions"] = "仅执行已勾选任务",
+        ["\"Only selected missions\" is enabled for Relic Grind, but no selected missions match your current job. Please select missions for this job, switch jobs, or disable the option."] = "遗物刷取已启用“仅执行已勾选任务”，但当前职业没有匹配的已选任务。请为该职业勾选任务、切换职业，或关闭此选项。",
         ["Ignore Manual Mode Missions"] = "忽略手动模式任务",
         ["Save Current Mission Preset"] = "保存当前任务预设",
         ["Playlist Name"] = "预设名称",

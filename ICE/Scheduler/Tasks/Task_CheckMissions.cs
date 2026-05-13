@@ -6,6 +6,7 @@ using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using System.Globalization;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Localization.L10n;
 using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
 
 namespace ICE.Scheduler.Tasks
@@ -277,7 +278,7 @@ namespace ICE.Scheduler.Tasks
             {
                 if (modeSelected == ModeSelect.RelicMode && C.XPRelicOnlyEnabled)
                 {
-                    IceLogging.ChatInfo("\"Only selected missions\" is enabled for Relic Grind, but no selected missions match your current job. Please select missions for this job, switch jobs, or disable the option.", "[I.C.E.]");
+                    IceLogging.ChatInfo(T("\"Only selected missions\" is enabled for Relic Grind, but no selected missions match your current job. Please select missions for this job, switch jobs, or disable the option."), "[I.C.E.]");
                     if (C.PlaySoundAlert)
                     {
                         _ = SoundPlayer.PlaySoundAsync();

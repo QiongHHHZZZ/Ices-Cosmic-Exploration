@@ -267,9 +267,8 @@ public static partial class CosmicHelper
         AddKeys(AnnealingWinds1α, 1028, 1032, 1037);
         AddKeys(AnnealingWinds1β, 1011, 1020, 1035);
 
-        // Annealing Winds 2/β
-        AddKeys(AnnealingWinds2α, 1013, 1029, 1038);
-        AddKeys(AnnealingWinds2β, 1008, 1036);
+        AddKeys(AnnealingWinds2α, 1008, 1036);
+        AddKeys(AnnealingWinds2β, 1013, 1029, 1038);
 
         // Glass Rain 1/α
         AddKeys(GlassRain1α, 1009, 1014, 1021);

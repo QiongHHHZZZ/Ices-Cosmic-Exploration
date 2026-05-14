@@ -128,6 +128,19 @@ public static partial class CosmicHelper
         [18] = new(),
     };
 
+    public static ulong _LastCid = 0;
+    public static void CheckForUpdate()
+    {
+        var currentId = Player.CID;
+        if (currentId != 0 && _LastCid != currentId && !P.TaskManager.IsBusy)
+        {
+            IceLogging.Verbose("Updating cosmic stats to reflect the currect stats", "Updating Mission Stats");
+            P.TaskManager.Enqueue(() => SendCosmicUpdate(), "Updating stats for characters");
+            _LastCid = currentId;
+        }
+    }
+
+
     public unsafe static void UpdateClassInfo()
     {
         Dictionary<uint, ClassInfo> cosmicClassInfo = new()
@@ -191,7 +204,10 @@ public static partial class CosmicHelper
             for (byte type = 1; type <= MaxXpKind; type++)
             {
                 if (!researchModuleFuncs->IsTypeAvailable(toolClassId, type))
+                {
+                    IceLogging.Verbose($"Type wasn't available: {type}");
                     break;
+                }
 
                 entry.CurrentExp[type] = new()
                 {
@@ -219,20 +235,36 @@ public static partial class CosmicHelper
 
         if (PlayerHelper.IsInCosmicZone())
         {
-            var wksManagerPtr = WKSManager.Instance();
-            if (wksManagerPtr == null)
+            if (PlayerHelper.IsScreenReady())
             {
-                if (EzThrottler.Throttle("Update Stats"))
-                    IceLogging.Verbose("Waiting for the wksManager to be loaded", tag);
+                var wksManagerPtr = WKSManager.Instance();
+                var researchModule = wksManagerPtr->ResearchModule;
+                if (wksManagerPtr == null)
+                {
+                    if (EzThrottler.Throttle("Update Stats"))
+                        IceLogging.Verbose("Waiting for the wksManager to be loaded", tag);
 
-                return false;
+                    return false;
+                }
+                else if (researchModule == null || !researchModule->IsLoaded)
+                {
+                    if (EzThrottler.Throttle("Waiting for research"))
+                        IceLogging.Verbose("Waiting for research module to be loaded", tag);
+
+                    return false;
+                }
+                else
+                {
+                    UpdateClassInfo();
+                    UpdateMissionStatus();
+                    IceLogging.Verbose("Updated cosmic dictionary to have proper values", tag);
+                    return true;
+                }
             }
             else
             {
-                UpdateClassInfo();
-                UpdateMissionStatus();
-                IceLogging.Verbose("Updated cosmic dictionary to have proper values", tag);
-                return true;
+                IceLogging.Verbose("Waiting for screen to be ready...", tag);
+                return false;
             }
         }
         else

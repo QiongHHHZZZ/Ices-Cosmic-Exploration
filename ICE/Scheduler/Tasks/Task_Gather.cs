@@ -894,19 +894,21 @@ namespace ICE.Scheduler.Tasks
         }
         public static unsafe void UseCordial()
         {
+            string tag = "Cordial Check";
+
             if (EzThrottler.Throttle("Cordial usage check while moving"))
             {
-                if (!Player.IsBusy)
+                if (!PlayerHelper.CustomIsBusy)
                 {
-                    IceLogging.Debug("Cordial Checkers");
+                    IceLogging.Debug("Cordial Checkers", tag);
                     if (C.AutoCordial)
                     {
                         if (C.CordialMinRank > 0 && GetCurrentMissionRank() < C.CordialMinRank)
                         {
-                            IceLogging.Debug($"Skipping cordial: mission rank {GetCurrentMissionRank()} below threshold {C.CordialMinRank}");
+                            IceLogging.Debug($"Skipping cordial: mission rank {GetCurrentMissionRank()} below threshold {C.CordialMinRank}", tag);
                             return;
                         }
-                        IceLogging.Debug($"Min GP: {C.CordialMinGp} <= {PlayerHelper.GetGp()}");
+                        IceLogging.Debug($"Min GP: {PlayerHelper.GetGp()} <= {C.CordialMinGp}", tag);
 
                         if (PlayerHelper.GetGp() <= C.CordialMinGp)
                         {
@@ -921,7 +923,7 @@ namespace ICE.Scheduler.Tasks
 
                             foreach (var cordial in C.inverseCordialPrio ? cordials.Reverse() : cordials)
                             {
-                                IceLogging.Debug($"Checking Cordial: {cordial.Key}");
+                                IceLogging.Debug($"Checking Cordial: {cordial.Key}", tag);
                                 bool hq = cordial.Key >= 1_000_000;
                                 if (PlayerHelper.GetItemCount(cordial.Key, out var amount, hq, !hq) && amount > 0)
                                 {
@@ -931,6 +933,7 @@ namespace ICE.Scheduler.Tasks
                                         {
                                             if (EzThrottler.Throttle("Using the cordial"))
                                             {
+                                                IceLogging.Verbose($"We're using a cordial: ID: {cordial.Key}", tag);
                                                 ActionManager.Instance()->UseAction(ActionType.Item, cordial.Key, extraParam: 65535);
                                                 break;
                                             }
@@ -947,7 +950,15 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool WillOvercap(int recoveryGP)
         {
-            return ((PlayerHelper.GetGp() + recoveryGP) > PlayerHelper.MaxGp());
+            string tag = "Cordial: Overcap Check";
+            bool WillOvercap = (PlayerHelper.GetGp() + recoveryGP) > PlayerHelper.MaxGp();
+            if (WillOvercap)
+            {
+                IceLogging.Verbose("Not going to be using a cordial because we'll overcap\n" +
+                    $"Recovered GP: {PlayerHelper.GetGp() + recoveryGP} | Max GP: {PlayerHelper.MaxGp()}");
+            }
+
+            return WillOvercap;
         }
         public static unsafe bool? UseFood()
         {

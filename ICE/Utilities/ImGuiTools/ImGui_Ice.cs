@@ -486,12 +486,19 @@ public static partial class ImGui_Ice
         // Defining the colors globaly here just cause they're used across the board
         var blueColor = new Vector4(0.2f, 0.6f, 1f, 1f);      // Blue #3399ff  - Fill Bar Part #1 (Left Side)
         var greenColor = new Vector4(0.6f, 1f, 0.8f, 1f);      // Green #99ffcc - Fill Bar Part #2 (Right Side)
-        var goldColor = new Vector4(1f, 0.84f, 0f, 1f);      // Gold #ffd600  - Overcap color
+        var brassColor = new Vector4(0.71f, 0.55f, 0.18f, 1f);  // Brass #b58d2e - Fill Bar Part #1 (Left Side)
+        var goldColor = new Vector4(1f, 0.84f, 0f, 1f);        // Gold #ffd600  - Fill Bar Part #2 (Right Side)
 
         // Case 1: At or above cap when needed == max (show full gold) [Really only used when at max stage for that planet when a new one comes out)
         if (needed > 0 && needed == max && current >= needed)
         {
-            drawList.AddRectFilled(barStart, barEnd, ImGui.GetColorU32(goldColor));
+            drawList.AddRectFilledMultiColor(
+                barStart, barEnd,
+                    ImGui.GetColorU32(brassColor),  // top-left
+                    ImGui.GetColorU32(goldColor),   // top-right
+                    ImGui.GetColorU32(goldColor),   // bottom-right
+                    ImGui.GetColorU32(brassColor)   // bottom-left
+                );
         }
         // Case 2: Normal progression (not overcapped)
         else if (current <= needed && needed > 0)
@@ -532,7 +539,13 @@ public static partial class ImGui_Ice
             if (goldWidth > 0f)
             {
                 var goldEnd = new Vector2(pos.X + goldWidth, pos.Y + actualSize.Y);
-                drawList.AddRectFilled(barStart, goldEnd, ImGui.GetColorU32(goldColor));
+                drawList.AddRectFilledMultiColor(
+                    barStart, goldEnd,
+                    ImGui.GetColorU32(brassColor),  // top-left
+                    ImGui.GetColorU32(goldColor),   // top-right
+                    ImGui.GetColorU32(goldColor),   // bottom-right
+                    ImGui.GetColorU32(brassColor)   // bottom-left
+                );
             }
         }
         // Case 4: No needed XP (cosmic score scenario - just show progress to max) [Nice for just pure gold bar to fill]
@@ -544,7 +557,13 @@ public static partial class ImGui_Ice
             if (filledWidth > 0f)
             {
                 var filledEnd = new Vector2(pos.X + filledWidth, pos.Y + actualSize.Y);
-                drawList.AddRectFilled(barStart, filledEnd, ImGui.GetColorU32(goldColor));
+                drawList.AddRectFilledMultiColor(
+                    barStart, filledEnd,
+                    ImGui.GetColorU32(brassColor),  // top-left
+                    ImGui.GetColorU32(goldColor),   // top-right
+                    ImGui.GetColorU32(goldColor),   // bottom-right
+                    ImGui.GetColorU32(brassColor)   // bottom-left
+                );
             }
         }
 

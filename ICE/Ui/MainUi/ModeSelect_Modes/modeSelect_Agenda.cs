@@ -543,7 +543,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                         ImGui.TableNextColumn();
                         var currentMode = agendaInfo.SelectedMode;
-                        ImGui.SetNextItemWidth(150);
+                        ImGui.SetNextItemWidth(200);
                         if (ImGui.BeginCombo("##Mode Selection", ModeSelectString(currentMode)))
                         {
                             foreach (ModeSelect option in Enum.GetValues(typeof(ModeSelect)))
@@ -691,15 +691,14 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             else if (selectedOption is PlaylistOptions.GoldClassMissions)
                             {
-                                var totalCompleted = CosmicHelper.Cosmic_ClassInfo;
                                 var planet = Player.Territory.RowId;
-                                /*
-                                if (totalCompleted[job].MissionCompleted.TryGetValue(planet, out var completionRate))
-                                {
-                                    current = completionRate.TotalCompleted;
-                                    goal = completionRate.AllMissions.Count();
-                                }
-                                */
+
+                                var sheetInfo = CosmicHelper.SheetMissionDict
+                                    .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
+                                    .Where(x => x.Value.TerritoryId == planet);
+
+                                current = sheetInfo.Where(x => x.Value.MissionStatus is CosmicHelper.CompletionStatus.Gold).ToList().Count();
+                                goal = sheetInfo.Count();
                             }
 
                             var rowY = ImGui.GetCursorScreenPos().Y;

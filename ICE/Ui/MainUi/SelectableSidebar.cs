@@ -164,6 +164,10 @@ namespace ICE.Ui.MainUi
                 {
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.QuestionCircle, T("Plugin Requirements"), "help_PluginInstall");
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Book, T("Plugin Logs"), "help_PluginLogs");
+                    if (ImGuiEx.IconButtonWithText(FontAwesomeIcon.Toolbox, T("Refresh Class info"), size: new(ImGui.GetContentRegionAvail().X, 30)))
+                    {
+                        CosmicHelper.SendCosmicUpdate();
+                    }
                 }
             }
         }

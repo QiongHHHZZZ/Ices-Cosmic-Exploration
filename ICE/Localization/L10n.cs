@@ -32,6 +32,7 @@ internal static class L10n
         ["Need Help?"] = "需要帮助？",
         ["Plugin Requirements"] = "依赖插件",
         ["Plugin Logs"] = "插件日志",
+        ["Refresh Class info"] = "刷新职业信息",
         ["{0} | Enabled: {1}"] = "{0} | 已启用：{1}",
         ["{0} Missions"] = "{0}任务",
         ["Enabled"] = "启用",

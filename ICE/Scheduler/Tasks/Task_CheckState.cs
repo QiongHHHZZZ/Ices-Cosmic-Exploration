@@ -368,6 +368,12 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
 
+                var sheetInfo = CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(job))
+                    .Where(x => x.Value.TerritoryId == Player.Territory.RowId);
+
+                var totalCompleted = sheetInfo.Where(x => x.Value.MissionStatus is CosmicHelper.CompletionStatus.Completed).ToList().Count();
+                var totalMissions = sheetInfo.Count();
+
                 var goal = entry.SelectedOption;
                 bool achieved = false;
 
@@ -383,6 +389,7 @@ namespace ICE.Scheduler.Tasks
                     PlaylistOptions.ClassLevel => level >= entry.ClassLevel,
                     PlaylistOptions.ClassScore => classScore >= entry.ClassScore,
                     PlaylistOptions.ToolMaxExp => MaxLevelExp,
+                    PlaylistOptions.GoldClassMissions => totalCompleted == totalMissions,
                     _ => true
                 };
 

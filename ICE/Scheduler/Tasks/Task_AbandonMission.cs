@@ -26,7 +26,10 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.CurrentLunarMission == 0)
             {
                 if (!ForceAbandon)
+                {
                     P.MissionTimer.AbandonMission();
+                    CosmicHelper.SendCosmicUpdate();
+                }
 
                 ForceAbandon = false;
                 WasAbandoned = false;

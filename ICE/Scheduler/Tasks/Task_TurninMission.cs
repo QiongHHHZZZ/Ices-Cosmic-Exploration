@@ -106,7 +106,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static bool? Mission_TurninV2()
         {
             string tag = "[Mission Turnin]";
@@ -114,6 +113,8 @@ namespace ICE.Scheduler.Tasks
 
             if (id == 0)
             {
+                CosmicHelper.SendCosmicUpdate();
+
                 PathfoundToRed = false;
                 HasInteracted = false;
 
@@ -134,6 +135,8 @@ namespace ICE.Scheduler.Tasks
 
                 UpdateScoreInfo();
                 Mission_Settings.TurninState = TurninState.None;
+
+                CosmicHelper.SendCosmicUpdate();
 
                 if (Mission_Settings.StopAfterCurrent)
                 {

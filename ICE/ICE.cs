@@ -130,6 +130,7 @@ public sealed partial class ICE : IDalamudPlugin
         {
             if (Player.Available)
             {
+                CosmicHelper.CheckForUpdate();
                 PlayerHandlers.Tick();
                 if (SchedulerMain.State != IceState.Idle)
                     SchedulerMain.Tick();

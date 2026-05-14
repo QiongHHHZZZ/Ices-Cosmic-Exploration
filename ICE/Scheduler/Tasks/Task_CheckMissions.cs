@@ -480,7 +480,7 @@ namespace ICE.Scheduler.Tasks
                                     missionToSelect = basicMissionList
                                         .Where(m => CosmicHelper.Unlock_MissionList.Contains(m))
                                         .Where(m => CosmicHelper.SheetMissionDict[m].Level == 50)
-                                        .Where(m => !MissionCompleted(m))
+                                        .Where(m => CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Completed || CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Gold)
                                         .FirstOrDefault();
                                 }
                                 else if (TestMissionLevel == 10)
@@ -488,7 +488,7 @@ namespace ICE.Scheduler.Tasks
                                     missionToSelect = basicMissionList
                                         .Where(m => CosmicHelper.Unlock_MissionList.Contains(m))
                                         .Where(m => CosmicHelper.SheetMissionDict[m].Level == 50)
-                                        .Where(m => !MissionCompleted(m))
+                                        .Where(m => CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Completed || CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Gold)
                                         .FirstOrDefault();
                                 }
                             }
@@ -499,7 +499,7 @@ namespace ICE.Scheduler.Tasks
                                     missionToSelect = basicMissionList
                                         .Where(m => CosmicHelper.Unlock_MissionList.Contains(m))
                                         .Where(m => CosmicHelper.SheetMissionDict[m].Level == 50)
-                                        .Where(m => !MissionCompleted(m))
+                                        .Where(m => CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Completed || CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Gold)
                                         .FirstOrDefault();
                                 }
                             }

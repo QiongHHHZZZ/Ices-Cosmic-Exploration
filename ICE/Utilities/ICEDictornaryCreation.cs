@@ -119,6 +119,10 @@ public sealed partial class ICE
             {
                 territoryId = 1310;
             }
+            else if (keyId < 1703)
+            {
+                territoryId = 1321;
+            }
 
             // Map Marker Information
             var marker = missionToDo.MapMarker;

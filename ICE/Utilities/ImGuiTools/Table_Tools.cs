@@ -103,7 +103,7 @@ public static partial class ImGui_Ice
     {
         const float imageSize = 23f;
 
-        if (missionInfo.MissionStatus is CosmicHelper.CompletionStatus.Gold)
+        if (missionInfo.CompletionStatus is CosmicHelper.Status.Gold)
         {
             if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex &&
                 tex.TryGetWrap(out var wrap, out _))
@@ -119,7 +119,7 @@ public static partial class ImGui_Ice
                             new Vector2(0.2959f, 0.6500f));
             }
         }
-        else if (missionInfo.MissionStatus is CosmicHelper.CompletionStatus.Completed)
+        else if (missionInfo.CompletionStatus is CosmicHelper.Status.Completed)
         {
             ImGui.AlignTextToFramePadding();
             Table_FullCenterText(FontAwesome.Check, EColor.Green);
@@ -134,7 +134,7 @@ public static partial class ImGui_Ice
     {
         const float imageSize = 23f;
 
-        if (missionInfo.MissionStatus is CosmicHelper.CompletionStatus.Gold)
+        if (missionInfo.CompletionStatus is CosmicHelper.Status.Gold)
         {
             if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex &&
                 tex.TryGetWrap(out var wrap, out _))
@@ -142,7 +142,7 @@ public static partial class ImGui_Ice
                 ImGui.Image(wrap.Handle, new Vector2(imageSize), new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
             }
         }
-        else if (missionInfo.MissionStatus is CosmicHelper.CompletionStatus.Completed)
+        else if (missionInfo.CompletionStatus is CosmicHelper.Status.Completed)
         {
             ImGui.AlignTextToFramePadding();
             FontAwesome.Print(EColor.Green, FontAwesome.Check);

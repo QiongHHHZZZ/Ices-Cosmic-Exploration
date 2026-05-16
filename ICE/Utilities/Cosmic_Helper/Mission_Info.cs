@@ -113,35 +113,7 @@ public static partial class CosmicHelper
         public int Max { get; set; } = 0;
     }
 
-    public static Dictionary<uint, ClassInfo> Cosmic_ClassInfo = new()
-    {
-        [8] = new(),
-        [9] = new(),
-        [10] = new(),
-        [11] = new(),
-        [12] = new(),
-        [13] = new(),
-        [14] = new(),
-        [15] = new(),
-        [16] = new(),
-        [17] = new(),
-        [18] = new(),
-    };
-
-    public static ulong _LastCid = 0;
-    public static void CheckForUpdate()
-    {
-        var currentId = Player.CID;
-        if (currentId != 0 && _LastCid != currentId && !P.TaskManager.IsBusy)
-        {
-            IceLogging.Verbose("Updating cosmic stats to reflect the currect stats", "Updating Mission Stats");
-            P.TaskManager.Enqueue(() => SendCosmicUpdate(), "Updating stats for characters");
-            _LastCid = currentId;
-        }
-    }
-
-
-    public unsafe static void UpdateClassInfo()
+    public static unsafe Dictionary<uint, ClassInfo> Cosmic_ClassInfo()
     {
         Dictionary<uint, ClassInfo> cosmicClassInfo = new()
         {
@@ -166,7 +138,7 @@ public static partial class CosmicHelper
                 if (EzThrottler.Throttle("Throttling log message", 3000))
                     IceLogging.Error("WKSManager returned null");
             }
-            return;
+            return cosmicClassInfo;
         }
 
         var wks = wksManagerPtr;
@@ -176,7 +148,7 @@ public static partial class CosmicHelper
         {
             if (EzThrottler.Throttle("Throttling log message", 3000))
                 IceLogging.Error("Research Module has returned null");
-            return;
+            return cosmicClassInfo;
         }
 
         // Use original pointer only for member function calls
@@ -205,7 +177,6 @@ public static partial class CosmicHelper
             {
                 if (!researchModuleFuncs->IsTypeAvailable(toolClassId, type))
                 {
-                    IceLogging.Verbose($"Type wasn't available: {type}");
                     break;
                 }
 
@@ -221,15 +192,14 @@ public static partial class CosmicHelper
             cosmicClassInfo[jobId] = entry;
         }
 
-        Cosmic_ClassInfo = cosmicClassInfo;
+        return cosmicClassInfo;
     }
-    public unsafe static void UpdateMissionStatus()
+    public unsafe static void Update_MissionCompletion()
     {
         foreach (var mission in CosmicHelper.SheetMissionDict)
-            mission.Value.MissionStatus = CosmicHandler.MissionStatus(mission.Key);
+            mission.Value.CompletionStatus = CosmicHandler.MissionStatus(mission.Key);
     }
-
-    public static unsafe bool SendCosmicUpdate()
+    public static unsafe bool Task_UpdateRelicMissionInfo()
     {
         string tag = "Task: Update Cosmic Info";
 
@@ -238,7 +208,6 @@ public static partial class CosmicHelper
             if (PlayerHelper.IsScreenReady())
             {
                 var wksManagerPtr = WKSManager.Instance();
-                var researchModule = wksManagerPtr->ResearchModule;
                 if (wksManagerPtr == null)
                 {
                     if (EzThrottler.Throttle("Update Stats"))
@@ -246,18 +215,10 @@ public static partial class CosmicHelper
 
                     return false;
                 }
-                else if (researchModule == null || !researchModule->IsLoaded)
-                {
-                    if (EzThrottler.Throttle("Waiting for research"))
-                        IceLogging.Verbose("Waiting for research module to be loaded", tag);
-
-                    return false;
-                }
                 else
                 {
-                    UpdateClassInfo();
-                    UpdateMissionStatus();
-                    IceLogging.Verbose("Updated cosmic dictionary to have proper values", tag);
+                    Update_MissionCompletion();
+                    // IceLogging.Verbose("Updated cosmic dictionary to have proper values", tag);
                     return true;
                 }
             }

@@ -161,6 +161,7 @@ namespace ICE.Scheduler
             CosmoBuy = false;
             CanGamba = false;
             CanBuyDrones = false;
+            CosmicHelper.Task_UpdateRelicMissionInfo();
 
             return true;
         }

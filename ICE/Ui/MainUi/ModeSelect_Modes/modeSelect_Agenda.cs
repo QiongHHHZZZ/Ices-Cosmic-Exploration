@@ -529,7 +529,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             if (ImGui.IsItemHovered())
                             {
-                                var classScore = CosmicHelper.Cosmic_ClassInfo;
+                                var classScore = CosmicHelper.Cosmic_ClassInfo();
                                 if (classScore.TryGetValue(agendaInfo.SelectedJob, out var job))
                                 {
                                     ImGui.SetTooltip(T("Current Score: {0:N0}", job.Score));
@@ -637,7 +637,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                                or PlaylistOptions.SelectedRelicLv 
                                                or PlaylistOptions.ToolMaxExp)
                             {
-                                var ScoreInfo = CosmicHelper.Cosmic_ClassInfo;
+                                var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
 
                                 var jobInfo = ScoreInfo[job];
                                 current = MaxToolProgress(job);
@@ -685,7 +685,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             else if (selectedOption is PlaylistOptions.ClassScore)
                             {
-                                var ScoreInfo = CosmicHelper.Cosmic_ClassInfo;
+                                var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
                                 current = ScoreInfo[job].Score;
                                 goal = agendaInfo.ClassScore;
                             }
@@ -697,7 +697,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
                                     .Where(x => x.Value.TerritoryId == planet);
 
-                                current = sheetInfo.Where(x => x.Value.MissionStatus is CosmicHelper.CompletionStatus.Gold).ToList().Count();
+                                current = sheetInfo.Where(x => x.Value.CompletionStatus is CosmicHelper.Status.Gold).ToList().Count();
                                 goal = sheetInfo.Count();
                             }
 
@@ -727,7 +727,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         {
             var max = 17;
 
-            var ScoreInfo = CosmicHelper.Cosmic_ClassInfo;
+            var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
             var jobInfo = ScoreInfo[job];
             if (jobInfo.Stage_Current != jobInfo.Stage_Next && getCurrent)
                 return jobInfo.Stage_Current;

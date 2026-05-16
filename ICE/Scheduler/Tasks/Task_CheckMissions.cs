@@ -39,31 +39,6 @@ namespace ICE.Scheduler.Tasks
                 );
         }
         private static int GrabMission_Counter = 0;
-        private static bool? GrabMissionDelay()
-        {
-            if (C.DelayGrabMission)
-            {
-                if (EzThrottler.Throttle("Adding delay to grab mission", C.DelayIncrease))
-                {
-                    GrabMission_Counter += 1;
-                }
-
-                if (GrabMission_Counter > 1)
-                {
-                    GrabMission_Counter = 0;
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                GrabMission_Counter = 0;
-                return true;
-            }
-        }
         private static void ReOpenMissionUi(string tag)
         {
             if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
@@ -428,7 +403,7 @@ namespace ICE.Scheduler.Tasks
                 var redAlert = sheetInfo.IsCritical;
                 string jobs = string.Join(", ", sheetInfo.Jobs);
 
-                IceLogging.Info($"We found a mission! We're going to exit out of this task and grab the following\n: " +
+                IceLogging.Info($"We found a mission! We're going to exit out of this task and grab the following: \n " +
                     $"[Id] = {missionId}\n" +
                     $"[Selected Job] = {Mission_Settings.SelectedJob}\n" +
                     $"[Mission Job] = {jobs}\n" +
@@ -448,6 +423,7 @@ namespace ICE.Scheduler.Tasks
                     if (mode == ModeSelect.LevelMode)
                     {
                         var levelingMission = missionList.FirstOrDefault();
+                        IceLogging.Verbose($"Leveling Mission: Job: {Mission_Settings.SelectedJob} | Mission: {levelingMission} | Level: {CosmicHelper.SheetMissionDict[levelingMission].Level}", debugOnly: true);
                         if (basicMissionList.Contains(levelingMission))
                         {
                             LogInfo(levelingMission);
@@ -457,77 +433,46 @@ namespace ICE.Scheduler.Tasks
 
                         IceLogging.Verbose($"We seem to have not found the mission. Going to double check to make sure we have the tab unlocked", tag);
 
-                        var highestMission = basicMissionList.OrderByDescending(x => CosmicHelper.SheetMissionDict[x].Rank).FirstOrDefault();
-                        var TestMissionLevel = CosmicHelper.SheetMissionDict[highestMission].Level;
-                        var ListMissionLevel = CosmicHelper.SheetMissionDict[missionList.First()].Level;
+                        var highestRank = basicMissionList.Max(x => CosmicHelper.SheetMissionDict[x].Rank);
+                        var level = Player.GetLevel((Job)Mission_Settings.SelectedJob);
+                        uint missionId = 0;
 
-                        if (EzThrottler.Throttle("Level message info"))
+                        if (level >= 90 && highestRank < 3)
                         {
-                            IceLogging.Verbose($"The very first available mission is visible. Checking the level\n" +
-                                $"Test level: {TestMissionLevel}\n" +
-                                $"List Mission level: {ListMissionLevel}", tag);
+                            IceLogging.Verbose("We need to unlock the Lv. 90 Missions [B Rank] so we get better exp gains", tag);
+                            missionId = basicMissionList
+                                .Where(x => CosmicHelper.Unlock_MissionList.Contains(x))
+                                .Where(x => CosmicHelper.SheetMissionDict[x].CRank)
+                                .Where(x => CosmicHelper.SheetMissionDict[x].CompletionStatus is CosmicHelper.Status.None)
+                                .FirstOrDefault();
+                        }
+                        else if (level >= 50 && highestRank < 2)
+                        {
+                            IceLogging.Verbose("We need to unlock the Lv. 50 Missions [C Rank] so we get better exp gains", tag);
+                            missionId = basicMissionList
+                                .Where(x => CosmicHelper.Unlock_MissionList.Contains(x))
+                                .Where(x => CosmicHelper.SheetMissionDict[x].Drank)
+                                .Where(x => CosmicHelper.SheetMissionDict[x].CompletionStatus is CosmicHelper.Status.None)
+                                .FirstOrDefault();
                         }
 
-                        if (TestMissionLevel < ListMissionLevel)
+                        if (missionId != 0)
                         {
-                            IceLogging.Verbose("We need to actually grab a mission that hasn't been completed for the purpose of getting the next rank unlocked", tag);
-                            uint missionToSelect = 0;
-
-                            if (ListMissionLevel == 90)
-                            {
-                                if (TestMissionLevel == 50)
-                                {
-                                    missionToSelect = basicMissionList
-                                        .Where(m => CosmicHelper.Unlock_MissionList.Contains(m))
-                                        .Where(m => CosmicHelper.SheetMissionDict[m].Level == 50)
-                                        .Where(m => CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Completed || CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Gold)
-                                        .FirstOrDefault();
-                                }
-                                else if (TestMissionLevel == 10)
-                                {
-                                    missionToSelect = basicMissionList
-                                        .Where(m => CosmicHelper.Unlock_MissionList.Contains(m))
-                                        .Where(m => CosmicHelper.SheetMissionDict[m].Level == 50)
-                                        .Where(m => CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Completed || CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Gold)
-                                        .FirstOrDefault();
-                                }
-                            }
-                            else if (ListMissionLevel == 50)
-                            {
-                                if (TestMissionLevel == 10)
-                                {
-                                    missionToSelect = basicMissionList
-                                        .Where(m => CosmicHelper.Unlock_MissionList.Contains(m))
-                                        .Where(m => CosmicHelper.SheetMissionDict[m].Level == 50)
-                                        .Where(m => CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Completed || CosmicHelper.SheetMissionDict[m].MissionStatus != CosmicHelper.CompletionStatus.Gold)
-                                        .FirstOrDefault();
-                                }
-                            }
-
-                            if (missionToSelect != 0)
-                            {
-                                LogInfo(levelingMission);
-                                Insert_GrabMissionTask(levelingMission);
-                                return true;
-                            }
-
-                            if (EzThrottler.Throttle("Leveling Log Message", 2000))
-                            {
-                                IceLogging.Info("So this didn't have an exit... and I'm just using this to track to see if this even properly returns. (Proabably not)\n" +
-                                    "If you're seeing this, that means it might of broken if it's repeating more than x1\n" +
-                                    "Please report this! ICE. It's the leveling mode thing you were checking", tag);
-                            }
+                            IceLogging.Verbose("We found a mission that we need to complete for one reason or another, going to queue it up for leveling!", tag);
+                            LogInfo(missionId);
+                            Insert_GrabMissionTask(missionId);
+                            return true;
                         }
                         else
                         {
-                            IceLogging.Info("We seem to have the proper level for the missions, we just don't have the mission available, so going to find a rereoll", tag);
+                            IceLogging.Verbose("For one reason or another, we seem to have reached the bottom. Which either means rerolling for specific mission or just rerolling for unlocking purposes", tag);
                             return true;
                         }
                     }
                     else if (mode == ModeSelect.RelicMode)
                     {
                         var job = Mission_Settings.SelectedJob;
-                        var relicInfo = CosmicHelper.Cosmic_ClassInfo;
+                        var relicInfo = CosmicHelper.Cosmic_ClassInfo();
                         var classInfo = relicInfo[job];
 
                         var jobLv = Player.GetLevel((Job)job);
@@ -535,14 +480,126 @@ namespace ICE.Scheduler.Tasks
                         var urgency = new Dictionary<int, float>();
                         IceLogging.Verbose("Relic mode was enabled. So going to do checks to see what exp we need", tag);
                         IceLogging.Verbose($"Current Stage is the max stage? {classInfo.Stage_Current == classInfo.Stage_Next}", tag);
-
+                        IceLogging.Verbose($"Exp Current Tallies: [Check before finding missions]", tag);
                         foreach (var exp in classInfo.CurrentExp)
                         {
+                            IceLogging.Verbose($"Kind: [{exp.Key}] | Current: {exp.Value.Current} / Needed: {exp.Value.Needed} | Max: {exp.Value.Max}", tag);
                             if (classInfo.Stage_Current != classInfo.Stage_Next)
                                 urgency[exp.Key] = exp.Value.Needed > 0 ? 1f - (float)exp.Value.Current / exp.Value.Needed : 0f;
                             else
                                 urgency[exp.Key] = 1f - (float)exp.Value.Current / exp.Value.Max;
                         }
+                        if (urgency.Count() == 0 || urgency.All(x => x.Value <= 0))
+                        {
+                            IceLogging.Verbose("We seem to be still grinding out relic exp (either by choice or cause someone didn't turnin) so we're going to just assign it to go for maxing exp", tag);
+                            foreach (var exp in classInfo.CurrentExp)
+                                urgency[exp.Key] = 1f - (float)exp.Value.Current / exp.Value.Max;
+                        }
+
+                        if (urgency.All(x => x.Value <= 0))
+                        {
+                            IceLogging.Verbose("We seem to be completed with the exp, but also, I don't have a mode setup for score farming yet. So setting the last exp value to be 1 so it just grabs a mission", tag);
+                            var lastEntry = urgency.LastOrDefault();
+                            urgency[lastEntry.Key] = 1;
+                        }
+
+                        IceLogging.Verbose("Going to check to see if we need to complete a specific mission...", tag);
+
+                        var highestRank = basicMissionList.Max(x => CosmicHelper.SheetMissionDict[x].Rank);
+
+                        bool TryQueueFirstIncomplete(Func<uint, bool> rankFilter, string rankLabel)
+                        {
+                            var mission = basicMissionList
+                                .Where(x => CosmicHelper.SheetMissionDict[x].CompletionStatus < CosmicHelper.Status.Completed)
+                                .Where(x => rankFilter(x))
+                                .FirstOrDefault();
+
+                            if (mission != 0)
+                            {
+                                IceLogging.Verbose($"Found an incomplete mission, queuing it now [{rankLabel}]", tag);
+                                Insert_GrabMissionTask(mission);
+                                return true;
+                            }
+                            return false;
+                        }
+
+                        bool TryQueueFirstNonGold(Func<uint, bool> rankFilter, string rankLabel)
+                        {
+                            var mission = basicMissionList
+                                .Where(x => CosmicHelper.SheetMissionDict[x].CompletionStatus < CosmicHelper.Status.Gold)
+                                .Where(x => rankFilter(x))
+                                .FirstOrDefault();
+
+                            if (mission != 0)
+                            {
+                                IceLogging.Verbose($"Found a mission that can be golded, queuing it [{rankLabel}]", tag);
+                                Insert_GrabMissionTask(mission);
+                                return true;
+                            }
+                            return false;
+                        }
+
+                        bool isDRank(uint x) => CosmicHelper.SheetMissionDict[x].Drank;
+                        bool isCRank(uint x) => CosmicHelper.SheetMissionDict[x].CRank;
+                        bool isBRank(uint x) => CosmicHelper.SheetMissionDict[x].BRank;
+
+                        if (jobLv >= 100 && highestRank < 4)
+                        {
+                            IceLogging.Verbose("Hey! Lv 100 Missions still need to be unlocked, so going to check to see what need to do unlock those..", tag);
+                            if (highestRank < 2)
+                            {
+                                IceLogging.Verbose("ABSOLUTELY no ranks are unlocked yet (We're at D Rank Currently) Going to start with that and work our way up.", tag);
+                                if (TryQueueFirstIncomplete(isDRank, "D Rank")) return true;
+                            }
+                            else if (highestRank < 3)
+                            {
+                                IceLogging.Verbose("Status Report. C Ranks are unlocked, but missing B Ranks, so we're going to aim to complete a C Rank.", tag);
+                                if (TryQueueFirstIncomplete(isCRank, "C Rank")) return true;
+                            }
+                            else
+                            {
+                                IceLogging.Verbose("Woooooo B Ranks unlocked! Checking to see if there's a gold need to be completed, or just general completions.", tag);
+
+                                var goldCount = CosmicHelper.SheetMissionDict
+                                    .Where(x => x.Value.TerritoryId == Player.Territory.RowId)
+                                    .Where(x => x.Value.BRank)
+                                    .Where(x => x.Value.CompletionStatus == CosmicHelper.Status.Gold)
+                                    .Where(x => x.Value.Jobs.Contains(job))
+                                    .Count();
+
+                                var completedStatus = CosmicHelper.SheetMissionDict
+                                    .Where(x => x.Value.TerritoryId == Player.Territory.RowId)
+                                    .Where(x => x.Value.BRank)
+                                    .Where(x => x.Value.CompletionStatus > CosmicHelper.Status.None)
+                                    .Where(x => x.Value.Jobs.Contains(job))
+                                    .Count();
+                                IceLogging.Verbose($"Status | Gold [{goldCount} / 3] | Completed: [{completedStatus} / 5]", tag);
+
+                                if (goldCount < 3)
+                                {
+                                    IceLogging.Verbose($"Missing Gold to help unlock B Ranks... so going to find one with that ideally", tag);
+                                    if (TryQueueFirstNonGold(isBRank, "B Rank")) return true;
+                                }
+
+                                if (completedStatus < 5)
+                                {
+                                    IceLogging.Verbose($"We just need to complete more B Rank Missions (So close...).", tag);
+                                    if (TryQueueFirstIncomplete(isBRank, "B Rank")) return true;
+                                }
+                            }
+                        }
+                        else if (jobLv >= 90 && highestRank < 3)
+                        {
+                            IceLogging.Verbose("We've hit Lv 90, and we STILL don't have B ranks unlocked, so going to focus that down.", tag);
+                            if (TryQueueFirstIncomplete(isCRank, "C Rank")) return true;
+                        }
+                        else if (jobLv >= 50 && highestRank < 2)
+                        {
+                            IceLogging.Verbose("We've atleast hit Lv. 50, and Absolutely no ranks unlocked right now besides D Ranks, going to focus on getting that done.", tag);
+                            if (TryQueueFirstIncomplete(isDRank, "D Rank")) return true;
+                        }
+
+
                         IceLogging.Verbose($"Relic Mode, Exp Requirements/Results", tag);
                         foreach (var exp in urgency)
                         {
@@ -561,7 +618,7 @@ namespace ICE.Scheduler.Tasks
                         else
                         {
                             uint bestMissionId = 0;
-                            float bestScore = 0;
+                            float bestScore = float.NegativeInfinity;
 
                             foreach (var missionId in filteredList)
                             {
@@ -964,25 +1021,37 @@ namespace ICE.Scheduler.Tasks
 
                     if (OpenCorrectTab(viableMissions, missionInfo))
                     {
+                        IceLogging.Verbose("On the correct tab, we're going to see the total mission count", tag);
                         var allmissions = CosmicHandler.AllMissions();
+                        IceLogging.Verbose($"All mission count: {allmissions.Count()} | Goal: {missionId}");
+                        foreach (var mission in allmissions.OrderBy(x => CosmicHelper.SheetMissionDict[x].Rank))
+                        {
+                            var sheetInfo = CosmicHelper.SheetMissionDict[mission];
+                            IceLogging.Verbose($"ID: [{mission}] | Rank: [{sheetInfo.Rank}]", tag, true);
+                        }
+
+
                         if (allmissions.Contains(missionId))
                         {
                             if (EzThrottler.Throttle("Selecting Mission"))
                                 InitiateMission(missionId);
                         }
+                        else
+                        {
+                            if (FrameThrottler.Throttle("Counter added", 8))
+                                retryCheck += 1;
+
+                            if (retryCheck >= 4)
+                            {
+                                IceLogging.Verbose($"Mission could no longer be found: {missionId}, retrying the process", tag);
+                                retryCheck = 0;
+                                P.TaskManager.Tasks.Clear();
+                                return true;
+                            }
+                        }
                     }
                     else
                     {
-                        if (FrameThrottler.Throttle("Counter added", 8))
-                            retryCheck += 1;
-
-                        if (retryCheck >= 4)
-                        {
-                            IceLogging.Verbose($"Mission could no longer be found: {missionId}, retrying the process", tag);
-                            retryCheck = 0;
-                            P.TaskManager.Tasks.Clear();
-                            return true;
-                        }
                     }
                 }
                 else
@@ -1293,21 +1362,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        public static bool? FrameDelay(int amount)
-        {
-            P.TaskManager.InsertDelay(amount, true);
-            return true;
-
-        }
-        private static unsafe bool MissionCompleted(uint id)
-        {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return false;
-
-            var isCompleted = managerPtr->IsMissionCompleted(id);
-
-            return isCompleted;
-        }
         private static unsafe bool MissionGolded(uint id)
         {
             var managerPtr = WKSManager.Instance();
@@ -1388,7 +1442,6 @@ namespace ICE.Scheduler.Tasks
                 }
             }
         }
-
         private static void Notes()
         {
             /*

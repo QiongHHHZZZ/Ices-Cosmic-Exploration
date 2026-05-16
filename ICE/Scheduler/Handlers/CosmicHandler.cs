@@ -226,20 +226,20 @@ namespace ICE.Utilities
 
             return isGold;
         }
-        internal static unsafe CosmicHelper.CompletionStatus MissionStatus(uint missionId)
+        internal static unsafe CosmicHelper.Status MissionStatus(uint missionId)
         {
             var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return CosmicHelper.CompletionStatus.None;
+            if (managerPtr == null) return CosmicHelper.Status.None;
 
             bool isGold = managerPtr->IsMissionGolded(missionId);
             bool isCompleted = managerPtr->IsMissionCompleted(missionId);
 
             if (isGold)
-                return CosmicHelper.CompletionStatus.Gold;
+                return CosmicHelper.Status.Gold;
             else if (isCompleted)
-                return CosmicHelper.CompletionStatus.Completed;
+                return CosmicHelper.Status.Completed;
             else
-                return CosmicHelper.CompletionStatus.None;
+                return CosmicHelper.Status.None;
         }
     }
 }

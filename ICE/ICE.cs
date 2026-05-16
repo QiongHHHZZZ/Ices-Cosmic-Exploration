@@ -90,7 +90,6 @@ public sealed partial class ICE : IDalamudPlugin
         Init();
         Svc.Framework.Update += Tick;
         Svc.PluginInterface.UiBuilder.Draw += OnDraw;
-        Svc.ClientState.TerritoryChanged += _ => CacheCosmicInfo();
 
         TaskManager = new(new(showDebug: false, timeLimitMS: 10 * 60 * 3000));
         Svc.PluginInterface.UiBuilder.Draw += windowSystem.Draw;
@@ -111,7 +110,7 @@ public sealed partial class ICE : IDalamudPlugin
         Task_Gamba.EnsureGambaWeightsInitialized();
         CosmicHelper.UpdateCriticalWeather();
         TestLoadRoutes();
-        CosmicHelper.SendCosmicUpdate();
+        CosmicHelper.Task_UpdateRelicMissionInfo();
 
         MigrateConfigSettings();
         _ = Sounds.SoundPlayer.InitializeAsync();
@@ -130,7 +129,12 @@ public sealed partial class ICE : IDalamudPlugin
         {
             if (Player.Available)
             {
-                CosmicHelper.CheckForUpdate();
+                if (EzThrottler.Throttle("Update Character Stats"))
+                {
+                    CosmicHelper.Task_UpdateRelicMissionInfo();
+                }
+
+
                 PlayerHandlers.Tick();
                 if (SchedulerMain.State != IceState.Idle)
                     SchedulerMain.Tick();
@@ -153,10 +157,6 @@ public sealed partial class ICE : IDalamudPlugin
                 SchedulerMain.DisablePlugin();
         }
     }
-    private void CacheCosmicInfo()
-    {
-        P.TaskManager.Enqueue(() => CosmicHelper.SendCosmicUpdate(), "Updating the cosmic info");
-    }
 
     private void OnDraw()
     {
@@ -171,7 +171,6 @@ public sealed partial class ICE : IDalamudPlugin
         GenericHelpers.Safe(() => Svc.Framework.Update -= Tick);
         GenericHelpers.Safe(() => Svc.PluginInterface.UiBuilder.Draw -= OnDraw);
         GenericHelpers.Safe(() => Svc.PluginInterface.UiBuilder.Draw -= windowSystem.Draw);
-        GenericHelpers.Safe(() => Svc.ClientState.TerritoryChanged -= _ => CacheCosmicInfo());
         GenericHelpers.Safe(TextAdvancedManager.UnlockTA);
         GenericHelpers.Safe(YesAlreadyManager.Unlock);
         GenericHelpers.Safe(PictoService.Dispose);

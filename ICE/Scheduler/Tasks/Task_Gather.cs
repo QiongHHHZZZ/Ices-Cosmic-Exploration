@@ -896,7 +896,7 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "Cordial Check";
 
-            if (EzThrottler.Throttle("Cordial usage check while moving"))
+            if (EzThrottler.Throttle("Cordial Usage Check Throttle"))
             {
                 if (!PlayerHelper.CustomIsBusy)
                 {
@@ -912,39 +912,41 @@ namespace ICE.Scheduler.Tasks
 
                         if (PlayerHelper.GetGp() <= C.CordialMinGp)
                         {
-                            Dictionary<uint, int> cordials = new()
-                            {
-                                { 12669, 400}, // Hi
-                                { 1006141, 350}, // HQ Regular
-                                { 6141, 300}, // NQ Regular
-                                { 1016911, 200}, // HQ Watered
-                                { 16911, 150} // HQ Watered
-                            };
+                            Dictionary<uint, (string Name, int GpGain)> cordials = new()
+                        {
+                            { 12669,   ("Hi-Cordial",          400) },
+                            { 1006141, ("HQ Regular Cordial",  350) },
+                            { 6141,    ("NQ Regular Cordial",  300) },
+                            { 1016911, ("HQ Watered Cordial",  200) },
+                            { 16911,   ("NQ Watered Cordial",  150) }
+                        };
 
                             foreach (var cordial in C.inverseCordialPrio ? cordials.Reverse() : cordials)
                             {
-                                IceLogging.Debug($"Checking Cordial: {cordial.Key}", tag);
+                                IceLogging.Verbose($"Checking Cordial: {cordial.Value.Name}", tag);
                                 bool hq = cordial.Key >= 1_000_000;
                                 if (PlayerHelper.GetItemCount(cordial.Key, out var amount, hq, !hq) && amount > 0)
                                 {
+                                    IceLogging.Verbose($"We currently have more than 1 of {cordial.Value.Name}, so going to see if we can use it");
                                     if (ActionManager.Instance()->GetActionStatus(ActionType.Item, cordial.Key) == 0)
                                     {
-                                        if (!C.PreventOvercap || (C.PreventOvercap && !WillOvercap(cordial.Value)))
+                                        IceLogging.Verbose("Cooldown of cordial usage is 0, which means the action is available", tag);
+                                        if (!C.PreventOvercap || (C.PreventOvercap && !WillOvercap(cordial.Value.GpGain)))
                                         {
-                                            if (EzThrottler.Throttle("Using the cordial"))
-                                            {
-                                                IceLogging.Verbose($"We're using a cordial: ID: {cordial.Key}", tag);
-                                                ActionManager.Instance()->UseAction(ActionType.Item, cordial.Key, extraParam: 65535);
-                                                break;
-                                            }
+                                            IceLogging.Verbose($"We're using a cordial: ID: {cordial.Key} | Name: {cordial.Value.Name}", tag);
+                                            ActionManager.Instance()->UseAction(ActionType.Item, cordial.Key, extraParam: 65535);
+                                            break;
                                         }
                                     }
                                 }
                             }
                         }
                     }
-
-                    IceLogging.Info("Cordial Check Complete");
+                    else
+                    {
+                        if (EzThrottler.Throttle("No Use Cordial"))
+                            IceLogging.Verbose("We don't have auto cordial enabled, continuing on", tag);
+                    }
                 }
             }
         }
@@ -962,12 +964,14 @@ namespace ICE.Scheduler.Tasks
         }
         public static unsafe bool? UseFood()
         {
+            string tag = "Task: Use Gathering Food";
+
             var ItemId = C.GatheringFood;
             if (C.UseGatheringFood && ItemId != 0)
             {
                 if (C.FoodMinRank > 0 && GetCurrentMissionRank() < C.FoodMinRank)
                 {
-                    IceLogging.Debug($"Skipping food: mission rank {GetCurrentMissionRank()} below threshold {C.FoodMinRank}");
+                    IceLogging.Debug($"Skipping food: mission rank {GetCurrentMissionRank()} below threshold {C.FoodMinRank}", tag);
                     return true;
                 }
                 PlayerHelper.GetItemCount(ItemId, out var HqCount, includeNq: false);
@@ -978,6 +982,7 @@ namespace ICE.Scheduler.Tasks
                     // We've gotten this far, which means we have a gathering item to use...
                     if (!PlayerHelper.HasFoodRunning())
                     {
+                        IceLogging.Verbose("We currently don't have food running/we have food, so going to check to see if we can use it", tag);
                         // We need to apply the food, since we have some, we're going to use some here
                         if (EzThrottler.Throttle("Using Food Item", 3000))
                         {
@@ -985,19 +990,19 @@ namespace ICE.Scheduler.Tasks
                                 ItemId += 1_000_000;
 
                             ActionManager.Instance()->UseAction(ActionType.Item, ItemId, extraParam: 65535);
-                            IceLogging.Debug($"Attempting to use food: {ItemId}");
+                            IceLogging.Debug($"Attempting to use food: {ItemId}", tag);
                         }
                         return false;
                     }
                     else
                     {
-                        IceLogging.Info("We have food running, and it's the proper one! Continuing");
+                        IceLogging.Info("We have food running, and it's the proper one! Continuing", tag);
                         return true;
                     }
                 }
                 else
                 {
-                    IceLogging.Info("We are out of the current food, continuing on w/o buff");
+                    IceLogging.Info("We are out of the current food, continuing on w/o buff", tag);
                     return true;
                 }
             }
@@ -1005,7 +1010,7 @@ namespace ICE.Scheduler.Tasks
             {
                 IceLogging.Info("We either don't have use food enabled, or have no food selected. Continuing on\n" +
                                $"Use Food Enabled: {C.UseGatheringFood}\n" +
-                               $"ItemId of food: {ItemId}");
+                               $"ItemId of food: {ItemId}", tag);
                 return true;
             }
         }

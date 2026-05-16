@@ -1,6 +1,7 @@
 ﻿using ECommons.GameHelpers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace ICE.Utilities.Cosmic_Helper;
 
@@ -35,8 +36,16 @@ internal static class IceLogging
     public static void Verbose(string message, string prefix = null, bool debugOnly = false)
     {
         var formattedMessage = FormatMessage(message, prefix);
-        // PluginLog.Verbose(formattedMessage);
-        LogSystem.Log(LogLevel.Verbose, message, prefix);
+        if (debugOnly)
+        {
+#if DEBUG
+            LogSystem.Log(LogLevel.Verbose, message, prefix);
+#endif
+        }
+        else
+        {
+            LogSystem.Log(LogLevel.Verbose, message, prefix);
+        }
     }
 
     public static void Debug(string message, string prefix = null, bool debugOnly = false)
@@ -203,7 +212,7 @@ internal static class IceLogging
     {
         private static List<LogEntry> logs = new();
         private static Dictionary<string, LogEntry> recentLogs = new(); // Track recent logs for time-window matching
-        private static int maxLogCount = 10000;
+        private static int maxLogCount = 2000;
         private static TimeSpan consolidationWindow = TimeSpan.FromMilliseconds(250); // Merge duplicates within 500ms
 
         public static IReadOnlyList<LogEntry> Logs => logs.AsReadOnly();
@@ -290,6 +299,7 @@ internal static class IceLogging
         public static void CopyToClipboard()
         {
             var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"Current Version: {P.GetType().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
             foreach (var log in logs)
             {
                 var countSuffix = log.Count > 1 ? $" (x{log.Count})" : "";

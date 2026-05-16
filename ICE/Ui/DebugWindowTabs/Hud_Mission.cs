@@ -180,7 +180,7 @@ namespace ICE.Ui.DebugWindowTabs
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var missionInfo) && missionInfo.IsAddonReady)
             {
                 var job = Mission_Settings.SelectedJob;
-                var relicInfo = CosmicHelper.Cosmic_ClassInfo;
+                var relicInfo = CosmicHelper.Cosmic_ClassInfo();
                 var classInfo = relicInfo[job];
 
                 var urgency = new Dictionary<int, float>();

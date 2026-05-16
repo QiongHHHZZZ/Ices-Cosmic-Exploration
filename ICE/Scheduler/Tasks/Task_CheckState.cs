@@ -2,6 +2,7 @@
 using ECommons.GameHelpers;
 using ICE.Sounds;
 using ICE.Utilities.Cosmic_Helper;
+using TerraFX.Interop.Windows;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Localization.L10n;
 
@@ -28,6 +29,9 @@ namespace ICE.Scheduler.Tasks
         private static bool? CheckStateV2()
         {
             string tag = "[Task: Check State]";
+
+            IceLogging.Verbose("Updating the mission completion status", tag);
+            CosmicHelper.Update_MissionCompletion();
 
             var currentMode = C.SelectedMode;
             var currentMissionId = CosmicHelper.CurrentLunarMission;
@@ -182,7 +186,7 @@ namespace ICE.Scheduler.Tasks
                     $"Main job for basic missions: {jobId}", tag);
                 IceLogging.Info("We're going to do our standard check of [If we need to stop] and [What we need to do before a mission]", tag);
 
-                var cosmicClassInfo = CosmicHelper.Cosmic_ClassInfo;
+                var cosmicClassInfo = CosmicHelper.Cosmic_ClassInfo();
                 if (C.StopWhenLevel)
                 {
                     var level = Player.GetLevel((Job)jobId);
@@ -200,7 +204,7 @@ namespace ICE.Scheduler.Tasks
                 }
                 if (C.StopOnceHitCosmicScore)
                 {
-                    var currentScore = cosmicClassInfo[(uint)jobId].Score;
+                    var currentScore = cosmicClassInfo[jobId].Score;
                     if (currentScore >= C.CosmicScoreCap)
                     {
                         SchedulerMain.State = IceState.Idle;
@@ -250,61 +254,82 @@ namespace ICE.Scheduler.Tasks
 
                     if (potentionalTurnin)
                     {
-                        foreach (var exp in relicInfo.CurrentExp)
+                        IceLogging.Verbose("We have a relic that we can potentionally turnin. These are the current Exp Stats", tag);
+
+                        var totalExpCount = relicInfo.CurrentExp.Count();
+                        if (totalExpCount != 0)
                         {
-                            if (exp.Value.Current < exp.Value.Needed)
+                            IceLogging.Verbose($"Total Exp Types: {relicInfo.CurrentExp.Count()}");
+                            foreach (var exp in relicInfo.CurrentExp)
                             {
-                                IceLogging.Verbose($"We're missing the following exp: {exp.Value.Name}.\n" +
-                                    $"Need: {exp.Value.Needed}.\n" +
-                                    $"Have: {exp.Value.Current}");
-                                canTurnin = false;
-                                break;
+                                IceLogging.Verbose($"Kind [{exp.Key}] | Current: [{exp.Value.Current}] / Needed: [{exp.Value.Needed}] | Max: [{exp.Value.Max}]", tag);
+                                canTurnin &= exp.Value.Current >= exp.Value.Needed;
+                            }
+
+                            if (canTurnin)
+                            {
+                                IceLogging.Verbose("We can turn in the relic! (Allegedly) So going to check to see if we need to do so", tag);
+                                if (C.TurninRelic)
+                                {
+                                    IceLogging.Verbose("We have turnin set to true, going to queue up later turning the relic into researchingWay", tag);
+                                }
+                                else
+                                {
+                                    IceLogging.ChatInfo(T("We're at the point we can turn in the relic! Please do so, or disable stop when at relic turnin"), tag);
+                                    SchedulerMain.State = IceState.Idle;
+                                    if (C.PlaySoundAlert)
+                                    {
+                                        _ = SoundPlayer.PlaySoundAsync();
+                                    }
+                                    return true;
+                                }
                             }
                         }
-                        if (canTurnin)
+                        else
                         {
-                            if (C.TurninRelic)
+                            if (EzThrottler.Throttle("Force update exp"))
                             {
-                                IceLogging.Debug("Relic is at a point to be able to turnin! Going to do so later", tag);
+                                IceLogging.Verbose("We seem... to be missing the exp? Which is odd. So going to force an update?");
+                                CosmicHelper.Task_UpdateRelicMissionInfo();
                             }
-                            else
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        bool isCapped = true;
+
+                        IceLogging.Verbose("Checking Max Relic Exp", tag);
+                        var totalExpCount = relicInfo.CurrentExp.Count();
+                        if (totalExpCount != 0)
+                        {
+                            IceLogging.Verbose($"Total Exp Types: {relicInfo.CurrentExp.Count()}");
+                            foreach (var exp in relicInfo.CurrentExp)
                             {
-                                IceLogging.ChatInfo(T("We're at the point we can turn in the relic! Please do so, or disable stop when at relic turnin"), tag);
+                                IceLogging.Verbose($"Kind [{exp.Key}] | Current: [{exp.Value.Current}] / Max: [{exp.Value.Max}]", tag);
+                                isCapped &= exp.Value.Current == exp.Value.Max;
+                            }
+
+                            if (isCapped)
+                            {
+                                IceLogging.Info("We've reached the completed relic level wooo! Stopping for now", tag);
                                 SchedulerMain.State = IceState.Idle;
                                 if (C.PlaySoundAlert)
                                 {
                                     _ = SoundPlayer.PlaySoundAsync();
                                 }
+                                P.TaskManager.Tasks.Clear();
                                 return true;
                             }
                         }
-                    }
-                    else
-                    {
-                        bool needToCap = false;
-                        foreach (var exp in relicInfo.CurrentExp)
+                        else
                         {
-                            if (exp.Value.Current != exp.Value.Max)
+                            if (EzThrottler.Throttle("Force update exp"))
                             {
-                                IceLogging.Verbose($"Found an exp that we still need:\n" +
-                                    $"[Current] = {exp.Value.Current}\n" +
-                                    $"[Max] = {exp.Value.Max}\n" +
-                                    $"[Kind] = {exp.Key}");
-                                needToCap = true;
-                                break;
+                                IceLogging.Verbose("We seem... to be missing the exp? Which is odd. So going to force an update?");
+                                CosmicHelper.Task_UpdateRelicMissionInfo();
                             }
-                        }
-
-                        if (!needToCap)
-                        {
-                            IceLogging.Info("We've reached the completed relic level wooo! Stopping for now", tag);
-                            SchedulerMain.State = IceState.Idle;
-                            if (C.PlaySoundAlert)
-                            {
-                                _ = SoundPlayer.PlaySoundAsync();
-                            }
-                            P.TaskManager.Tasks.Clear();
-                            return true;
+                            return false;
                         }
                     }
                 }
@@ -320,7 +345,7 @@ namespace ICE.Scheduler.Tasks
             string tag = "[Agenda Check]";
 
             var agenda = C.Cosmic_Agenda;
-            var relicProgress = CosmicHelper.Cosmic_ClassInfo;
+            var relicProgress = CosmicHelper.Cosmic_ClassInfo();
             PlayerHelper.GetItemCount(45690, out var creditAmount);
             int planetCreditAmount = 10000;
             var territory = Player.Territory.RowId;
@@ -371,7 +396,7 @@ namespace ICE.Scheduler.Tasks
                 var sheetInfo = CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(job))
                     .Where(x => x.Value.TerritoryId == Player.Territory.RowId);
 
-                var totalCompleted = sheetInfo.Where(x => x.Value.MissionStatus is CosmicHelper.CompletionStatus.Completed).ToList().Count();
+                var totalCompleted = sheetInfo.Where(x => x.Value.CompletionStatus is CosmicHelper.Status.Completed).ToList().Count();
                 var totalMissions = sheetInfo.Count();
 
                 var goal = entry.SelectedOption;
@@ -418,7 +443,7 @@ namespace ICE.Scheduler.Tasks
             string tag = "Task Check State: Hub Activity Check";
 
             var territoryId = Player.Territory.RowId;
-            var relicProgress = CosmicHelper.Cosmic_ClassInfo;
+            var relicProgress = CosmicHelper.Cosmic_ClassInfo();
 
             bool BuyDrones = false;
             bool GambaWheel = false;
@@ -497,21 +522,35 @@ namespace ICE.Scheduler.Tasks
             if (C.TurninRelic)
             {
                 var jobId = Mission_Settings.SelectedJob;
-                var jobInfo = relicProgress[jobId];
+                var relicInfo = relicProgress[jobId];
 
-                bool isUpgradable = jobInfo.Stage_Current != jobInfo.Stage_Next;
-                var canUpgrade = true;
-                foreach (var exp in jobInfo.CurrentExp)
+                bool isUpgradable = relicInfo.Stage_Current != relicInfo.Stage_Next;
+
+                if (isUpgradable)
                 {
-                    if (exp.Value.Current < exp.Value.Needed)
+                    var totalExpCount = relicInfo.CurrentExp.Count();
+                    IceLogging.Verbose($"Total Exp Types: {relicInfo.CurrentExp.Count()}");
+                    if (totalExpCount != 0)
                     {
-                        IceLogging.Verbose($"Missing {exp.Value.Needed} to turn in relic", tag);
-                        canUpgrade = false;
-                        break;
+                        bool canTurnin = true;
+                        foreach (var exp in relicInfo.CurrentExp)
+                        {
+                            IceLogging.Verbose($"Kind [{exp.Key}] | Current: [{exp.Value.Current}] / Needed: [{exp.Value.Needed}] | Max: [{exp.Value.Max}]", tag);
+                            canTurnin &= exp.Value.Current >= exp.Value.Needed;
+                        }
+                        TurninRelic = isUpgradable && canTurnin;
+
+                    }
+                    else
+                    {
+                        if (EzThrottler.Throttle("Force update exp"))
+                        {
+                            IceLogging.Verbose("We seem... to be missing the exp? Which is odd. So going to force an update?");
+                            CosmicHelper.Task_UpdateRelicMissionInfo();
+                        }
+                        return false;
                     }
                 }
-
-                TurninRelic = isUpgradable && canUpgrade;
             }
 
             Task_HubActivities.ApplyPostHubReentryGuard(ref BuyDrones, ref GambaWheel);

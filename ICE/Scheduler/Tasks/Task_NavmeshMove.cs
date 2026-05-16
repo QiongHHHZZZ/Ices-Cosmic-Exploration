@@ -486,7 +486,9 @@ namespace ICE.Scheduler.Tasks
 
         public static void Enqueue_NavmeshTask(Vector3 destination, bool waitForBusy = true, float distance = 2.0f)
         {
-            P.TaskManager.InsertMulti
+            if (P.Navmesh.Installed)
+            {
+                P.TaskManager.InsertMulti
                 (
                     new(() => Paths_Clear(), "Clearing all Navmesh Paths"),
                     new(() => CalculateAethernet(destination), "Calculating Aethernet Path"),
@@ -495,10 +497,17 @@ namespace ICE.Scheduler.Tasks
                     new(() => CalculateHubAethernet(destination), "Calculate Hub Aetheryte Travel"),
                     new(() => FindBestTravel(destination, waitForBusy, distance), "Finding best pathing method")
                 );
+            }
+            else
+            {
+                IceLogging.Verbose("Navmesh was not installed, so we're not even going to attempt to move", "Enqueue Navmesh");
+            }
         }
         public static void Enqueue_RedAlertNavmesh(Vector3 destination, bool waitForBusy = true, float distance = 2.0f, uint missionId = 0)
         {
-            P.TaskManager.InsertMulti
+            if (P.Navmesh.Installed)
+            {
+                P.TaskManager.InsertMulti
                 (
                     new(() => Paths_Clear(), "Clearing all Navmesh Paths"),
                     new(() => CalculateDirect(destination), "Calculating Direct Path"),
@@ -506,6 +515,11 @@ namespace ICE.Scheduler.Tasks
                     new(() => CalculateRedAlertHub(missionId, destination), "Calculating Red Alert Hub Travel [Hub -> NPC -> RE]"),
                     new(() => FindBestTravel(destination, waitForBusy, distance, missionId))
                 );
+            }
+            else
+            {
+                IceLogging.Verbose("Navmesh was not installed, so we're not even going to attempt to move", "Enqueue Navmesh");
+            }
         }
 
         private static bool? Paths_Clear()

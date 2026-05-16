@@ -28,7 +28,7 @@ namespace ICE.Scheduler.Tasks
                 if (!ForceAbandon)
                 {
                     P.MissionTimer.AbandonMission();
-                    CosmicHelper.SendCosmicUpdate();
+                    CosmicHelper.Task_UpdateRelicMissionInfo();
                 }
 
                 ForceAbandon = false;

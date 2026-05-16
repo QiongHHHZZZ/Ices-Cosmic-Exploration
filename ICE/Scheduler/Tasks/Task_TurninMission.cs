@@ -113,7 +113,7 @@ namespace ICE.Scheduler.Tasks
 
             if (id == 0)
             {
-                CosmicHelper.SendCosmicUpdate();
+                CosmicHelper.Task_UpdateRelicMissionInfo();
 
                 PathfoundToRed = false;
                 HasInteracted = false;
@@ -136,7 +136,7 @@ namespace ICE.Scheduler.Tasks
                 UpdateScoreInfo();
                 Mission_Settings.TurninState = TurninState.None;
 
-                CosmicHelper.SendCosmicUpdate();
+                CosmicHelper.Task_UpdateRelicMissionInfo();
 
                 if (Mission_Settings.StopAfterCurrent)
                 {

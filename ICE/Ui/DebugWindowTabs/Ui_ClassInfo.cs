@@ -8,7 +8,7 @@ namespace ICE.Ui.DebugWindowTabs
     {
         public static void Draw()
         {
-            var classInfo = CosmicHelper.Cosmic_ClassInfo;
+            var classInfo = CosmicHelper.Cosmic_ClassInfo();
 
             using var tabBar = ImRaii.TabBar("Cosmic Class Info");
             if (!tabBar) return;

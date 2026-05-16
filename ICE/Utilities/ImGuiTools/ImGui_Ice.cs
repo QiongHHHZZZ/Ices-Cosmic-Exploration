@@ -816,7 +816,7 @@ public static partial class ImGui_Ice
     // Quick access functions that are used in multiple places
     public static void Draw_ExpTable(uint jobId, Vector2? Barsize = null)
     {
-        var ExpInfo = CosmicHelper.Cosmic_ClassInfo;
+        var ExpInfo = CosmicHelper.Cosmic_ClassInfo();
         if (ExpInfo.TryGetValue(jobId, out var jobInfo))
         {
             foreach (var exp in jobInfo.CurrentExp.Values)

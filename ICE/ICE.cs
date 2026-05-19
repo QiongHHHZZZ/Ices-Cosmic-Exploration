@@ -10,6 +10,7 @@ using Pictomancy;
 using System.Collections.Generic;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
+using ICE.Scheduler.Handlers.PictoStuff;
 
 namespace ICE;
 

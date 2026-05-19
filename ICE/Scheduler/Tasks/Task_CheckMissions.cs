@@ -13,18 +13,32 @@ namespace ICE.Scheduler.Tasks
 {
     internal static class Task_CheckMissions
     {
-        private static Dictionary<string, List<uint>> MissionLibrary = new()
+        public enum MissionKind
         {
-            ["Critical"] = new(),
-            ["Weather"] = new(),
-            ["Timed"] = new(),
-            ["Sequence"] = new(),
-            ["Ex"] = new(),
-            ["A"] = new(),
-            ["B"] = new(),
-            ["C"] = new(),
-            ["D"] = new(),
-            ["???"] = new(),
+            Critical,
+            Weather,
+            Timed,
+            Sequence,
+            Ex,
+            A,
+            B,
+            C,
+            D,
+            Unknown,
+        }
+
+        private static Dictionary<MissionKind, List<uint>> MissionLibrary = new()
+        {
+            [MissionKind.Critical] = new(),
+            [MissionKind.Weather] = new(),
+            [MissionKind.Timed] = new(),
+            [MissionKind.Sequence] = new(),
+            [MissionKind.Ex] = new(),
+            [MissionKind.A] = new(),
+            [MissionKind.B] = new(),
+            [MissionKind.C] = new(),
+            [MissionKind.D] = new(),
+            [MissionKind.Unknown] = new(),
         };
 
         private static readonly Random _random = new Random();
@@ -50,30 +64,30 @@ namespace ICE.Scheduler.Tasks
                 }
             }
         }
-        private static string LibraryInfo(KeyValuePair<uint, CosmicHelper.CosmicInfo> mission)
+        private static MissionKind LibraryInfo(KeyValuePair<uint, CosmicHelper.CosmicInfo> mission)
         {
-            string entry = string.Empty;
+            MissionKind entry = MissionKind.Unknown;
             var attribute = mission.Value.Attributes;
             var rank = mission.Value.Rank;
 
             if (attribute.HasFlag(MissionAttributes.ProvisionalWeather))
-                entry = "Weather";
+                entry = MissionKind.Weather;
             else if (attribute.HasFlag(MissionAttributes.ProvisionalTimed))
-                entry = "Timed";
+                entry = MissionKind.Timed;
             else if (attribute.HasFlag(MissionAttributes.ProvisionalSequential))
-                entry = "Sequence";
+                entry = MissionKind.Sequence;
             else if (attribute.HasFlag(MissionAttributes.Critical))
-                entry = "Critical";
+                entry = MissionKind.Critical;
             else if (rank != 0)
             {
                 entry = rank switch
                 {
-                    5 => "Ex",
-                    4 => "A",
-                    3 => "B",
-                    2 => "C",
-                    1 => "D",
-                    _ => "???",
+                    5 => MissionKind.Ex,
+                    4 => MissionKind.A,
+                    3 => MissionKind.B,
+                    2 => MissionKind.C,
+                    1 => MissionKind.D,
+                    _ => MissionKind.Unknown,
                 };
             }
 
@@ -271,6 +285,28 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
+                IceLogging.Verbose("We've reached the end of the mission sorter, going to report back what our current mission counts are at:", tag);
+                foreach (var key in MissionLibrary)
+                {
+                    IceLogging.Verbose($"[{key.Key}] = {key.Value.Count()}", tag);
+                }
+                IceLogging.Verbose("Going to run the sorter one more time to make sure that the priority is set for all of these (it should but ya never know)", tag);
+                foreach (var key in MissionLibrary.Keys.ToList())
+                {
+                    MissionLibrary[key] = MissionLibrary[key]
+                        .OrderBy(x =>
+                        {
+                            var jobs = CosmicHelper.SheetMissionDict[x].Jobs;
+                            var bestIndex = jobs
+                                .Select(job => C.JobPrio.IndexOf(job))
+                                .Where(i => i >= 0)
+                                .DefaultIfEmpty(int.MaxValue)
+                                .Min();
+                            return bestIndex;
+                        })
+                        .ToList();
+                }
+
                 IceLogging.Verbose($"Mission finder says we have a valid mission list. So we gonna go find one", tag);
                 IceLogging.Verbose($"Stardard tab missions job: {Mission_Settings.SelectedJob}");
                 return true;
@@ -314,11 +350,11 @@ namespace ICE.Scheduler.Tasks
                 {
                     switch (type)
                     {
-                        case MissionTypes.RedAlert:
+                        case MissionTypes.Critical:
                             {
-                                if (MissionLibrary["Critical"].Count > 0)
+                                if (MissionLibrary[MissionKind.Critical].Count > 0)
                                 {
-                                    P.TaskManager.Enqueue(() => CheckMissions(MissionLibrary["Critical"], type), "Checking Critical tab for missions");
+                                    P.TaskManager.Enqueue(() => CheckMissions(MissionLibrary[MissionKind.Critical], type), "Checking Critical tab for missions");
                                 }
                                 break;
                             }
@@ -327,12 +363,12 @@ namespace ICE.Scheduler.Tasks
                                 List<uint> provisionals = new();
                                 foreach (var ProvisionalPrio in C.MissionPrio)
                                 {
-                                    string key = ProvisionalPrio switch
+                                    MissionKind key = ProvisionalPrio switch
                                     {
-                                        ProvisionalTypes.ProvisionalWeather => "Weather",
-                                        ProvisionalTypes.ProvisionalSequential => "Sequence",
-                                        ProvisionalTypes.ProvisionalTimed => "Timed",
-                                        _ => ""
+                                        ProvisionalTypes.ProvisionalWeather => MissionKind.Weather,
+                                        ProvisionalTypes.ProvisionalSequential => MissionKind.Sequence,
+                                        ProvisionalTypes.ProvisionalTimed => MissionKind.Timed,
+                                        _ => MissionKind.Unknown
                                     };
 
                                     if (MissionLibrary.TryGetValue(key, out var missionList))
@@ -359,7 +395,7 @@ namespace ICE.Scheduler.Tasks
                         case MissionTypes.Standard:
                             {
                                 List<uint> basicMissions = new();
-                                List<string> MissionRanks = new() { "Ex", "A", "B", "C", "D" };
+                                List<MissionKind> MissionRanks = new() { MissionKind.Ex, MissionKind.A, MissionKind.B, MissionKind.C, MissionKind.D };
                                 foreach (var rank in MissionRanks)
                                 {
                                     if (MissionLibrary.TryGetValue(rank, out var missionList))
@@ -437,16 +473,7 @@ namespace ICE.Scheduler.Tasks
                         var level = Player.GetLevel((Job)Mission_Settings.SelectedJob);
                         uint missionId = 0;
 
-                        if (level >= 90 && highestRank < 3)
-                        {
-                            IceLogging.Verbose("We need to unlock the Lv. 90 Missions [B Rank] so we get better exp gains", tag);
-                            missionId = basicMissionList
-                                .Where(x => CosmicHelper.Unlock_MissionList.Contains(x))
-                                .Where(x => CosmicHelper.SheetMissionDict[x].CRank)
-                                .Where(x => CosmicHelper.SheetMissionDict[x].CompletionStatus is CosmicHelper.Status.None)
-                                .FirstOrDefault();
-                        }
-                        else if (level >= 50 && highestRank < 2)
+                        if (level >= 50 && highestRank < 2)
                         {
                             IceLogging.Verbose("We need to unlock the Lv. 50 Missions [C Rank] so we get better exp gains", tag);
                             missionId = basicMissionList
@@ -454,6 +481,17 @@ namespace ICE.Scheduler.Tasks
                                 .Where(x => CosmicHelper.SheetMissionDict[x].Drank)
                                 .Where(x => CosmicHelper.SheetMissionDict[x].CompletionStatus is CosmicHelper.Status.None)
                                 .FirstOrDefault();
+                            IceLogging.Verbose($"Lv. 50 Mission: {missionId}", tag);
+                        }
+                        else if (level >= 90 && highestRank < 3)
+                        {
+                            IceLogging.Verbose("We need to unlock the Lv. 90 Missions [B Rank] so we get better exp gains", tag);
+                            missionId = basicMissionList
+                                .Where(x => CosmicHelper.Unlock_MissionList.Contains(x))
+                                .Where(x => CosmicHelper.SheetMissionDict[x].CRank)
+                                .Where(x => CosmicHelper.SheetMissionDict[x].CompletionStatus is CosmicHelper.Status.None)
+                                .FirstOrDefault();
+                            IceLogging.Verbose($"Lv. 90 Mission: {missionId}", tag);
                         }
 
                         if (missionId != 0)
@@ -707,7 +745,7 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Verbose($"No missions were found for: {type}. Continuing on", tag);
                             return true;
                         }
-                        else if (type is MissionTypes.RedAlert)
+                        else if (type is MissionTypes.Critical)
                         {
                             IceLogging.Verbose($"Checking missions for the following mode:\n" +
                                 $"Mode: {type}\n" +
@@ -1126,10 +1164,10 @@ namespace ICE.Scheduler.Tasks
                             }
                         }
 
-                        bool CheckARanks = (MissionLibrary["Ex"].Count > 0 || MissionLibrary["A"].Count > 0) && (AExRank.Count > 0 || ARank.Count > 0);
-                        bool CheckBRanks = (MissionLibrary["B"].Count > 0 && BRank.Count > 0);
-                        bool CheckCRanks = (MissionLibrary["C"].Count > 0 && CRank.Count > 0);
-                        bool CheckDRanks = (MissionLibrary["D"].Count > 0 && DRank.Count > 0);
+                        bool CheckARanks = (MissionLibrary[MissionKind.Ex].Count > 0 || MissionLibrary[MissionKind.A].Count > 0) && (AExRank.Count > 0 || ARank.Count > 0);
+                        bool CheckBRanks = (MissionLibrary[MissionKind.B].Count > 0 && BRank.Count > 0);
+                        bool CheckCRanks = (MissionLibrary[MissionKind.C].Count > 0 && CRank.Count > 0);
+                        bool CheckDRanks = (MissionLibrary[MissionKind.D].Count > 0 && DRank.Count > 0);
 
                         IceLogging.Verbose($"[Ex] = {AExRank.Count()}\n" +
                             $"[A] = {ARank.Count()}\n" +
@@ -1137,7 +1175,7 @@ namespace ICE.Scheduler.Tasks
                             $"[C] = {CRank.Count()}\n" +
                             $"[D] = {DRank.Count()}", tag);
 
-                        List<string> ranks = new() { "Ex", "A", "B", "C", "D" };
+                        List<MissionKind> ranks = new() { MissionKind.Ex, MissionKind.A, MissionKind.B, MissionKind.C, MissionKind.D };
                         var enabledCount = 0;
                         foreach (var rank in ranks)
                         {
@@ -1310,7 +1348,7 @@ namespace ICE.Scheduler.Tasks
                         }
                         else if (Mission_Settings.Mode == ModeSelect.LevelMode)
                         {
-                            if (MissionLibrary["B"].Count > 0)
+                            if (MissionLibrary[MissionKind.B].Count > 0)
                             {
                                 IceLogging.Debug("Leveling mode is active. Need to find a valid C or D Rank mission", tag);
                                 var mission = missionInfo.StellerMissions.Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 50).FirstOrDefault();
@@ -1327,7 +1365,7 @@ namespace ICE.Scheduler.Tasks
                                         missionToAbandon = mission.MissionId;
                                 }
                             }
-                            else if (MissionLibrary["C"].Count > 0)
+                            else if (MissionLibrary[MissionKind.C].Count > 0)
                             {
                                 var mission = missionInfo.StellerMissions.Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 10).FirstOrDefault();
                                 if (mission != null)

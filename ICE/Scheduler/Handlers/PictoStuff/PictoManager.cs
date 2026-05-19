@@ -4,14 +4,14 @@ using ICE.Utilities.Cosmic_Helper;
 using Pictomancy;
 using System.Collections.Generic;
 
-namespace ICE.Scheduler.Handlers
+namespace ICE.Scheduler.Handlers.PictoStuff
 {
     // TO ANYONE WONDERING WTF THIS IS.
     // This is a universal way of me being able to add things to picto drawing without having to add it constantly. 
     // This will run on framework thread -> just load whatever it's suppose to load
     // Which, is nice cause it means that I can add things from different windows here and run it all under the same code
 
-    internal static class PictoManager
+    internal static partial class PictoManager
     {
         // Storage for draw commands - initialize inline to avoid any timing issues
         private static readonly List<Action<PctDrawList>> drawCommands = new();
@@ -70,6 +70,23 @@ namespace ICE.Scheduler.Handlers
             AddDrawCommand(pictoDraw =>
             {
                 Picto_TriangleRotate(pictoDraw, targetPos, fillColor, outlineColor, scaleWithDistance);
+            });
+        }
+        public static void DrawArrowToward(Vector3 target, 
+            float backRadius = 0.606f, 
+            float tipRadius = 0.05f, 
+            float depth = 2.952f, 
+            float wingSpread = 0.7f, 
+            float notchFrac = 0.33f, 
+            float height = 2f)
+        {
+            var color = C.PictoColor_Circle;
+
+            var position = Player.Position;
+            position = new(position.X, position.Y + height, position.Z);
+            AddDrawCommand(pictoDraw =>
+            {
+                DrawCrazyArrowToward(pictoDraw, position, target, backRadius, tipRadius, depth, wingSpread, notchFrac, color);
             });
         }
 

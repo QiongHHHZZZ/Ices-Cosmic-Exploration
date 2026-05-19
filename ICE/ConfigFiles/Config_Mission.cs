@@ -27,7 +27,7 @@ public partial class Config
     public List<MissionTypes> MissionTypePrio { get; set; } = new()
     {
         MissionTypes.DroneSearch,
-        MissionTypes.RedAlert,
+        MissionTypes.Critical,
         MissionTypes.Provisional,
         MissionTypes.Standard,
     };

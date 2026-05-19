@@ -44,4 +44,9 @@ public partial class Config
         public required string command { get; set; }
         public int Delay { get; set; } = 0;
     }
+
+    // These are dumb options that do absolutely nothing for gameplay
+    // And some of these are just for memes
+    public bool CrazyTaxiArrow { get; set; } = false;
+    public bool PlaceboCheckbox { get; set; } = false;
 }

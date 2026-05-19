@@ -3,6 +3,7 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Resources.GatheringRoutes;
+using ICE.Scheduler.Handlers.PictoStuff;
 using ICE.Ui.DebugWindowTabs;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
@@ -204,6 +205,14 @@ namespace ICE.Scheduler.Tasks
                 }
             }
 
+            if (C.CrazyTaxiArrow)
+            {
+                if (npcLoc != null)
+                    PictoManager.DrawArrowToward(npcLoc.Value);
+                else
+                    PictoManager.DrawArrowToward(pos);
+            }
+
             // Check if we should wait for movement to stop
             if (Player.IsMoving && waitForBusy)
             {
@@ -224,6 +233,15 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool? HandleStartNavmesh(Vector3 pos, float distance, bool stayMounted, Vector3? npcLoc, bool usingCosmoliner, bool mounted, float distanceToTarget, string handle, bool useMount = false, bool mountBeforeMove = false)
         {
+
+            if (C.CrazyTaxiArrow)
+            {
+                if (npcLoc != null)
+                    PictoManager.DrawArrowToward(npcLoc.Value);
+                else
+                    PictoManager.DrawArrowToward(pos);
+            }
+
             // Don't start navmesh while using cosmoliner
             if (usingCosmoliner)
             {

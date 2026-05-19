@@ -143,7 +143,7 @@ namespace ICE.Ui.MainUi.Settings
                     FontAwesomeIcon icon = entry switch
                     {
                         MissionTypes.DroneSearch => FontAwesomeIcon.Satellite,
-                        MissionTypes.RedAlert => FontAwesomeIcon.Bell,
+                        MissionTypes.Critical => FontAwesomeIcon.Bell,
                         MissionTypes.Provisional => FontAwesomeIcon.HourglassHalf,
                         MissionTypes.Standard => FontAwesomeIcon.Star,
                         _ => FontAwesomeIcon.Question
@@ -155,7 +155,7 @@ namespace ICE.Ui.MainUi.Settings
                     string name = entry switch
                     {
                         MissionTypes.DroneSearch => "Drone Search",
-                        MissionTypes.RedAlert => "Red Alert",
+                        MissionTypes.Critical => "Red Alert",
                         MissionTypes.Provisional => "Provisional Missions [Weather/Timed/Sequence]",
                         MissionTypes.Standard => "Standard Missions [A->D]",
                         _ => $"{entry}"

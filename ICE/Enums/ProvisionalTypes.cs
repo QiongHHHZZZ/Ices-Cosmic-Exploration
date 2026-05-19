@@ -10,7 +10,7 @@
     public enum MissionTypes
     {
         DroneSearch,
-        RedAlert,
+        Critical,
         Provisional,
         Standard,
     }

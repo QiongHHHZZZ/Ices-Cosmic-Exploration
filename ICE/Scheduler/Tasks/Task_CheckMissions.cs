@@ -257,12 +257,6 @@ namespace ICE.Scheduler.Tasks
                 }
             }
 
-            IceLogging.Debug("All viable missions have been loaded, reporting back all counts");
-            foreach (var entry in MissionLibrary)
-            {
-                IceLogging.Debug($"[{entry.Key}] = {entry.Value.Count}", tag);
-            }
-
             if (MissionLibrary.All(x => x.Value.Count == 0))
             {
                 if (modeSelected == ModeSelect.RelicMode && C.XPRelicOnlyEnabled)

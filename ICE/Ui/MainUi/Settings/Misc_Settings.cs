@@ -314,7 +314,8 @@ namespace ICE.Ui.MainUi.Settings
                 C.PlaceboCheckbox = placiboEffect;
                 C.Save();
             }
-            ImGuiEx.IconWithTooltip(FontAwesomeIcon.Question, T("This does abosolutely nothing\n" +
+            ImGui.SameLine();
+            ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle, T("This does abosolutely nothing\n" +
                 "But I know there's going to be people who enable this and don't read, so it's a tehe.\n" +
                 "Thanks for using my plugin though, it means a lot <3"));
         }

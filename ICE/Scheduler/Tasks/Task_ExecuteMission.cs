@@ -36,9 +36,16 @@ namespace ICE.Scheduler.Tasks
                     {
                         if (config.Use_BuildinPreset)
                         {
+							IceLogging.Debug("Use Built-In Presets Checked. Resetting/Importing presets.");
                             P.AutoHook.DeleteAllAnonymousPresets();
                             FishingTask(missionId);
                         }
+						else
+						{
+							IceLogging.Debug("Use Built-In Presets Unchecked. Setting configured preset.");
+							string presetName = C.MissionConfig[CosmicHelper.CurrentLunarMission].AutoHookPresetName;
+							P.AutoHook.SetPreset(presetName);
+						}
                     }
                 }
                 else if (fishingMission)
@@ -48,11 +55,13 @@ namespace ICE.Scheduler.Tasks
                     if (missionConfig.Use_BuildinPreset)
                     {
                         // Using the build in presets that are included in the plugin.
+						IceLogging.Debug("Use Built-In Presets Checked. Resetting/Importing presets.");
                         P.AutoHook.DeleteAllAnonymousPresets();
                         FishingTask(missionId);
                     }
                     else
                     {
+						IceLogging.Debug("Use Built-In Presets Unchecked. Setting configured preset.");
                         string presetName = missionConfig.AutoHookPresetName;
                         P.AutoHook.SetPreset(presetName);
                     }

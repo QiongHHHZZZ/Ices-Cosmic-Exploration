@@ -215,7 +215,7 @@ namespace ICE.Ui.DebugWindowTabs
             if (WorldPos != Vector3.Zero)
             {
                 var size = new Vector2(24 * Scale, 24 * Scale);
-                var icon = CosmicHelper.JobIconDict[8].GetWrapOrDefault();
+                var icon = CosmicHelper.ClassInfoDict[8].JobIcon.GetWrapOrDefault();
                 if (icon != null)
                 {
                     // PictoManager.DrawIcon(icon.Handle, new(WorldPos.X, WorldPos.Y + Height, WorldPos.Z), size);

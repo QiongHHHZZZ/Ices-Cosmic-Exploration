@@ -89,16 +89,16 @@ namespace ICE.Utilities
                         allMissions.Add(mission.MissionUnitId);
                 }
 
-                foreach (var mission in wks->Data->MissionList.ToList())
+                StdVector<MissionEntry> criticalList = default;
+                if (AgentWKSMissionEx.GetCriticalMissions(wks, &criticalList))
                 {
-                    if (!allMissions.Contains(mission.MissionUnitId))
+                    foreach (var mission in criticalList)
                         allMissions.Add(mission.MissionUnitId);
                 }
             }
                 
             return allMissions;
         }
-
         internal unsafe static List<uint> Basic_AvailableMissions()
         {
             List<uint> allMissions = new();
@@ -122,7 +122,6 @@ namespace ICE.Utilities
 
             return allMissions;
         }
-
         internal unsafe static List<uint> Provisional_AvailableMissions()
         {
             List<uint> allMissions = new();
@@ -153,6 +152,29 @@ namespace ICE.Utilities
 
             return allMissions;
         }
+        internal unsafe static List<uint> Critical_AvailableMissions()
+        {
+            List<uint> allMissions = new();
+
+            if (GenericHelpers.TryGetAddonMaster<WKSMission>(out var wksMission) && wksMission.IsAddonReady)
+            {
+                var wks = AgentWKSMission.Instance();
+                if (wks is null)
+                    return allMissions;
+
+                if (!wks->IsAgentActive())
+                    return allMissions;
+
+                StdVector<MissionEntry> criticalList = default;
+                if (AgentWKSMissionEx.GetCriticalMissions(wks, &criticalList))
+                {
+                    foreach (var mission in criticalList)
+                        allMissions.Add(mission.MissionUnitId);
+                }
+            }
+
+            return allMissions;
+        }
         internal unsafe static List<uint> VisibleMissions()
         {
             List<uint> allMissions = new();
@@ -172,21 +194,6 @@ namespace ICE.Utilities
                         allMissions.Add(mission.MissionUnitId);
                 }
             }
-
-            return allMissions;
-        }
-        internal unsafe static List<uint> AllMissions()
-        {
-            List<uint> allMissions = new();
-            foreach (var mission in Basic_AvailableMissions())
-                allMissions.Add(mission);
-
-            foreach (var mission in Provisional_AvailableMissions())
-                allMissions.Add(mission);
-
-            foreach (var mission in VisibleMissions())
-                if (!allMissions.Contains(mission))
-                    allMissions.Add(mission);
 
             return allMissions;
         }

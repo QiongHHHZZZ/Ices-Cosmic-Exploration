@@ -220,7 +220,7 @@ namespace ICE.Ui.DebugWindowTabs
                     int index = 0;
                     foreach (var jobId in entry.Value.Jobs)
                     {
-                        ISharedImmediateTexture? icon = CosmicHelper.JobIconDict[jobId];
+                        ISharedImmediateTexture? icon = CosmicHelper.ClassInfoDict[jobId].JobIcon;
                         ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
 
                         if (index < entry.Value.Jobs.Count - 1) // Not the only job, adding a sameline for it
@@ -336,42 +336,6 @@ namespace ICE.Ui.DebugWindowTabs
                         entry.Value.ClassScore = missionScore;
                     }
 
-                    if (CosmicHelper.GatheringItemDict.TryGetValue(entry.Key, out var gatherInfo))
-                    {
-                        foreach (var gatherEntry in gatherInfo.MinGatherItems)
-                        {
-                            ImGui.TableNextColumn();
-                            string name = itemSheet.GetRow(gatherEntry.Key).Name.ToString();
-                            ImGui.Text(name);
-                            if (ImGui.IsItemHovered())
-                            {
-                                ImGui.BeginTooltip();
-                                ImGui.Text($"{gatherEntry.Key}");
-                                ImGui.EndTooltip();
-                            }
-
-                            ImGui.TableNextColumn();
-                            ImGui.Text($"{gatherEntry.Value}");
-                        }
-                    }
-
-
-                    ImGui.TableSetColumnIndex(26);
-                    if (entry.Value.Jobs.Contains(18)) // Check if it's a fishing mission
-                    {
-                        if (ImGui.Button($"Export##Export-{entry.Key}"))
-                        {
-                            var fishingEntryCode = GenerateFishingEntryCode(entry.Key, entry.Value);
-                            ImGui.SetClipboardText(fishingEntryCode);
-                        }
-                        if (ImGui.IsItemHovered())
-                        {
-                            ImGui.BeginTooltip();
-                            ImGui.Text(T("Export this fishing mission entry"));
-                            ImGui.EndTooltip();
-                        }
-                    }
-
                     // 27-29
                     foreach (var item in entry.Value.Gathering_Min)
                     {
@@ -424,77 +388,6 @@ namespace ICE.Ui.DebugWindowTabs
 
             // IMPORTANT: Add this at the end of your Draw() method, before the last closing brace
             fileDialogManager.Draw();
-        }
-
-        public static string GenerateFishingEntryCode(uint missionId, dynamic missionInfo)
-        {
-            var sb = new StringBuilder();
-
-            sb.AppendLine($"        [{missionId}] = new FishingInfo");
-            sb.AppendLine("        {");
-
-            // Add RequiredFish if gathering items exist
-            if (CosmicHelper.GatheringItemDict.TryGetValue(missionId, out var gatherInfo) && gatherInfo.MinGatherItems.Any())
-            {
-                sb.AppendLine("            RequiredFish = new Dictionary<string, HashSet<uint>>");
-                sb.AppendLine("            {");
-                sb.AppendLine("                // TODO: Define fish categories and their IDs");
-                sb.AppendLine("                // Example: [\"CategoryName\"] = new HashSet<uint> { fish_id_1, fish_id_2 },");
-                foreach (var item in gatherInfo.MinGatherItems)
-                {
-                    var itemSheet = ExcelHelper.ItemSheet;
-                    string itemName = itemSheet.GetRow((uint)item.Key).Name.ToString();
-                    sb.AppendLine($"                // {RemovePrivateUseChars(itemName)} (ID: {item.Key}) - Quantity: {item.Value}");
-                }
-                sb.AppendLine("            },");
-            }
-            else
-            {
-                sb.AppendLine("            // RequiredFish = new Dictionary<string, HashSet<uint>>(),");
-            }
-
-            // Add FishCountRequired - you might need to determine this from mission data
-            sb.AppendLine("            FishCountRequired = 0, // TODO: Set based on mission requirements");
-
-            // Add Bronze, Silver, Gold scores
-            sb.AppendLine($"            BronzeScore = 0, // TODO: Determine bronze requirement");
-
-            // Use existing Silver and Gold requirements if available
-            if (HasProperty(missionInfo, "SilverRequirement"))
-            {
-                sb.AppendLine($"            SilverScore = {missionInfo.SilverRequirement},");
-            }
-            else
-            {
-                sb.AppendLine("            SilverScore = 0,");
-            }
-
-            if (HasProperty(missionInfo, "GoldRequirement"))
-            {
-                sb.AppendLine($"            GoldScore = {missionInfo.GoldRequirement},");
-            }
-            else
-            {
-                sb.AppendLine("            GoldScore = 0,");
-            }
-
-            sb.AppendLine("        },");
-
-            return sb.ToString();
-        }
-
-        // Helper method to check if a dynamic object has a property
-        private static bool HasProperty(dynamic obj, string propertyName)
-        {
-            try
-            {
-                var value = obj.GetType().GetProperty(propertyName)?.GetValue(obj);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
         }
 
         public static string GenerateMissionScoreDictionaryCode()

@@ -42,8 +42,8 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (colWidth - imgSize) * 0.5f);
                     ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (cellHeight - imgSize) * 0.5f);
 
-                    var image = CosmicHelper.JobIconDict[i];
-                    ImGui.Image(image.GetWrapOrEmpty().Handle, new Vector2(imgSize));
+                    var image = CosmicHelper.ClassInfoDict[i];
+                    ImGui.Image(image.JobIcon.GetWrapOrEmpty().Handle, new Vector2(imgSize));
                 }
 
                 List<uint> sinusLeveling = CosmicHelper.QuickLevelList.Where(x => CosmicHelper.SheetMissionDict[x].TerritoryId == 1237).ToList();

@@ -551,6 +551,5 @@ public class Shop_Cosmocredits
         public uint Cost { get; set; }
         public int Tab { get; set; } = 3;
         public uint Index { get; set; }
-        public ItemTypes Type { get; set; } = ItemTypes.Misc;
     }
 }

@@ -5,6 +5,7 @@ using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
@@ -59,18 +60,18 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 ImGui.TableSetupColumn(T("Icon"));
                 ImGui.TableSetupColumn(T("Name"));
 
-                foreach (var icon in CosmicHelper.JobIconDict.OrderBy(x => x.Key))
+                foreach (var jobInfo in CosmicHelper.ClassInfoDict.OrderBy(x => x.Key))
                 {
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Image(icon.Value.GetWrapOrEmpty().Handle, new(24, 24));
+                    ImGui.Image(jobInfo.Value.JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
 
                     ImGui.TableNextColumn();
-                    string name = CosmicHelper.GetJobName(icon.Key);
+                    string name = jobInfo.Value.JobName;
                     ImGui.AlignTextToFramePadding();
-                    if (ImGui.Selectable(name, SelectedJob == icon.Key, ImGuiSelectableFlags.SpanAllColumns))
+                    if (ImGui.Selectable(name, SelectedJob == jobInfo.Key, ImGuiSelectableFlags.SpanAllColumns))
                     {
-                        SelectedJob = icon.Key;
+                        SelectedJob = jobInfo.Key;
                     }
                 }
 
@@ -113,8 +114,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                 if (SelectedJob != 0)
                 {
-                    var classIcon = CosmicHelper.JobIconDict[SelectedJob];
-                    DrawImageTabButton(T("Class Progress"), ExpeditionTabs.Progress, ref selectedTab, classIcon.GetWrapOrEmpty());
+                    var classIcon = CosmicHelper.ClassInfoDict[SelectedJob];
+                    DrawImageTabButton(T("Class Progress"), ExpeditionTabs.Progress, ref selectedTab, classIcon.JobIcon.GetWrapOrEmpty());
                 }
                 else
                 {
@@ -307,8 +308,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.TableNextColumn();
                         if (missionInfo.Jobs.Count > 1)
                         {
-                            ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.First()];
-                            ISharedImmediateTexture? job2Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.Last()];
+                            ISharedImmediateTexture? job1Icon = CosmicHelper.ClassInfoDict[missionInfo.Jobs.First()].JobIcon;
+                            ISharedImmediateTexture? job2Icon = CosmicHelper.ClassInfoDict[missionInfo.Jobs.Last()].JobIcon;
                             Vector2 imageSize = new Vector2(23, 23);
 
                             ImGui.Image(job1Icon.GetWrapOrEmpty().Handle, imageSize);
@@ -317,7 +318,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                         else
                         {
-                            ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.First()];
+                            ISharedImmediateTexture? job1Icon = CosmicHelper.ClassInfoDict[missionInfo.Jobs.First()].JobIcon;
                             Vector2 imageSize = new Vector2(23, 23);
                             ImGui.Image(job1Icon.GetWrapOrEmpty().Handle, imageSize);
                         }
@@ -377,17 +378,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
 
                         ImGui.TableNextColumn();
-                        if (missionInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        if (missionInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining))
                         {
                             ImGui_Ice.Table_FullCenterText(T("Auto"));
-                            if (missionConfig.AutoTurnin == false)
+                            if (missionConfig.TurninGoal != TurninState.Gold)
                             {
-                                missionConfig.AutoTurnin = true;
-                                missionConfig.TurninGold = false;
-                                missionConfig.TurninSilver = false;
-                                missionConfig.TurninBronze = false;
-
-                                C.Save();
+                                missionConfig.TurninGoal = TurninState.Gold;
+                                C.SaveDebounced();
                             }
                         }
                         else
@@ -409,7 +406,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             ImGui.SetCursorPosX(cursorPosX + (availWidth - totalWidth) * 0.5f);
 
                             // Gold
-                            ImGui.PushStyleColor(ImGuiCol.Text, missionConfig.TurninGold || missionConfig.AutoTurnin ? GoldColor : DisabledColor);
+                            ImGui.PushStyleColor(ImGuiCol.Text, missionConfig.TurninGoal == TurninState.Gold ? GoldColor : DisabledColor);
                             if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold", buttonSize))
                             {
                                 // If AutoTurnin is on, we're enabling individual controls
@@ -778,7 +775,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 ImGui.SameLine();
                                 ImGui.Text(T("Mission: {0}", missionInfo.Name));
 
-                                modeSelect_TableInfo.CrafterManagement(missionInfo, entry);
+                                Mission_Table.CrafterManagement(missionInfo, entry);
 
                                 ImGui.EndPopup();
                             }
@@ -889,8 +886,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (notesCount > 0)
                                 ImGui.SameLine(0, 2);
 
-                            ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.First()];
-                            ISharedImmediateTexture? job2Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.Last()];
+                            ISharedImmediateTexture? job1Icon = CosmicHelper.ClassInfoDict[missionInfo.Jobs.First()].JobIcon;
+                            ISharedImmediateTexture? job2Icon = CosmicHelper.ClassInfoDict[missionInfo.Jobs.Last()].JobIcon;
                             Vector2 imageSize = new Vector2(23, 23);
 
                             ImGui.Image(job1Icon.GetWrapOrEmpty().Handle, imageSize);
@@ -898,6 +895,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             ImGui.Image(job2Icon.GetWrapOrEmpty().Handle, imageSize);
                             notesCount++;
                         }
+                        /*
                         if (CosmicHelper.CustomMissionNotes.TryGetValue(Id, out var notes))
                         {
                             if (notesCount > 0)
@@ -912,6 +910,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 ImGui.EndTooltip();
                             }
                         }
+                        */
 
                         #endregion
                     }
@@ -973,12 +972,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     ImGui.TableHeadersRow();
 
-                    foreach (var job in CosmicHelper.JobIconDict.OrderBy(x => x.Key))
+                    foreach (var job in CosmicHelper.ClassInfoDict.OrderBy(x => x.Key))
                     {
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);
                         var icon = job.Value;
-                        ImGui.Image(icon.GetWrapOrEmpty().Handle, new(24, 24));
+                        ImGui.Image(icon.JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
 
                         if (expInfo.TryGetValue(job.Key, out var jobInfo))
                         {

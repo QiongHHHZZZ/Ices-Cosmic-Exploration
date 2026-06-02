@@ -27,7 +27,13 @@ namespace ICE.Scheduler.Tasks
             {
                 if (!ForceAbandon)
                 {
-                    P.MissionTimer.AbandonMission();
+                    if (Mission_Settings.TurninState > TurninState.None)
+                        P.MissionTimer.CompleteMission();
+                    else
+                        P.MissionTimer.AbandonMission();
+
+                    Mission_Settings.TurninState = TurninState.None;
+
                     CosmicHelper.Task_UpdateRelicMissionInfo();
                 }
 
@@ -57,6 +63,18 @@ namespace ICE.Scheduler.Tasks
                 var rank = Task_CheckScore.CurrentRank();
                 if (rank > MissionRank.None)
                 {
+                    if (rank != MissionRank.Failed)
+                    {
+                        Mission_Settings.TurninState = rank switch
+                        {
+                            MissionRank.Gold => TurninState.Gold,
+                            MissionRank.Silver => TurninState.Silver,
+                            MissionRank.Bronze => TurninState.Bronze,
+                            _ => TurninState.Bronze,
+                        };
+                    }
+                        
+
                     IceLogging.Debug("Reporting the mission", tag);
                     ReportMissionInstance();
                     WasAbandoned = false;

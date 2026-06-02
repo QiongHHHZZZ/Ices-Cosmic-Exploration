@@ -1227,6 +1227,74 @@ internal static class L10n
         ["Buy: Will buy X amount of those items, as it buys it from the vendor, the number will decrease until it hits 0.\nGood for one off buys, or something that you only need a particular amount of"] = "购买：会一次性购买设定数量。每次从商店购买后，该数值会递减，直到归零。\n适合一次性补齐某个固定数量的物品。",
         ["Keep Buying: Once the other 2 have been met (Keep/Buy), it will constantly buy this item if it has the credits to do so.\nThis can only be set to 1 item, and gererally used for things you want to just spend your credits on"] = "持续购买：当“保留/购买”条件都满足后，只要信用点足够就会持续购买该物品。\n该选项只能设置一个物品，通常用于把多余信用点持续消耗在目标物品上。",
         ["Key"] = "键",
+
+        // Mission_Setup.cs mode display
+        ["Standard Mode"] = "标准模式",
+        ["Relic Grind Mode"] = "宇宙工具强化",
+        ["Leveling Grind Mode"] = "练级模式",
+        ["Gold Completion Grind Mode"] = "金奖补全模式",
+        ["Cosmic Agenda Mode"] = "宇宙计划模式",
+        ["Mode Selection"] = "模式选择",
+        ["Provisional: Allow All Classes"] = "全部职业（临时任务）",
+        ["Critical: Allow All Classes"] = "全部职业（紧急任务）",
+        ["Turnin if relic is complete"] = "古武完成后上交",
+        ["Stop once relic completed"] = "古武完成后停止",
+
+        // Mission_Setup.cs HelpMarker texts
+        ["Enabling this will show you all weather/timed/sequence missions that you can grind,\nON TOP OF doing the normal missions for whichever class you start on.\nIf you just want to focus one specific class, set this to false"] = "启用后会显示所有可刷的天气/限时/连锁任务，同时仍会保留你起始职业对应的普通任务。\n如果你只想专注一个特定职业，请关闭此项。",
+        ["This will allow you to grind other classes for criticals/red alerts. (So if you're on crp, but a bsm red alert pops up)"] = "启用后允许你用其他职业执行紧急任务/红色警报。（比如你当前是CRP刻木匠，但出现了BSM锻铁匠的红色警报）",
+
+        // Mission_Table.cs column labels
+        ["Rank"] = "等级",
+        ["Class Score"] = "职业分数",
+        ["Cosmo"] = "宇宙币",
+        ["Lunar"] = "月球币",
+        ["Dronebits"] = "无人机零件",
+        ["Planet Tokens"] = "行星代币",
+        ["SPM"] = "每分钟分数",
+        ["Turnin Goal"] = "交付目标",
+        ["Moons"] = "卫星",
+        ["Profile"] = "配置",
+
+        // Mission_Table.cs filter names
+        ["Not Completed"] = "未完成",
+        ["Has Tokens"] = "有代币",
+        ["No Tokens"] = "无代币",
+        ["Red Alert"] = "红色警报",
+        ["Sequence"] = "连锁",
+        ["Weather"] = "天气",
+        ["Timed"] = "限时",
+        ["A Rank"] = "A级",
+        ["B Rank"] = "B级",
+        ["C Rank"] = "C级",
+        ["D Rank"] = "D级",
+        ["Disabled"] = "已禁用",
+        ["Best Score Per Minute"] = "最佳每分钟分数",
+        ["Needs Unlocked"] = "需解锁",
+        ["No Notes"] = "无备注",
+
+        // Mission_Table.cs UI strings
+        ["[Average] Rewards per minute"] = "[平均] 每分钟奖励",
+        ["Exp {0}"] = "经验值{0}",
+        ["Open Craft Settings"] = "打开制作设置",
+        ["Select gathering profile"] = "选择采集配置",
+        ["Mission: [{0}] {1}"] = "任务：[{0}] {1}",
+        ["Currently Selected: {0}"] = "当前选择：{0}",
+        ["Fishing Settings"] = "钓鱼设置",
+        ["Fishing profile: {0}"] = "钓鱼配置：{0}",
+        ["Average SPM: {0:N2}"] = "平均每分钟分数：{0:N2}",
+        ["Next Sequence:"] = "下一个连锁：",
+        ["Previous Sequence:"] = "上一个连锁：",
+        ["Max use"] = "最大使用次数",
+        ["No Items"] = "无筛选条件",
+        ["Unknown"] = "未知",
+
+        // Solver labels
+        ["Raphael Solver"] = "Raphael 方案",
+        ["Progress Only Solver"] = "仅推进方案",
+        ["Standard Solver"] = "标准方案",
+        ["Expert Recipe Solver"] = "专家配方方案",
+        ["Artisan Macro"] = "Artisan 宏",
     };
 
     internal static string T(string key)

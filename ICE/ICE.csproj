@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/14.0.2">
 
 	<PropertyGroup>
-		<Version>0.0.77.13000</Version>
+		<Version>0.0.78.1</Version>
 		<Description>Who said we couldn't explore the moon!.</Description>
 		<PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -25,6 +25,7 @@
 
 	<ItemGroup>
 		<Content Include="ICE.json" />
+		<EmbeddedResource Include="Resources\Auxesia.png" />
 		<EmbeddedResource Include="Resources\ResearchIcons\advance.png" />
 		<EmbeddedResource Include="Resources\ResearchIcons\expert.png" />
 		<EmbeddedResource Include="Resources\ResearchIcons\novice.png" />
@@ -64,7 +65,7 @@
 	<ItemGroup>
 		<PackageReference Include="NAudio" Version="2.3.0" />
 		<PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100.6" />
-		<PackageReference Include="YamlDotNet" Version="17.1.0" />
+		<PackageReference Include="YamlDotNet" Version="18.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -72,6 +73,9 @@
 			<AdditionalProperties>DalamudLibPath=$(DalamudLibPath)</AdditionalProperties>
 		</ProjectReference>
 		<ProjectReference Include="..\ffxiv_pictomancy\Pictomancy\Pictomancy.csproj">
+			<AdditionalProperties>DalamudLibPath=$(DalamudLibPath)</AdditionalProperties>
+		</ProjectReference>
+		<ProjectReference Include="..\OtterGui\OtterGui.csproj">
 			<AdditionalProperties>DalamudLibPath=$(DalamudLibPath)</AdditionalProperties>
 		</ProjectReference>
 	</ItemGroup>

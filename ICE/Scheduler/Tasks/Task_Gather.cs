@@ -122,6 +122,9 @@ namespace ICE.Scheduler.Tasks
             return Vector2.Distance(player2D, flagPos) <= mission.Radius;
         }
 
+        private static int GatherDelayThrottle = 0;
+        private static Random random = new();
+
         public static bool? GatherInteractV2()
         {
             string tag = "Gather: Gather Interacting";
@@ -129,6 +132,34 @@ namespace ICE.Scheduler.Tasks
             var missionInfo = CosmicHelper.CurrentMissionInfo;
             bool collectableItem = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables);
             bool reduceItems = missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
+
+            bool CheckDelay()
+            {
+                if (C.Delay_Gather)
+                {
+                    var delay = random.Next(500, 1000);
+                    if (EzThrottler.Throttle("Gather Delay", delay))
+                        GatherDelayThrottle += 1;
+
+                    if (GatherDelayThrottle < 2)
+                    {
+                        if (EzThrottler.Throttle("Waiting for throttle to pass by"))
+                            IceLogging.Verbose("Gather Delay", tag);
+                        return true;
+                    }
+                    else
+                    {
+                        if (EzThrottler.Throttle("Ready for gathering"))
+                            IceLogging.Verbose("No delay is activated for gathering, going to just go ahead and shoot", tag);
+                        return false;
+                    }
+
+                }
+                else
+                {
+                    return false;
+                }
+            }
 
             if (Svc.Condition[ConditionFlag.Gathering])
             {
@@ -162,6 +193,9 @@ namespace ICE.Scheduler.Tasks
                             int gatherChance = testItem.GatherChance;
                             int boonChance = testItem.BoonChance;
                             int playerGp = PlayerHelper.GetGp();
+
+                            if (CheckDelay())
+                                return false;
 
                             if (UseGatherAction(configId, gatherChance, boonChance, gather.CurrentIntegrity, gather.TotalIntegrity, playerGp))
                             {
@@ -208,17 +242,22 @@ namespace ICE.Scheduler.Tasks
                             Mission_Settings.item_collectableId = collectable.ItemID;
                         }
 
+                        if (CheckDelay())
+                            return false;
+
                         CollectableGather(collectable);
                     }
                 }
                 else
                 {
                     IceLogging.Verbose("Currently executing a gathering action, waiting patiently", tag);
+                    GatherDelayThrottle = 0;
                     return true;
                 }
             }
             else
             {
+                GatherDelayThrottle = 0;
                 return true;
             }
 

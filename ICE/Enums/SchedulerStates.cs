@@ -29,6 +29,5 @@ namespace ICE.Enums
         ScoringMission = 30,
         AnimationLock = 31,
         TurninMission = 32,
-
     }
 }

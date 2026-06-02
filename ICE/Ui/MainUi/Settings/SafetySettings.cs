@@ -82,6 +82,12 @@ if (ImGui.SliderInt(T("Delay Post Relic Turnin"), ref delayRelic, 0, 5000))
                 C.DelayPostRelic = delayRelic;
                 C.SaveDebounced();
             }
+            bool gatherDelay = C.Delay_Gather;
+            if (ImGui.Checkbox("Add delay to gather", ref gatherDelay))
+            {
+                C.Delay_Gather = gatherDelay;
+                C.Save();
+            }
         }
     }
 }

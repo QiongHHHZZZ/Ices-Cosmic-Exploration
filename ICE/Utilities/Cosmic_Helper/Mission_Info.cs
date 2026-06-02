@@ -23,7 +23,7 @@ public static partial class CosmicHelper
                 if (manager == null)
                     return 0; // or some default value
 
-                return manager->CurrentMissionUnitRowId;
+                return manager->State.CurrentMissionUnitRowId;
             }
             catch (AccessViolationException)
             {
@@ -37,11 +37,11 @@ public static partial class CosmicHelper
             }
         }
     }
-    public static unsafe uint? CurrentBait => WKSManager.Instance()->FishingBait;
+    public static unsafe uint? CurrentBait => WKSManager.Instance()->State.FishingBait;
     // public static unsafe uint CurrentLunarDevelopment => ExcelHelper.DevGrade.GetRow(WKSManager.Instance()->DevGrade).Unknown6;
     public static unsafe uint CurrentLunarDevelopment = 0;
 
-    public static int MaxXpKind = 6;
+    public static int MaxXpKind = 7;
 
     public static Dictionary<int, string> ExpDictionary = new()
     {
@@ -50,7 +50,8 @@ public static partial class CosmicHelper
         { 3, "III" },
         { 4, "IV" },
         { 5, "V" },
-        { 6, "VI" }
+        { 6, "VI" },
+        { 7, "VII" },
     };
 
     public static readonly Dictionary<uint, uint> PlanetCreditInfo = new()
@@ -58,7 +59,7 @@ public static partial class CosmicHelper
         [1237] = 45691, // sinus
         [1291] = 48146, // phaenna
         [1310] = 48147, // Oizys
-        // [] = 48148, // moon 4
+        [1319] = 48148, // moon 4
     };
 
     public class Dronebit
@@ -73,8 +74,12 @@ public static partial class CosmicHelper
         {
             creditId = 49170,
             boxId = 50414,
+        },
+        [1319] = new() // Auxesia
+        {
+            creditId = 49171,
+            boxId = 50415
         }
-        // [] = ???    // Next Planet (Maybe)
     };
 
     // General use functions used across the codebase, specifically tied to cosmic related functions
@@ -160,7 +165,7 @@ public static partial class CosmicHelper
             byte toolClassId = (byte)(jobId - 7);
             byte arrayIndex = (byte)(toolClassId - 1);
 
-            var score = wks->Scores[arrayIndex];
+            var score = wks->State.Scores[arrayIndex];
             var currentStage = researchModule->CurrentStages[arrayIndex];
             var nextStage = currentStage == CosmicHelper.MaxRelicLevel
                 ? CosmicHelper.MaxRelicLevel

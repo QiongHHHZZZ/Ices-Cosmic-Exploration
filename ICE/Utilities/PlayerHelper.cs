@@ -24,10 +24,11 @@ public class PlayerHelper
         return (CosmicHelper.CrafterJobList.Contains(jobId) || CosmicHelper.GatheringJobList.Contains(jobId));
     }
 
-    public static bool IsInCosmicZone() => IsInSinusArdorum() || IsInPhaenna() || IsInOizys();
+    public static bool IsInCosmicZone() => IsInSinusArdorum() || IsInPhaenna() || IsInOizys() || IsInAuxesia();
     public static bool IsInSinusArdorum() => IsInZone(1237);
     public static bool IsInPhaenna() => IsInZone(1291);
     public static bool IsInOizys() => IsInZone(1310);
+    public static bool IsInAuxesia() => IsInZone(1319);
     public static bool IsInZone(uint zoneID) => Svc.ClientState.TerritoryType == zoneID;
     public static IPlayerCharacter? LocalPlayer => Svc.Objects.LocalPlayer;
     private static unsafe float AnimationLock => *(float*)((nint)ActionManager.Instance() + 8);

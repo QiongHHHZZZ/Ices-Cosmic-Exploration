@@ -120,7 +120,7 @@ namespace ICE.Scheduler.Tasks
 
                     if (rank != MissionRank.None || sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
                     {
-                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining))
                         {
                             IceLogging.Debug("We're in a mission where we're just meeting the minimum score. Turning in", tag);
                             SchedulerMain.State = IceState.TurninMission;
@@ -151,9 +151,9 @@ namespace ICE.Scheduler.Tasks
                             {
                                 var config = C.MissionConfig[currentMission];
 
-                                shouldTurnin = ((config.TurninGold || config.AutoTurnin) && rank >= MissionRank.Gold) ||
-                                               (config.TurninSilver && rank >= MissionRank.Silver) ||
-                                               (config.TurninBronze && rank >= MissionRank.Bronze);
+                                shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold) ||
+                                               (config.TurninGoal is TurninState.Silver && rank >= MissionRank.Silver) ||
+                                               (config.TurninGoal is TurninState.Bronze && rank >= MissionRank.Bronze);
                             }
 
                             if (shouldTurnin)
@@ -170,10 +170,7 @@ namespace ICE.Scheduler.Tasks
 
                                 IceLogging.Debug("We're still going for a score/not met threshold.\n" +
                                     $"Rank: {rank.ToString()}\n" +
-                                    $"Any Turnin: {config.AutoTurnin}" +
-                                    $"Gold Turnin: {config.TurninGold}\n" +
-                                    $"Silver Turnin: {config.TurninSilver}\n" +
-                                    $"Bronze Turnin: {config.TurninBronze}", tag);
+                                    $"Turnin Rank: {config.TurninGoal.ToString()}");
                                 return true;
                             }
                         }
@@ -268,9 +265,9 @@ namespace ICE.Scheduler.Tasks
                         {
                             var config = C.MissionConfig[id];
 
-                            shouldTurnin = ((config.TurninGold || config.AutoTurnin) && rank >= MissionRank.Gold) ||
-                                           (config.TurninSilver && rank >= MissionRank.Silver) ||
-                                           (config.TurninBronze && rank >= MissionRank.Bronze);
+                            shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold) ||
+                                           (config.TurninGoal is TurninState.Silver && rank >= MissionRank.Silver) ||
+                                           (config.TurninGoal is TurninState.Bronze && rank >= MissionRank.Bronze);
                         }
 
                         if (shouldTurnin)
@@ -287,10 +284,7 @@ namespace ICE.Scheduler.Tasks
 
                             IceLogging.Debug("We're still going for a score/not met threshold.\n" +
                                 $"Rank: {rank.ToString()}\n" +
-                                $"Any Turnin: {config.AutoTurnin}" +
-                                $"Gold Turnin: {config.TurninGold}\n" +
-                                $"Silver Turnin: {config.TurninSilver}\n" +
-                                $"Bronze Turnin: {config.TurninBronze}", tag);
+                                $"Highest Goal: {config.TurninGoal.ToString()}");
                             return true;
                         }
                     }
@@ -372,7 +366,7 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Debug("We're in Leveling Mode, and we only need a bronze. So we're setting turnin to true", tag);
                             shouldTurnin = true;
                         }
-                        else if (sheet.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        else if (sheet.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining))
                         {
                             IceLogging.Debug("Score is based on time remaining, and we have some sort of rank. Turning in", tag);
                             shouldTurnin = true;
@@ -389,9 +383,9 @@ namespace ICE.Scheduler.Tasks
                         {
                             var config = C.MissionConfig[id];
 
-                            shouldTurnin = ((config.TurninGold || config.AutoTurnin) && rank >= MissionRank.Gold) ||
-                                           (config.TurninSilver && rank >= MissionRank.Silver) ||
-                                           (config.TurninBronze && rank >= MissionRank.Bronze);
+                            shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold) ||
+                                           (config.TurninGoal is TurninState.Silver && rank >= MissionRank.Silver) ||
+                                           (config.TurninGoal is TurninState.Bronze && rank >= MissionRank.Bronze);
                         }
 
                         if (shouldTurnin)
@@ -408,10 +402,7 @@ namespace ICE.Scheduler.Tasks
 
                             IceLogging.Debug("We're still going for a score/not met threshold.\n" +
                                 $"Rank: {rank.ToString()}\n" +
-                                $"Any Turnin: {config.AutoTurnin}" +
-                                $"Gold Turnin: {config.TurninGold}\n" +
-                                $"Silver Turnin: {config.TurninSilver}\n" +
-                                $"Bronze Turnin: {config.TurninBronze}", tag);
+                                $"Turnin Goal: {config.TurninGoal.ToString()}");
                             return true;
                         }
                     }
@@ -461,9 +452,9 @@ namespace ICE.Scheduler.Tasks
                 }
 
                 var config = C.MissionConfig[Id];
-                bool shouldTurnin = ((config.TurninGold || config.AutoTurnin) && rank >= MissionRank.Gold) ||
-                                    (config.TurninSilver && rank >= MissionRank.Silver) ||
-                                    (config.TurninBronze && rank >= MissionRank.Bronze);
+                bool shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold) ||
+                               (config.TurninGoal is TurninState.Silver && rank >= MissionRank.Silver) ||
+                               (config.TurninGoal is TurninState.Bronze && rank >= MissionRank.Bronze);
 
                 if (shouldTurnin)
                 {
@@ -477,10 +468,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     IceLogging.Debug("We're still going for a score/not met threshold.\n" +
                         $"Rank: {rank.ToString()}\n" +
-                        $"Any Turnin: {config.AutoTurnin}" +
-                        $"Gold Turnin: {config.TurninGold}\n" +
-                        $"Silver Turnin: {config.TurninSilver}\n" +
-                        $"Bronze Turnin: {config.TurninBronze}", tag);
+                        $"Turnin Goal: {config.TurninGoal.ToString()}", tag);
                     return true;
                 }
             }

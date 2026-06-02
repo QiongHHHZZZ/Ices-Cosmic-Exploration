@@ -221,9 +221,9 @@ namespace ICE.Ui.MainUi.Settings
                     _dragDrop_JobPrio.DrawButtonDummy(entry, C.JobPrio, i);
 
                     ImGui.TableNextColumn();
-                    if (CosmicHelper.JobIconDict.TryGetValue(entry, out var icon))
+                    if (CosmicHelper.ClassInfoDict.TryGetValue(entry, out var icon))
                     {
-                        ImGui.Image(icon.GetWrapOrEmpty().Handle, new(24, 24));
+                        ImGui.Image(icon.JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
                     }
 
                     ImGui.TableNextColumn();

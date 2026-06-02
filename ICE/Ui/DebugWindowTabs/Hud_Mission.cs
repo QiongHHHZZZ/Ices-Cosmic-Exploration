@@ -1,4 +1,6 @@
 ﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -13,13 +15,14 @@ namespace ICE.Ui.DebugWindowTabs
 
         public static List<int> XpKinds = new() { 1, 2, 3, 4, 5, 6, 7 };
 
-        public static void Draw()
+        public unsafe static void Draw()
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
             {
                 ImGui.Text(T("List of Visible Missions"));
                 ImGui.Text(T("Selected Mission Name: {0}", x.SelectedMissionName));
                 ImGui.Text(T("Selected Mission ID: {0}", x.SelectedMissionId));
+                ImGui.Text(T("Selected Tab: {0}", AgentWKSMissionEx.selectedTab()));
 
                 if (ImGui.Button(T("Help")))
                 {
@@ -70,14 +73,19 @@ namespace ICE.Ui.DebugWindowTabs
                     C.Save();
                 }
 
-                for (int i = 0; i < x.SelectClass.Length; i++)
+                for (int i = 8; i < 19; i++)
                 {
-                    if (i != 0)
+                    if (i != 8)
                         ImGui.SameLine();
                     
                     if (ImGui.Button(T("[{0}]", i)))
                     {
-                        x.SelectClass[i].Select();
+                        var agent = AgentWKSMission.Instance();
+                        if (agent == null) return;
+
+                        IceLogging.Debug($"Before: SelectedTab={agent->SelectedTab}, SelectedJobIndex={agent->Data->SelectedJobIndex}");
+                        AgentWKSMissionEx.SetSelectedJobTab(agent, (byte)i);
+                        IceLogging.Debug($"After: SelectedTab={agent->SelectedTab}, SelectedJobIndex={agent->Data->SelectedJobIndex}");
                     }
                 }
 

@@ -13,10 +13,38 @@ namespace ICE.Ui.MainUi.Settings
 {
     internal class GatherSettings
     {
+        public enum MissionKinds
+        {
+            LimitedNodes,
+            GatherX,
+            TimeAttack,
+            Chain_Scoring,
+            Boon_Scoring,
+            Chain_Boon,
+            DualClass,
+            GreaterReach_GatherX,
+            GreaterReach_Boon,
+            GreaterReach_Chain,
+            GreaterReach_Boon_Chain,
+        }
+
         private static string newProfileName = "";
-        private static string[] MissionTypes = ["限量节点", "采集数量", "限时任务", "连锁任务", "额外采集奖励任务", "连锁+额外采集奖励任务", "双职业任务"];
+        private static string[] MissionTypes = 
+        [
+            "限量节点", 
+            "采集数量", 
+            "限时任务", 
+            "连锁任务", 
+            "额外采集奖励任务", 
+            "连锁+额外采集奖励任务", 
+            "双职业任务",
+            "广阔采集[采集数量]",
+            "广阔采集[额外采集]",
+            "广阔采集[连锁]",
+            "广阔采集[额外采集+连锁]",
+        ];
         private static readonly string[] RankLabels = ["全部任务", "D级及以上", "C级及以上", "B级及以上", "A级及以上", "EX及以上", "仅EX+"];
-        private static int MissionIndex = 0;
+        private static MissionKinds _selectedMission = MissionKinds.LimitedNodes;
 
         private static readonly string PROFILE_PREFIX = "IceGatherProfile_";
 
@@ -35,7 +63,6 @@ namespace ICE.Ui.MainUi.Settings
 
             return PROFILE_PREFIX + base64;
         }
-
         public static bool ImportGatherProfile(string importString, out string errorMessage)
         {
             errorMessage = string.Empty;
@@ -85,14 +112,12 @@ namespace ICE.Ui.MainUi.Settings
                 return false;
             }
         }
-
-        public static bool InitialSetupProfile(string importString, string type, out string errorMessage)
+        public static bool InitialSetupProfile(string importString, MissionKinds type, out string errorMessage)
         {
             errorMessage = string.Empty;
 
             try
             {
-                // Check for and remove the prefix
                 if (!importString.StartsWith(PROFILE_PREFIX))
                 {
                     errorMessage = T("Invalid import string: Missing prefix");
@@ -100,7 +125,6 @@ namespace ICE.Ui.MainUi.Settings
                 }
 
                 var base64String = importString.Substring(PROFILE_PREFIX.Length);
-
                 var bytes = Convert.FromBase64String(base64String);
                 var json = Encoding.UTF8.GetString(bytes);
 
@@ -111,7 +135,6 @@ namespace ICE.Ui.MainUi.Settings
                     return false;
                 }
 
-                // Get the next available ID
                 int nextId = C.GatherProfiles.Keys.Count > 0
                     ? C.GatherProfiles.Keys.Max() + 1
                     : 0;
@@ -121,48 +144,18 @@ namespace ICE.Ui.MainUi.Settings
 
                 foreach (var mission in C.MissionConfig)
                 {
-                    var id = mission.Key;
+                    if (!CosmicHelper.SheetMissionDict.TryGetValue(mission.Key, out var missionDict))
+                        continue;
 
-                    var missionDict = CosmicHelper.SheetMissionDict[id];
+                    var attrs = missionDict.Attributes;
+                    if (!attrs.HasFlag(MissionAttributes.Gather))
+                        continue;
+                    if (attrs.HasFlag(MissionAttributes.Collectables) || attrs.HasFlag(MissionAttributes.ReducedItems))
+                        continue;
 
-                    bool craftMission = missionDict.Attributes.HasFlag(MissionAttributes.Craft);
-                    bool gatherMission = missionDict.Attributes.HasFlag(MissionAttributes.Gather);
-
-                    bool LimitedQuant = missionDict.Attributes.HasFlag(MissionAttributes.Limited);
-                    // Gather X Amount is just "Gather" 
-                    bool TimedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining);
-                    bool ChainedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreChains);
-                    bool BoonMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreGatherersBoon);
-                    bool collectableMission = missionDict.Attributes.HasFlag(MissionAttributes.Collectables);
-                    bool stellerReductionMission = missionDict.Attributes.HasFlag(MissionAttributes.ReducedItems);
-
-                    bool GatherX = !stellerReductionMission && !collectableMission && !BoonMission && !ChainedMission && !TimedMission && !LimitedQuant;
-
-                    void UpdateMissions()
-                    {
+                    if (GetMissionKind(attrs) == type)
                         mission.Value.GProfileId = nextId;
-                    }
-
-                    if (gatherMission && (!collectableMission && !stellerReductionMission))
-                    {
-                        if (type == "limited" && LimitedQuant)
-                            UpdateMissions();
-                        else if (type == "timed" && TimedMission)
-                            UpdateMissions();
-                        else if (type == "chained" && ChainedMission && !BoonMission)
-                            UpdateMissions();
-                        else if (type == "boon" && BoonMission && !ChainedMission)
-                            UpdateMissions();
-                        else if (type == "boonChain" && ChainedMission && BoonMission)
-                            UpdateMissions();
-                        else if (type == "dualCraft" && craftMission)
-                            UpdateMissions();
-                        else if (type == "gatherX" && GatherX)
-                            UpdateMissions();
-                    }
                 }
-
-
 
                 return true;
             }
@@ -177,7 +170,6 @@ namespace ICE.Ui.MainUi.Settings
                 return false;
             }
         }
-
         private static Dictionary<uint, string> Foods = new();
 
         public static void Draw()
@@ -417,50 +409,24 @@ namespace ICE.Ui.MainUi.Settings
                     C.SaveDebounced();
                 }
 
-                ImGui.Combo(T("Mission Type"), ref MissionIndex, MissionTypes, MissionTypes.Length);
+                var missionIndex = (int)_selectedMission;
+                if (ImGui.Combo(T("Mission Type"), ref missionIndex, MissionTypes, MissionTypes.Length))
+                    _selectedMission = (MissionKinds)missionIndex;
                 if (ImGui.Button(T("Apply to Mission Types")))
                 {
                     foreach (var mission in C.MissionConfig)
                     {
-                        var id = mission.Key;
-                        if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var missionDict))
-                        {
-                            bool craftMission = missionDict.Attributes.HasFlag(MissionAttributes.Craft);
-                            bool gatherMission = missionDict.Attributes.HasFlag(MissionAttributes.Gather);
+                        if (!CosmicHelper.SheetMissionDict.TryGetValue(mission.Key, out var missionDict))
+                            continue;
 
-                            bool LimitedQuant = missionDict.Attributes.HasFlag(MissionAttributes.Limited);
-                            // Gather X Amount is just "Gather" 
-                            bool TimedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining);
-                            bool ChainedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreChains);
-                            bool BoonMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreGatherersBoon);
-                            bool collectableMission = missionDict.Attributes.HasFlag(MissionAttributes.Collectables);
-                            bool stellerReductionMission = missionDict.Attributes.HasFlag(MissionAttributes.ReducedItems);
+                        var attrs = missionDict.Attributes;
+                        if (!attrs.HasFlag(MissionAttributes.Gather))
+                            continue;
+                        if (attrs.HasFlag(MissionAttributes.Collectables) || attrs.HasFlag(MissionAttributes.ReducedItems))
+                            continue;
 
-                            bool GatherX = !stellerReductionMission && !collectableMission && !BoonMission && !ChainedMission && !TimedMission && !LimitedQuant;
-
-                            void UpdateMissions()
-                            {
-                                mission.Value.GProfileId = entry.Id;
-                            }
-
-                            if (gatherMission && (!collectableMission && !stellerReductionMission))
-                            {
-                                if (MissionIndex == 0 && LimitedQuant)
-                                    UpdateMissions();
-                                else if (MissionIndex == 2 && TimedMission)
-                                    UpdateMissions();
-                                else if (MissionIndex == 3 && ChainedMission && !BoonMission)
-                                    UpdateMissions();
-                                else if (MissionIndex == 4 && BoonMission && !ChainedMission)
-                                    UpdateMissions();
-                                else if (MissionIndex == 5 && ChainedMission && BoonMission)
-                                    UpdateMissions();
-                                else if (MissionIndex == 6 && craftMission)
-                                    UpdateMissions();
-                                else if (MissionIndex == 1 && GatherX)
-                                    UpdateMissions();
-                            }
-                        }
+                        if (GetMissionKind(attrs) == _selectedMission)
+                            mission.Value.GProfileId = entry.Id;
                     }
 
                     C.Save();
@@ -1085,6 +1051,35 @@ ImGui.TextWrapped(T("Short answer: It's built in now\n" +
                                "If you're okay with this, hold left shift and apply"));
         }
 
+        private static MissionKinds GetMissionKind(MissionAttributes attrs)
+        {
+            bool limited = attrs.HasFlag(MissionAttributes.Limited);
+            bool timed = attrs.HasFlag(MissionAttributes.Score_TimeRemaining);
+            bool chain = attrs.HasFlag(MissionAttributes.Score_Chain);
+            bool boon = attrs.HasFlag(MissionAttributes.Score_Boon);
+            bool collects = attrs.HasFlag(MissionAttributes.Collectables);
+            bool reduced = attrs.HasFlag(MissionAttributes.ReducedItems);
+            bool grGatherX = attrs.HasFlag(MissionAttributes.GreaterReach_GatherX);
+            bool grBoon = attrs.HasFlag(MissionAttributes.GreaterReach_Boon);
+            bool grChain = attrs.HasFlag(MissionAttributes.GreaterReach_Chain);
+            bool grBoonCh = attrs.HasFlag(MissionAttributes.GreaterReach_Boon_Chain);
+
+            if (grBoonCh) return MissionKinds.GreaterReach_Boon_Chain;
+            if (grChain) return MissionKinds.GreaterReach_Chain;
+            if (grBoon) return MissionKinds.GreaterReach_Boon;
+            if (grGatherX) return MissionKinds.GreaterReach_GatherX;
+            if (limited) return MissionKinds.LimitedNodes;
+            if (timed) return MissionKinds.TimeAttack;
+            if (chain && boon) return MissionKinds.Chain_Boon;
+            if (chain) return MissionKinds.Chain_Scoring;
+            if (boon) return MissionKinds.Boon_Scoring;
+
+            // DualClass uses craftMission flag rather than attrs pattern
+            if (attrs.HasFlag(MissionAttributes.Craft)) return MissionKinds.DualClass;
+
+            return MissionKinds.GatherX; // fallback: plain gather
+        }
+
         public static void SetupAllProfiles()
         {
             foreach (var profile in C.GatherProfiles)
@@ -1112,13 +1107,23 @@ ImGui.TextWrapped(T("Short answer: It's built in now\n" +
             string ChainBoonMission = "IceGatherProfile_eyJJZCI6MCwiTmFtZSI6IkNoYWluZWQgXHUwMDJCIEJvb24iLCJNaW5pbXVtR3AiOjEwMCwiRHVhbENsYXNzQ3JhZnRBbW91bnQiOjEsIkdhdGhlckJ1ZmZzIjp7IkJ1ZmZzIjp7IkJvb25JbmNyZWFzZTIiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjEwMCwiTWF4VXNlIjotMX0sIkJvb25JbmNyZWFzZTEiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjUwLCJNYXhVc2UiOi0xfSwiVGlkaW5ncyI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjIwMCwiTWF4VXNlIjotMX0sIllpZWxkSUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjo1MDAsIk1heFVzZSI6LTF9LCJZaWVsZEkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjo0MDAsIk1heFVzZSI6LTF9LCJCb3VudGlmdWxZaWVsZElJIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6MTAwLCJNYXhVc2UiOi0xfSwiQm9udXNJbnRlZ3JpdHkiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjMwMCwiTWF4VXNlIjotMX0sIkJvbnVzSW50ZWdyaXR5Q2hhbmNlIjp7IkVuYWJsZWQiOnRydWUsIk1pbkdwIjowLCJNYXhVc2UiOi0xfSwiRmllbGRNYXN0ZXJ5SUlJIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6MjUwLCJNYXhVc2UiOi0xfSwiRmllbGRNYXN0ZXJ5SUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjoxMDAsIk1heFVzZSI6LTF9LCJGaWVsZE1hc3RlcnlJIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6NTAsIk1heFVzZSI6LTF9LCJGaWVsZE1hc3RlcnlUZW1wIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6NTAsIk1heFVzZSI6LTF9fSwiQm91bnRpZnVsTWluSXRlbSI6NH19";
             string GatherXAmount = "IceGatherProfile_eyJJZCI6MCwiTmFtZSI6IkdhdGhlciBYIEFtb3VudCIsIk1pbmltdW1HcCI6LTEsIkR1YWxDbGFzc0NyYWZ0QW1vdW50IjoxLCJHYXRoZXJCdWZmcyI6eyJCdWZmcyI6eyJCb29uSW5jcmVhc2UyIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6MTAwLCJNYXhVc2UiOi0xfSwiQm9vbkluY3JlYXNlMSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjUwLCJNYXhVc2UiOi0xfSwiVGlkaW5ncyI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjIwMCwiTWF4VXNlIjotMX0sIllpZWxkSUkiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjUwMCwiTWF4VXNlIjotMX0sIllpZWxkSSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjQwMCwiTWF4VXNlIjotMX0sIkJvdW50aWZ1bFlpZWxkSUkiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjEwMCwiTWF4VXNlIjotMX0sIkJvbnVzSW50ZWdyaXR5Ijp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6MzAwLCJNYXhVc2UiOi0xfSwiQm9udXNJbnRlZ3JpdHlDaGFuY2UiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjAsIk1heFVzZSI6LTF9LCJGaWVsZE1hc3RlcnlJSUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjoyNTAsIk1heFVzZSI6LTF9LCJGaWVsZE1hc3RlcnlJSSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjEwMCwiTWF4VXNlIjotMX0sIkZpZWxkTWFzdGVyeUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjo1MCwiTWF4VXNlIjotMX0sIkZpZWxkTWFzdGVyeVRlbXAiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjo1MCwiTWF4VXNlIjotMX19LCJCb3VudGlmdWxNaW5JdGVtIjo0fX0=";
 
-            GatherSettings.InitialSetupProfile(timedMissions, "timed", out var _);
-            GatherSettings.InitialSetupProfile(limitedMissions, "limited", out var _);
-            GatherSettings.InitialSetupProfile(chainedMissions, "chained", out var _);
-            GatherSettings.InitialSetupProfile(boonMissions, "boon", out var _);
-            GatherSettings.InitialSetupProfile(ChainBoonMission, "boonChain", out var _);
-            GatherSettings.InitialSetupProfile(DualClass, "dualCraft", out var _);
-            GatherSettings.InitialSetupProfile(GatherXAmount, "gatherX", out var _);
+            string GreaterReach_GatherX = "IceGatherProfile_eyJJZCI6MCwiTmFtZSI6IkdyZWF0ZXIgUmVhY2ggW0dhdGhlciBYXSIsIk1pbmltdW1HcCI6LTEsIkdhdGhlckJ1ZmZzIjp7IkJ1ZmZzIjp7IkJvb25JbmNyZWFzZTIiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjoxMDAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJCb29uSW5jcmVhc2UxIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6NTAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJUaWRpbmdzIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6MjAwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiWWllbGRJSSI6eyJFbmFibGVkIjp0cnVlLCJNaW5HcCI6NTAwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiWWllbGRJIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6NDAwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiQm91bnRpZnVsWWllbGRJSSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjEwMCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkJvbnVzSW50ZWdyaXR5Ijp7IkVuYWJsZWQiOnRydWUsIk1pbkdwIjozMDAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJCb251c0ludGVncml0eUNoYW5jZSI6eyJFbmFibGVkIjp0cnVlLCJNaW5HcCI6MCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkZpZWxkTWFzdGVyeUlJSSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjI1MCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkZpZWxkTWFzdGVyeUlJIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6MTAwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiRmllbGRNYXN0ZXJ5SSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjUwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiRmllbGRNYXN0ZXJ5VGVtcCI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjUwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfX19fQ==";
+            string GreaterReach_Boon = "IceGatherProfile_eyJJZCI6MCwiTmFtZSI6IkdyZWF0ZXIgUmVhY2ggW0Jvb25dIiwiTWluaW11bUdwIjotMSwiR2F0aGVyQnVmZnMiOnsiQnVmZnMiOnsiQm9vbkluY3JlYXNlMiI6eyJFbmFibGVkIjp0cnVlLCJNaW5HcCI6MTAwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiQm9vbkluY3JlYXNlMSI6eyJFbmFibGVkIjp0cnVlLCJNaW5HcCI6NTAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJUaWRpbmdzIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6MjAwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiWWllbGRJSSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjUwMCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIllpZWxkSSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjQwMCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkJvdW50aWZ1bFlpZWxkSUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjoxMDAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJCb251c0ludGVncml0eSI6eyJFbmFibGVkIjp0cnVlLCJNaW5HcCI6MzAwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiQm9udXNJbnRlZ3JpdHlDaGFuY2UiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJGaWVsZE1hc3RlcnlJSUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjoyNTAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJGaWVsZE1hc3RlcnlJSSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjEwMCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkZpZWxkTWFzdGVyeUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjo1MCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkZpZWxkTWFzdGVyeVRlbXAiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjo1MCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH19fX0=";
+            string GreaterReach_Chain = "IceGatherProfile_eyJJZCI6MCwiTmFtZSI6IkdyZWF0ZXIgUmVhY2ggW0NoYWluXSIsIk1pbmltdW1HcCI6LTEsIkdhdGhlckJ1ZmZzIjp7IkJ1ZmZzIjp7IkJvb25JbmNyZWFzZTIiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjoxMDAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJCb29uSW5jcmVhc2UxIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6NTAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJUaWRpbmdzIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6MjAwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiWWllbGRJSSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjUwMCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIllpZWxkSSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjQwMCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkJvdW50aWZ1bFlpZWxkSUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjoxMDAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJCb251c0ludGVncml0eSI6eyJFbmFibGVkIjp0cnVlLCJNaW5HcCI6MzAwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiQm9udXNJbnRlZ3JpdHlDaGFuY2UiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJGaWVsZE1hc3RlcnlJSUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjoyNTAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJGaWVsZE1hc3RlcnlJSSI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjEwMCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkZpZWxkTWFzdGVyeUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjo1MCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkZpZWxkTWFzdGVyeVRlbXAiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjo1MCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH19fX0=";
+            string GreaterReach_BoonCh = "IceGatherProfile_eyJJZCI6MCwiTmFtZSI6IkdyZWF0ZXIgUmVhY2ggW0Jvb24gXHUwMDJCIENoYWluXSIsIk1pbmltdW1HcCI6LTEsIkdhdGhlckJ1ZmZzIjp7IkJ1ZmZzIjp7IkJvb25JbmNyZWFzZTIiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjEwMCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkJvb25JbmNyZWFzZTEiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjUwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiVGlkaW5ncyI6eyJFbmFibGVkIjpmYWxzZSwiTWluR3AiOjIwMCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIllpZWxkSUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjo1MDAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJZaWVsZEkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjo0MDAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJCb3VudGlmdWxZaWVsZElJIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6MTAwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiQm9udXNJbnRlZ3JpdHkiOnsiRW5hYmxlZCI6dHJ1ZSwiTWluR3AiOjMwMCwiTWF4VXNlIjotMSwiTWluVXNhYmxlRHVyYWJpbGl0eSI6MH0sIkJvbnVzSW50ZWdyaXR5Q2hhbmNlIjp7IkVuYWJsZWQiOnRydWUsIk1pbkdwIjowLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiRmllbGRNYXN0ZXJ5SUlJIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6MjUwLCJNYXhVc2UiOi0xLCJNaW5Vc2FibGVEdXJhYmlsaXR5IjowfSwiRmllbGRNYXN0ZXJ5SUkiOnsiRW5hYmxlZCI6ZmFsc2UsIk1pbkdwIjoxMDAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJGaWVsZE1hc3RlcnlJIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6NTAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9LCJGaWVsZE1hc3RlcnlUZW1wIjp7IkVuYWJsZWQiOmZhbHNlLCJNaW5HcCI6NTAsIk1heFVzZSI6LTEsIk1pblVzYWJsZUR1cmFiaWxpdHkiOjB9fX19";
+
+            GatherSettings.InitialSetupProfile(timedMissions, MissionKinds.TimeAttack, out var _);
+            GatherSettings.InitialSetupProfile(limitedMissions, MissionKinds.LimitedNodes, out var _);
+            GatherSettings.InitialSetupProfile(chainedMissions, MissionKinds.Chain_Scoring, out var _);
+            GatherSettings.InitialSetupProfile(boonMissions, MissionKinds.Boon_Scoring, out var _);
+            GatherSettings.InitialSetupProfile(ChainBoonMission, MissionKinds.Chain_Boon, out var _);
+            GatherSettings.InitialSetupProfile(DualClass, MissionKinds.DualClass, out var _);
+            GatherSettings.InitialSetupProfile(GatherXAmount, MissionKinds.GatherX, out var _);
+            GatherSettings.InitialSetupProfile(GreaterReach_GatherX, MissionKinds.GreaterReach_GatherX, out var _);
+            GatherSettings.InitialSetupProfile(GreaterReach_Chain, MissionKinds.GreaterReach_Chain, out var _);
+            GatherSettings.InitialSetupProfile(GreaterReach_Boon, MissionKinds.GreaterReach_Boon, out var _);
+            GatherSettings.InitialSetupProfile(GreaterReach_BoonCh, MissionKinds.GreaterReach_Boon_Chain, out var _);
+
         }
     }
 }

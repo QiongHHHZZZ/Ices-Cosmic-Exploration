@@ -34,6 +34,9 @@ namespace ICE.Scheduler.Handlers
                     return;
                 }
             }
+
+            if (EzThrottler.Throttle("No gearsets"))
+                IceLogging.Verbose($"Hewwo. We have gotten thiws faw, which means thawt the geawset fow {job.ToString()} doesn't exist. Pwease make owne", "Task: Equip Gearset");
             return;
         }
     }

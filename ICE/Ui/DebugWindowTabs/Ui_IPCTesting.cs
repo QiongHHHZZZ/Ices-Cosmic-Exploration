@@ -20,6 +20,10 @@ namespace ICE.Ui.DebugWindowTabs
         private static uint missionId = 0;
         private static uint baitId = 0;
         private static bool baitSwapped = false;
+        private static uint MMSAmount = 20;
+        private static uint MMMaxUse = 1;
+        private static bool tempMM = true;
+
 
         private static string SettingChange = "";
         private static bool SettingState = false;
@@ -136,7 +140,6 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 P.IceIpc.ChangeSetting(SettingChange, SettingState);
             }
-
             if (ImGui.Button(T("Assign Artisan Food Test")))
             {
                 P.Artisan.AssignArtisanRecipe(48797, 46253);
@@ -177,6 +180,21 @@ namespace ICE.Ui.DebugWindowTabs
                     }
                 }
             }
+            ImGui.DragUInt("MM Step Use", ref MMSAmount, 1, 0, 20);
+            ImGui.DragUInt("MM Recipe Usage", ref MMMaxUse, 1, 0, 3);
+            ImGui.Checkbox("Set MM Temp", ref tempMM);
+            if (ImGui.Button("Set Miracle Solver"))
+            {
+                P.Artisan.ChangeStandardMinimumStepsBeforeMiracle(MMSAmount, tempMM);
+                P.Artisan.ChangeStandardMaxMaterialMiracleUses(MMMaxUse, tempMM);
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Restore Temp MM"))
+            {
+                P.Artisan.SetTempStandardMinimumStepsBeforeMiracleBackToNormal();
+                P.Artisan.SetTempStandardMaxMaterialMiracleUsesBackToNormal();
+            }
+
             if (ImGui.Button(T("Return back to normal")))
             {
                 if (CosmicHelper.CurrentLunarMission != 0)

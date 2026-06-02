@@ -43,12 +43,12 @@ namespace ICE.Scheduler.Tasks
             var gatherProfileId = C.MissionConfig[id].GProfileId;
             var dualCraftAmount = 3;
 
-            if (missionConfig.TurninGold || missionConfig.AutoTurnin)
+            if (missionConfig.TurninGoal == TurninState.Gold)
             {
                 // Currently, gold needs x3 of the items
                 dualCraftAmount = 3;
             }
-            else if (missionConfig.TurninSilver)
+            else if (missionConfig.TurninGoal == TurninState.Silver)
             {
                 // Currently, silver needs x2 of the items
                 dualCraftAmount = 2;
@@ -462,12 +462,12 @@ namespace ICE.Scheduler.Tasks
                     // Once we get the initial multiplier amount, should only go for x1 more for the crafts
 
                     var itemAmount = 1;
-                    if (missionConfig.TurninGold || missionConfig.AutoTurnin)
+                    if (missionConfig.TurninGoal == TurninState.Gold)
                     {
                         // Currently, gold needs x3 of the items
                         itemAmount = 3;
                     }
-                    else if (missionConfig.TurninSilver)
+                    else if (missionConfig.TurninGoal == TurninState.Silver)
                     {
                         // Currently, silver needs x2 of the items
                         itemAmount = 2;

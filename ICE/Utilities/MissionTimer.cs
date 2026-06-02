@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using static ICE.ConfigFiles.Config.MissionSettings;
-using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
 
 public class MissionTimer
 {
@@ -134,59 +133,6 @@ public class MissionTimer
         stats.TotalAttempts = 0;
 
         C.Save();
-    }
-
-    public static class MissionStatsCalculator
-    {
-        public static double CalculateCurrencyPerMinute(double averageTimeSeconds, uint baseScore, double multiplier)
-        {
-            if (averageTimeSeconds <= 0) return 0;
-
-            return (60.0 * baseScore * multiplier) / averageTimeSeconds;
-        }
-        public static double CalculateActualScorePerMinute(List<TurninData> turninRecords, uint baseScore)
-        {
-            if (turninRecords.Count == 0) return 0;
-
-            // Count each turnin type
-            int bronzeCount = turninRecords.Count(t => t.State == TurninState.Bronze);
-            int silverCount = turninRecords.Count(t => t.State == TurninState.Silver);
-            int goldCount = turninRecords.Count(t => t.State == TurninState.Gold);
-
-            // Calculate total score earned
-            double totalScore = (bronzeCount * baseScore * 1.0) +
-                               (silverCount * baseScore * 4.0) +
-                               (goldCount * baseScore * 5.0);
-
-            // Calculate total time spent (in minutes)
-            double totalTimeMinutes = turninRecords.Sum(t => t.Time) / 60.0;
-
-            if (totalTimeMinutes <= 0) return 0;
-
-            return totalScore / totalTimeMinutes;
-        }
-
-        public static double CalculateActualScorePerHour(List<TurninData> turninRecords, uint baseScore)
-        {
-            if (turninRecords.Count == 0) return 0;
-
-            // Count each turnin type
-            int bronzeCount = turninRecords.Count(t => t.State == TurninState.Bronze);
-            int silverCount = turninRecords.Count(t => t.State == TurninState.Silver);
-            int goldCount = turninRecords.Count(t => t.State == TurninState.Gold);
-
-            // Calculate total score earned
-            double totalScore = (bronzeCount * baseScore * 1.0) +
-                               (silverCount * baseScore * 4.0) +
-                               (goldCount * baseScore * 5.0);
-
-            // Calculate total time spent (in hours)
-            double totalTimeHours = turninRecords.Sum(t => t.Time) / 3600.0;
-
-            if (totalTimeHours <= 0) return 0;
-
-            return totalScore / totalTimeHours;
-        }
     }
 
     public void AbandonMission()

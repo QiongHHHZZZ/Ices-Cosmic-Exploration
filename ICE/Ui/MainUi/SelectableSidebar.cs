@@ -3,6 +3,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using ICE.Ui.MainUi.ModeSelect_Modes;
+using ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
@@ -31,14 +32,13 @@ namespace ICE.Ui.MainUi
                 bool autoSelectedJob = C.AutoPickCurrentJob;
                 AutoSelectClass(autoSelectedJob);
 
-                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Cosmic Helper"), icon: FontAwesomeIcon.ListAlt))
+                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Cosmic Helper"), SidebarTabs.CosmicHelper, icon: FontAwesomeIcon.ListAlt))
                 {
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.List, T("Mission Setup"), "modeSelect_MissionSetup");
-                    // ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, "Complete Overview", "modeSelect_Completion");
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.ClipboardList, T("Cosmic Agenda"), "modeSelect_CosmicAgenda");
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, T("Expedition Log"), "modeSelect_ExpeditionLogs");
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.List, T("Mission Setup"), WindowSelection.MissionSetup);
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.ClipboardList, T("Cosmic Agenda"), WindowSelection.CosmicAgenda);
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, T("Expedition Log"), WindowSelection.ExpeditionLogs);
                 }
-                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Planet Selection"), FontAwesomeIcon.Moon))
+                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Planet Selection"), SidebarTabs.PlanetSelection, FontAwesomeIcon.Moon))
                 {
                     if (ImGui_Ice.SliderButton("AutoSelectMoon", T("Auto Select"), ref autoSelectMoon))
                     {
@@ -66,11 +66,12 @@ namespace ICE.Ui.MainUi
 
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + leftOffset);
 
-                    var moons = new (string Name, string Asset, Func<bool> GetEnabled, Action<bool> SetEnabled)[]
+                    var moons = new (string Name, string Asset, ItemFilter planetFilter)[]
                     {
-                            (T("Sinus Ardorum"), "ICE.Resources.Sinus_Ardorum.png", () => C.ShowSinusMissions, val => C.ShowSinusMissions = val),
-                            (T("Phaenna"), "ICE.Resources.Phaenna.png", () => C.ShowPhaennaMissions, val => C.ShowPhaennaMissions = val),
-                            (T("Oizys"), "ICE.Resources.Oizys.png", () => C.ShowOizysMissions, val => C.ShowOizysMissions = val)
+                            (T("Sinus Ardorum"), "ICE.Resources.Sinus_Ardorum.png", ItemFilter.Sinus),
+                            (T("Phaenna"), "ICE.Resources.Phaenna.png", ItemFilter.Phaenna),
+                            (T("Oizys"), "ICE.Resources.Oizys.png", ItemFilter.Oizys), 
+                            (T("Auxesia"), "ICE.Resources.Auxesia.png", ItemFilter.Auxesia)
                     };
 
                     for (int i = 0; i < moons.Length; i++)
@@ -78,13 +79,18 @@ namespace ICE.Ui.MainUi
                         if (i > 0) ImGui.SameLine(0, iconSpacing);
 
                         var moon = moons[i];
-                        bool isEnabled = moon.GetEnabled();
+                        bool isEnabled = C.ItemFilter.HasFlag(moon.planetFilter);
                         var texture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), moon.Asset).GetWrapOrEmpty();
 
                         if (ImGui_Ice.DrawStyledImageButton(texture, new Vector2(iconSize, iconSize), isEnabled))
                         {
-                            moon.SetEnabled(!isEnabled);
+                            C.ItemFilter = isEnabled
+                                ? C.ItemFilter & ~moon.planetFilter  // was on → turn off 
+                                : C.ItemFilter | moon.planetFilter;  // was off → turn on
                             C.AutoSelectMoon = false;
+                            if (Mission_Setup.MissionTable != null)
+                                Mission_Setup.MissionTable.SetFilterDirty();
+
                             C.Save();
                         }
 
@@ -94,39 +100,25 @@ namespace ICE.Ui.MainUi
                         }
                     }
                 }
-                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Hub Activities"), icon: FontAwesomeIcon.Home))
+                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Hub Activities"), SidebarTabs.HubActivites, icon: FontAwesomeIcon.Home))
                 {
-                    ImGui_Ice.DrawSelectable_Image(65112, T("Credit Shopping"), "hubActivities_CreditShopping");
-                    ImGui_Ice.DrawSelectable_Image(65127, T("Gambling Settings"), "hubActivites_GambaSetting");
-                    ImGui_Ice.DrawSelectable_Image(65138, T("Dronebit Settings"), "hubActivies_DroneSetting");
+                    ImGui_Ice.DrawSelectable_Image(65112, T("Credit Shopping"), WindowSelection.CreditShopping);
+                    ImGui_Ice.DrawSelectable_Image(65127, T("Gambling Settings"), WindowSelection.GambaShopping);
+                    ImGui_Ice.DrawSelectable_Image(65138, T("Dronebit Settings"), WindowSelection.DroneShopping);
                 }
-                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Settings"), icon: FontAwesomeIcon.Cog))
+                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Settings"), SidebarTabs.Settings, icon: FontAwesomeIcon.Cog))
                 {
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Stop, T("Stop When..."), "setting_StopWhen");
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Leaf, T("Gathering Profile"), "setting_GatheringProfile");
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.SortAmountUp, T("Mission Priority"), "setting_MissionPriority");
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Route, T("Travel & Pathfinding"), "setting_Travel");
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.PersonBurst, T("Character Settings"), "setting_Character");
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.UserCog, T("Misc Settings"), "setting_Misc");
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Stop, T("Stop When..."), WindowSelection.StopWhen);
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Leaf, T("Gathering Profile"), WindowSelection.GatheringProfiles);
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.SortAmountUp, T("Mission Priority"), WindowSelection.MissionPriority);
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Route, T("Travel & Pathfinding"), WindowSelection.TravelSettings);
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.PersonBurst, T("Character Settings"), WindowSelection.CharacterSettings);
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.UserCog, T("Misc Settings"), WindowSelection.MiscSettings);
                 }
                 var currentClass = C.SelectedJob;
                 var classIcon = ImGui_Ice.GetGreyscaleJob(currentClass);
-                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Select Class"), imageTexture: classIcon))
+                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Select Class"), SidebarTabs.ClassSelection, imageTexture: classIcon))
                 {
-                    Dictionary<uint, string> ClassDict = new()
-                    {
-                        [8] = T("Carpenter"),
-                        [9] = T("Blacksmith"),
-                        [10] = T("Armorer"),
-                        [11] = T("Goldsmith"),
-                        [12] = T("Leatherworker"),
-                        [13] = T("Weaver"),
-                        [14] = T("Alchemist"),
-                        [15] = T("Culinarian"),
-                        [16] = T("Miner"),
-                        [17] = T("Botanist"),
-                        [18] = T("Fisher"),
-                    };
                     int itemsPerRow = 4;
                     int currentItem = 0;
 
@@ -148,7 +140,7 @@ namespace ICE.Ui.MainUi
                         if (currentItem % itemsPerRow == 0)
                             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + leftOffset);
 
-                        ImGui_Ice.DrawJobButtons(i, ClassDict[i]);
+                        ImGui_Ice.DrawJobButtons(i, CosmicHelper.ClassInfoDict[i]);
 
                         currentItem++;
 
@@ -156,23 +148,25 @@ namespace ICE.Ui.MainUi
                             ImGui.SameLine(0, iconSpacing);
                     }
                 }
-                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Current Tool XP"), FontAwesomeIcon.ArrowUpRightDots))
+                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Current Tool XP"), SidebarTabs.ExpInfo, FontAwesomeIcon.ArrowUpRightDots))
                 {
                     ImGui_Ice.Draw_ExpTable(currentClass);
                 }
-                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Need Help?"), FontAwesomeIcon.QuestionCircle))
+                if (ImGui_Ice.Sidebar_CollaspableHeader(T("Need Help?"), SidebarTabs.HelpInfo, FontAwesomeIcon.QuestionCircle))
                 {
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.QuestionCircle, T("Plugin Requirements"), "help_PluginInstall");
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Book, T("Plugin Logs"), "help_PluginLogs");
+                 // ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.HandHoldingHand, T("Plugin Tips"), WindowSelection.Plugin_Tips);
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.QuestionCircle, T("Plugin Requirements"), WindowSelection.Plugin_Install);
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Book, T("Plugin Logs"), WindowSelection.Plugin_Logs);
                     if (ImGuiEx.IconButtonWithText(FontAwesomeIcon.Toolbox, T("Refresh Class info"), size: new(ImGui.GetContentRegionAvail().X, 30)))
                     {
                         CosmicHelper.Task_UpdateRelicMissionInfo();
                     }
                 }
+#if DEBUG
+
+#endif
             }
         }
-
-
         private static void PluginIcon()
         {
             string PluginIcon = "ICE.Resources.Icon.png";
@@ -194,16 +188,16 @@ namespace ICE.Ui.MainUi
                 ImGui.Image(pluginIcon.Handle, imageSize);
                 if (ImGui.IsItemHovered())
                 {
-                    if (modeSelect_TableInfo.jokeId == -1)
+                    if (Window_ExternalDetails.jokeId == -1)
                     {
                         var random = new Random();
-                        modeSelect_TableInfo.jokeId = random.Next(0, modeSelect_TableInfo.JokeList.Count);
+                        Window_ExternalDetails.jokeId = random.Next(0, Window_ExternalDetails.JokeList.Count);
                     }
-                    ImGui.SetTooltip(modeSelect_TableInfo.JokeList[modeSelect_TableInfo.jokeId]);
+                    ImGui.SetTooltip(Window_ExternalDetails.JokeList[Window_ExternalDetails.jokeId]);
                 }
                 else
                 {
-                    modeSelect_TableInfo.jokeId = -1;
+                    Window_ExternalDetails.jokeId = -1;
                 }
 
                 // Add spacing after image
@@ -214,40 +208,52 @@ namespace ICE.Ui.MainUi
         }
         public static void AutoSelectMoonUpdate(bool autoSelectMoon)
         {
-            bool NeedsUpdate(bool sinus, bool phaenna, bool oizys)
-            {
-                return C.ShowSinusMissions != sinus ||
-                       C.ShowPhaennaMissions != phaenna ||
-                       C.ShowOizysMissions != oizys;
-            }
+            if (!autoSelectMoon) return;
 
-            void SetMoonVisibility(bool sinus, bool phaenna, bool oizys)
+            var moonFlags = new (Func<bool> IsInZone, ItemFilter Flag)[]
             {
-                C.ShowSinusMissions = sinus;
-                C.ShowPhaennaMissions = phaenna;
-                C.ShowOizysMissions = oizys;
-                C.Save();
-            }
+                (PlayerHelper.IsInSinusArdorum, ItemFilter.Sinus),
+                (PlayerHelper.IsInPhaenna,      ItemFilter.Phaenna),
+                (PlayerHelper.IsInOizys,        ItemFilter.Oizys),
+                (PlayerHelper.IsInAuxesia,      ItemFilter.Auxesia)
+            };
 
-            if (autoSelectMoon)
+            var planetFlags = ItemFilter.Sinus | ItemFilter.Phaenna | ItemFilter.Oizys | ItemFilter.Auxesia;
+
+            foreach (var (IsInZone, Flag) in moonFlags)
             {
-                if (PlayerHelper.IsInSinusArdorum() && NeedsUpdate(true, false, false))
-                    SetMoonVisibility(sinus: true, phaenna: false, oizys: false);
-                else if (PlayerHelper.IsInPhaenna() && NeedsUpdate(false, true, false))
-                    SetMoonVisibility(sinus: false, phaenna: true, oizys: false);
-                else if (PlayerHelper.IsInOizys() && NeedsUpdate(false, false, true))
-                    SetMoonVisibility(sinus: false, phaenna: false, oizys: true);
+                if (!IsInZone()) continue;
+
+                var desired = (C.ItemFilter & ~planetFlags) | Flag;
+                if (C.ItemFilter != desired)
+                {
+                    C.ItemFilter = desired;
+                    if (Mission_Setup.MissionTable != null)
+                        Mission_Setup.MissionTable.SetFilterDirty();
+                    C.SaveDebounced();
+                }
+                return;
             }
         }
         public static void AutoSelectClass(bool autoSelectClass)
         {
             var jobId = (uint)Player.Job;
 
-            bool needsUpdated = autoSelectClass && C.SelectedJob != jobId && CosmicHelper.SupportedJobs.Contains(jobId);
+            if (!autoSelectClass) return;
+            if (!CosmicHelper.ClassInfoDict.TryGetValue(jobId, out var jobClass)) return;
+
+            var currentFlag = jobClass.JobFlag;
+
+            // Check if any flags other than the current job are active
+            bool needsUpdated = (C.JobFilter & ~currentFlag) != JobFilter.None
+                             || (C.JobFilter & currentFlag) == JobFilter.None;
+
             if (needsUpdated)
             {
-                C.SelectedJob = (uint)Player.Job;
+                C.JobFilter = currentFlag;
                 C.Save();
+                if (Mission_Setup.MissionTable != null)
+                    Mission_Setup.MissionTable.SetFilterDirty();
             }
         }
     }

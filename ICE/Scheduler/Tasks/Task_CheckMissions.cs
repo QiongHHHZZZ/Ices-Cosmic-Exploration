@@ -1,5 +1,6 @@
 ﻿using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ICE.Sounds;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
@@ -7,7 +8,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Localization.L10n;
-using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -345,48 +345,78 @@ namespace ICE.Scheduler.Tasks
                     switch (type)
                     {
                         case MissionTypes.Critical:
+                        {
+                            if (MissionLibrary[MissionKind.Critical].Count > 0)
                             {
-                                if (MissionLibrary[MissionKind.Critical].Count > 0)
-                                {
-                                    P.TaskManager.Enqueue(() => CheckMissions(MissionLibrary[MissionKind.Critical], type), "Checking Critical tab for missions");
-                                }
-                                break;
+                                P.TaskManager.Enqueue(() => CheckMissions(MissionLibrary[MissionKind.Critical], type), "Checking Critical tab for missions");
                             }
+                            break;
+                        }
                         case MissionTypes.Provisional:
+                        {
+                            List<uint> provisionals = new();
+                            foreach (var ProvisionalPrio in C.MissionPrio)
                             {
-                                List<uint> provisionals = new();
-                                foreach (var ProvisionalPrio in C.MissionPrio)
+                                MissionKind key = ProvisionalPrio switch
                                 {
-                                    MissionKind key = ProvisionalPrio switch
-                                    {
-                                        ProvisionalTypes.ProvisionalWeather => MissionKind.Weather,
-                                        ProvisionalTypes.ProvisionalSequential => MissionKind.Sequence,
-                                        ProvisionalTypes.ProvisionalTimed => MissionKind.Timed,
-                                        _ => MissionKind.Unknown
-                                    };
+                                    ProvisionalTypes.ProvisionalWeather => MissionKind.Weather,
+                                    ProvisionalTypes.ProvisionalSequential => MissionKind.Sequence,
+                                    ProvisionalTypes.ProvisionalTimed => MissionKind.Timed,
+                                    _ => MissionKind.Unknown
+                                };
 
-                                    if (MissionLibrary.TryGetValue(key, out var missionList))
+                                if (MissionLibrary.TryGetValue(key, out var missionList))
+                                {
+                                    foreach (var jobId in C.JobPrio)
                                     {
-                                        foreach (var jobId in C.JobPrio)
+                                        // Add missions that match this provisional type AND this job
+                                        foreach (var missionId in missionList)
                                         {
-                                            // Add missions that match this provisional type AND this job
-                                            foreach (var missionId in missionList)
+                                            if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo) && missionInfo.Jobs.Contains(jobId) && !provisionals.Contains(missionId))
                                             {
-                                                if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo) && missionInfo.Jobs.Contains(jobId) && !provisionals.Contains(missionId))
-                                                {
-                                                    provisionals.Add(missionId);
-                                                }
+                                                provisionals.Add(missionId);
                                             }
                                         }
                                     }
                                 }
-                                if (provisionals.Count > 0)
+                            }
+                            if (provisionals.Count > 0)
+                            {
+                                P.TaskManager.Enqueue(() => CheckMissions(provisionals, type), "Checking Provisional tab for missions");
+                            }
+                            break;
+                        }
+                        case MissionTypes.Standard:
+                        {
+                            var mode = Mission_Settings.Mode;
+                            if (mode is ModeSelect.MissionGoldMode)
+                            {
+                                List<uint> basicMissions = new();
+                                List<MissionKind> MissionRanks = new() { MissionKind.D, MissionKind.C, MissionKind.B, MissionKind.A, MissionKind.Ex };
+                                foreach (var rank in MissionRanks)
                                 {
-                                   P.TaskManager.Enqueue(() => CheckMissions(provisionals, type), "Checking Provisional tab for missions");
+                                    if (MissionLibrary.TryGetValue(rank, out var missionList))
+                                    {
+                                        foreach (var mission in missionList)
+                                        {
+                                            if (!basicMissions.Contains(mission))
+                                                basicMissions.Add(mission);
+                                        }
+                                    }
                                 }
+                                P.TaskManager.Enqueue(() => CheckMissions(basicMissions, type, Mission_Settings.SelectedJob));
+                                /*
+                                foreach (var job in C.JobPrio)
+                                {
+                                    if (job == Mission_Settings.SelectedJob)
+                                        continue;
+                                    else
+                                        P.TaskManager.Enqueue(() => CheckMissions(basicMissions, type, job));
+                                }
+                                */
                                 break;
                             }
-                        case MissionTypes.Standard:
+                            else
                             {
                                 List<uint> basicMissions = new();
                                 List<MissionKind> MissionRanks = new() { MissionKind.Ex, MissionKind.A, MissionKind.B, MissionKind.C, MissionKind.D };
@@ -404,14 +434,16 @@ namespace ICE.Scheduler.Tasks
                                 P.TaskManager.Enqueue(() => CheckMissions(basicMissions, type), "Checking Basic Mission tab for missions");
                                 break;
                             }
+                        }
                         case MissionTypes.DroneSearch:
+                        {
+                            // TODO: Add Auxesia Support
+                            if (C.Cosmodrone_Run && PlayerHelper.IsInOizys())
                             {
-                                if (C.Cosmodrone_Run && PlayerHelper.IsInOizys())
-                                {
-                                    P.TaskManager.Enqueue(() => Task_ArtifactSearch.RefreshMapInfo(), "Inserting Drone Task");
-                                }
-                                break;
+                                P.TaskManager.Enqueue(() => Task_ArtifactSearch.RefreshMapInfo(), "Inserting Drone Task");
                             }
+                            break;
+                        }
                     }
                 }
 
@@ -423,7 +455,7 @@ namespace ICE.Scheduler.Tasks
             }
             return true;
         }
-        private static bool? CheckMissions(List<uint> missionList, MissionTypes type)
+        private static bool? CheckMissions(List<uint> missionList, MissionTypes type, uint Goldjob = 0)
         {
             string tag = "[Check Missions: Queue]";
             void LogInfo(uint missionId)
@@ -445,10 +477,12 @@ namespace ICE.Scheduler.Tasks
             {
                 var basicMissionList = CosmicHandler.Basic_AvailableMissions();
                 var specialMissionList = CosmicHandler.Provisional_AvailableMissions();
-                var visibleMissions = CosmicHandler.VisibleMissions();
+                var criticalMissions = CosmicHandler.Critical_AvailableMissions();
                 var mode = Mission_Settings.Mode;
 
-                if (OpenCorrectTab(missionList, missionInfo))
+                var job = Goldjob != 0 ? Goldjob : Mission_Settings.SelectedJob;
+
+                if (CorrectJobTab(job))
                 {
                     if (mode == ModeSelect.LevelMode)
                     {
@@ -503,7 +537,6 @@ namespace ICE.Scheduler.Tasks
                     }
                     else if (mode == ModeSelect.RelicMode)
                     {
-                        var job = Mission_Settings.SelectedJob;
                         var relicInfo = CosmicHelper.Cosmic_ClassInfo();
                         var classInfo = relicInfo[job];
 
@@ -744,11 +777,11 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Verbose($"Checking missions for the following mode:\n" +
                                 $"Mode: {type}\n" +
                                 $"Loaded mission count: {missionList.Count()}\n" +
-                                $"Amount of viable missions: {visibleMissions.Count()}", tag);
+                                $"Amount of available missions: {criticalMissions.Count()}", tag);
 
                             foreach (var missionId in missionList)
                             {
-                                if (visibleMissions.Contains(missionId))
+                                if (criticalMissions.Contains(missionId))
                                 {
                                     LogInfo(missionId);
                                     Insert_GrabMissionTask(missionId);
@@ -1051,10 +1084,12 @@ namespace ICE.Scheduler.Tasks
                     List<uint> viableMissions = new();
                     viableMissions.Add(missionId);
 
-                    if (OpenCorrectTab(viableMissions, missionInfo))
+                    var job = CosmicHelper.SheetMissionDict[missionId].Jobs.First();
+
+                    if (CorrectJobTab(job))
                     {
                         IceLogging.Verbose("On the correct tab, we're going to see the total mission count", tag);
-                        var allmissions = CosmicHandler.AllMissions();
+                        var allmissions = CosmicHandler.All_AvailableMissions();
                         IceLogging.Verbose($"All mission count: {allmissions.Count()} | Goal: {missionId}");
                         foreach (var mission in allmissions.OrderBy(x => CosmicHelper.SheetMissionDict[x].Rank))
                         {
@@ -1405,74 +1440,18 @@ namespace ICE.Scheduler.Tasks
         }
 
         // functions that are used across things
-        private static int JobTab(uint job)
+        private static unsafe bool CorrectJobTab(uint job)
         {
-            int jobUnlocked = 0;
-            Dictionary<uint, int> jobTab = new();
-            for (int i = 0; i < CosmicHelper.SupportedJobs.Count(); i++)
+            var agent = AgentWKSMission.Instance();
+            if (agent == null)
             {
-                var currentJob = CosmicHelper.SupportedJobs[i];
-                var level = Player.GetLevel((Job)currentJob);
-                if (level != 0)
-                {
-                    IceLogging.Verbose($"{currentJob} - tab: {jobUnlocked}");
-                    jobTab[currentJob] = jobUnlocked;
-                    jobUnlocked++;
-                }
-                else
-                {
-                    jobTab[currentJob] = 0;
-                }
-            }
+                if (EzThrottler.Throttle("AgentWKSMission Error", 2000))
+                    IceLogging.Error("AgentWKSMission has returned null. CS code might need an update...", "Task: Check Mission | Open Job Tab");
 
-            return jobTab[job];
-        }
-        private static bool OpenCorrectTab(List<uint> missionList, WKSMission missionAddon)
-        {
-            string tag = "Opening Correct Tab";
-
-            var hudInfo = CosmicHandler.HudInfo();
-
-            var goalTab = 0;
-            foreach (var mission in missionList)
-            {
-                if (CosmicHelper.SheetMissionDict[mission].IsCritical)
-                {
-                    goalTab = 2;
-                    break;
-                }
-            }
-
-            if (hudInfo.SelectedTabIndex != goalTab)
-            {
-                if (FrameThrottler.Throttle("Selecting job", 8))
-                {
-                    IceLogging.Verbose("Selecting the basic tab because hard requirement for it (and we're needing basic missions)", tag);
-                    if (goalTab == 2)
-                        missionAddon.CriticalMissions();
-                    else
-                        missionAddon.BasicMissions();
-                }
                 return false;
             }
-            else
-            {
-                var selectedJobTab = Mission_Settings.SelectedJob - 8;
-                if (hudInfo.SelectedJobIndex != selectedJobTab)
-                {
-                    if (FrameThrottler.Throttle("Tab swapping", 8))
-                    {
-                        IceLogging.Verbose("We're not on the standard tab, so we're going to initate swapping to it", tag);
-                        missionAddon.SelectClass[JobTab(Mission_Settings.SelectedJob)].Select();
-                    }
-                    return false;
-                }
-                else
-                {
-                    IceLogging.Verbose($"Job tab is on the correct one. Goal was job: {Mission_Settings.SelectedJob}", tag);
-                    return true;
-                }
-            }
+
+            return AgentWKSMissionEx.SetSelectedJobTab(agent, (byte)job);
         }
         private static void Notes()
         {

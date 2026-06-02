@@ -13,7 +13,7 @@ namespace ICE.Ui.DebugWindowTabs
     {
         public static void Draw()
         {
-            var missionList = Basic_ProvisionalMissions();
+            var missionList = CosmicHandler.All_AvailableMissions();
             var tabInfo = HudInfo();
 
             ImGui.Text($"Selected Job Index {tabInfo.SelectedJobIndex}");
@@ -45,24 +45,24 @@ namespace ICE.Ui.DebugWindowTabs
 
                 foreach (var mission in missionList)
                 {
-                    if (CosmicHelper.SheetMissionDict.TryGetValue(mission.MissionUnitId, out var sheetInfo))
+                    if (CosmicHelper.SheetMissionDict.TryGetValue(mission, out var sheetInfo))
                     {
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);
                         foreach (var job in sheetInfo.Jobs)
                         {
-                            ImGui.Image(CosmicHelper.JobIconDict[job].GetWrapOrEmpty().Handle, new(24, 24));
+                            ImGui.Image(CosmicHelper.ClassInfoDict[job].JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
                             ImGui.SameLine();
                         }
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{mission.MissionUnitId}");
+                        ImGui.Text($"{mission}");
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{sheetInfo.Name}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{mission.MissionGroup}");
+                        ImGui.Text($"Rank {sheetInfo.Rank}");
                     }
                 }
 

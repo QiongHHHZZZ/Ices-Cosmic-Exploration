@@ -272,6 +272,9 @@ namespace ICE.Scheduler.Tasks
 
         private static unsafe void ReportMission()
         {
+            if (EzThrottler.Throttle("Previous Score Set"))
+                PreviousScore = ScoreCheck();
+
             var WKSInstance = WKSManager.Instance();
             WKSInstance->MissionModule->ReportMission();
         }
@@ -406,7 +409,7 @@ namespace ICE.Scheduler.Tasks
             if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
                 return 0;
 
-            var scores = wksManager->Scores;
+            var scores = wksManager->State.Scores;
             return scores[(int)(uint)Player.Job - 8];
         }
 
@@ -435,6 +438,7 @@ namespace ICE.Scheduler.Tasks
                     C.Save();
                 }
             }
+            PreviousScore = 0;
         }
 
         public static bool? ClearAllPostTask()

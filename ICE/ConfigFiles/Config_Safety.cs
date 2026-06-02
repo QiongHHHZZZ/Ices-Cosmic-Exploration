@@ -17,4 +17,6 @@ public partial class Config
     public bool RetargetIfStuck { get; set; } = false;
     public int StuckDelayMs { get; set; } = 1000;
     public int DelayPostRelic { get; set; } = 0;
+    public bool Delay_Aethernet { get; set; } = false;
+    public bool Delay_Gather { get; set; } = false;
 }

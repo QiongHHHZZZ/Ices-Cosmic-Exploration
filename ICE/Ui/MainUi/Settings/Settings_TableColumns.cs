@@ -167,6 +167,8 @@ if (ImGui.Checkbox(T("Auto Hide/Show Planet Tokens"), ref autoShowToken))
         18  // Fisher
     };
 
+    private static TurninState HighestTurnin = TurninState.Gold;
+
     private static bool AnyTurnin = true;
     private static bool TurninGold = false;
     private static bool TurninSilver = false;
@@ -239,51 +241,18 @@ if (ImGui.RadioButton(T("Apply to specific class"), ApplyToSpecicClass))
 ImGui.Text(T("Select Turnin Options"));
             ImGui.Dummy(new Vector2(0, 2));
 
-if (ImGui.Checkbox(T("Auto"), ref AnyTurnin))
+            if (ImGui.RadioButton(T("Gold"), HighestTurnin is TurninState.Gold))
             {
-                if (AnyTurnin)
-                {
-                    TurninGold = false;
-                    TurninSilver = false;
-                    TurninBronze = false;
-
-                    AnyTurnin = true;
-                }
-                else
-                {
-                    if (!(TurninBronze && TurninSilver && TurninGold))
-                    {
-                        AnyTurnin = true;
-                    }
-                }
-
-                C.Save();
+                HighestTurnin = TurninState.Gold;
             }
-            ImGuiEx.HelpMarker(T("This option will strive to get the best result, but will turn in any result if necessary without stopping."));
-
-            ImGui.Separator();
-
-if (ImGui.Checkbox(T("Gold"), ref TurninGold))
+            if (ImGui.RadioButton(T("Silver"), HighestTurnin is TurninState.Silver))
             {
-                if (AnyTurnin && TurninGold)
-                    AnyTurnin = false;
-
+                HighestTurnin = TurninState.Silver;
             }
-if (ImGui.Checkbox(T("Silver"), ref TurninSilver))
+            if (ImGui.RadioButton(T("Bronze"), HighestTurnin is TurninState.Bronze))
             {
-                if (AnyTurnin && TurninSilver)
-                    AnyTurnin = false;
-
+                HighestTurnin = TurninState.Bronze;
             }
-if (ImGui.Checkbox(T("Bronze"), ref TurninBronze))
-            {
-                if (AnyTurnin && TurninBronze)
-                    AnyTurnin = false;
-
-            }
-
-            if (!AnyTurnin && !TurninGold && !TurninSilver && !TurninBronze)
-                AnyTurnin = true;
 
             ImGui.Separator();
 
@@ -297,15 +266,12 @@ if (ImGui.Button(T("Apply")))
                         if (ApplyToSpecicClass && !sheetInfo.Jobs.Contains((uint)SpecificClass))
                             continue;
 
-                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining))
                             continue;
 
                         if (C.MissionConfig.TryGetValue(mission.Key, out var config))
                         {
-                            config.AutoTurnin = AnyTurnin;
-                            config.TurninGold = TurninGold;
-                            config.TurninSilver = TurninSilver;
-                            config.TurninBronze = TurninBronze;
+                            config.TurninGoal = HighestTurnin;
                         }
                         amountApplied += 1;
                     }

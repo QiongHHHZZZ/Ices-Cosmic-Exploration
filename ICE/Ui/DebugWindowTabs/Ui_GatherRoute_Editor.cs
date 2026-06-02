@@ -176,7 +176,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                         var jobId = GetJobIdForFlag(planetTerritory, location);
 
-                        ImGui.Image(CosmicHelper.JobIconDict[jobId].GetWrapOrEmpty().Handle, new Vector2(20, 20));
+                        ImGui.Image(CosmicHelper.ClassInfoDict[jobId].JobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
                         ImGui.SameLine(0, 4);
 
                         float availableWidth = ImGui.GetContentRegionAvail().X;

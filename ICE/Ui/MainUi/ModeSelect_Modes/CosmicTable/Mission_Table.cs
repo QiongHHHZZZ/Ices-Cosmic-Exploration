@@ -3,6 +3,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ICE.OldYamlConfig;
 using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
 using JetBrains.Annotations;
 using System.Collections.Generic;
@@ -532,10 +533,14 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public override string ToName(MissionInfo mission) => mission.SheetInfo.Name;
             public override void DrawColumn(MissionInfo mission, int _)
             {
+                UpdateUnsupportedMissionState(mission);
+
                 var scale = ImGuiHelpers.GlobalScale;
                 var cellStart = ImGui.GetCursorScreenPos();
                 var iconGap = 4f * scale;
                 var iconCount = 0;
+                if (UnsupportedMissions.Ids.Contains(mission.Id))
+                    iconCount++;
                 if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
                     iconCount++;
                 if (CosmicHelper.CriticalLocations.ContainsKey(mission.Id))
@@ -561,6 +566,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 if (iconCount > 0)
                     ImGui.SetCursorScreenPos(new Vector2(iconX, cellStart.Y));
                 var drewIcon = false;
+
+                if (UnsupportedMissions.Ids.Contains(mission.Id))
+                {
+                    ImGuiEx.IconWithTooltip(FontAwesomeIcon.ExclamationTriangle, T("This mission is currently not supported."));
+                    drewIcon = true;
+                }
 
                 if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
                 {
@@ -589,6 +600,27 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 DrawNoteIcons(mission, drewIcon);
             }
         }
+
+        private static void UpdateUnsupportedMissionState(MissionInfo mission)
+        {
+            if (UnsupportedMissions.Ids.Contains(mission.Id))
+                return;
+
+            if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather))
+            {
+                var gatherInfo = GatheringRouteLoader.GetRoute(mission.SheetInfo.TerritoryId, mission.SheetInfo.MapPosition);
+                if (gatherInfo == null || gatherInfo.Count is 0)
+                    UnsupportedMissions.Ids.Add(mission.Id);
+            }
+            else if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
+            {
+                if (!GatheringUtil.MoonFishingLocations.TryGetValue(mission.SheetInfo.TerritoryId, out var zoneFishing)
+                    || !zoneFishing.TryGetValue(mission.SheetInfo.MapPosition, out var fishingHole)
+                    || fishingHole.Count == 0)
+                    UnsupportedMissions.Ids.Add(mission.Id);
+            }
+        }
+
         public sealed class IdColumn : VerticalCenterColumnString
         {
             public override string ToName(MissionInfo item) => item.Id.ToString();

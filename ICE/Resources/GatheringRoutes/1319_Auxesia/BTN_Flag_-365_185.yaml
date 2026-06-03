@@ -1,0 +1,107 @@
+zone_id: 1319
+zone_name: Unknown
+job: BTN
+flag:
+  x: -365
+  y: 185
+author: Leontopodium Nivale
+date_modified: 2026-06-03T14:07:35.8796392Z
+nodes:
+- node_id: 35794
+  position:
+    x: -396.3351
+    y: 164.2998
+    z: 214.1666
+  land_zone:
+    x: -395.35236
+    y: 163.69519
+    z: 212.38788
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35793
+  position:
+    x: -397.8666
+    y: 164.2006
+    z: 203.5893
+  land_zone:
+    x: -396.69293
+    y: 163.69519
+    z: 204.46918
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35792
+  position:
+    x: -380.5916
+    y: 164.1679
+    z: 201.5181
+  land_zone:
+    x: -381.95273
+    y: 163.69518
+    z: 201.73639
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35791
+  position:
+    x: -376.8085
+    y: 164.5355
+    z: 191.0536
+  land_zone:
+    x: -375.7276
+    y: 163.69519
+    z: 191.55858
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35790
+  position:
+    x: -367.4856
+    y: 164.5295
+    z: 180.8188
+  land_zone:
+    x: -367.27618
+    y: 163.69519
+    z: 181.52399
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35789
+  position:
+    x: -357.2994
+    y: 164.4223
+    z: 173.2215
+  land_zone:
+    x: -358.40775
+    y: 163.69519
+    z: 172.74663
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35788
+  position:
+    x: -347.7968
+    y: 164.4121
+    z: 161.0734
+  land_zone:
+    x: -348.46384
+    y: 163.69519
+    z: 161.0406
+  radius_start: 264
+  radius_end: 259
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0

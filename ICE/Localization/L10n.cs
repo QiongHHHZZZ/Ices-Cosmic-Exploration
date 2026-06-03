@@ -39,6 +39,7 @@ internal static class L10n
         ["Jobs"] = "职业",
         ["Manual"] = "指南",
         ["Mission Name"] = "任务名称",
+        ["This mission is currently not supported."] = "当前暂不支持此任务。",
         ["Tasks"] = "任务",
         ["Experience"] = "经验值",
         ["State"] = "启用",

@@ -1,49 +1,21 @@
 zone_id: 1319
-zone_name: Auxesia
+zone_name: Unknown
 job: BTN
 flag:
   x: -366
   y: 191
-author: Le Vagabond
-date_modified: 2026-06-03T11:48:33.0818329Z
+author: Leontopodium Nivale
+date_modified: 2026-06-03T14:07:38.8463295Z
 nodes:
-- node_id: 35798
-  position:
-    x: -404.5623
-    y: 164.2428
-    z: 191.4603
-  land_zone:
-    x: -406.2135
-    y: 163.69518
-    z: 189.57281
-  radius_start: 180
-  radius_end: 179
-  min_distance: 1
-  max_distance: 2
-  fan_height: 0
-- node_id: 35797
-  position:
-    x: -412.2761
-    y: 164.4214
-    z: 196.7626
-  land_zone:
-    x: -411.0506
-    y: 163.69519
-    z: 194.58597
-  radius_start: 49
-  radius_end: 47
-  min_distance: 1
-  max_distance: 2
-  fan_height: 0
 - node_id: 35796
   position:
     x: -370.4864
     y: 164.3885
     z: 217.8192
   land_zone:
-    x: -371.19144
+    x: -369.8467
     y: 163.69519
-    z: 215.84941
+    z: 216.57039
   radius_start: 180
   radius_end: 179
   min_distance: 1
@@ -55,23 +27,9 @@ nodes:
     y: 164.4268
     z: 208.2061
   land_zone:
-    x: -366.49146
+    x: -365.0537
     y: 163.69519
-    z: 209.33192
-  radius_start: 180
-  radius_end: 179
-  min_distance: 1
-  max_distance: 2
-  fan_height: 0
-- node_id: 35799
-  position:
-    x: -338.7953
-    y: 164.357
-    z: 149.3517
-  land_zone:
-    x: -338.79636
-    y: 163.69519
-    z: 152.57187
+    z: 207.70268
   radius_start: 180
   radius_end: 179
   min_distance: 1
@@ -83,11 +41,53 @@ nodes:
     y: 164.7458
     z: 161.6922
   land_zone:
-    x: -348.6963
+    x: -346.48386
     y: 163.69519
-    z: 159.66814
+    z: 162.0591
   radius_start: 180
   radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35799
+  position:
+    x: -338.7953
+    y: 164.357
+    z: 149.3517
+  land_zone:
+    x: -339.33704
+    y: 163.69519
+    z: 150.47919
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35798
+  position:
+    x: -404.5623
+    y: 164.2428
+    z: 191.4603
+  land_zone:
+    x: -405.23163
+    y: 163.69519
+    z: 190.8114
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35797
+  position:
+    x: -412.2761
+    y: 164.4214
+    z: 196.7626
+  land_zone:
+    x: -411.2918
+    y: 163.69519
+    z: 196.7107
+  radius_start: 49
+  radius_end: 47
   min_distance: 1
   max_distance: 2
   fan_height: 0

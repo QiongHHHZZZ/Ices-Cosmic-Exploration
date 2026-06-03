@@ -39,6 +39,7 @@ namespace ICE.Enums
         Gold = 3,
         Critical = 4,
         SequenceGold = 5,
+        TimeExpired = 6,
     }
 
     public enum ArtisanCraftType

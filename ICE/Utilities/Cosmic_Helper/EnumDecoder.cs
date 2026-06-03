@@ -15,6 +15,7 @@ public static unsafe partial class CosmicHelper
             PlaylistOptions.SinusMax => T("Max Sinus Relic [Lv. 9]"),
             PlaylistOptions.PhaennaMax => T("Max Phaenna Relic [Lv. 14]"),
             PlaylistOptions.OizysMax => T("Max Oizys Relic [Lv. 17]"),
+            PlaylistOptions.AuxesiaMax => T("Max Auxesia Relic [Lv. 20]"),
             PlaylistOptions.SelectedRelicLv => T("Selected Relic Level"),
             PlaylistOptions.CreditAmount => T("Credit Amount"),
             PlaylistOptions.PlanetAmount => T("Planetary Credit Amount"),

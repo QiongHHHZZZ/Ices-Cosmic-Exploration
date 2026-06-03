@@ -10,6 +10,7 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Localization.L10n;
@@ -21,15 +22,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
         private static uint SelectedJob = 8;
 
-        public enum ExpeditionTabs
-        {
-            Progress,
-            Sinus,
-            Phaenna,
-            Oizys
-        }
+        private const uint ProgressTabId = 0;
 
-        private static ExpeditionTabs selectedTab = ExpeditionTabs.Progress;
+        private static uint selectedTabId = ProgressTabId;
         private static bool HideCompleted = false;
 
         public static void Draw()
@@ -57,8 +52,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         {
             if (ImGui.BeginTable("Class Selection Table", 2, ImGuiTableFlags.SizingFixedFit))
             {
-                ImGui.TableSetupColumn(T("Icon"));
-                ImGui.TableSetupColumn(T("Name"));
+                ImGui.TableSetupColumn("Icon");
+                ImGui.TableSetupColumn("Name");
 
                 foreach (var jobInfo in CosmicHelper.ClassInfoDict.OrderBy(x => x.Key))
                 {
@@ -67,7 +62,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.Image(jobInfo.Value.JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
 
                     ImGui.TableNextColumn();
-                    string name = CosmicHelper.GetJobName(jobInfo.Key);
+                    string name = jobInfo.Value.JobName;
                     ImGui.AlignTextToFramePadding();
                     if (ImGui.Selectable(name, SelectedJob == jobInfo.Key, ImGuiSelectableFlags.SpanAllColumns))
                     {
@@ -90,12 +85,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 ImGui.EndTable();
             }
         }
-        private static Dictionary<ExpeditionTabs, List<uint>> MissionList = new()
-        {
-            [ExpeditionTabs.Sinus] = new(),
-            [ExpeditionTabs.Phaenna] = new(),
-            [ExpeditionTabs.Oizys] = new(),
-        };
+        private static Dictionary<uint, List<uint>> MissionList = CosmicMoonRegistry.All
+            .ToDictionary(m => m.TerritoryId, _ => new List<uint>());
+
+        private static uint TabIdForMoon(CosmicMoonDefinition moon) => moon.TerritoryId;
         private static void ClassDetails()
         {
             float scale = ImGuiHelpers.GlobalScale;
@@ -105,31 +98,29 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             if (ImGui.BeginChild("##Expedition_TabScroll", new(0, buttonRowHeight), false, ImGuiWindowFlags.HorizontalScrollbar))
             {
-                var moons = new (string Name, string Asset, ExpeditionTabs type, uint Territory)[]
-                {
-                    (T("Sinus Ardorum"), "ICE.Resources.Sinus_Ardorum.png", ExpeditionTabs.Sinus, 1237),
-                    (T("Phaenna"), "ICE.Resources.Phaenna.png", ExpeditionTabs.Phaenna, 1291),
-                    (T("Oizys"), "ICE.Resources.Oizys.png", ExpeditionTabs.Oizys, 1310),
-                };
-
                 if (SelectedJob != 0)
                 {
                     var classIcon = CosmicHelper.ClassInfoDict[SelectedJob];
-                    DrawImageTabButton(T("Class Progress"), ExpeditionTabs.Progress, ref selectedTab, classIcon.JobIcon.GetWrapOrEmpty());
+                    DrawImageTabButton("Class Progress", ProgressTabId, ref selectedTabId, classIcon.JobIcon.GetWrapOrEmpty());
                 }
                 else
                 {
                     var allClassTexture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), "ICE.Resources.CosmicClassTracker.png").GetWrapOrEmpty();
-                    DrawImageTabButton(T("All Class progresses"), ExpeditionTabs.Progress, ref selectedTab, allClassTexture);
+                    DrawImageTabButton("All Class progresses", ProgressTabId, ref selectedTabId, allClassTexture);
                 }
-                foreach (var moon in moons)
+
+                foreach (var moon in CosmicMoonRegistry.All.OrderBy(m => m.ExpeditionTabIndex))
                 {
+                    var tabId = TabIdForMoon(moon);
+                    if (tabId == ProgressTabId)
+                        continue;
+
                     List<uint> missions = new();
                     uint completed = 0;
 
                     if (SelectedJob != 0)
                     {
-                        foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(SelectedJob)).Where(x => x.Value.TerritoryId == moon.Territory))
+                        foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(SelectedJob)).Where(x => x.Value.TerritoryId == moon.TerritoryId))
                         {
                             missions.Add(mission.Key);
                             if (mission.Value.CompletionStatus is CosmicHelper.Status.Gold)
@@ -138,7 +129,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     }
                     else
                     {
-                        foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == moon.Territory))
+                        foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == moon.TerritoryId))
                         {
                             missions.Add(mission.Key);
                             if (mission.Value.CompletionStatus is CosmicHelper.Status.Gold)
@@ -146,17 +137,17 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                     }
 
-                    MissionList[moon.type] = missions;
+                    MissionList[tabId] = missions;
 
-                    var texture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), moon.Asset).GetWrapOrEmpty();
+                    var texture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), moon.IconResource).GetWrapOrEmpty();
                     ImGui.SameLine();
-                    DrawImageTabButton(T("{0} [{1} / {2}]", T(moon.Name), completed, missions.Count()), moon.type, ref selectedTab, texture);
+                    DrawImageTabButton($"{moon.DisplayName} [{completed} / {missions.Count()}]", tabId, ref selectedTabId, texture);
                 }
                 ImGui_Ice.EndCategoryButtonRow();
             }
             ImGui.EndChild();
 
-            if (selectedTab is ExpeditionTabs.Progress)
+            if (selectedTabId == ProgressTabId)
             {
                 if (ImGui.BeginChild(T("Class Progress")))
                 {
@@ -164,17 +155,17 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 }
                 ImGui.EndChild();
             }
-            else if (selectedTab is ExpeditionTabs.Sinus or ExpeditionTabs.Phaenna or ExpeditionTabs.Oizys)
+            else if (MissionList.TryGetValue(selectedTabId, out var missions))
             {
                 ImGui.Checkbox(T("Hide Completed"), ref HideCompleted);
                 if (ImGui.BeginChild("Mission Completion Status Window", ImGui.GetContentRegionAvail()))
                 {
-                    MissionTable(MissionList[selectedTab]);
+                    MissionTable(missions);
                 }
                 ImGui.EndChild();
             }
         }
-        public static bool DrawImageTabButton(string label, ExpeditionTabs tab, ref ExpeditionTabs selectedTab, IDalamudTextureWrap? image = null, float spacingAfter = 5, bool disabled = false, Vector2? uv0 = null, Vector2? uv1 = null)
+        public static bool DrawImageTabButton(string label, uint tabId, ref uint selectedTabId, IDalamudTextureWrap? image = null, float spacingAfter = 5, bool disabled = false, Vector2? uv0 = null, Vector2? uv1 = null)
         {
             float scale = ImGuiHelpers.GlobalScale;
 
@@ -192,7 +183,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             float contentWidth = horizontalPadding * 2 + imageWidth + textSize.X;
             float contentHeight = verticalPadding * 2 + textSize.Y;
 
-            bool isSelected = selectedTab == tab;
+            bool isSelected = selectedTabId == tabId;
 
             var buttonRect = new Vector2(cursorPos.X + contentWidth, cursorPos.Y + contentHeight);
             bool isHovered = !disabled && ImGui.IsMouseHoveringRect(cursorPos, buttonRect)
@@ -200,7 +191,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             bool isClicked = isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left);
 
             if (isClicked && !disabled)
-                selectedTab = tab;
+                selectedTabId = tabId;
 
             var bgColor = ImGui_Ice.GetButtonColor(isSelected, isHovered, disabled);
             var textColor = disabled
@@ -228,7 +219,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             ImGui.PopStyleColor();
 
             ImGui.SetCursorScreenPos(cursorPos);
-            ImGui.InvisibleButton($"##{tab}_btn", new Vector2(contentWidth, contentHeight));
+            ImGui.InvisibleButton($"##{tabId}_btn", new Vector2(contentWidth, contentHeight));
             ImGui.SameLine(0, spacingAfter * scale);
 
             return isSelected;
@@ -259,15 +250,15 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                 if (ImGui.BeginTable($"ExpeditionLog_Table", 9, tableFlags))
                 {
-                    ImGui.TableSetupColumn(T("Enabled"));
-                    ImGui.TableSetupColumn(T("Job"));
-                    ImGui.TableSetupColumn(T("Kind"));
-                    ImGui.TableSetupColumn(T("ID"));
-                    ImGui.TableSetupColumn("完成");
-                    ImGui.TableSetupColumn(T("Mission Name"));
-                    ImGui.TableSetupColumn(T("Turnin Mode"));
-                    ImGui.TableSetupColumn(T("Profile Setting"));
-                    ImGui.TableSetupColumn(T("Notes"));
+                    ImGui.TableSetupColumn("Enabled");
+                    ImGui.TableSetupColumn("Job");
+                    ImGui.TableSetupColumn("Kind");
+                    ImGui.TableSetupColumn("ID");
+                    ImGui.TableSetupColumn("✓");
+                    ImGui.TableSetupColumn("Mission Name");
+                    ImGui.TableSetupColumn("Turnin Mode");
+                    ImGui.TableSetupColumn("Profile Setting");
+                    ImGui.TableSetupColumn("Notes");
 
                     // TODO: Make it to where type/rank is shown here instead of notes
 
@@ -363,7 +354,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 #if DEBUG
                             if (ImGui.IsItemHovered())
                             {
-                                ImGui.SetTooltip(T("X: {0} Y: {1}", missionInfo.MapPosition.X, missionInfo.MapPosition.Y));
+                                ImGui.SetTooltip($"X: {missionInfo.MapPosition.X} Y: {missionInfo.MapPosition.Y}");
                             }
 #endif
                         }
@@ -380,7 +371,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.TableNextColumn();
                         if (missionInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining))
                         {
-                            ImGui_Ice.Table_FullCenterText(T("Auto"));
+                            ImGui_Ice.Table_FullCenterText("Auto");
                             if (missionConfig.TurninGoal != TurninState.Gold)
                             {
                                 missionConfig.TurninGoal = TurninState.Gold;
@@ -400,284 +391,45 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             var spacing = ImGui.GetStyle().ItemSpacing.X;
                             var totalWidth = (buttonSize.X * 3) + (spacing * 2);
 
-                            // Center the group
                             var cursorPosX = ImGui.GetCursorPosX();
                             var availWidth = ImGui.GetContentRegionAvail().X;
                             ImGui.SetCursorPosX(cursorPosX + (availWidth - totalWidth) * 0.5f);
 
-                            // Gold
-                            ImGui.PushStyleColor(ImGuiCol.Text, missionConfig.TurninGoal == TurninState.Gold ? GoldColor : DisabledColor);
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold", buttonSize))
+                            var turninGoal = missionConfig.TurninGoal;
+                            var goldEnabled = turninGoal >= TurninState.Gold;
+                            var silverEnabled = turninGoal >= TurninState.Silver;
+                            var bronzeEnabled = turninGoal >= TurninState.Bronze;
+
+                            void DrawTurninButton(string id, TurninState state, bool enabled, Vector4 color, string tooltipLabel)
                             {
-                                // If AutoTurnin is on, we're enabling individual controls
-                                if (missionConfig.AutoTurnin)
+                                ImGui.PushStyleColor(ImGuiCol.Text, enabled ? color : DisabledColor);
+                                if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, id, buttonSize))
                                 {
-                                    missionConfig.AutoTurnin = false;
-                                    missionConfig.TurninGold = false;  // Turn off gold
-                                    missionConfig.TurninSilver = true; // Keep others on
-                                    missionConfig.TurninBronze = true;
+                                    missionConfig.TurninGoal = state;
+                                    C.SaveDebounced();
                                 }
-                                else
+                                if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
                                 {
-                                    // Toggle the button
-                                    missionConfig.TurninGold = !missionConfig.TurninGold;
-
-                                    // Check the new state
-                                    if (missionConfig.TurninGold && missionConfig.TurninSilver && missionConfig.TurninBronze)
-                                    {
-                                        // All three enabled -> AutoTurnin mode
-                                        missionConfig.AutoTurnin = true;
-                                        missionConfig.TurninGold = false;
-                                        missionConfig.TurninSilver = false;
-                                        missionConfig.TurninBronze = false;
-                                    }
-                                    else if (!missionConfig.TurninGold && !missionConfig.TurninSilver && !missionConfig.TurninBronze)
-                                    {
-                                        // All three disabled -> AutoTurnin mode (don't disable any)
-                                        missionConfig.AutoTurnin = true;
-                                    }
+                                    missionConfig.TurninGoal = state;
+                                    C.SaveDebounced();
                                 }
-
-                                C.SaveDebounced();
-                            }
-                            // Right-click to enable only this one
-                            if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-                            {
-                                missionConfig.AutoTurnin = false;
-                                missionConfig.TurninGold = true;
-                                missionConfig.TurninSilver = false;
-                                missionConfig.TurninBronze = false;
-                                C.SaveDebounced();
-                            }
-                            ImGui.PopStyleColor();
-                            if (ImGui.IsItemHovered())
-                            {
-                                ImGui.BeginTooltip();
-
-                                if (missionConfig.AutoTurnin)
+                                ImGui.PopStyleColor();
+                                if (ImGui.IsItemHovered())
                                 {
-                                    ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
+                                    ImGui.BeginTooltip();
+                                    ImGuiEx.Icon(color, FontAwesomeIcon.Trophy);
                                     ImGui.SameLine();
-                                    ImGui.Text(T("Gold Enabled"));
-
-                                    ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
-                                    ImGui.SameLine();
-                                    ImGui.Text(T("Silver Enabled"));
-
-                                    ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
-                                    ImGui.SameLine();
-                                    ImGui.Text(T("Bronze Enabled"));
+                                    ImGui.Text($"{tooltipLabel} — turn in at {state.ToString().ToLower()} or better");
+                                    ImGui.Text($"Right click to set minimum turnin to {state.ToString().ToLower()}");
+                                    ImGui.EndTooltip();
                                 }
-                                else
-                                {
-                                    if (missionConfig.TurninGold)
-                                    {
-                                        ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
-                                        ImGui.SameLine();
-                                        ImGui.Text(T("Gold Enabled"));
-                                    }
-                                    if (missionConfig.TurninSilver)
-                                    {
-                                        ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
-                                        ImGui.SameLine();
-                                        ImGui.Text(T("Silver Enabled"));
-                                    }
-                                    if (missionConfig.TurninBronze)
-                                    {
-                                        ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
-                                        ImGui.SameLine();
-                                        ImGui.Text(T("Bronze Enabled"));
-                                    }
-                                }
-
-                                ImGui.Text(T("Right click to only enable gold"));
-
-                                ImGui.EndTooltip();
                             }
 
+                            DrawTurninButton("##Gold", TurninState.Gold, goldEnabled, GoldColor, "Gold");
                             ImGui.SameLine();
-
-                            // Silver
-                            ImGui.PushStyleColor(ImGuiCol.Text, missionConfig.TurninSilver || missionConfig.AutoTurnin ? SilverColor : DisabledColor);
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Silver", buttonSize))
-                            {
-                                // If AutoTurnin is on, we're enabling individual controls
-                                if (missionConfig.AutoTurnin)
-                                {
-                                    missionConfig.AutoTurnin = false;
-                                    missionConfig.TurninGold = true;
-                                    missionConfig.TurninSilver = false;  // Turn off silver
-                                    missionConfig.TurninBronze = true;
-                                }
-                                else
-                                {
-                                    // Toggle the button
-                                    missionConfig.TurninSilver = !missionConfig.TurninSilver;
-
-                                    // Check the new state
-                                    if (missionConfig.TurninGold && missionConfig.TurninSilver && missionConfig.TurninBronze)
-                                    {
-                                        // All three enabled -> AutoTurnin mode
-                                        missionConfig.AutoTurnin = true;
-                                        missionConfig.TurninGold = false;
-                                        missionConfig.TurninSilver = false;
-                                        missionConfig.TurninBronze = false;
-                                    }
-                                    else if (!missionConfig.TurninGold && !missionConfig.TurninSilver && !missionConfig.TurninBronze)
-                                    {
-                                        // All three disabled -> AutoTurnin mode (don't disable any)
-                                        missionConfig.AutoTurnin = true;
-                                    }
-                                }
-
-                                C.SaveDebounced();
-                            }
-                            // Right-click to enable only this one
-                            if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-                            {
-                                missionConfig.AutoTurnin = false;
-                                missionConfig.TurninGold = false;
-                                missionConfig.TurninSilver = true;
-                                missionConfig.TurninBronze = false;
-                                C.SaveDebounced();
-                            }
-                            ImGui.PopStyleColor();
-                            if (ImGui.IsItemHovered())
-                            {
-                                ImGui.BeginTooltip();
-
-                                if (missionConfig.AutoTurnin)
-                                {
-                                    ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
-                                    ImGui.SameLine();
-                                    ImGui.Text(T("Gold Enabled"));
-
-                                    ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
-                                    ImGui.SameLine();
-                                    ImGui.Text(T("Silver Enabled"));
-
-                                    ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
-                                    ImGui.SameLine();
-                                    ImGui.Text(T("Bronze Enabled"));
-                                }
-                                else
-                                {
-                                    if (missionConfig.TurninGold)
-                                    {
-                                        ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
-                                        ImGui.SameLine();
-                                        ImGui.Text(T("Gold Enabled"));
-                                    }
-                                    if (missionConfig.TurninSilver)
-                                    {
-                                        ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
-                                        ImGui.SameLine();
-                                        ImGui.Text(T("Silver Enabled"));
-                                    }
-                                    if (missionConfig.TurninBronze)
-                                    {
-                                        ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
-                                        ImGui.SameLine();
-                                        ImGui.Text(T("Bronze Enabled"));
-                                    }
-                                }
-
-                                ImGui.Text(T("Right click to only enable silver"));
-
-                                ImGui.EndTooltip();
-                            }
-
+                            DrawTurninButton("##Silver", TurninState.Silver, silverEnabled, SilverColor, "Silver");
                             ImGui.SameLine();
-
-                            // Bronze
-                            ImGui.PushStyleColor(ImGuiCol.Text, missionConfig.TurninBronze || missionConfig.AutoTurnin ? BronzeColor : DisabledColor);
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Bronze", buttonSize))
-                            {
-                                // If AutoTurnin is on, we're enabling individual controls
-                                if (missionConfig.AutoTurnin)
-                                {
-                                    missionConfig.AutoTurnin = false;
-                                    missionConfig.TurninGold = true;
-                                    missionConfig.TurninSilver = true;
-                                    missionConfig.TurninBronze = false;  // Turn off bronze
-                                }
-                                else
-                                {
-                                    // Toggle the button
-                                    missionConfig.TurninBronze = !missionConfig.TurninBronze;
-
-                                    // Check the new state
-                                    if (missionConfig.TurninGold && missionConfig.TurninSilver && missionConfig.TurninBronze)
-                                    {
-                                        // All three enabled -> AutoTurnin mode
-                                        missionConfig.AutoTurnin = true;
-                                        missionConfig.TurninGold = false;
-                                        missionConfig.TurninSilver = false;
-                                        missionConfig.TurninBronze = false;
-                                    }
-                                    else if (!missionConfig.TurninGold && !missionConfig.TurninSilver && !missionConfig.TurninBronze)
-                                    {
-                                        // All three disabled -> AutoTurnin mode (don't disable any)
-                                        missionConfig.AutoTurnin = true;
-                                    }
-                                }
-
-                                C.SaveDebounced();
-                            }
-                            // Right-click to enable only this one
-                            if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-                            {
-                                missionConfig.AutoTurnin = false;
-                                missionConfig.TurninGold = false;
-                                missionConfig.TurninSilver = false;
-                                missionConfig.TurninBronze = true;
-                                C.SaveDebounced();
-                            }
-                            ImGui.PopStyleColor();
-                            if (ImGui.IsItemHovered())
-                            {
-                                ImGui.BeginTooltip();
-
-                                if (missionConfig.AutoTurnin)
-                                {
-                                    ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
-                                    ImGui.SameLine();
-                                    ImGui.Text(T("Gold Enabled"));
-
-                                    ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
-                                    ImGui.SameLine();
-                                    ImGui.Text(T("Silver Enabled"));
-
-                                    ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
-                                    ImGui.SameLine();
-                                    ImGui.Text(T("Bronze Enabled"));
-                                }
-                                else
-                                {
-                                    if (missionConfig.TurninGold)
-                                    {
-                                        ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
-                                        ImGui.SameLine();
-                                        ImGui.Text(T("Gold Enabled"));
-                                    }
-                                    if (missionConfig.TurninSilver)
-                                    {
-                                        ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
-                                        ImGui.SameLine();
-                                        ImGui.Text(T("Silver Enabled"));
-                                    }
-                                    if (missionConfig.TurninBronze)
-                                    {
-                                        ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
-                                        ImGui.SameLine();
-                                        ImGui.Text(T("Bronze Enabled"));
-                                    }
-                                }
-
-                                ImGui.Text(T("Right click to only enable bronze"));
-
-                                ImGui.EndTooltip();
-                            }
+                            DrawTurninButton("##Bronze", TurninState.Bronze, bronzeEnabled, BronzeColor, "Bronze");
                         }
 
                         ImGui.TableNextColumn();
@@ -696,7 +448,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 profileName = "???";
                             }
 
-                            if (ImGui_Ice.Table_CenteredButton(T(profileName)))
+                            if (ImGui_Ice.Table_CenteredButton($"{profileName}"))
                             {
                                 ImGui.OpenPopup("Selecting Gathering Profile");
                             }
@@ -708,7 +460,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             if (ImGui.BeginPopup("Selecting Gathering Profile"))
                             {
-                                ImGui.Text(T("Currently Selected: {0}", T(profileName)));
+                                ImGui.Text($"Currently Selected: {profileName}");
                                 ImGui.Separator();
 
                                 foreach (var profile in C.GatherProfiles)
@@ -716,7 +468,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     var id = profile.Key;
                                     bool profileSelected = missionConfig.GProfileId == id;
                                     ImGui.PushID($"{id}_{profile.Value.Name}");
-                                    if (ImGui.RadioButton($"{T(profile.Value.Name)}##{profile.Value.Name}", profileSelected))
+                                    if (ImGui.RadioButton(profile.Value.Name, profileSelected))
                                     {
                                         missionConfig.GProfileId = id;
                                         C.Save();
@@ -729,17 +481,17 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                         else if (gatherProfile && collectable)
                         {
-                            ImGui_Ice.Table_FullCenterText(T("Auto"));
+                            ImGui_Ice.Table_FullCenterText("Auto");
                         }
                         else if (missionInfo.Attributes.HasFlag(MissionAttributes.Fish))
                         {
-                            if (ImGui_Ice.Table_CenteredButton(T("Select Profile")))
+                            if (ImGui_Ice.Table_CenteredButton($"Select Profile"))
                             {
                                 ImGui.OpenPopup("Select Fishing Profile");
                             }
                             if (ImGui.BeginPopup(T("Select Fishing Profile")))
                             {
-                                ImGui.Text(T("Fishing profile: {0}", missionInfo.Name));
+                                ImGui.Text($"Fishing profile: {missionInfo.Name}");
                                 ImGui.Separator();
                                 bool builtInPreset = missionConfig.Use_BuildinPreset;
                                 if (ImGui.Checkbox(T("Use Built In Preset"), ref builtInPreset))
@@ -747,7 +499,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     missionConfig.Use_BuildinPreset = builtInPreset;
                                     C.Save();
                                 }
-                                ImGuiEx.HelpMarker(T("Having this enabled means it will use the default preset that is included with the plugin for autohook.\nIf you would like to use one that you already have in autohook, you can un-checkmark this and type the name of it below"));
+                                ImGuiEx.HelpMarker("Having this enabled means it will use the default preset that is included with the plugin for autohook. \n" +
+                                                   "If you would like to use one that you already have in autohook, you can un-checkmark this and type the name of it below");
                                 using (ImRaii.Disabled(builtInPreset))
                                 {
                                     string presetName = missionConfig.AutoHookPresetName;
@@ -773,7 +526,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             {
                                 ImGui.TextDisabled($"{entry}");
                                 ImGui.SameLine();
-                                ImGui.Text(T("Mission: {0}", missionInfo.Name));
+                                ImGui.Text($"Mission: {missionInfo.Name}");
 
                                 Mission_Table.CrafterManagement(missionInfo, entry);
 
@@ -810,7 +563,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 if (missionInfo.SequenceMissions_Previous.Count() != 0)
                                 {
                                     ImGui.Separator();
-                                    ImGui.Text(T("Previous Missions"));
+                                    ImGui.Text($"Previous Missions");
                                     foreach (var prevMission in missionInfo.SequenceMissions_Previous)
                                     {
                                         ImGui.Text($"[{prevMission}] - {CosmicHelper.SheetMissionDict[prevMission].Name}");
@@ -820,7 +573,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 if (missionInfo.SequenceMissions_Next.Count() != 0)
                                 {
                                     ImGui.Separator();
-                                    ImGui.Text(T("Next Missions"));
+                                    ImGui.Text($"Next Missions");
                                     foreach (var nextMission in missionInfo.SequenceMissions_Next)
                                     {
                                         ImGui.Text($"[{nextMission}] - {CosmicHelper.SheetMissionDict[nextMission].Name}");
@@ -849,7 +602,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text(T("Weather: {0}", T(CosmicHelper.GetCosmicWeatherName(missionInfo.Weather))));
+                                ImGui.Text($"Weather: {missionInfo.Weather}");
                                 ImGui.EndTooltip();
                             }
                             notesCount++;
@@ -904,8 +657,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text(T(notes.NoteInfo));
-                                ImGui.Text(T("Average Score Per Minute: {0:N2}", notes.SPM));
+                                ImGui.Text(notes.NoteInfo);
+                                ImGui.Text($"Average Score Per Minute: {notes.SPM:N2}");
 
                                 ImGui.EndTooltip();
                             }
@@ -928,21 +681,18 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             if (SelectedJob == 0)
             {
-                var researchTypes = new (string Name, string Asset, int MaxLv)[]
-                {
-                    (T("Sinus"), "ICE.Resources.ResearchIcons.novice.png", 9),
-                    (T("Phaenna"), "ICE.Resources.ResearchIcons.intermediate.png", 14),
-                    (T("Oizys"), "ICE.Resources.ResearchIcons.advance.png", 17),
-                };
+                var researchTypes = CosmicMoonRegistry.All
+                    .Where(m => m.ResearchIconResource != null)
+                    .Select(m => (Name: m.DisplayName, Asset: m.ResearchIconResource!, MaxRelicStage: m.MaxRelicStage))
+                    .ToArray();
 
-                if (ImGui.BeginTable("Class Progress: Icon Preview", 3, ImGuiTableFlags.SizingFixedFit))
+                if (ImGui.BeginTable("Class Progress: Icon Preview", researchTypes.Length, ImGuiTableFlags.SizingFixedFit))
                 {
-                    ImGui.TableSetupColumn(T("Sinus"));
-                    ImGui.TableSetupColumn(T("Phaenna"));
-                    ImGui.TableSetupColumn(T("Oizys"));
+                    for (int i = 0; i < researchTypes.Length; i++)
+                        ImGui.TableSetupColumn(researchTypes[i].Name);
 
                     ImGui.TableNextRow();
-                    for (int i = 0; i < researchTypes.Count(); i++)
+                    for (int i = 0; i < researchTypes.Length; i++)
                     {
                         var type = researchTypes[i];
                         var icon = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), type.Asset).GetWrapOrEmpty();
@@ -951,11 +701,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     }
 
                     ImGui.TableNextRow();
-                    for (int i = 0; i < researchTypes.Count(); i++)
+                    for (int i = 0; i < researchTypes.Length; i++)
                     {
                         var type = researchTypes[i];
                         ImGui.TableSetColumnIndex(i);
-                        var count = expInfo.Where(x => x.Value.Stage_Current >= type.MaxLv).Count();
+                        var count = expInfo.Where(x => x.Value.Stage_Current >= type.MaxRelicStage).Count();
                         ImGui_Ice.Table_FullCenterText($"{count}/11");
                     }
 
@@ -964,10 +714,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                 if (ImGui.BeginTable("Class Progress: All", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
                 {
-                    ImGui.TableSetupColumn(T("Job"));
-                    ImGui.TableSetupColumn(T("Relic"));
+                    ImGui.TableSetupColumn("Job");
+                    ImGui.TableSetupColumn("Relic");
                     ImGui.TableSetupColumn("##Relic_XPBar");
-                    ImGui.TableSetupColumn(T("Score"));
+                    ImGui.TableSetupColumn("Score");
                     ImGui.TableSetupColumn("##Score_XPBar");
 
                     ImGui.TableHeadersRow();
@@ -994,8 +744,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     if (exp.Value.Current == exp.Value.Max)
                                         completedSubStages++;
                                 }
-                                // Use integer math, then convert once at the end
-                                currentExpStage = CosmicHelper.MaxRelicLevel + (completedSubStages / 10f);
+                                // Bar max is highest relic stage across all moons (20 on Auxesia; was hardcoded 17).
+                                currentExpStage = CosmicMoonRegistry.HighestMaxRelicStage + (completedSubStages / 10f);
                             }
 
                             ImGui.TableNextColumn();
@@ -1014,7 +764,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             float offsetY = (rowHeight - barHeight) / 2f;
                             ImGui.SetCursorScreenPos(new Vector2(cellMin.X, cellMin.Y + offsetY));
 
-                            ImGui_Ice.Draw_XPBar(currentExpStage, CosmicHelper.MaxRelicLevel, CosmicHelper.MaxRelicExpStatus, size: new Vector2(200, barHeight));
+                            ImGui_Ice.Draw_XPBar(currentExpStage, CosmicMoonRegistry.HighestMaxRelicStage, CosmicHelper.MaxRelicExpStatus, size: new Vector2(200, barHeight));
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
@@ -1039,20 +789,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             }
             else
             {
-                if (!expInfo.TryGetValue(SelectedJob, out var jobStatus))
-                {
-                    ImGui.TextWrapped(T("No expedition data is available for this class yet."));
-                    return;
-                }
-
+                var maxRelicStage = CosmicMoonRegistry.GetMaxRelicStage((uint)Svc.ClientState.TerritoryType);
+                var jobStatus = expInfo[SelectedJob];
                 if (ImGui.BeginTable("Specific Class Details", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
                 {
-                    ImGui.TableSetupColumn(T("Info"));
-                    ImGui.TableSetupColumn(T("ExpBar"));
+                    ImGui.TableSetupColumn("Info");
+                    ImGui.TableSetupColumn("ExpBar");
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui_Ice.Table_FullCenterText(T("Class Score"));
+                    ImGui_Ice.Table_FullCenterText($"Class Score");
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
@@ -1074,16 +820,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text(T("Stage"));
+                    ImGui.Text($"Stage");
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui_Ice.Table_FullCenterText($" {jobStatus.Stage_Current} / {CosmicHelper.MaxRelicLevel}");
+                    ImGui_Ice.Table_FullCenterText($" {jobStatus.Stage_Current} / {maxRelicStage}");
 
                     ImGui.TableNextColumn();
                     var LvCellMin = ImGui.GetCursorScreenPos();
                     ImGui.SetCursorScreenPos(new Vector2(LvCellMin.X, LvCellMin.Y + offsetY));
-                    ImGui_Ice.Draw_XPBar(jobStatus.Stage_Current, CosmicHelper.MaxRelicLevel, CosmicHelper.MaxRelicLevel);
+                    ImGui_Ice.Draw_XPBar(jobStatus.Stage_Current, maxRelicStage, maxRelicStage);
 
                     foreach (var exp in jobStatus.CurrentExp)
                     {
@@ -1122,7 +868,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 }
 
                 if (ImGui.IsItemHovered())
-                    DrawTooltip(() => ImGui.Text(T("Weather: {0}", T(CosmicHelper.GetCosmicWeatherName(missionInfo.Weather)))));
+                    DrawTooltip(() => ImGui.Text($"Weather: {missionInfo.Weather}"));
             }
             else if (missionInfo.IsTimed)
             {
@@ -1192,3 +938,4 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         }
     }
 }
+

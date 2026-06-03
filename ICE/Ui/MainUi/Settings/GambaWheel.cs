@@ -53,10 +53,11 @@ if (ImGui.Checkbox(T("Prefer smaller wheel"), ref gambaPreferSmallerWheel))
             if (PlayerHelper.IsInCosmicZone())
             {
                 var territory = Player.Territory.RowId;
-                var itemId = CosmicHelper.PlanetCreditInfo[territory];
-                PlayerHelper.GetItemCount(itemId, out var credits);
-
-                ImGui.Text(T("Current location: {0} | Currency Amount: {1}", territory, credits));
+                if (CosmicMoonRegistry.TryGetPlanetCreditItemId(territory, out var itemId))
+                {
+                    PlayerHelper.GetItemCount(itemId, out var credits);
+                    ImGui.Text(T("Current location: {0} | Currency Amount: {1}", territory, credits));
+                }
             }
 
             ImGui.Separator();
@@ -130,10 +131,11 @@ if (ImGui.Checkbox(T("Prefer smaller wheel"), ref gambaPreferSmallerWheel))
             if (PlayerHelper.IsInCosmicZone())
             {
                 var territory = Player.Territory.RowId;
-                var itemId = CosmicHelper.PlanetCreditInfo[territory];
-                PlayerHelper.GetItemCount(itemId, out var credits);
-
-                ImGui.Text(T("Current location: {0} | Currency Amount: {1}", territory, credits));
+                if (CosmicMoonRegistry.TryGetPlanetCreditItemId(territory, out var itemId))
+                {
+                    PlayerHelper.GetItemCount(itemId, out var credits);
+                    ImGui.Text(T("Current location: {0} | Currency Amount: {1}", territory, credits));
+                }
             }
 
             ImGui.Separator();

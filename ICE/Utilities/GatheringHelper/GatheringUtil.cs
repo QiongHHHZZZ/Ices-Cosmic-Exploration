@@ -1682,7 +1682,11 @@ public static unsafe partial class GatheringUtil
                     FishingSpot = new Vector3(-127.96f, -191.25f, -758.61f),
                 },
             },
-        }
+        },
+
+        // Auxesia (1319) — fish hole coords go here. Record in debug "Fishing Hole Editor", export C#, paste below.
+        // Pattern matches [1310] Oizys above: outer key = map flag, inner list = face + cast positions.
+        // [1319] = new() { ... },
     };
 
     public static Dictionary<string, List<uint>> MoonBaits = new();

@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
+using ECommons;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -10,62 +11,45 @@ using System.Collections.Generic;
 
 namespace ICE.Utilities;
 
+/// <summary>
+/// ICE-only player helpers. Most of the old duplicates now call ECommons (Player / GenericHelpers).
+/// Still here: cosmic zone checks, GetItemCount (HQ/NQ/+500k), repair scans, food buff, manip tracking.
+/// For distance / LocalPlayer / busy / screen-ready, use ECommons at the call site when you can.
+/// </summary>
 public class PlayerHelper
 {
-    // A lot of these functions are dupes to what is in Ecommons: GameHelper.Player
-    // Which means that a lot of these can get depreciated becuase they are either:
-    // -> Safer in how they are grabbed
-    // -> Less Reduntant in code
-    // -> Just genereally better 
-
     public static bool UsingSupportedJob()
     {
         var jobId = (uint)Player.Job;
-        return (CosmicHelper.CrafterJobList.Contains(jobId) || CosmicHelper.GatheringJobList.Contains(jobId));
+        return CosmicHelper.CrafterJobList.Contains(jobId) || CosmicHelper.GatheringJobList.Contains(jobId);
     }
 
-    public static bool IsInCosmicZone() => IsInSinusArdorum() || IsInPhaenna() || IsInOizys() || IsInAuxesia();
-    public static bool IsInSinusArdorum() => IsInZone(1237);
-    public static bool IsInPhaenna() => IsInZone(1291);
-    public static bool IsInOizys() => IsInZone(1310);
-    public static bool IsInAuxesia() => IsInZone(1319);
-    public static bool IsInZone(uint zoneID) => Svc.ClientState.TerritoryType == zoneID;
-    public static IPlayerCharacter? LocalPlayer => Svc.Objects.LocalPlayer;
-    private static unsafe float AnimationLock => *(float*)((nint)ActionManager.Instance() + 8);
-    public static bool IsAnimationLocked => AnimationLock > 0;
-    public static bool CustomIsBusy => GenericHelpers.IsOccupied() || LocalPlayer.IsCasting || IsAnimationLocked;
-    public static bool IsScreenReady()
+    public static bool IsInCosmicZone() =>
+        CosmicMoonRegistry.IsKnownCosmicTerritory((uint)Svc.ClientState.TerritoryType);
+
+    public static bool CustomIsBusy =>
+        GenericHelpers.IsOccupied() || Player.IsCasting || Player.IsAnimationLocked;
+
+    public static bool IsScreenReady() =>
+        GenericHelpers.IsScreenReady()
+        && !Svc.Condition[ConditionFlag.BetweenAreas]
+        && !Svc.Condition[ConditionFlag.BetweenAreas51]
+        && !Svc.Condition[ConditionFlag.OccupiedInCutSceneEvent]
+        && !Svc.Condition[ConditionFlag.WatchingCutscene]
+        && !Svc.Condition[ConditionFlag.WatchingCutscene78];
+
+    public static bool HasStatusId(params uint[] statusIDs)
     {
-        return !Svc.Condition[ConditionFlag.BetweenAreas] &&
-               !Svc.Condition[ConditionFlag.BetweenAreas51] &&
-               !Svc.Condition[ConditionFlag.OccupiedInCutSceneEvent] &&
-               !Svc.Condition[ConditionFlag.WatchingCutscene] &&
-               !Svc.Condition[ConditionFlag.WatchingCutscene78];
-    }
-    public static unsafe bool HasStatusId(params uint[] statusIDs)
-    {
-        if (LocalPlayer == null)
+        if (Player.Object is not IBattleChara battleChara)
             return false;
 
-        var statusID = LocalPlayer.StatusList
-            .Select(se => se.StatusId)
-            .ToList().Intersect(statusIDs)
-            .FirstOrDefault();
+        return battleChara.StatusList.Any(s => statusIDs.Contains((uint)s.StatusId));
+    }
 
-        return statusID != default;
-    }
-    public static int GetGp()
-    {
-        uint gp = LocalPlayer.CurrentGp;
-        return (int)gp;
-    }
-    public static int MaxGp()
-    {
-        var maxGp = LocalPlayer.MaxGp;
-        return (int)maxGp;
-    }
-    internal static unsafe float GetDistanceToPlayer(Vector3 v3) => Vector3.Distance(v3, Player.GameObject->Position);
-    internal static unsafe float GetDistanceToPlayer(IGameObject gameObject) => GetDistanceToPlayer(gameObject.Position);
+    public static int GetGp() => (int)(Player.Object?.CurrentGp ?? 0);
+
+    public static int MaxGp() => (int)(Player.Object?.MaxGp ?? 0);
+
     public static unsafe bool GetItemCount(uint itemID, out int count, bool includeHq = true, bool includeNq = true)
     {
         try
@@ -85,12 +69,16 @@ public class PlayerHelper
             return false;
         }
     }
+
     public static bool HasFoodRunning()
     {
         if (!C.UseGatheringFood || C.GatheringFood == 0)
             return true;
 
-        var foodBuff = LocalPlayer.StatusList.FirstOrDefault(x => x.StatusId == 48 && x.RemainingTime > 10f);
+        if (Player.Object is not { } localPlayer)
+            return false;
+
+        var foodBuff = localPlayer.StatusList.FirstOrDefault(x => x.StatusId == 48 && x.RemainingTime > 10f);
         if (foodBuff == null)
             return false;
         if (Svc.Data.GetExcelSheet<Item>().TryGetRow(C.GatheringFood, out var itemInfo))
@@ -104,6 +92,7 @@ public class PlayerHelper
 
         return false;
     }
+
     public static unsafe bool NeedsRepair(float below = 0)
     {
         string tag = "Needs Repair";
@@ -214,6 +203,7 @@ public class PlayerHelper
         public uint ActionId { get; set; }
         public bool HasUnlocked { get; set; }
     }
+
     public static Dictionary<uint, ManipInfo> ManipClassInfo = new()
     {
         [8] = new ManipInfo { ActionId = 4574, HasUnlocked = true },
@@ -225,6 +215,7 @@ public class PlayerHelper
         [14] = new ManipInfo { ActionId = 4580, HasUnlocked = true },
         [15] = new ManipInfo { ActionId = 4581, HasUnlocked = true },
     };
+
     public static unsafe void UpdateHasManip()
     {
         if (Player.IsBusy)

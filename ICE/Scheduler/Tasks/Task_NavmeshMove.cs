@@ -34,8 +34,6 @@ namespace ICE.Scheduler.Tasks
         private static Random random = new();
         private static int randomCounter = 0;
 
-        private static FishingDebug _fishingDebug = null;
-
         public enum TravelTypes
         {
             Direct,
@@ -387,7 +385,8 @@ namespace ICE.Scheduler.Tasks
         }
         public static Dictionary<uint, List<AethernetSystem>> PlanetAethernet = new()
         {
-            [1237] = new()
+            // Keys must match CosmicMoonRegistry.*.TerritoryId — validated in CosmicMoonContent.ValidateRegistry()
+            [CosmicMoonRegistry.Sinus.TerritoryId] = new()
             {
                 new()
                 {
@@ -425,7 +424,7 @@ namespace ICE.Scheduler.Tasks
                     Location = new(629.80f, -73.95f, -572.78f),
                 }
             },
-            [1291] = new()
+            [CosmicMoonRegistry.Phaenna.TerritoryId] = new()
             {
                 new()
                 {
@@ -463,7 +462,7 @@ namespace ICE.Scheduler.Tasks
                     LandZone = new(-591.95f, 28.50f, 722.10f),
                 }
             },
-            [1310] = new()
+            [CosmicMoonRegistry.Oizys.TerritoryId] = new()
             {
                 new()
                 {
@@ -502,7 +501,7 @@ namespace ICE.Scheduler.Tasks
                     RequiredLogLv = 14,
                 }
             },
-            [1319] = new()
+            [CosmicMoonRegistry.Auxesia.TerritoryId] = new()
             {
                 new()
                 {
@@ -520,7 +519,7 @@ namespace ICE.Scheduler.Tasks
                 },
                 new()
                 {
-                    MapSelector = 1,
+                    MapSelector = 2,
                     AethernetId = 2015424,
                     Location = new(-242.73f, 168.05f, 321.17f),
                     LandZone = new(-243.1f, 168.0f, 320.6f)
@@ -581,13 +580,8 @@ namespace ICE.Scheduler.Tasks
             return true;
         }
 
-        public static Dictionary<uint, uint> PlanetProgress = new()
-        {
-            [1237] = 15,
-            [1291] = 15,
-            [1310] = 17,
-            [1319] = 2
-        };
+        public static Dictionary<uint, uint> PlanetProgress { get; } =
+            CosmicMoonRegistry.All.ToDictionary(m => m.TerritoryId, m => m.DefaultAethernetLogLevel);
 
         private static bool? CalculateAethernet(Vector3 destination)
         {
@@ -774,8 +768,13 @@ namespace ICE.Scheduler.Tasks
             {
                 if (planetInfo.TryGetValue(NpcData.NpcType.RedAlert, out var npcInfo))
                 {
+                    if (!CosmicHelper.CriticalLocations.TryGetValue(missionId, out var approxStart))
+                    {
+                        IceLogging.Warning($"No red-alert turn-in coords for mission {missionId} on {CosmicMoonRegistry.GetDisplayName(territoryId)} — add to RedAlert_Selection", tag);
+                        return true;
+                    }
+
                     var method = TravelMethods[TravelTypes.RedAlert];
-                    var approxStart = CosmicHelper.CriticalLocations[missionId];
 
                     if (_PathCalculations == null)
                     {
@@ -846,7 +845,7 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "[Navmesh: Calculate Hub Path]";
 
-            if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
+            if (CosmicMoonRegistry.TryGetHubCenter(Player.Territory.RowId, out var HubCenter))
             {
                 var method = TravelMethods[TravelTypes.Hub_Return];
 
@@ -922,7 +921,7 @@ namespace ICE.Scheduler.Tasks
             var territoryId = Player.Territory.RowId;
             var planetProgress = PlanetProgress[territoryId];
 
-            if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
+            if (CosmicMoonRegistry.TryGetHubCenter(Player.Territory.RowId, out var HubCenter))
             {
                 var method = TravelMethods[TravelTypes.Hub_Aethernet];
 
@@ -1052,9 +1051,13 @@ namespace ICE.Scheduler.Tasks
             if (!CosmicHelper.SheetMissionDict[missionId].IsCritical)
                 return true;
 
-            var approxStart = CosmicHelper.CriticalLocations[missionId];
+            if (!CosmicHelper.CriticalLocations.TryGetValue(missionId, out var approxStart))
+            {
+                IceLogging.Warning($"No red-alert turn-in coords for mission {missionId} — hub return via NPC skipped");
+                return true;
+            }
 
-            if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
+            if (CosmicMoonRegistry.TryGetHubCenter(Player.Territory.RowId, out var HubCenter))
             {
                 if (NpcData.MoonNpcs.TryGetValue(territoryId, out var planetInfo))
                 {
@@ -1181,7 +1184,13 @@ namespace ICE.Scheduler.Tasks
             }
             else if (bestTravel.Key == TravelTypes.RedAlert)
             {
-                var redAlertNpc = NpcData.MoonNpcs[Player.Territory.RowId][NpcData.NpcType.RedAlert];
+                if (!NpcData.TryGetNpc(Player.Territory.RowId, NpcData.NpcType.RedAlert, out var redAlertNpc))
+                {
+                    IceLogging.Warning($"No red-alert NPC configured for {CosmicMoonRegistry.GetDisplayName(Player.Territory.RowId)}");
+                    P.TaskManager.Insert(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: Basic");
+                    return true;
+                }
+
                 P.TaskManager.InsertMulti
                     (
                         new(() => DestinationPathing(redAlertNpc.Location_Circle), "Traveling to the Red Alert NPC"),
@@ -1191,7 +1200,13 @@ namespace ICE.Scheduler.Tasks
             }
             else if (bestTravel.Key == TravelTypes.Hub_RedAlert)
             {
-                var redAlertNpc = NpcData.MoonNpcs[Player.Territory.RowId][NpcData.NpcType.RedAlert];
+                if (!NpcData.TryGetNpc(Player.Territory.RowId, NpcData.NpcType.RedAlert, out var redAlertNpc))
+                {
+                    IceLogging.Warning($"No red-alert NPC configured for {CosmicMoonRegistry.GetDisplayName(Player.Territory.RowId)}");
+                    P.TaskManager.Insert(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: Basic");
+                    return true;
+                }
+
                 P.TaskManager.InsertMulti
                     (
                         new(() => Task_Repair.HubCheck(), "Returning back to hub"),
@@ -1208,7 +1223,6 @@ namespace ICE.Scheduler.Tasks
             return true;
         }
 
-        private static int counter = 0;
         private static unsafe bool? TravelToAethershard(PathInfo shardInfo)
         {
             string tag = "[Navmesh: Aethershard movement]";

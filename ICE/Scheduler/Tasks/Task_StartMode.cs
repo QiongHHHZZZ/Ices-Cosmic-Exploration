@@ -59,21 +59,21 @@ namespace ICE.Scheduler.Tasks
         {
             var agenda = C.Cosmic_Agenda;
             var relicProgress = CosmicHelper.Cosmic_ClassInfo();
-            PlayerHelper.GetItemCount(45690, out var creditAmount);
+            PlayerHelper.GetItemCount(CosmicHelper.CosmoCreditItemId, out var creditAmount);
             int planetCreditAmount = 10000;
             var territory = Player.Territory.RowId;
             if (PlayerHelper.IsInCosmicZone())
             {
-                var planetCreditId = CosmicHelper.PlanetCreditInfo[territory];
-                PlayerHelper.GetItemCount(planetCreditId, out planetCreditAmount);
+                if (CosmicMoonRegistry.TryGetPlanetCreditItemId(territory, out var planetCreditId))
+                {
+                    PlayerHelper.GetItemCount(planetCreditId, out planetCreditAmount);
+                }
             }
 
+            // Same as AgendaCheck — only moons with a cosmodrome have dronebit currency
             int dronebitAmount = 5000;
-            if (PlayerHelper.IsInCosmicZone())
-            {
-                var dronebitId = CosmicHelper.DronebitInfo[territory].creditId;
-                PlayerHelper.GetItemCount(dronebitId, out dronebitAmount);
-            }
+            if (CosmicMoonRegistry.TryGetDronebit(territory, out var dronebit))
+                PlayerHelper.GetItemCount(dronebit.creditId, out dronebitAmount);
 
             foreach (var entry in agenda)
             {
@@ -91,11 +91,11 @@ namespace ICE.Scheduler.Tasks
                 var goal = entry.SelectedOption;
                 bool achieved = false;
 
+                if (CosmicMoonRegistry.IsMaxRelicPlaylistGoal(goal))
+                    achieved = relicLevel >= CosmicMoonRegistry.GetMaxRelicGoal(goal);
+                else
                 achieved = goal switch
                 {
-                    PlaylistOptions.SinusMax => relicLevel >= 9,
-                    PlaylistOptions.PhaennaMax => relicLevel >= 14,
-                    PlaylistOptions.OizysMax => relicLevel >= 17,
                     PlaylistOptions.SelectedRelicLv => relicLevel >= entry.SelectedRelicLevel,
                     PlaylistOptions.CreditAmount => creditAmount >= entry.CreditAmount,
                     PlaylistOptions.PlanetAmount => planetCreditAmount >= entry.PlanetAmount,

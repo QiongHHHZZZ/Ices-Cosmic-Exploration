@@ -1,4 +1,4 @@
-using Dalamud.Interface;
+﻿using Dalamud.Interface;
 using ECommons.GameHelpers;
 using ICE.Ui.DebugWindowTabs;
 using ICE.Utilities.Cosmic_Helper;
@@ -328,7 +328,7 @@ ImGui.Text(T("No location set"));
             {
                 ImGui.Text(T("Planet: {0}", Player.Territory.Value.PlaceName.Value.Name.ToString()));
                 ImGui.Checkbox(T("Show fishing spot raycast"), ref _fishingDebug.ShowFishRay);
-                if (PlayerHelper.LocalPlayer is { } player && _fishingDebug.ShowFishRay)
+                if (Player.Object is { } player && _fishingDebug.ShowFishRay)
                 {
                     _fishingDebug.Draw();
                 }
@@ -386,3 +386,4 @@ ImGui.Text(T("No location set"));
         }
     }
 }
+

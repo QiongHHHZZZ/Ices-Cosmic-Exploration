@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.NET.Sdk/14.0.2">
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
 	<PropertyGroup>
 		<Version>0.0.78.1000</Version>
@@ -67,18 +67,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="ECommons" Version="3.2.1.6" />
 		<PackageReference Include="NAudio" Version="2.3.0" />
+		<PackageReference Include="Pictomancy" Version="1.0.9" />
 		<PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100.6" />
 		<PackageReference Include="YamlDotNet" Version="18.0.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\ECommons\ECommons\ECommons.csproj">
-			<AdditionalProperties>DalamudLibPath=$(DalamudLibPath)</AdditionalProperties>
-		</ProjectReference>
-		<ProjectReference Include="..\ffxiv_pictomancy\Pictomancy\Pictomancy.csproj">
-			<AdditionalProperties>DalamudLibPath=$(DalamudLibPath)</AdditionalProperties>
-		</ProjectReference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -88,5 +81,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Resources\GatheringRoutes\1310_Oizys\" />
+	  <Folder Include="Resources\GatheringRoutes\1319_Auxesia\" />
 	</ItemGroup>
 </Project>

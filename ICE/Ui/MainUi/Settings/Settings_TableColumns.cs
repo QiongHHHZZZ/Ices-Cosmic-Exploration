@@ -169,11 +169,6 @@ if (ImGui.Checkbox(T("Auto Hide/Show Planet Tokens"), ref autoShowToken))
 
     private static TurninState HighestTurnin = TurninState.Gold;
 
-    private static bool AnyTurnin = true;
-    private static bool TurninGold = false;
-    private static bool TurninSilver = false;
-    private static bool TurninBronze = false;
-
     public static void GeneralMissionSettings()
     {
         bool removeGold = C.RemoveAfterGold;

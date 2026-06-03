@@ -83,8 +83,6 @@ namespace ICE.OldYamlConfig
             16, 17, 18                     // Gatherers: MIN, BTN, FSH
         };
         public bool AutoSelectMoon { get; set; } = true;
-        public bool ShowSinusMissions { get; set; } = true;
-        public bool ShowPhaennaMissions { get; set; } = true;
         public bool RemoveAfterGold { get; set; } = false;
         public bool ShowExtraMissionInfo { get; set; } = true;
         public Dictionary<uint, uint> ScoreKeeper { get; set; } = new();

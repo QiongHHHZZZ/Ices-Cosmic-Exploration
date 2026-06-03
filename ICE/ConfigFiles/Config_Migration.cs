@@ -139,8 +139,6 @@ public static class ConfigMigration
             C.JobPrio = old.JobPrio;
 
         C.AutoSelectMoon = old.AutoSelectMoon;
-        C.ShowSinusMissions = old.ShowSinusMissions;
-        C.ShowPhaennaMissions = old.ShowPhaennaMissions;
         C.RemoveAfterGold = old.RemoveAfterGold;
         C.ShowExtraMissionInfo = old.ShowExtraMissionInfo;
 

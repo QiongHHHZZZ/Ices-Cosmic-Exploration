@@ -1,0 +1,93 @@
+zone_id: 1319
+zone_name: Auxesia
+job: BTN
+flag:
+  x: -366
+  y: 191
+author: Le Vagabond
+date_modified: 2026-06-03T11:48:33.0818329Z
+nodes:
+- node_id: 35798
+  position:
+    x: -404.5623
+    y: 164.2428
+    z: 191.4603
+  land_zone:
+    x: -406.2135
+    y: 163.69518
+    z: 189.57281
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35797
+  position:
+    x: -412.2761
+    y: 164.4214
+    z: 196.7626
+  land_zone:
+    x: -411.0506
+    y: 163.69519
+    z: 194.58597
+  radius_start: 49
+  radius_end: 47
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35796
+  position:
+    x: -370.4864
+    y: 164.3885
+    z: 217.8192
+  land_zone:
+    x: -371.19144
+    y: 163.69519
+    z: 215.84941
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35795
+  position:
+    x: -364.0191
+    y: 164.4268
+    z: 208.2061
+  land_zone:
+    x: -366.49146
+    y: 163.69519
+    z: 209.33192
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35799
+  position:
+    x: -338.7953
+    y: 164.357
+    z: 149.3517
+  land_zone:
+    x: -338.79636
+    y: 163.69519
+    z: 152.57187
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35800
+  position:
+    x: -347.1193
+    y: 164.7458
+    z: 161.6922
+  land_zone:
+    x: -348.6963
+    y: 163.69519
+    z: 159.66814
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0

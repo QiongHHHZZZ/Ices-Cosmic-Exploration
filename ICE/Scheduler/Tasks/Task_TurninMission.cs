@@ -6,7 +6,7 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSManager;
+using MissionRank = FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSMissionModule.MissionRank;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -251,7 +251,6 @@ namespace ICE.Scheduler.Tasks
                             {
                                 MissionRank.Gold => TurninState.Gold,
                                 MissionRank.Silver => TurninState.Silver,
-                                MissionRank.Bronze => TurninState.Bronze,
                                 _ => TurninState.Bronze,
                             };
                         }

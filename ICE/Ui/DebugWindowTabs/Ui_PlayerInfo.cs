@@ -55,7 +55,7 @@ namespace ICE.Ui.DebugWindowTabs
             if (PlayerHelper.IsInCosmicZone())
             {
                 var manager = WKSManager.Instance();
-                var currentMission = manager->CurrentMissionUnitRowId;
+                var currentMission = manager->State.CurrentMission.MissionUnitRowId;
 
                 ImGui.Text(T("Current Mission: {0}", currentMission));
             }
@@ -203,8 +203,6 @@ namespace ICE.Ui.DebugWindowTabs
             return bestMission;
         }
 
-        private static uint selectedId = 0;
-
         private static void DroidCheck()
         {
             if (ImGui.CollapsingHeader(T("Object info")))
@@ -297,7 +295,7 @@ namespace ICE.Ui.DebugWindowTabs
             if (wks == null)
                 return 0;
 
-            return wks->DevGrade;
+            return wks->State.DevGrade;
         }
     }
 }

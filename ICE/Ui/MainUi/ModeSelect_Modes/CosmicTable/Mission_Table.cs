@@ -6,6 +6,7 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
 using JetBrains.Annotations;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using static ICE.ConfigFiles.Config;
 using static ICE.Localization.L10n;
@@ -217,7 +218,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 _turninColumn, _allExpColumn];
 
 
-            /*
             var tierFlags = new (int tier, ItemFilter flag)[]
             {
                 (1, ItemFilter.HasI),   (2, ItemFilter.HasII),  (3, ItemFilter.HasIII),
@@ -230,7 +230,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 string tierName = tier switch { 1 => "I", 2 => "II", 3 => "III", 4 => "IV", 5 => "V", 6 => "VI", 7 => "VII", _ => "?" };
                 headers.Add(new RelicExpColumn(tier, flag) { Label = $"Exp {tierName}" });
             }
-            */
 
             headers.Add(_profileColumn);
             Headers = [.. headers];
@@ -482,7 +481,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             }
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs)
-                => lhs.Enabled.CompareTo(rhs.Enabled);
+                => lhs.Enabled().CompareTo(rhs.Enabled());
 
             public override void DrawColumn(MissionInfo item, int _)
             {
@@ -524,7 +523,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
             public override bool FilterFunc(MissionInfo item)
             {
-                return item.Enabled ? FilterValue.HasFlag(ItemFilter.Enabled) : FilterValue.HasFlag(ItemFilter.Disabled);
+                return item.Enabled() ? FilterValue.HasFlag(ItemFilter.Enabled) : FilterValue.HasFlag(ItemFilter.Disabled);
             }
         }
         public sealed class NameColumn : VerticalCenterColumnString
@@ -861,16 +860,18 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
             public override bool FilterFunc(MissionInfo mission)
             {
+                var hasExp = false;
                 foreach (var (tier, value) in mission.SheetInfo.RelicXpInfo)
                 {
                     if (value <= 0)
                         continue;
 
-                    if (!FilterValue.HasFlag(TierFlag(tier)))
-                        return false;
+                    hasExp = true;
+                    if (FilterValue.HasFlag(TierFlag(tier)))
+                        return true;
                 }
 
-                return true;
+                return !hasExp;
             }
 
             private static ItemFilter TierFlag(int tier) => tier switch
@@ -939,8 +940,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
             public override bool FilterFunc(MissionInfo mission)
             {
-                var hasExp = mission.SheetInfo.RelicXpInfo.GetValueOrDefault(_tier) > 0;
-                return hasExp ? FilterValue.HasFlag(_flag) : true;
+                var exps = mission.SheetInfo.RelicXpInfo.Where(x => x.Value > 0).ToList();
+
+                if (exps.Count == 0) return true;
+
+                return exps.Any(x => FilterValue.HasFlag(TierToFlag(x.Key)));
             }
         }
         public sealed class MissionColumn : MissionFilterColumn
@@ -1235,8 +1239,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public PlanetColumn()
             {
                 Flags = ImGuiTableColumnFlags.None;
-                SetFlags(ItemFilter.Sinus, ItemFilter.Phaenna, ItemFilter.Oizys, ItemFilter.Auxesia);
-                SetNames(T("Sinus"), T("Phaenna"), T("Oizys"), T("Auxesia"));
+                var moons = CosmicMoonRegistry.All;
+                SetFlags(moons.Select(m => m.PlanetFilter).ToArray());
+                SetNames(moons.Select(m => T(m.DisplayName)).ToArray());
             }
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.TerritoryId.CompareTo(rhs.SheetInfo.TerritoryId);
@@ -1249,29 +1254,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 var columnWidth = ImGuiUtil.CurrentColumnWidth;
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - frameHeight) / 2);
 
-                string planetIcon = item.SheetInfo.TerritoryId switch
-                {
-                    1237 => "ICE.Resources.Sinus_Ardorum.png",
-                    1291 => "ICE.Resources.Phaenna.png",
-                    1310 => "ICE.Resources.Oizys.png",
-                    1319 => "ICE.Resources.Auxesia.png",
-                    _ => "ICE.Resources.Sinus_Ardorum.png",
-                };
+                var planetIcon = CosmicMoonRegistry.GetIconResource(item.SheetInfo.TerritoryId);
 
                 var texture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), planetIcon).GetWrapOrEmpty();
                 ImGui.Image(texture.Handle, size);
             }
-            public override bool FilterFunc(MissionInfo item)
-            {
-                return item.SheetInfo.TerritoryId switch
-                {
-                    1237 => FilterValue.HasFlag(ItemFilter.Sinus),
-                    1291 => FilterValue.HasFlag(ItemFilter.Phaenna),
-                    1310 => FilterValue.HasFlag(ItemFilter.Oizys),
-                    1319 => FilterValue.HasFlag(ItemFilter.Auxesia),
-                    _ => false
-                };
-            }
+            public override bool FilterFunc(MissionInfo item) =>
+                CosmicMoonRegistry.ItemFilterIncludesTerritory(FilterValue, item.SheetInfo.TerritoryId);
         }
         public sealed class JobColumn : JobFilterColumn
         {
@@ -2194,5 +2183,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 }
             }
         }
+        private static ItemFilter TierToFlag(int tier) => tier switch
+        {
+            1 => ItemFilter.HasI,
+            2 => ItemFilter.HasII,
+            3 => ItemFilter.HasIII,
+            4 => ItemFilter.HasIV,
+            5 => ItemFilter.HasV,
+            6 => ItemFilter.HasVI,
+            7 => ItemFilter.HasVII,
+            _ => ItemFilter.HasI
+        };
     }
 }

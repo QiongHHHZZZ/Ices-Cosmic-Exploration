@@ -153,7 +153,18 @@ public static unsafe partial class CosmicHelper
     public class MissionInfo
     {
         public uint Id { get; set; } = 0;
-        public bool Enabled => C.MissionConfig[Id].Enabled;
+        public bool Enabled()
+        {
+            if (C.MissionConfig.TryGetValue(Id, out var config))
+            {
+                return config.Enabled;
+            }
+            else
+            {
+                C.MissionConfig[Id] = new();
+                return false;
+            }
+        }
         public CosmicInfo SheetInfo => SheetMissionDict[Id];
     }
     private static double CalculatePerMinute(double averageTime, uint score, int multiplier)

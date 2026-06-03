@@ -3,7 +3,7 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic_Helper;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSManager;
+using MissionRank = FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSMissionModule.MissionRank;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -488,29 +488,28 @@ namespace ICE.Scheduler.Tasks
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return 0;
 
-            return managerPtr->CollectedTotal;
+            return managerPtr->State.CurrentMission.CollectedTotal;
         }
         private static unsafe uint CurrentIndividualTotal()
         {
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return 0;
 
-            return managerPtr->CollectedIndividual;
+            return managerPtr->State.CurrentMission.CollectedIndividual;
         }
         private static unsafe uint CurrentScore()
         {
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return 0;
 
-            var manager = managerPtr;
-            return manager->CurrentScore;
+            return managerPtr->State.CurrentMission.Score;
         }
         public static unsafe MissionRank CurrentRank()
         {
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return MissionRank.None;
 
-            return (MissionRank)(ushort)managerPtr->CurrentRank;
+            return managerPtr->State.CurrentMission.Rank;
         }
     }
 }

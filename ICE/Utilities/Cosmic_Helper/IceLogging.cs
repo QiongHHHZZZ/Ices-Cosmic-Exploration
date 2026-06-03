@@ -299,7 +299,7 @@ internal static class IceLogging
         public static void CopyToClipboard()
         {
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine($"Current Version: {P.GetType().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+            sb.AppendLine($"Current Version: {P.GetType().Assembly.GetName().Version}");
             foreach (var log in logs)
             {
                 var countSuffix = log.Count > 1 ? $" (x{log.Count})" : "";

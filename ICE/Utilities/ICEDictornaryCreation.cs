@@ -1,6 +1,5 @@
 ﻿using ICE.ConfigFiles;
 using ICE.Ui;
-using ICE.Ui.MainUi.ModeSelect_Modes;
 using ICE.Ui.MainUi.Settings;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
@@ -14,15 +13,17 @@ namespace ICE;
 
 public sealed partial class ICE
 {
-    public static unsafe void DictionaryCreation()
+    public static void DictionaryCreation()
     {
         var MainMoonSheet = Svc.Data.GetExcelSheet<WKSMissionUnit>();
-        string tag = "[Dictionary Creation]";
+
+        // Build PlaceName -> territory map before we assign TerritoryId on each CosmicInfo entry
+        CosmicTerritoryResolver.Initialize();
 
         foreach (var entry in MainMoonSheet)
         {
-            Dictionary<ushort, CosmicHelper.CraftingInfo> crafts_Main = new();
-            Dictionary<ushort, CosmicHelper.CraftingInfo> crafts_Pre = new();
+            Dictionary<ushort, CraftingInfo> crafts_Main = new();
+            Dictionary<ushort, CraftingInfo> crafts_Pre = new();
             Dictionary<uint, int> gathering_Min = new();
             List<uint> jobs = new();
             Dictionary<int, int> relicXp = new();
@@ -105,49 +106,21 @@ public sealed partial class ICE
             // - - - HEY. BRONZE SCORE IS KEPT HERE - - - //
             uint bronze = missionToDo.Unknown2;
 
-            // TerritoryId that's assigned to each planet. There doesn't seem to be a direct way to grab this...
-            // So just going to hard assign this. TODO: Add last planet when it comes out
-            uint territoryId = 1237;
-            if (keyId < 545)
-            {
-                territoryId = 1237;
-            }
-            else if (keyId < 1040)
-            {
-                territoryId = 1291;
-            }
-            else if (keyId < 1370)
-            {
-                territoryId = 1310;
-            }
-            else if (keyId < 1703)
-            {
-                territoryId = 1319;
-            }
+            // Which moon this mission belongs to (TerritoryType ID, not mission row ID)
+            uint territoryId = CosmicTerritoryResolver.Resolve(entry);
+            if (territoryId == 0)
+                continue; // unresolved — logged once in resolver; do not default to Sinus
 
             // Map Marker Information
             var marker = missionToDo.MapMarker;
             Vector2 mapFlag = new(marker.Value.X - 1024, (marker.Value.Y - 1024));
             int radius = marker.Value.Radius;
 
-            // Oizys decided they were going to perfectly overlap 2 of the markers *-perfectly-*
-            // So specific missions have their positions changed *-ever-* so slightly to make them different for personal use
-            if (keyId == 1272)
-            {
-                mapFlag = new(-340, 870);
-            }
-            else if (keyId == 1264)
-            {
-                mapFlag = new(-573, 3);
-            }
-            else if (keyId == 1296)
-            {
-                mapFlag = new(-514, 232);
-            }
-            else if (keyId is 1317 or 1318 or 1319)
-            {
-                mapFlag = new(mapFlag.X + 1, mapFlag.Y + 1);
-            }
+            // Stacked map markers — nudge slightly so route editor keys stay unique per mission row.
+            if (CosmicMapMarkerNudges.TryGetOverride(keyId, out var overrideFlag))
+                mapFlag = overrideFlag;
+            else if (CosmicMapMarkerNudges.TryGetOverlapNudge(keyId, mapFlag, out var nudgedFlag))
+                mapFlag = nudgedFlag;
 
             // Mission Attributes/Flags. Esentially a quick way to know what is what kind of mission at a quick glance
             MissionAttributes attributes = MissionAttributes.None;
@@ -217,9 +190,8 @@ public sealed partial class ICE
 
                 if (isCritical)
                 {
-                    var requiredAmount = 3; // Sinus Specifically
-                    if (keyId > 535)
-                        requiredAmount = 2; // EVERY other planet
+                    // Sinus critical crafts need 3 items; every other hub uses 2 (was keyId > 535 before).
+                    var requiredAmount = territoryId == CosmicMoonRegistry.Sinus.TerritoryId ? 3 : 2;
 
                     if (Svc.Data.GetExcelSheet<Recipe>().TryGetRow(wksRecipeSheet.Value.Recipe[0].RowId, out var RecipeRow))
                     {
@@ -746,6 +718,8 @@ public sealed partial class ICE
 
         #region Mission Notes
 
+        // Sheet-driven unlock + quick-level lists (used to be huge static arrays in CustomNotes).
+        CosmicMissionLists.BuildFromSheet();
         CosmicHelper.CreateMissionNotes();
         foreach (var mission in MissionUnlock)
         {
@@ -806,6 +780,7 @@ public sealed partial class ICE
 
         EnsureAllMission();
         GatheringUtil.RegisterPresets();
+        CosmicMoonContent.LogContentSummary();
 
         #region Config Stuff
 

@@ -11,7 +11,7 @@ using System.Globalization;
 using System.Numerics;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.ConfigFiles.Config;
-using static FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSManager;
+using MissionRank = FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSMissionModule.MissionRank;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -991,7 +991,6 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool WillOvercap(int recoveryGP)
         {
-            string tag = "Cordial: Overcap Check";
             bool WillOvercap = (PlayerHelper.GetGp() + recoveryGP) > PlayerHelper.MaxGp();
             if (WillOvercap)
             {

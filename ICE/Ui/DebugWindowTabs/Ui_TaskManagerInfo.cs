@@ -8,7 +8,6 @@ namespace ICE.Ui.DebugWindowTabs
     internal class Ui_TaskManagerInfo
     {
         private static uint mission = 0;
-        private static int frameDelay = 4;
         private static List<Vector3> pathTo = new List<Vector3>();
         private static Vector3 pathToArea = new Vector3();
 

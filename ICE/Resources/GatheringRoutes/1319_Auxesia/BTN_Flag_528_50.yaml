@@ -1,0 +1,300 @@
+zone_id: 1319
+zone_name: Auxesia
+job: BTN
+flag:
+  x: 528
+  y: 50
+author: Le Vagabond
+date_modified: 2026-06-03T11:56:43.5870030Z
+nodes:
+- node_id: 35805
+  position:
+    x: 525.8115
+    y: 185.1932
+    z: 80.17039
+  land_zone:
+    x: 527.8727
+    y: 184.28342
+    z: 78.31828
+  radius_start: 20
+  radius_end: 316
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35804
+  position:
+    x: 520.7396
+    y: 184.9751
+    z: 75.08261
+  land_zone:
+    x: 523.97565
+    y: 184.28342
+    z: 75.71582
+  radius_start: 9
+  radius_end: 338
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35803
+  position:
+    x: 508.614
+    y: 185.0666
+    z: 69.8562
+  land_zone:
+    x: 507.78708
+    y: 184.28342
+    z: 71.6237
+  radius_start: 197
+  radius_end: 158
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35801
+  position: &o0
+    x: 486.2482
+    y: 184.9927
+    z: 65.14384
+  land_zone:
+    x: 487.92502
+    y: 184.28342
+    z: 66.72849
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0.51
+- node_id: 35806
+  position:
+    x: 550.4597
+    y: 184.9494
+    z: 60.87597
+  land_zone:
+    x: 548.0864
+    y: 184.28342
+    z: 61.770863
+  radius_start: 233
+  radius_end: 208
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35807
+  position:
+    x: 556.8491
+    y: 184.7477
+    z: 64.15324
+  land_zone:
+    x: 554.91876
+    y: 184.28342
+    z: 65.67201
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35808
+  position:
+    x: 564.2385
+    y: 184.786
+    z: 61.70478
+  land_zone:
+    x: 562.9329
+    y: 184.28342
+    z: 63.836945
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35814
+  position:
+    x: 525.8056
+    y: 185.186
+    z: 80.17471
+  land_zone:
+    x: 524.28986
+    y: 184.28342
+    z: 79.44156
+  radius_start: 19
+  radius_end: 316
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35813
+  position:
+    x: 520.7309
+    y: 184.9665
+    z: 75.08894
+  land_zone:
+    x: 523.38776
+    y: 184.28342
+    z: 75.37441
+  radius_start: 8
+  radius_end: 338
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35812
+  position:
+    x: 496.8279
+    y: 185.0952
+    z: 43.79417
+  land_zone:
+    x: 498.55148
+    y: 184.28342
+    z: 45.15645
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35811
+  position:
+    x: 504.0111
+    y: 185.0693
+    z: 34.75873
+  land_zone:
+    x: 504.22906
+    y: 184.28342
+    z: 35.921364
+  radius_start: 190
+  radius_end: 154
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35810
+  position:
+    x: 560.61
+    y: 185.1657
+    z: 22.56633
+  land_zone:
+    x: 559.8927
+    y: 184.28342
+    z: 22.86768
+  radius_start: 314
+  radius_end: 257
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35809
+  position:
+    x: 570.7516
+    y: 185.0807
+    z: 23.77879
+  land_zone:
+    x: 569.02563
+    y: 184.28342
+    z: 23.807484
+  radius_start: 246
+  radius_end: 218
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35815
+  position:
+    x: 538.256
+    y: 185.301
+    z: 75.73822
+  land_zone:
+    x: 537.33813
+    y: 184.28342
+    z: 73.893555
+  radius_start: 325
+  radius_end: 311
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35816
+  position:
+    x: 543.8963
+    y: 185.1837
+    z: 71.30178
+  land_zone:
+    x: 543.36743
+    y: 184.28342
+    z: 70.49972
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35818
+  position:
+    x: 545.6411
+    y: 184.8409
+    z: 33.94025
+  land_zone:
+    x: 545.75995
+    y: 184.28342
+    z: 36.270905
+  radius_start: 230
+  radius_end: 226
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35817
+  position:
+    x: 540.4255
+    y: 184.9979
+    z: 32.3407
+  land_zone:
+    x: 540.9337
+    y: 184.28336
+    z: 33.264538
+  radius_start: 230
+  radius_end: 224
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35819
+  position:
+    x: 494.6651
+    y: 184.9187
+    z: 34.07494
+  land_zone:
+    x: 494.63284
+    y: 184.28342
+    z: 35.092953
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35820
+  position:
+    x: 488.2415
+    y: 185.3008
+    z: 33.13118
+  land_zone:
+    x: 488.77826
+    y: 184.28342
+    z: 34.6695
+  radius_start: 165
+  radius_end: 123
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35801
+  position: *o0
+  land_zone:
+    x: 487.85696
+    y: 184.28342
+    z: 65.277115
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 3
+  fan_height: 0
+- node_id: 35802
+  position:
+    x: 494.3826
+    y: 185.11
+    z: 72.14518
+  land_zone:
+    x: 494.21802
+    y: 184.28342
+    z: 70.39167
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 3
+  fan_height: 0

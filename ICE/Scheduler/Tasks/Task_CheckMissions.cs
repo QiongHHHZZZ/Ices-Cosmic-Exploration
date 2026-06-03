@@ -6,6 +6,7 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Localization.L10n;
 
@@ -52,7 +53,6 @@ namespace ICE.Scheduler.Tasks
                     new(() => CheckTabs(), "Checking tabs for valid missions")
                 );
         }
-        private static int GrabMission_Counter = 0;
         private static void ReOpenMissionUi(string tag)
         {
             if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
@@ -104,21 +104,13 @@ namespace ICE.Scheduler.Tasks
 
             var playerTerritory = Player.Territory.RowId;
 
-            var SinusCount = CosmicHelper.SheetMissionDict
-                .Where(x => C.MissionConfig[x.Key].Enabled)
-                .Where(x => x.Value.TerritoryId == 1237);
-            var PhaennaCount = CosmicHelper.SheetMissionDict
-                .Where(x => C.MissionConfig[x.Key].Enabled)
-                .Where(x => x.Value.TerritoryId == 1291);
-            var OizysCount = CosmicHelper.SheetMissionDict
-                .Where(x => C.MissionConfig[x.Key].Enabled)
-                .Where(x => x.Value.TerritoryId == 1310);
+            var enabledPerMoon = string.Join("\n",
+                CosmicMoonRegistry.All.Select(m =>
+                    $"{m.DisplayName} [{m.TerritoryId}] = [{CosmicMoonRegistry.CountEnabledMissions(m.TerritoryId)}]"));
 
             IceLogging.Info("This is just general message to let me know WHAT planet you're on, and where you have things enabled\n" +
                 "If you're not running things that requires these to be enabled, you can ignore this if you're reading this.\n" +
-                $"Sinus [1237] = [{SinusCount.Count()}]\n" +
-                $"Phaenna [1291] = [{PhaennaCount.Count()}]\n" +
-                $"Oizys [1310] = [{OizysCount.Count()}]\n" +
+                $"{enabledPerMoon}\n" +
                 $"Current TerritoryID: {playerTerritory}");
 
             var modeSelected = Mission_Settings.Mode;
@@ -437,7 +429,7 @@ namespace ICE.Scheduler.Tasks
                         }
                         case MissionTypes.DroneSearch:
                         {
-                            if (C.Cosmodrone_Run && (PlayerHelper.IsInOizys()||PlayerHelper.IsInAuxesia()))
+                            if (C.Cosmodrone_Run && CosmicMoonRegistry.TryGetMoon(Player.Territory.RowId, out var hub) && hub.HasCosmodrome)
                             {
                                 P.TaskManager.Enqueue(() => Task_ArtifactSearch.RefreshMapInfo(), "Inserting Drone Task");
                             }
@@ -951,6 +943,7 @@ namespace ICE.Scheduler.Tasks
                         $"Mission ID: {missionId} | Map Position: {location} | Moon Territory: {territory}\n" +
                         $"Adding to the unsupported list so it's marked on your side for now", tag);
                     UnsupportedMissions.Ids.Add(missionId);
+                    return true;
                 }
 
                 var customFishingHole = C.Personal_FishLocation.Where(x => x.MapCoords == location).FirstOrDefault();

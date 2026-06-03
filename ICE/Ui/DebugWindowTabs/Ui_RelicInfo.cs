@@ -77,7 +77,7 @@ namespace ICE.Ui.DebugWindowTabs
                     }
 
                     ImGui.TableSetColumnIndex(14);
-                    var scores = wksManager->Scores;
+                    var scores = wksManager->State.Scores;
                     int classScore = scores[(int)job.Id - 8];
 
                     ImGui.TextUnformatted($"{classScore}");

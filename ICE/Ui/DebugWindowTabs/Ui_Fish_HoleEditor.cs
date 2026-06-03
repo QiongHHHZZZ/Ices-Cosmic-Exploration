@@ -7,8 +7,8 @@ using ICE.Utilities.GatheringHelper;
 using Pictomancy;
 using System.Collections.Generic;
 using System.Text;
-using static ICE.Utilities.GatheringHelper.GatheringUtil;
 using static ICE.Localization.L10n;
+using static ICE.Utilities.GatheringHelper.GatheringUtil;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -30,7 +30,7 @@ namespace ICE.Ui.DebugWindowTabs
                 _fishingDebug = new FishingDebug();
             }
 
-            if (ImGui.Button(T("Add Missing Fishing Holes")))
+            if (ImGui.Button("Add Missing Fishing Holes"))
             {
                 foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(18)))
                 {
@@ -54,7 +54,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.SameLine();
-            if (ImGui.Button(T("Export All Fishing Data")))
+            if (ImGui.Button("Export All Fishing Data"))
             {
                 var exportData = ExportAllFishingData();
                 ImGui.SetClipboardText(exportData);
@@ -64,16 +64,16 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.SameLine();
             using (ImRaii.Disabled(selectedFlag == Vector2.Zero))
             {
-                if (ImGui.Button(T("Export Selected Flag")))
+                if (ImGui.Button("Export Selected Flag"))
                 {
                     var exportData = ExportSingleFishingFlag(selectedZone, selectedFlag);
                     ImGui.SetClipboardText(exportData);
-                    Svc.Chat.Print(T("Fishing flag data for Zone {0} at ({1}, {2}) exported to clipboard!", selectedZone, selectedFlag.X, selectedFlag.Y));
+                    Svc.Chat.Print($"Fishing flag data for Zone {selectedZone} at ({selectedFlag.X}, {selectedFlag.Y}) exported to clipboard!");
                 }
             }
 
             ImGui.Checkbox(T("Show fishing spot raycast"), ref _fishingDebug.ShowFishRay);
-            if (PlayerHelper.LocalPlayer is { } player && _fishingDebug.ShowFishRay)
+            if (Player.Object is { } player && _fishingDebug.ShowFishRay)
             {
                 _fishingDebug.Draw();
             }
@@ -82,8 +82,8 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Fishing Editor Table", 2, ImGuiTableFlags.Resizable | ImGuiTableFlags.SizingFixedFit))
             {
-                ImGui.TableSetupColumn(T("Fishing Hole Selector"), ImGuiTableColumnFlags.WidthFixed, 200);
-                ImGui.TableSetupColumn(T("Fishing Hole Editor"), ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("Fishing Hole Selector", ImGuiTableColumnFlags.WidthFixed, 200);
+                ImGui.TableSetupColumn("Fishing Hole Editor", ImGuiTableColumnFlags.WidthStretch);
 
                 ImGui.TableNextRow();
 
@@ -93,7 +93,7 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     foreach (var moon in GatheringUtil.MoonFishingLocations)
                     {
-                        ImGui.Text(T("Zone: {0}", moon.Key));
+                        ImGui.Text($"Zone: {moon.Key}");
                         var sortedFlags = moon.Value.OrderBy(flag => flag.Key.X);
                         foreach (var flag in sortedFlags)
                         {
@@ -123,7 +123,7 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     if (selectedZone != 0 && selectedFlag != Vector2.Zero)
                     {
-                        if (ImGui.Button(T("Open map position")))
+                        if (ImGui.Button("Open map position"))
                         {
                             var missionEntry = CosmicHelper.SheetMissionDict.Where(x => x.Value.MapPosition == selectedFlag
                                                                                  && x.Value.TerritoryId == selectedZone).FirstOrDefault();
@@ -133,7 +133,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 Utils.SetGatheringRing(mission.TerritoryId, (int)mission.MapPosition.X, (int)mission.MapPosition.Y, mission.Radius, mission.Name);
                             }
                         }
-                        if (ImGui.CollapsingHeader(T("All Missions for this hole")))
+                        if (ImGui.CollapsingHeader("All Missions for this hole"))
                         {
                             if (ImGui.BeginTable("Mission Viewer", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
                             {
@@ -164,12 +164,12 @@ namespace ICE.Ui.DebugWindowTabs
                             }
                         }
 
-                        if (ImGui.Button(T("Move to Flag")))
+                        if (ImGui.Button("Move to Flag"))
                         {
                             Chat.SendMessage("/vnav moveflag");
                         }
                         ImGui.SameLine();
-                        if (ImGui.Button(T("Stop naving")))
+                        if (ImGui.Button("Stop naving"))
                         {
                             P.Navmesh.Stop();
                         }
@@ -179,16 +179,16 @@ namespace ICE.Ui.DebugWindowTabs
                             Utils.MountAction();
                         }
                         ImGui.SameLine();
-                        if (ImGui.Button(T("Stop All Task")))
+                        if (ImGui.Button("Stop All Task"))
                         {
                             P.TaskManager.Tasks.Clear();
                             P.TaskManager.Abort();
                         }
-                        ImGui.Text(T("Viable fishing spot: {0}", _fishingDebug.IsFishable()));
+                        ImGui.Text($"Viable fishing spot: {_fishingDebug.IsFishable()}");
                         if (_fishingDebug.FindFishableLocation(out var fishablePosition))
                         {
-                            ImGui.Text(T("First Available Fishing Spot: {0:N2}, {1:N2}, {2:N2}", fishablePosition.Value.X, fishablePosition.Value.Y, fishablePosition.Value.Z));
-                            if (ImGui.Button(T("Face toward spot")))
+                            ImGui.Text($"First Available Fishing Spot: {fishablePosition.Value.X:N2}, {fishablePosition.Value.Y:N2}, {fishablePosition.Value.Z:N2}");
+                            if (ImGui.Button("Face toward spot"))
                             {
                                 if (_fishingDebug.FindFishableLocation(out var fishPosition, searchSteps: 128))
                                 {
@@ -197,7 +197,7 @@ namespace ICE.Ui.DebugWindowTabs
                             }
                         }
 
-                        ImGui.Checkbox(T("View Fishing Spots"), ref viewAllFishingSpots);
+                        ImGui.Checkbox("View Fishing Spots", ref viewAllFishingSpots);
                         ImGui.SameLine();
                         Vector4 circleColor = Utils.FromUintABGR(C.PictoColor_Circle);
                         ImGui.SetNextItemWidth(200);
@@ -207,7 +207,7 @@ namespace ICE.Ui.DebugWindowTabs
                             C.Save();
                         }
 
-                        ImGui.Checkbox(T("View Nav Spots"), ref viewNavSpot);
+                        ImGui.Checkbox("View Nav Spots", ref viewNavSpot);
                         ImGui.SameLine();
                         Vector4 dotColor = Utils.FromUintABGR(C.PictoColor_Dot);
                         ImGui.SetNextItemWidth(200);
@@ -227,9 +227,9 @@ namespace ICE.Ui.DebugWindowTabs
 
                         var fishingHole = GatheringUtil.MoonFishingLocations[selectedZone][selectedFlag];
 
-                        ImGui.Text(T("Zone {0} - X:{1} Z:{2}", selectedZone, selectedFlag.X, selectedFlag.Y));
+                        ImGui.Text($"Zone {selectedZone} - X:{selectedFlag.X} Z:{selectedFlag.Y}");
 
-                        if (ImGui.Button(T("Add Fishing Spot")))
+                        if (ImGui.Button("Add Fishing Spot"))
                         {
                             fishingHole.Add(new FisherSpotInfo()
                             {
@@ -271,7 +271,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (selectedSpotIndex >= 0 && selectedSpotIndex < fishingHole.Count)
                         {
                             ImGui.Separator();
-                            ImGui.Text(T("Editing Spot {0}:", selectedSpotIndex + 1));
+                            ImGui.Text($"Editing Spot {selectedSpotIndex + 1}:");
 
                             var spot = fishingHole[selectedSpotIndex];
 
@@ -282,7 +282,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 spot.FishingSpot = fish;
                             }
                             ImGui.SameLine();
-                            if (ImGui.Button(T("Set fishing to current")))
+                            if (ImGui.Button("Set fishing to current"))
                             {
                                 spot.FishingSpot = Player.Position;
                             }
@@ -294,7 +294,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 spot.FacePosition = nav;
                             }
                             ImGui.SameLine();
-                            if (ImGui.Button(T("Set Fishing Rotation")))
+                            if (ImGui.Button("Set Fishing Rotation"))
                             {
                                 var currentRotation = Player.Rotation;
                                 spot.FacePosition = GetPositionInFrontOfPlayer(Player.Position, currentRotation);
@@ -308,7 +308,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 spot.RotationTolerance = toleranceDegrees * ((float)Math.PI / 180f);
                             }
 
-                            if (ImGui.Button(T("Test Naving to [New]")))
+                            if (ImGui.Button("Test Naving to [New]"))
                             {
                                 Task_NavmeshMove.Enqueue_NavmeshTask(spot.FishingSpot);
                                 P.TaskManager.EnqueueDelay(200);

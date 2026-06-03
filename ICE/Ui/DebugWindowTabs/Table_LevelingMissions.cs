@@ -46,15 +46,17 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Image(image.JobIcon.GetWrapOrEmpty().Handle, new Vector2(imgSize));
                 }
 
-                List<uint> sinusLeveling = CosmicHelper.QuickLevelList.Where(x => CosmicHelper.SheetMissionDict[x].TerritoryId == 1237).ToList();
-                List<uint> phaennaLeveling = CosmicHelper.QuickLevelList.Where(x => CosmicHelper.SheetMissionDict[x].TerritoryId == 1291).ToList();
-                List<uint> oizysLeveling = CosmicHelper.QuickLevelList.Where(x => CosmicHelper.SheetMissionDict[x].TerritoryId == 1310).ToList();
-
                 List<uint> levels = new() { 10, 50, 90 };
 
-                DrawPlanetLevelRows("ICE.Resources.Sinus_Ardorum.png", sinusLeveling, levels);
-                DrawPlanetLevelRows("ICE.Resources.Phaenna.png", phaennaLeveling, levels);
-                DrawPlanetLevelRows("ICE.Resources.Oizys.png", oizysLeveling, levels);
+                // One row block per hub — Auxesia included when QuickLevelList has entries for territory 1319
+                foreach (var moon in CosmicMoonRegistry.All)
+                {
+                    var levelingMissions = CosmicHelper.QuickLevelList
+                        .Where(x => CosmicHelper.SheetMissionDict[x].TerritoryId == moon.TerritoryId)
+                        .ToList();
+
+                    DrawPlanetLevelRows(moon.IconResource, levelingMissions, levels);
+                }
 
                 ImGui.EndTable();
             }

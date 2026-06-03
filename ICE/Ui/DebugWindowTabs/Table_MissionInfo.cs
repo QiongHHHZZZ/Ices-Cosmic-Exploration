@@ -44,18 +44,55 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.SetNextItemWidth(250);
             ImGui.InputText(T("Search by Name"), ref CraftingTableSearchText, 100);
             ImGui.SetNextItemWidth(250);
-            ImGui.InputText(T("Search by Attribute"), ref AttributeSearchText, 100);
+            ImGui.InputText("Search by Attribute", ref AttributeSearchText, 100);
             ImGui.SetNextItemWidth(250);
-            ImGui.SliderUInt(T("Rank ID"), ref RankSearch, 0, 6);
+            ImGui.SliderUInt("Rank ID", ref RankSearch, 0, 6);
             ImGui.SetNextItemWidth(250);
-            ImGui.SliderUInt(T("Class Selection"), ref jobSearch, 7, 18);
-            if (ImGui.Button(T("Copy Scores")))
+            ImGui.SliderUInt("Class Selection", ref jobSearch, 7, 18);
+            if (ImGui.Button("Copy Scores"))
             {
                 ImGui.SetClipboardText(GenerateMissionScoreDictionaryCode());
             }
             ImGui.SameLine();
 
-            if (ImGui.Button(T("Export Fishing Missions")))
+            if (ImGui.Button("Copy Missing CSV"))
+            {
+                var text = MissionScoresGenerator.BuildCsvText(includeHeader: true);
+                var count = MissionScoresGenerator.CountMissing();
+                if (count > 0)
+                {
+                    ImGui.SetClipboardText(text);
+                    statusMessage = $"Copied {count} missing MissionScores rows (bronze) to clipboard";
+                }
+                else
+                    statusMessage = "No missing rows — embedded CSV covers all missions with bronze scores.";
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text("Rows for missions not in MissionScores.csv, using BronzeScore from sheets.");
+                ImGui.Text("Paste at end of Resources/MissionScores.csv");
+                ImGui.EndTooltip();
+            }
+
+            ImGui.SameLine();
+
+            if (ImGui.Button("Copy Auxesia CSV"))
+            {
+                var text = MissionScoresGenerator.BuildCsvText(CosmicMoonRegistry.Auxesia.TerritoryId, includeHeader: false);
+                var count = MissionScoresGenerator.CountMissing(CosmicMoonRegistry.Auxesia.TerritoryId);
+                if (count > 0)
+                {
+                    ImGui.SetClipboardText(text);
+                    statusMessage = $"Copied {count} Auxesia rows to clipboard";
+                }
+                else
+                    statusMessage = "No missing Auxesia MissionScores rows.";
+            }
+
+            ImGui.SameLine();
+
+            if (ImGui.Button("Export Fishing Missions"))
             {
                 var fishingMissions = CosmicHelper.SheetMissionDict
                     .Where(kvp => kvp.Value.Attributes.HasFlag(MissionAttributes.Fish)) // Adjust flag name as needed
@@ -72,17 +109,17 @@ namespace ICE.Ui.DebugWindowTabs
 
                     // Optional: Show a tooltip or notification
                     // You could also use a popup or status message here
-                    ImGui.SetTooltip(T("Copied {0} fishing missions to clipboard!", fishingMissions.Length));
+                    ImGui.SetTooltip($"Copied {fishingMissions.Length} fishing missions to clipboard!");
                 }
                 else
                 {
-                    ImGui.SetTooltip(T("No fishing missions found!"));
+                    ImGui.SetTooltip("No fishing missions found!");
                 }
             }
 
             ImGui.SameLine();
 
-            if (ImGui.Button(T("Clear stored scores")))
+            if (ImGui.Button("Clear stored scores"))
             {
                 C.ScoreKeeper.Clear();
                 C.Save();
@@ -92,7 +129,7 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.InputText("##ExportPath", ref exportPath, 500);
 
             ImGui.SameLine();
-            if (ImGui.Button(T("Browse...")))
+            if (ImGui.Button("Browse..."))
             {
                 fileDialogManager.SaveFileDialog(
                     "Select Export Location",
@@ -110,7 +147,18 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.SameLine();
-            if (ImGui.Button(T("Export CSV")))
+            if (ImGui.Button("Export Missing CSV"))
+            {
+                if (string.IsNullOrWhiteSpace(exportPath))
+                    statusMessage = "Set export path first (or use Copy Missing CSV)";
+                else if (MissionScoresGenerator.TryExportMissingRows(exportPath, out var msg))
+                    statusMessage = msg;
+                else
+                    statusMessage = msg;
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button("Export CSV"))
             {
                 ExportToCsv();
             }
@@ -132,18 +180,18 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Moon Mission Information Table", 35, tableFlags)) // Increased column count by 1
             {
-                ImGui.TableSetupColumn(T("ID"));
-                ImGui.TableSetupColumn(T("Jobs"));
+                ImGui.TableSetupColumn("ID");
+                ImGui.TableSetupColumn("Jobs");
 
-                ImGui.TableSetupColumn(T("Mission Name"));
-                ImGui.TableSetupColumn(T("Job"));
-                ImGui.TableSetupColumn(T("2nd Job"));
-                ImGui.TableSetupColumn(T("Rank"));
-                ImGui.TableSetupColumn(T("ToDo ID"));
-                ImGui.TableSetupColumn(T("Bronze"));
-                ImGui.TableSetupColumn(T("Silver"));
-                ImGui.TableSetupColumn(T("Gold"));
-                ImGui.TableSetupColumn(T("Attribute Flags"));
+                ImGui.TableSetupColumn("Mission Name");
+                ImGui.TableSetupColumn("Job");
+                ImGui.TableSetupColumn("2nd Job");
+                ImGui.TableSetupColumn("Rank");
+                ImGui.TableSetupColumn("ToDo ID");
+                ImGui.TableSetupColumn("Bronze");
+                ImGui.TableSetupColumn("Silver");
+                ImGui.TableSetupColumn("Gold");
+                ImGui.TableSetupColumn("Attribute Flags");
 
                 IOrderedEnumerable<KeyValuePair<int, string>> orderedExp = CosmicHelper.ExpDictionary.ToList().OrderBy(exp => exp.Key);
                 var agent = AgentMap.Instance();
@@ -154,26 +202,26 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableSetupColumn($"{exp.Value}", ImGuiTableColumnFlags.WidthFixed, -1);
                 }
 
-                ImGui.TableSetupColumn(T("Test Flag"));
+                ImGui.TableSetupColumn("Test Flag");
 
-                ImGui.TableSetupColumn(T("Score"));
+                ImGui.TableSetupColumn("Score");
 
-                ImGui.TableSetupColumn(T("Main Item 1"));
-                ImGui.TableSetupColumn(T("Amount #1"));
-                ImGui.TableSetupColumn(T("Main Item 2"));
-                ImGui.TableSetupColumn(T("Amount #2"));
-                ImGui.TableSetupColumn(T("Main Item 3"));
-                ImGui.TableSetupColumn(T("Amount #3"));
-                ImGui.TableSetupColumn(T("Pre-Craft Item"));
-                ImGui.TableSetupColumn(T("Pre-Craft Amount"));
-                ImGui.TableSetupColumn(T("Export")); // New column for export button
+                ImGui.TableSetupColumn("Main Item 1");
+                ImGui.TableSetupColumn("Amount #1");
+                ImGui.TableSetupColumn("Main Item 2");
+                ImGui.TableSetupColumn("Amount #2");
+                ImGui.TableSetupColumn("Main Item 3");
+                ImGui.TableSetupColumn("Amount #3");
+                ImGui.TableSetupColumn("Pre-Craft Item");
+                ImGui.TableSetupColumn("Pre-Craft Amount");
+                ImGui.TableSetupColumn("Export"); // New column for export button
                 for (int i = 1; i < 4; i++)
                 {
                     ImGui.TableSetupColumn($"Gather [{i}]");
                     ImGui.TableSetupColumn($"Amount [G-{i}]");
                 }
-                ImGui.TableSetupColumn(T("Completion"));
-                ImGui.TableSetupColumn(T("Activate Mission"));
+                ImGui.TableSetupColumn("Completion");
+                ImGui.TableSetupColumn("Activate Mission");
 
                 ImGui.TableHeadersRow();
 
@@ -312,7 +360,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text(T("X: {0} | Y: {1}", entry.Value.MapPosition.X, entry.Value.MapPosition.Y));
+                            ImGui.Text($"X: {entry.Value.MapPosition.X} | Y: {entry.Value.MapPosition.Y}");
                             ImGui.EndTooltip();
                         }
                         ImGui.SameLine();
@@ -323,7 +371,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text(T("X: {0} | Y: {1}", entry.Value.MapPosition.X, entry.Value.MapPosition.Y));
+                            ImGui.Text($"X: {entry.Value.MapPosition.X} | Y: {entry.Value.MapPosition.Y}");
                             ImGui.EndTooltip();
                         }
                     }
@@ -345,7 +393,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text(T("Id: {0}", item.Key));
+                            ImGui.Text($"Id: {item.Key}");
                             ImGui.EndTooltip();
                         }
 
@@ -362,19 +410,19 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableSetColumnIndex(34);
                     if (CosmicHelper.CurrentLunarMission != 0)
                     {
-                        if (ImGui.Button(T("Turn in")))
+                        if (ImGui.Button("Turn in"))
                         {
                             ReportMission();
                         }
                         ImGui.SameLine();
-                        if (ImGui.Button(T("Abandon")))
+                        if (ImGui.Button("Abandon"))
                         {
                             AbandonMission();
                         }
                     }
                     else
                     {
-                        if (ImGui.Button(T("Initiate")))
+                        if (ImGui.Button("Initiate"))
                         {
                             InitiateMission(entry.Key);
                         }

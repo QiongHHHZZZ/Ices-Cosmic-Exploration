@@ -9,21 +9,13 @@ namespace ICE.Ui.DebugWindowTabs
     {
         public static unsafe void Draw()
         {
-            uint currentScore = 0;
-            uint silverScore = 0;
-            uint goldScore = 0;
-
             if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var x) && x.IsAddonReady)
             {
-                // currentScore = x.CurrentScore;
-                // silverScore = x.SilverScore;
-                // goldScore = x.GoldScore;
-
                 var isAddonReady = AddonHelper.IsAddonActive("WKSMissionInfomation");
-                ImGui.Text(T("Addon Ready: {0}", isAddonReady));
+                ImGui.Text($"Addon Ready: {isAddonReady}");
                 if (isAddonReady)
                 {
-                    ImGui.Text(T("Node Text: {0}", AddonHelper.GetNodeText("WKSMissionInfomation", 27)));
+                    ImGui.Text($"Node Text: {AddonHelper.GetNodeText("WKSMissionInfomation", 27)}");
                 }
 
                 ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
@@ -43,40 +35,40 @@ namespace ICE.Ui.DebugWindowTabs
 
                     ImGui.TableNextRow();
 
-                     ImGui.TableSetColumnIndex(0);
-                     ImGui.Text(T("Current Mission:"));
-                     ImGui.TableNextColumn();
-                     ImGui.Text($"{missionId}");
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Current Mission:");
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{missionId}");
 
                     if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var mission) && !mission.Attributes.HasFlag(MissionAttributes.Critical))
                     {
-                         ImGui.TableNextColumn();
-                         ImGui.TableSetColumnIndex(0);
-                         ImGui.Text(T("Current Score:"));
-                         ImGui.TableNextColumn();
+                        ImGui.TableNextColumn();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Current Score:");
+                        ImGui.TableNextColumn();
 
                         ImGui.Text($"{CurrentScore()}");
 
-                         ImGui.TableNextRow();
-                         ImGui.TableSetColumnIndex(0);
-                         ImGui.Text(T("Current State"));
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text($"Current State");
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{Task_CheckScore.CurrentRank()}");
 
 
-                         ImGui.TableNextRow();
-                         ImGui.TableSetColumnIndex(0);
-                         ImGui.Text(T("Is Mission Timed out"));
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Is Mission Timed out");
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{CosmicHandler.IsMissionTimedOut()}");
                     }
                     else if (mission.Attributes.HasFlag(MissionAttributes.Critical))
                     {
-                         ImGui.TableNextRow();
-                         ImGui.TableSetColumnIndex(0);
-                         ImGui.Text(T("Critical Value:"));
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Critical Value:");
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{x.CriticalScore}");
@@ -92,67 +84,68 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text($"{CosmicHelper.CurrentBait}");
                     }
 
-                     ImGui.TableNextRow();
-                     ImGui.TableSetColumnIndex(0);
-                    if (ImGui.Button(T("Cosmo Pouch")))
-                     {
-                         x.CosmoPouch();
-                     }
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    if (ImGui.Button("Cosmo Pouch"))
+                    {
+                        x.CosmoPouch();
+                    }
 
-                     ImGui.TableNextRow();
-                     ImGui.TableSetColumnIndex(0);
-                    if (ImGui.Button(T("Cosmo Crafting Log")))
-                     {
-                         x.CosmoCraftingLog();
-                     }
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    if (ImGui.Button("Cosmo Crafting Log"))
+                    {
+                        x.CosmoCraftingLog();
+                    }
 
-                     ImGui.TableNextRow();
-                     ImGui.TableSetColumnIndex(0);
-                    if (ImGui.Button(T("Steller Reduction")))
-                     {
-                         x.StellerReduction();
-                     }
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    if (ImGui.Button("Steller Reduction"))
+                    {
+                        x.StellerReduction();
+                    }
 
-                     ImGui.TableNextRow();
-                     ImGui.TableSetColumnIndex(0);
-                    if (ImGui.Button(T("Report")))
-                     {
-                         x.Report();
-                     }
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    if (ImGui.Button("Report"))
+                    {
+                        x.Report();
+                    }
 
-                     ImGui.TableNextRow();
-                     ImGui.TableSetColumnIndex(0);
-                    if (ImGui.Button(T("Abandon")))
-                     {
-                         x.Abandon();
-                     }
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    if (ImGui.Button("Abandon"))
+                    {
+                        x.Abandon();
+                    }
 
                     var wks = WKSManager.Instance();
+                    if (wks == null)
+                        return;
 
-                     ImGui.TableNextRow();
-                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text(T("Score 1"));
-                     ImGui.TableNextColumn();
-                     ImGui.Text($"{wks->Scores.Length}");
+                    var scores = wks->State.Scores;
 
-                    int score = 0;
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Score 1");
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{scores.Length}");
 
-                    foreach (var item in wks->Scores)
+                    for (int score = 0; score < scores.Length; score++)
                     {
-                         ImGui.TableNextRow();
-                         ImGui.TableSetColumnIndex(0);
-                        ImGui.Text(T("Score: [{0}]", score));
-                         ImGui.TableNextColumn();
-                         ImGui.Text($"{wks->Scores[score]}");
-                         score += 1;
-                     }
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text($"Score: [{score}]");
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{scores[score]}");
+                    }
 
                     /*
                     var currentlyEquippped = wks->FishingBait | 0;
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text(T("Bait:"));
+                    ImGui.Text("Bait:");
                     ImGui.TableNextColumn();
                     ImGui.Text($"{currentlyEquippped}");
                     */
@@ -163,7 +156,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
             else
             {
-                ImGui.Text(T("Waiting for \"WKSMissionInfomation\" to be visible"));
+                ImGui.Text("Waiting for \"WKSMissionInfomation\" to be visible");
             }
         }
 
@@ -172,7 +165,8 @@ namespace ICE.Ui.DebugWindowTabs
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return 0;
 
-            return managerPtr->CurrentScore;
+            return managerPtr->State.CurrentMission.Score;
         }
     }
 }
+

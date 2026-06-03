@@ -52,9 +52,47 @@ public static class GatheringRouteLoader
             }
         }
 
+        // Merge in routes saved on disk (custom path or exported config folder).
+        // Disk routes override embedded ones for the same zone/flag, so freshly
+        // created/captured routes appear without needing a rebuild.
+        LoadRoutesFromDisk(_cachedRoutes);
+
         PluginLog.Information($"Loaded {_cachedRoutes.Sum(x => x.Value.Count)} gathering routes across {_cachedRoutes.Count} zones");
 
         return _cachedRoutes;
+    }
+
+    private static void LoadRoutesFromDisk(Dictionary<uint, Dictionary<Vector2, List<GathNodeInfo>>> target)
+    {
+        var basePath = !string.IsNullOrEmpty(C.CustomRoutePath) ? C.CustomRoutePath : GetDefaultExportPath();
+
+        if (!Directory.Exists(basePath))
+            return;
+
+        var files = Directory.GetFiles(basePath, "*.yaml", SearchOption.AllDirectories);
+        PluginLog.Information($"Found {files.Length} gathering route files on disk at {basePath}");
+
+        foreach (var file in files)
+        {
+            try
+            {
+                var yaml = File.ReadAllText(file);
+                var route = Deserializer.Deserialize<GatheringRouteFile>(yaml);
+                if (route == null)
+                    continue;
+
+                if (!target.ContainsKey(route.ZoneId))
+                    target[route.ZoneId] = new Dictionary<Vector2, List<GathNodeInfo>>();
+
+                target[route.ZoneId][route.Flag] = route.Nodes;
+
+                PluginLog.Debug($"Loaded disk route: Zone {route.ZoneId}, Flag ({route.Flag.X}, {route.Flag.Y}), Job {route.Job}");
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error($"Failed to load route from {file}: {ex.Message}");
+            }
+        }
     }
 
     private static GatheringRouteFile LoadRouteFromResource(string resourceName)
@@ -144,7 +182,7 @@ public static class GatheringRouteLoader
         }
 
         // Create zone subdirectory: "ZoneId_ZoneName"
-        string zoneFolderName = SanitizeFolderName($"{zoneId}_{zoneName}");
+        string zoneFolderName = GetZoneFolderName(zoneId);
         string outputPath = Path.Combine(basePath, zoneFolderName);
 
         string fileName = $"{job}_Flag_{(int)flag.X}_{(int)flag.Y}.yaml";
@@ -283,7 +321,7 @@ public static class GatheringRouteLoader
                 };
 
                 // Create zone subdirectory
-                string zoneFolderName = SanitizeFolderName($"{territoryId}_{zoneName}");
+                string zoneFolderName = GetZoneFolderName(territoryId);
                 string outputPath = Path.Combine(basePath, zoneFolderName);
 
                 string fileName = $"{jobType}_Flag_{(int)mapFlag.X}_{(int)mapFlag.Y}.yaml";
@@ -325,16 +363,15 @@ public static class GatheringRouteLoader
         return createdRoutes;
     }
 
-    private static string GetZoneName(uint territoryId)
+    // Folder names like "1319_Auxesia" — matches embedded Resources/GatheringRoutes/ and registry
+    private static string GetZoneFolderName(uint territoryId)
     {
-        // You can expand this with a proper territory lookup if you have access to game sheets
-        // For now, using your existing mappings
-        return territoryId switch
-        {
-            1237 => "Sinus Ardorum",
-            1291 => "Phaenna",
-            1310 => "Oizys",
-            _ => $"Zone_{territoryId}" // Fallback for unknown zones
-        };
+        if (CosmicMoonRegistry.TryGetMoon(territoryId, out var moon))
+            return SanitizeFolderName(moon.GatheringRoutesFolder);
+
+        return SanitizeFolderName($"{territoryId}_{GetZoneName(territoryId)}");
     }
+
+    private static string GetZoneName(uint territoryId) =>
+        CosmicMoonRegistry.GetDisplayName(territoryId);
 }

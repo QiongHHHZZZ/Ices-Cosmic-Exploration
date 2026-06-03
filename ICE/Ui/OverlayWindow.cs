@@ -7,6 +7,7 @@ using ICE.Ui.MainUi.Settings;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using static ICE.Localization.L10n;
 using static ICE.Utilities.Cosmic_Helper.CosmicHelper;
@@ -131,7 +132,8 @@ namespace ICE.Ui
                 ImGui.EndTooltip();
             }
             DrawModeSelectPopup("Overlay Mode Select");
-            if (PlayerHelper.IsInOizys() || PlayerHelper.IsInAuxesia())
+            // Cosmodrome drone search — any hub with HasCosmodrome (Oizys, Auxesia); same button logic for all
+            if (CosmicMoonRegistry.TryGetMoon(Player.Territory.RowId, out var hubMoon) && hubMoon.HasCosmodrome)
             {
                 ImGui.SameLine();
                 bool droneActive = SchedulerMain.State == IceState.ArtifactSearch;
@@ -478,13 +480,15 @@ namespace ICE.Ui
                 }
             }
         }
-        private static readonly (uint TerritoryId, string Asset, string Name, Func<bool> IsEnabled)[] Planets = new[]
-        {
-            ((uint)1237, "ICE.Resources.Sinus_Ardorum.png", T("Sinus Ardorum"), new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Sinus))),
-            ((uint)1291, "ICE.Resources.Phaenna.png", T("Phaenna"), new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Phaenna))),
-            ((uint)1310, "ICE.Resources.Oizys.png", T("Oizys"), new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Oizys))),
-            ((uint)1319, "ICE.Resources.Auxesia.png", T("Auxesia"), new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Auxesia)))
-        };
+        // Overlay weather/timed rows — one entry per moon from registry (stays in sync when filters change)
+        private static (uint TerritoryId, string Asset, string Name, Func<bool> IsEnabled)[] Planets =>
+            CosmicMoonRegistry.All
+                .Select(m => (
+                    m.TerritoryId,
+                    m.IconResource,
+                    T(m.DisplayName),
+                    (Func<bool>)(() => C.ItemFilter.HasFlag(m.PlanetFilter))))
+                .ToArray();
         private void DrawMoonAndIcon(string moonAsset, FontAwesomeIcon icon)
         {
             var moonTexture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), moonAsset).GetWrapOrEmpty();

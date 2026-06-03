@@ -23,7 +23,7 @@ public static partial class CosmicHelper
                 if (manager == null)
                     return 0; // or some default value
 
-                return manager->State.CurrentMissionUnitRowId;
+                return manager->State.CurrentMission.MissionUnitRowId;
             }
             catch (AccessViolationException)
             {
@@ -54,33 +54,11 @@ public static partial class CosmicHelper
         { 7, "VII" },
     };
 
-    public static readonly Dictionary<uint, uint> PlanetCreditInfo = new()
-    {
-        [1237] = 45691, // sinus
-        [1291] = 48146, // phaenna
-        [1310] = 48147, // Oizys
-        [1319] = 48148, // Auxesia
-    };
-
     public class Dronebit
     {
         public uint creditId { get; set; } = 0;
         public uint boxId { get; set; } = 0;
     }
-
-    public static readonly Dictionary<uint, Dronebit> DronebitInfo = new()
-    {
-        [1310] = new() // Oizys
-        {
-            creditId = 49170,
-            boxId = 50414,
-        },
-        [1319] = new() // Auxesia
-        {
-            creditId = 49171,
-            boxId = 50415
-        }
-    };
 
     // General use functions used across the codebase, specifically tied to cosmic related functions
     public static void OpenStellarMission()
@@ -167,8 +145,10 @@ public static partial class CosmicHelper
 
             var score = wks->State.Scores[arrayIndex];
             var currentStage = researchModule->CurrentStages[arrayIndex];
-            var nextStage = currentStage == CosmicHelper.MaxRelicLevel
-                ? CosmicHelper.MaxRelicLevel
+            // Cap next stage by current hub (Auxesia allows higher than old flat 17).
+            var maxStage = CosmicMoonRegistry.GetMaxRelicStage((uint)Svc.ClientState.TerritoryType);
+            var nextStage = currentStage >= maxStage
+                ? maxStage
                 : (byte)(currentStage + 1);
 
             ClassInfo entry = new()

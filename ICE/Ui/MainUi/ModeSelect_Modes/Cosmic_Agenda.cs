@@ -15,22 +15,21 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
     {
         public static List<uint> JobOptions = new() { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
 
-        public static List<PlaylistOptions> PlaylistOptionsOrder = new()
+        public static List<PlaylistOptions> PlaylistOptionsOrder { get; } = BuildPlaylistOptionsOrder();
+
+        private static List<PlaylistOptions> BuildPlaylistOptionsOrder()
         {
-            PlaylistOptions.None,
-            PlaylistOptions.SinusMax,
-            PlaylistOptions.PhaennaMax,
-            PlaylistOptions.OizysMax,
-            PlaylistOptions.ToolMaxExp,
-            PlaylistOptions.SelectedRelicLv,
-
-            PlaylistOptions.CreditAmount,
-            PlaylistOptions.PlanetAmount,
-            PlaylistOptions.DronebitAmount,
-
-            PlaylistOptions.ClassLevel,
-            PlaylistOptions.GoldClassMissions,
-        };
+            var order = new List<PlaylistOptions> { PlaylistOptions.None };
+            order.AddRange(CosmicMoonRegistry.MaxRelicPlaylistOptions);
+            order.Add(PlaylistOptions.ToolMaxExp);
+            order.Add(PlaylistOptions.SelectedRelicLv);
+            order.Add(PlaylistOptions.CreditAmount);
+            order.Add(PlaylistOptions.PlanetAmount);
+            order.Add(PlaylistOptions.DronebitAmount);
+            order.Add(PlaylistOptions.ClassLevel);
+            order.Add(PlaylistOptions.GoldClassMissions);
+            return order;
+        }
 
         public static uint SelectedJob = 8;
         public static PlaylistOptions SelectedOption = PlaylistOptions.None;
@@ -125,7 +124,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         if (ImGui.Button(T("Add to Cosmic Agenda")))
                         {
                             var mode = ModeSelect.Standard;
-                            if (SelectedOption is PlaylistOptions.SinusMax or PlaylistOptions.PhaennaMax or PlaylistOptions.OizysMax or PlaylistOptions.SelectedRelicLv)
+                            if (SelectedOption is PlaylistOptions.SelectedRelicLv
+                                || CosmicMoonRegistry.IsMaxRelicPlaylistGoal(SelectedOption))
                             {
                                 mode = ModeSelect.RelicMode;
                             }
@@ -572,58 +572,23 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                             ImGui.EndCombo();
                         }
+                        // Same standard-mission check for every hub — driven by CosmicMoonRegistry, not per-moon copy/paste
                         if (currentMode == ModeSelect.Standard && PlayerHelper.IsInCosmicZone())
                         {
-                            var SinusStandard = CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == 1237)
-                                .Where(x => C.MissionConfig.ContainsKey(x.Key))
-                                .Where(x => C.MissionConfig[x.Key].Enabled)
-                                .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
-                                .Where(x => x.Value.Rank < 6)
-                                .Count();
-
-                            var PhaennaStandard = CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == 1291)
-                                .Where(x => C.MissionConfig.ContainsKey(x.Key))
-                                .Where(x => C.MissionConfig[x.Key].Enabled)
-                                .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
-                                .Where(x => x.Value.Rank < 6)
-                                .Count();
-
-                            var OizysStandard = CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == 1310)
-                                .Where(x => C.MissionConfig.ContainsKey(x.Key))
-                                .Where(x => C.MissionConfig[x.Key].Enabled)
-                                .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
-                                .Where(x => x.Value.Rank < 6)
-                                .Count();
-
-                            var AuxesiaStandard = CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == 1317)
-                                .Where(x => C.MissionConfig.ContainsKey(x.Key))
-                                .Where(x => C.MissionConfig[x.Key].Enabled)
-                                .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
-                                .Where(x => x.Value.Rank < 6)
-                                .Count();
-
-                            bool sinusWarning = PlayerHelper.IsInSinusArdorum() && SinusStandard == 0;
-                            bool phaennaWarning = PlayerHelper.IsInPhaenna() && PhaennaStandard == 0;
-                            bool oizysWarning = PlayerHelper.IsInOizys() && OizysStandard == 0;
-                            bool auxesiaWarning = PlayerHelper.IsInAuxesia() && AuxesiaStandard == 0;
-
-                            if (sinusWarning || phaennaWarning || oizysWarning)
+                            var currentMoon = CosmicMoonRegistry.GetMoonForTerritory(Player.Territory.RowId);
+                            if (currentMoon != null)
                             {
-                                string tooltip = T("No standard missions are enabled for your current planet/moon and selected job.\nPlease enable some so the agenda does not stall when there are no timed or weather missions.\nCurrently enabled on this planet/moon:");
-                                      
+                                var standardCount = CosmicMoonRegistry.CountEnabledStandardMissions(
+                                    currentMoon.TerritoryId, agendaInfo.SelectedJob);
 
-                                if (PlayerHelper.IsInSinusArdorum())
-                                    tooltip += T("\nSinus = {0}", SinusStandard);
-                                else if (PlayerHelper.IsInPhaenna())
-                                    tooltip += T("\nPhaenna = {0}", PhaennaStandard);
-                                else if (PlayerHelper.IsInOizys())
-                                    tooltip += T("\nOizys = {0}", OizysStandard);
-                                else if (PlayerHelper.IsInAuxesia())
-                                    tooltip += T("\nAuxesia = {0}", AuxesiaStandard);
+                                if (standardCount == 0)
+                                {
+                                    var tooltip = T("No standard missions are enabled for your current planet/moon and selected job.\nPlease enable some so the agenda does not stall when there are no timed or weather missions.\nCurrently enabled on {0}: {1}", T(currentMoon.DisplayName), standardCount);
 
-                                ImGui.SameLine();
-                                ImGui.AlignTextToFramePadding();
-                                ImGui_Ice.IconWithTooltip(Dalamud.Interface.FontAwesomeIcon.ExclamationTriangle, tooltip, false);
+                                    ImGui.SameLine();
+                                    ImGui.AlignTextToFramePadding();
+                                    ImGui_Ice.IconWithTooltip(Dalamud.Interface.FontAwesomeIcon.ExclamationTriangle, tooltip, false);
+                                }
                             }
                         }
 
@@ -643,11 +608,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             var job = agendaInfo.SelectedJob;
                             var territory = Player.Territory.RowId;
 
-                            if (selectedOption is PlaylistOptions.SinusMax 
-                                               or PlaylistOptions.PhaennaMax 
-                                               or PlaylistOptions.OizysMax 
-                                               or PlaylistOptions.SelectedRelicLv 
-                                               or PlaylistOptions.ToolMaxExp)
+                            if (CosmicMoonRegistry.IsMaxRelicPlaylistGoal(selectedOption)
+                                || selectedOption is PlaylistOptions.SelectedRelicLv
+                                || selectedOption is PlaylistOptions.ToolMaxExp)
                             {
                                 var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
 
@@ -655,12 +618,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 current = MaxToolProgress(job);
                                 goal = selectedOption switch
                                 {
-                                    PlaylistOptions.SinusMax => 9,
-                                    PlaylistOptions.PhaennaMax => 14,
-                                    PlaylistOptions.OizysMax => 17,
                                     PlaylistOptions.ToolMaxExp => MaxToolProgress(job, false),
                                     PlaylistOptions.SelectedRelicLv => agendaInfo.SelectedRelicLevel,
-                                    _ => 20
+                                    _ => CosmicMoonRegistry.GetMaxRelicGoal(selectedOption),
                                 };
                             }
                             else if (selectedOption is PlaylistOptions.ClassLevel)
@@ -670,8 +630,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             else if (selectedOption is PlaylistOptions.CreditAmount)
                             {
-                                uint cosmoCreditId = 45690;
-                                if (PlayerHelper.GetItemCount(cosmoCreditId, out var creditAmount))
+                                if (PlayerHelper.GetItemCount(CosmicHelper.CosmoCreditItemId, out var creditAmount))
                                 {
                                     current = creditAmount;
                                     goal = agendaInfo.CreditAmount;
@@ -679,7 +638,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             else if (selectedOption is PlaylistOptions.PlanetAmount)
                             {
-                                if (CosmicHelper.PlanetCreditInfo.TryGetValue(territory, out var gambaCredits) && PlayerHelper.GetItemCount(gambaCredits, out var gambaAmount))
+                                if (CosmicMoonRegistry.TryGetPlanetCreditItemId(territory, out var gambaCredits) && PlayerHelper.GetItemCount(gambaCredits, out var gambaAmount))
                                 {
                                     current = gambaAmount;
                                     goal = agendaInfo.PlanetAmount;
@@ -687,7 +646,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             else if (selectedOption is PlaylistOptions.DronebitAmount)
                             {
-                                if (CosmicHelper.DronebitInfo.TryGetValue(territory, out var dronebitAmount))
+                                if (CosmicMoonRegistry.TryGetDronebit(territory, out var dronebitAmount))
                                 {
                                     PlayerHelper.GetItemCount(dronebitAmount.creditId, out var count);
 

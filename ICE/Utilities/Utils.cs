@@ -84,14 +84,14 @@ public static unsafe class Utils
         }
         return false;
     }
-    internal static bool TryGetObjectByDataId(ulong dataId, out IGameObject? gameObject) => (gameObject = Svc.Objects.OrderBy(PlayerHelper.GetDistanceToPlayer).FirstOrDefault(x => x.BaseId == dataId)) != null;
+    internal static bool TryGetObjectByDataId(ulong dataId, out IGameObject? gameObject) => (gameObject = Svc.Objects.OrderBy(Player.DistanceTo).FirstOrDefault(x => x.BaseId == dataId)) != null;
     public static IGameObject? TryGetObjectNearestEventObject()
     {
-        return Svc.Objects.OrderBy(PlayerHelper.GetDistanceToPlayer).FirstOrDefault(x => x.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.EventObj);
+        return Svc.Objects.OrderBy(Player.DistanceTo).FirstOrDefault(x => x.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.EventObj);
     }
     public static IGameObject? TryGetObjectCollectionPoint()
     {
-        return Svc.Objects.OrderBy(PlayerHelper.GetDistanceToPlayer).FirstOrDefault(x => x.BaseId == 2014616 || x.BaseId == 2014618);
+        return Svc.Objects.OrderBy(Player.DistanceTo).FirstOrDefault(x => x.BaseId == 2014616 || x.BaseId == 2014618);
     }
     public static void TargetgameObject(IGameObject? gameObject)
     {

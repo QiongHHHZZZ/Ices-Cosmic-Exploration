@@ -92,6 +92,10 @@ public static partial class CosmicHelper
             "Second best weather missions for scoring, still good to focus over the basic A Ranks",
             896, 938);
 
+        // Auxesia (1370+): add AddMissions(...) blocks when you have SPM numbers from in-zone runs.
+        // Unlock / quick-level IDs are built automatically — see CosmicMissionLists.cs.
+        // If the sheet misses rows, use ManualUnlockAdditions / ManualQuickLevelAdditions there.
+
         foreach (var mission in notesDictonary)
         {
             SheetMissionDict[mission.Key].BestSPM = mission.Value;
@@ -106,123 +110,12 @@ public static partial class CosmicHelper
         }
     }
 
-    public static List<uint> QuickLevelList = new()
-    {
-        // Sinus
-        3, 8, 19,      // CRP
-        48, 53, 64,    // ARM
-        93, 98, 109,   // BSM
-        138, 143, 154, // GSM
-        183, 188, 199, // LTW
-        228, 233, 244, // WVR
-        273, 278, 289, // ALC
-        318, 323, 334, // CUL
-        365, 369, 374, // MIN
-        410, 414, 419, // BTN
-        453, 458, 465, // FHS
+    /// <summary>Filled by CosmicMissionLists.BuildFromSheet() during startup — not a hand-edited list anymore.</summary>
+    public static IEnumerable<uint> QuickLevelList => CosmicMissionLists.QuickLevelList;
 
+    /// <summary>Filled by CosmicMissionLists.BuildFromSheet() during startup — not a hand-edited list anymore.</summary>
+    public static IEnumerable<uint> Unlock_MissionList => CosmicMissionLists.UnlockMissionList;
 
-        // Phaenna // 1 2 2
-        545, 556, 561, // CRP
-        587, 598, 603, // BSM
-        629, 640, 645, // ARM
-        671, 682, 687, // GSM
-        713, 724, 729, // LTW
-        755, 766, 771, // WVR
-        797, 808, 813, // ALC
-        839, 850, 855, // CUL
-        883, 903, 886, // MIN
-        925, 945, 928, // BTN
-        967, 973, 979, // FSH
-
-        1040, 1045, 1048, //
-        1068, 1073, 1076, //
-        1096, 1101, 1104, //
-        1124, 1129, 1132, //
-        1152, 1157, 1160, //
-        1180, 1185, 1188, //
-        1208, 1213, 1216, //
-        1236, 1241, 1244, //
-        1266, 1270, 1274, //
-        1294, 1298, 1301, //
-        1321, 1327, 1331, //
-    };
-
-    public static List<uint> Unlock_MissionList = new()
-    {
-        // Sinus
-
-        // CRP
-        1, 2, 3, 4, 5, 8, 9, 11, 12, 13,
-        // BSM
-        46, 47, 48, 49, 50, 53, 54, 56, 57, 58,
-        // ARM
-        91, 92, 93, 94, 95, 98, 99, 101, 102, 103,
-        // GSM
-        136, 137, 138, 139, 140, 143, 144, 146, 147, 148,
-        // LTW
-        181, 182, 183, 184, 185, 188, 189, 191, 192, 193,
-        // WVR
-        226, 227, 228, 229, 230, 233, 234, 236, 237, 238,
-        // ALC
-        271, 272, 273, 274, 275, 278, 279, 281, 282, 283,
-        // CUL
-        316, 317, 318, 319, 320, 323, 324, 326, 327, 328,
-        // MIN
-        361, 362, 365, 366, 367, 369, 370, 371, 372,
-        // BTN
-        406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417,
-        // FSH
-        451, 452, 453, 454, 456, 457, 458, 459, 460, 461, 463,
-
-        // Phaenna
-        // CRP
-        545, 546, 547, 548, 549, 552, 553, 555, 556, 557,
-        // BSM
-        587, 588, 589, 590, 591, 594, 595, 597, 598, 599,
-        // ARM
-        629, 630, 631, 632, 633, 636, 637, 639, 640, 641,
-        // GSM
-        671, 672, 673, 674, 675, 678, 679, 681, 682, 683,
-        // LTW
-        713, 714, 715, 716, 717, 720, 721, 723, 724, 725,
-        // WVR
-        755, 756, 757, 758, 759, 762, 763, 765, 766, 767,
-        // ALC
-        797, 798, 799, 800, 801, 804, 805, 807, 808, 809,
-        // CUL
-        839, 840, 841, 842, 843, 846, 847, 849, 850, 851,
-        // MIN
-        881, 882, 883, 889, 890, 902, 903, 904, 911, 912,
-        // BTN
-        923, 924, 925, 930, 931, 932, 944, 945, 946, 947, 953, 954,
-        // FSH
-        965, 967, 968, 970, 971, 972, 973, 974, 975, 977,
-
-        // Oizys
-        // CRP
-        1040, 1041, 1042, 1043, 1044, 1045, 1046, 1047, 
-        // BSM
-        1068, 1069, 1070, 1071, 1072, 1073, 1074, 1075, 
-        // ARM
-        1096, 1097, 1098, 1099, 1100, 1101, 1102, 1103, 
-        // GSM
-        1124, 1125, 1126, 1127, 1128, 1129, 1130, 1131, 
-        // LTW
-        1152, 1153, 1154, 1155, 1156, 1157, 1158, 1159, 
-        //WVR
-        1180, 1181, 1182, 1183, 1184, 1185, 1186, 1187,
-        // ALC
-        1208, 1209, 1210, 1211, 1212, 1213, 1214, 1215, 
-        // CUL
-        1236, 1237, 1238, 1239, 1240, 1241, 1242, 1243, 
-        // MIN
-        1264, 1265, 1266, 1267, 1268, 1269, 1270, 1271, 
-        // BTN
-        1292, 1293, 1294, 1295, 1296, 1297, 1298, 1299,
-        // FSH
-        1320, 1321, 1322, 1323, 1324, 1325, 1326, 1327,
-    };
     public class LevelInfo
     {
         public uint Level { get; set; } = 10;

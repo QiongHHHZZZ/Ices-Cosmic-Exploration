@@ -1,6 +1,5 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic_Helper;
-using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ICE.Localization.L10n;
 namespace ICE.Ui
@@ -24,13 +23,6 @@ namespace ICE.Ui
             var job = selectedJob;
             var toolClassId = (byte)(job - 7);
             var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
-            var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];
-
-            // Unsure... why this is here? 
-            if (Svc.Data.GetExcelSheet<WKSCosmoToolClass>().TryGetRow(toolClassId, out var row))
-            {
-
-            }
 
             Dictionary<uint, XPType> XPTable = new Dictionary<uint, XPType>();
 
@@ -56,6 +48,8 @@ namespace ICE.Ui
             }
 
             bool MaxStage = XPTable.Where(x => x.Value.NeededXP != 0).Count() == 0;
+
+            var maxRelicStage = CosmicMoonRegistry.GetMaxRelicStage((uint)Svc.ClientState.TerritoryType);
 
             ImGui.Text(T("Stage: {0}", stage));
             if (MaxStage)
@@ -88,7 +82,7 @@ ImGui.Text(T("[MAX]"));
                 else
                     xpType = "???";
 
-                if (stage != CosmicHelper.MaxRelicLevel)
+                if (stage != maxRelicStage)
                 {
                     DrawXPBar(T("Type: {0}", xpType), current, needed, size, max);
                 }
@@ -222,7 +216,7 @@ ImGui.Text(T("[MAX]"));
             foreach (var crafterJob in CosmicHelper.CrafterJobList)
             {
                 uint classScore = 0;
-                var score = wksManager->Scores;
+                var score = wksManager->State.Scores;
                 int jobId = (int)crafterJob;
                 classScore = (uint)score[jobId-8];
                 classScore = Math.Min(500_000, classScore);
@@ -235,7 +229,7 @@ ImGui.Text(T("[MAX]"));
             foreach (var gatherJob in CosmicHelper.GatheringJobList)
             {
                 uint classScore = 0;
-                var score = wksManager->Scores;
+                var score = wksManager->State.Scores;
                 int jobId = (int)gatherJob;
                 classScore = (uint)score[jobId-8];
                 classScore = Math.Min(500_000, classScore);

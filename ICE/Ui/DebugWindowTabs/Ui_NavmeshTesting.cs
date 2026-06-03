@@ -1,4 +1,5 @@
-﻿using Pictomancy;
+﻿using ECommons.GameHelpers;
+using Pictomancy;
 using System.Collections.Generic;
 using static ICE.Localization.L10n;
 
@@ -8,23 +9,19 @@ namespace ICE.Ui.DebugWindowTabs
     {
         private static List<Vector3> finalPath = new List<Vector3>();
         private static Vector3 currentPos = new Vector3();
-        private static Vector3 BaseCenter = new Vector3(0, 0, 0);
-        private static float radius = 12f;
-        private static int numCircleWps = 50;
         private static List<Vector3> wholePath = new List<Vector3>();
 
         // Picto Stuff
         private static float lineWidth = 0;
         private static float dotRadius = 4.2f;
-        private static uint CircleColor = 2616716297;
         private static uint LineColor = 804847871;
         private static uint WPColor = 4294180358;
         private static uint TextCol = 2667577343;
 
         public static void Draw()
         {
-            if (PlayerHelper.LocalPlayer != null)
-                currentPos = PlayerHelper.LocalPlayer.Position;
+            if (Player.Object != null)
+                currentPos = Player.Object.Position;
             else
                 currentPos = new Vector3(0, 0, 0);
 

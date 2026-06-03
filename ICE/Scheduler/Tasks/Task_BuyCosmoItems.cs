@@ -40,7 +40,7 @@ namespace ICE.Scheduler.Tasks
 
         private static bool CanPurchaseFromShop(List<uint> shoppingOrder, Dictionary<uint, Shop_Cosmocredits.ItemInfo> shopData)
         {
-            PlayerHelper.GetItemCount(45690, out var currencyAmount);
+            PlayerHelper.GetItemCount(CosmicHelper.CosmoCreditItemId, out var currencyAmount);
             currencyAmount -= C.CosmoKeepAmount;
 
             foreach (var itemId in shoppingOrder)
@@ -72,7 +72,7 @@ namespace ICE.Scheduler.Tasks
             string handle = "[Task_Credits: PathTo]";
             var zoneId = Player.Territory.RowId;
 
-            if (NpcData.MoonNpcs[Player.Territory.RowId].TryGetValue(NpcData.NpcType.Credit, out var npcEntry))
+            if (NpcData.TryGetNpc(Player.Territory.RowId, NpcData.NpcType.Credit, out var npcEntry))
             {
                 Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 0.5f);
                 if (!Task_NavmeshMove.Task_NavTo(randomPos, distance: 6, npcLoc: npcEntry.Location_Npc).Value)
@@ -104,7 +104,7 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                if (NpcData.MoonNpcs[Player.Territory.RowId].TryGetValue(NpcData.NpcType.Credit, out var researchInfo))
+                if (NpcData.TryGetNpc(Player.Territory.RowId, NpcData.NpcType.Credit, out var researchInfo))
                 {
                     Utils.TryGetObjectByDataId(researchInfo.NpcId, out var researchNpc);
                     if (EzThrottler.Throttle("Interacting with researchingway"))
@@ -524,7 +524,7 @@ namespace ICE.Scheduler.Tasks
         {
             // Get current currency amount (you'll need to determine how to get this without the shop window)
 
-            PlayerHelper.GetItemCount(45690, out var currencyAmount);
+            PlayerHelper.GetItemCount(CosmicHelper.CosmoCreditItemId, out var currencyAmount);
             currencyAmount -= C.CosmoKeepAmount;
 
             // Try BuyAmount first

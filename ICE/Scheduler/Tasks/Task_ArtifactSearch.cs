@@ -31,7 +31,7 @@ namespace ICE.Scheduler.Tasks
             string handle = "[Task_Artifact: PathTo]";
             var zoneId = Player.Territory.RowId;
 
-            if (NpcData.MoonNpcs[zoneId].TryGetValue(NpcData.NpcType.Drone, out var npcEntry))
+            if (NpcData.TryGetNpc(zoneId, NpcData.NpcType.Drone, out var npcEntry))
             {
                 Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 0.5f);
                 if (!Task_NavmeshMove.Task_NavTo(randomPos, distance: 6, npcLoc: npcEntry.Location_Npc).Value)
@@ -67,7 +67,7 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                if (NpcData.MoonNpcs[Player.Territory.RowId].TryGetValue(NpcData.NpcType.Drone, out var droneInfo))
+                if (NpcData.TryGetNpc(Player.Territory.RowId, NpcData.NpcType.Drone, out var droneInfo))
                 {
                     Utils.TryGetObjectByDataId(droneInfo.NpcId, out var droneNpc);
                     if (EzThrottler.Throttle("Interacting with researchingway"))
@@ -171,7 +171,8 @@ namespace ICE.Scheduler.Tasks
         public static bool CanBuyDroneBoxes()
         {
             var territory = Player.Territory.RowId;
-            var dronebitInfo = CosmicHelper.DronebitInfo[territory];
+            if (!CosmicMoonRegistry.TryGetDronebit(territory, out var dronebitInfo))
+                return false;
 
             bool shouldBuyItems = false;
 
@@ -257,7 +258,10 @@ namespace ICE.Scheduler.Tasks
 
             var mapMarkers = GetAllEventMarkers();
             var marker = mapMarkers.Where(x => x.IconId == 63989).FirstOrDefault();
-            uint itemId = CosmicHelper.DronebitInfo[Player.Territory.RowId].boxId;
+            if (!CosmicMoonRegistry.TryGetDronebit(Player.Territory.RowId, out var dronebit))
+                return false;
+
+            uint itemId = dronebit.boxId;
 
             if (marker != null)
             {
@@ -349,7 +353,10 @@ namespace ICE.Scheduler.Tasks
                 }
 
                 var actionManager = ActionManager.Instance();
-                uint itemId = CosmicHelper.DronebitInfo[Player.Territory.RowId].boxId;
+                if (!CosmicMoonRegistry.TryGetDronebit(Player.Territory.RowId, out var dronebit))
+                    return false;
+
+                uint itemId = dronebit.boxId;
 
                 var status = actionManager->GetActionStatus(ActionType.Item, itemId);
 
@@ -361,7 +368,8 @@ namespace ICE.Scheduler.Tasks
                 else
                 {
                     if (EzThrottler.Throttle("Using drone throttle"))
-                        IceLogging.Verbose("We're waiting for the addon map to be visible. If it's not then there's a problem", tag);
+                        IceLogging.Verbose("We're waiting for the addon map to be visible. If it's not then there's a problem\n" +
+                            $"Status is currently: {status}", tag);
                 }
             }
                 
@@ -432,7 +440,10 @@ namespace ICE.Scheduler.Tasks
         }
         private static unsafe void UseDrone()
         {
-            uint itemId = CosmicHelper.DronebitInfo[Player.Territory.RowId].boxId;
+            if (!CosmicMoonRegistry.TryGetDronebit(Player.Territory.RowId, out var dronebit))
+                return;
+
+            uint itemId = dronebit.boxId;
             var inventoryManager = InventoryManager.Instance();
 
             // Array of inventory types to check
@@ -455,6 +466,8 @@ namespace ICE.Scheduler.Tasks
                     if (item != null && item->ItemId == itemId)
                     {
                         // Use the item from inventory
+                        if (EzThrottler.Throttle("Using item"))
+                            IceLogging.Verbose($"Use Item: {itemId} | Inventory Type: {invType.ToString()} | Slot: {i}");
                         AgentInventoryContext.Instance()->UseItem(item->ItemId, invType, (uint)i, 0);
                         return;
                     }

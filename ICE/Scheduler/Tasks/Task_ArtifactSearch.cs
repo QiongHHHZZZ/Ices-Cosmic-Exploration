@@ -199,6 +199,8 @@ namespace ICE.Scheduler.Tasks
 
         // Going to drone locations
         private static Vector3 droneLoc = Vector3.Zero;
+        private static Vector3 _lastDroneTpDestination = Vector3.Zero;
+        private static long _dailyRoutinesTpWaitUntil = 0;
         public static void Enqueue_DroneCheck()
         {
             P.TaskManager.EnqueueMulti
@@ -273,13 +275,41 @@ namespace ICE.Scheduler.Tasks
 
                 IceLogging.Debug("We've found the map flag! Setting it for us to travel to", tag);
                 droneLoc = marker.Position;
-                TryDailyRoutinesTeleport(droneLoc, tag);
+
+                if (Vector3.Distance(_lastDroneTpDestination, droneLoc) > 1f)
+                {
+                    _lastDroneTpDestination = droneLoc;
+                    _dailyRoutinesTpWaitUntil = 0;
+                }
+
+                if (Player.DistanceTo(droneLoc) < 8f)
+                {
+                    P.TaskManager.Insert(InteractWithDrone, "Interact with drone");
+                    return true;
+                }
+
+                if (CanUseDailyRoutinesTeleport(tag))
+                {
+                    if (Environment.TickCount64 >= _dailyRoutinesTpWaitUntil)
+                    {
+                        TryDailyRoutinesTeleport(droneLoc, tag);
+                        _dailyRoutinesTpWaitUntil = Environment.TickCount64 + 8000;
+                    }
+
+                    P.TaskManager.InsertMulti(
+                        new(WaitForDailyRoutinesTeleport, "Waiting after Daily Routines teleport"),
+                        new(RefreshMapInfo, "Refreshing map after Daily Routines teleport")
+                    );
+                    return true;
+                }
+
                 P.TaskManager.Insert(InteractWithDrone, "Interact with drone");
                 Task_NavmeshMove.Enqueue_NavmeshTask(droneLoc, false, 3.5f);
                 return true;
             }
             else
             {
+                _dailyRoutinesTpWaitUntil = 0;
                 if (PlayerHelper.GetItemCount(itemId, out var count) && count > 0)
                 {
                     IceLogging.Debug("We have a crate to use! Initiating the task to start using it", tag);
@@ -376,10 +406,15 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
-        private static void TryDailyRoutinesTeleport(Vector3 destination, string tag)
+        private static bool? WaitForDailyRoutinesTeleport()
+        {
+            return Environment.TickCount64 >= _dailyRoutinesTpWaitUntil;
+        }
+
+        private static bool CanUseDailyRoutinesTeleport(string tag)
         {
             if (!C.Cosmodrone_UseDailyRoutinesTP)
-                return;
+                return false;
 
             if (!Utils.HasPlugin("DailyRoutines"))
             {
@@ -387,21 +422,23 @@ namespace ICE.Scheduler.Tasks
                 {
                     IceLogging.Warning("未检测到 Daily Routines，已回退原有寻路。", tag);
                 }
-                return;
+                return false;
             }
 
-            if (EzThrottler.Throttle("DroneDailyRoutinesTeleport", 2500))
-            {
-                var command = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "/pdrtp pos {0:F2} {1:F2} {2:F2}",
-                    destination.X,
-                    destination.Y,
-                    destination.Z);
+            return true;
+        }
 
-                Svc.Commands.ProcessCommand(command);
-                IceLogging.Debug($"已尝试 Daily Routines 传送：{command}", tag);
-            }
+        private static void TryDailyRoutinesTeleport(Vector3 destination, string tag)
+        {
+            var command = string.Format(
+                CultureInfo.InvariantCulture,
+                "/pdrtp pos {0:F2} {1:F2} {2:F2}",
+                destination.X,
+                destination.Y,
+                destination.Z);
+
+            Svc.Commands.ProcessCommand(command);
+            IceLogging.Debug($"已尝试 Daily Routines 传送：{command}", tag);
         }
 
         public static unsafe bool? OpenMapInfo()

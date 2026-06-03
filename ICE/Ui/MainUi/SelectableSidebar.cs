@@ -19,7 +19,7 @@ namespace ICE.Ui.MainUi
         public static void Draw()
         {
             var scale = ImGuiHelpers.GlobalScale;
-            int baseSize = 200;
+            int baseSize = 220;
             var scaledWidth = baseSize * scale;
             var height = ImGui.GetContentRegionAvail().Y;
 

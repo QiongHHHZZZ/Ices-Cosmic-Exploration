@@ -261,12 +261,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             var scale = ImGuiHelpers.GlobalScale;
             var width = header switch
             {
-                EnabledColumn => 44f,
-                CompletionColumn => 44f,
+                EnabledColumn => 38f,
+                CompletionColumn => 38f,
                 IdColumn => 46f,
-                PlanetColumn => 44f,
-                JobColumn => 44f,
-                MissionColumn => 48f,
+                PlanetColumn => 38f,
+                JobColumn => 38f,
+                MissionColumn => 40f,
                 NameColumn => 90f,
                 ClassScoreColumn => 44f,
                 SPMColumn => 56f,
@@ -276,8 +276,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 CreditSummaryColumn => 84f,
                 DroneCreditColumn => 48f,
                 PlanetTokensColumn => 48f,
-                TurninColumn => 106f,
-                AllRelicExpColum => 168f,
+                TurninColumn => 140f,
+                AllRelicExpColum => 136f,
+                RelicExpColumn => 30f,
                 ProfileColumn => 104f,
                 _ => 44f,
             };
@@ -389,12 +390,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             var scale = ImGuiHelpers.GlobalScale;
             var width = header switch
             {
-                EnabledColumn => 48f,
-                CompletionColumn => 44f,
+                EnabledColumn => 40f,
+                CompletionColumn => 38f,
                 IdColumn => 52f,
-                PlanetColumn => 44f,
-                JobColumn => 44f,
-                MissionColumn => 48f,
+                PlanetColumn => 38f,
+                JobColumn => 38f,
+                MissionColumn => 40f,
                 NameColumn => 420f,
                 ClassScoreColumn => 44f,
                 ScoreSummaryColumn => 98f,
@@ -404,9 +405,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 DroneCreditColumn => 48f,
                 PlanetTokensColumn => 48f,
                 SPMColumn => 56f,
-                TurninColumn => 106f,
-                AllRelicExpColum => 184f,
-                RelicExpColumn => 38f,
+                TurninColumn => 140f,
+                AllRelicExpColum => 150f,
+                RelicExpColumn => 30f,
                 ProfileColumn => 128f,
                 _ => 76f,
             };
@@ -468,10 +469,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
         public sealed class EnabledColumn : ItemFilterColumn
         {
-            public override float Width => Math.Max(
-                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
-                ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
-            );
+            public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
             private readonly Mission_Table _table;
             public EnabledColumn(Mission_Table table)
             {
@@ -646,10 +644,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 SetFlags(ItemFilter.NotCompleted, ItemFilter.Completed, ItemFilter.Gold);
                 SetNames(T("Not Completed"), T("Completed"), T("Gold"));
             }
-            public override float Width => Math.Max(
-                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
-                ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
-            );
+            public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
             public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.CompletionStatus.CompareTo(rhs.SheetInfo.CompletionStatus);
             public override void DrawColumn(MissionInfo item, int idx)
             {
@@ -980,8 +975,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 SetNames("I", "II", "III", "IV", "V", "VI", "VII");
             }
             public override float Width => Math.Max(
-                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
-                ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
+                ImGui.CalcTextSize(Label + "x").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.GetFrameHeight() + 12f * ImGuiHelpers.GlobalScale
             );
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs)
@@ -1039,7 +1034,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 SetFlags(MissionFilter.RedAlert, MissionFilter.Sequence, MissionFilter.Weather, MissionFilter.Timed, MissionFilter.ARank, MissionFilter.BRank, MissionFilter.CRank, MissionFilter.DRank, MissionFilter.Master);
                 SetNames(T("Red Alert"), T("Sequence"), T("Weather"), T("Timed"), T("A Rank"), T("B Rank"), T("C Rank"), T("D Rank"), T("Master"));
             }
-            public override float Width => Math.Max(ImGui.CalcTextSize(Label + "XX").X + ImGui.GetStyle().CellPadding.X * 2, ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2);
+            public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
 
             private static int GetMissionPriority(CosmicInfo info)
             {
@@ -1263,14 +1258,14 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 get
                 {
-                    int amount = C.MissionFilter.HasFlag(MissionFilter.Master) ? 4 : 3;
+                    const int amount = 4;
 
                     var iconWidth = ImGui.GetFrameHeight(); // IconButton is square, frameHeight x frameHeight
                     var spacing = ImGui.GetStyle().ItemSpacing.X;
                     var cellPadding = ImGui.GetStyle().CellPadding.X * 2;
 
                     var headerWidth = ImGui.CalcTextSize(Label).X + cellPadding;
-                    var contentWidth = iconWidth * amount + spacing * 3 + cellPadding; // 4 icons (clock+3 trophies) worst case
+                    var contentWidth = iconWidth * amount + spacing * (amount - 1) + cellPadding + 26f * ImGuiHelpers.GlobalScale;
 
                     return Math.Max(headerWidth, contentWidth);
                 }
@@ -1324,7 +1319,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                             }
                         }
                         if (ImGui.IsItemHovered())
-                            ImGui.SetTooltip("Only turn in when the mission timer expires (keep gathering for max score).\nUseful for Tool Mastery missions that extend their timer on goal completion.");
+                            ImGui.SetTooltip(T("Only turn in when the mission timer expires (keep gathering for max score).\nUseful for Tool Mastery missions that extend their timer on goal completion."));
                         ImGui.SameLine(0, spacing);
                         using (ImRaii.PushColor(ImGuiCol.Text, goldEnabled ? GoldColor : DisabledColor))
                         {
@@ -1368,10 +1363,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 SetFlags(moons.Select(m => m.PlanetFilter).ToArray());
                 SetNames(moons.Select(m => T(m.DisplayName)).ToArray());
             }
-            public override float Width => Math.Max(
-                ImGui.CalcTextSize(Label + "X").X + ImGui.GetStyle().CellPadding.X * 2,
-                ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
-            );
+            public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.TerritoryId.CompareTo(rhs.SheetInfo.TerritoryId);
             public override void DrawColumn(MissionInfo item, int idx)
@@ -1400,7 +1392,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                  JobFilter.LTW, JobFilter.WVR, JobFilter.ALC, JobFilter.CUL,
                                  JobFilter.MIN, JobFilter.BTN, JobFilter.FSH);
             }
-            public override float Width => Math.Max(ImGui.CalcTextSize(Label + "XX").X + ImGui.GetStyle().CellPadding.X * 2, ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2);
+            public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
             public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.Jobs.First().CompareTo(rhs.SheetInfo.Jobs.First());
 
             public override void DrawColumn(MissionInfo item, int idx)

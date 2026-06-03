@@ -1313,6 +1313,7 @@ internal static class L10n
         ["Mission Table Planet Tokens"] = "代币",
         ["Mission Table SPM"] = "点/分",
         ["Mission Table Turnin Goal"] = "交付",
+        ["Only turn in when the mission timer expires (keep gathering for max score).\nUseful for Tool Mastery missions that extend their timer on goal completion."] = "仅在任务计时结束时交付（继续采集以获得最高分）。\n适用于完成目标后会延长计时的工具熟练度任务。",
         ["Mission Table Exp"] = "经验值",
         ["Mission Table Profile"] = "配置",
         ["Mission Table Notes"] = "备注",

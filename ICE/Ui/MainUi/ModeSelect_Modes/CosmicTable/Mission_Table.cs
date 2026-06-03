@@ -229,7 +229,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             foreach (var (tier, flag) in tierFlags)
             {
                 string tierName = tier switch { 1 => "I", 2 => "II", 3 => "III", 4 => "IV", 5 => "V", 6 => "VI", 7 => "VII", _ => "?" };
-                headers.Add(new RelicExpColumn(tier, flag) { Label = $"Exp {tierName}" });
+                headers.Add(new RelicExpColumn(tier, flag) { Label = T(tierName) });
             }
 
             headers.Add(_profileColumn);
@@ -410,8 +410,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 SPMColumn => 56f,
                 TurninColumn => 106f,
                 AllRelicExpColum => 184f,
-                RelicExpColumn => 78f,
-                ProfileColumn => 104f,
+                RelicExpColumn => 38f,
+                ProfileColumn => 128f,
                 _ => 76f,
             };
 
@@ -1402,20 +1402,26 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     if (!collectable)
                     {
                         string profileName = "???";
+                        string profileButtonName = profileName;
                         if (C.MissionConfig.TryGetValue(item.Id, out var config))
                         {
                             if (C.GatherProfiles.TryGetValue(config.GProfileId, out var profileSetting))
                             {
-                                profileName = profileSetting.Name;
+                                profileName = GetGatherProfileDisplayName(profileSetting.Name);
+                                profileButtonName = GetGatherProfileButtonName(profileSetting.Name);
                             }
 
-                            if (ImGui.Button($"{profileName}##{item.Id}_{item.SheetInfo.Name}", buttonSize))
+                            var profileButtonLabel = FitButtonLabel(profileButtonName, buttonSize.X);
+                            if (ImGui.Button($"{profileButtonLabel}##{item.Id}_{item.SheetInfo.Name}", buttonSize))
                             {
                                 ImGui.OpenPopup(T("Select Gather Profile"));
                             }
                             if (ImGui.IsItemHovered())
                             {
-                                ImGui.SetTooltip(T("Select gathering profile"));
+                                ImGui.BeginTooltip();
+                                ImGui.Text(profileName);
+                                ImGui.TextDisabled(T("Select gathering profile"));
+                                ImGui.EndTooltip();
                             }
                             if (ImGui.BeginPopup(T("Select Gather Profile")))
                             {
@@ -1428,7 +1434,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                     var id = profile.Key;
                                     bool profileSelected = config.GProfileId == id;
                                     ImGui.PushID($"{id}_{profile.Value.Name}");
-                                    if (ImGui.RadioButton(profile.Value.Name, profileSelected))
+                                    if (ImGui.RadioButton(GetGatherProfileDisplayName(profile.Value.Name), profileSelected))
                                     {
                                         config.GProfileId = id;
                                         C.Save();
@@ -1481,6 +1487,59 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     }
                 }
             }
+        }
+
+        private static string GetGatherProfileDisplayName(string profileName)
+            => profileName switch
+            {
+                "Default" => T("Default"),
+                "Timed Missions" => T("Timed Missions"),
+                "Limited Nodes" => T("Limited Nodes"),
+                "Chained" => T("Chained"),
+                "Boon" => T("Boon"),
+                "Chained + Boon" => T("Chained + Boon"),
+                "Dual Class" => T("Dual Class"),
+                "Gather X Amount" => T("Gather X Amount"),
+                "Greater Reach [Gather X]" => T("Greater Reach [Gather X]"),
+                "Greater Reach [Boon]" => T("Greater Reach [Boon]"),
+                "Greater Reach [Chain]" => T("Greater Reach [Chain]"),
+                "Greater Reach [Boon + Chain]" => T("Greater Reach [Boon + Chain]"),
+                _ => profileName,
+            };
+
+        private static string GetGatherProfileButtonName(string profileName)
+            => profileName switch
+            {
+                "Default" => T("Default"),
+                "Timed Missions" => T("Timed Missions"),
+                "Limited Nodes" => T("Limited Nodes"),
+                "Chained" => T("Chained"),
+                "Boon" => T("Boon Short"),
+                "Chained + Boon" => T("Chained + Boon Short"),
+                "Dual Class" => T("Dual Class"),
+                "Gather X Amount" => T("Gather X Amount"),
+                "Greater Reach [Gather X]" => T("Greater Reach Gather X Short"),
+                "Greater Reach [Boon]" => T("Greater Reach Boon Short"),
+                "Greater Reach [Chain]" => T("Greater Reach Chain Short"),
+                "Greater Reach [Boon + Chain]" => T("Greater Reach Boon Chain Short"),
+                _ => profileName,
+            };
+
+        private static string FitButtonLabel(string label, float buttonWidth)
+        {
+            var maxTextWidth = MathF.Max(1f, buttonWidth - ImGui.GetStyle().FramePadding.X * 2f);
+            if (ImGui.CalcTextSize(label).X <= maxTextWidth)
+                return label;
+
+            const string suffix = "...";
+            for (var length = label.Length - 1; length > 0; length--)
+            {
+                var candidate = label[..length] + suffix;
+                if (ImGui.CalcTextSize(candidate).X <= maxTextWidth)
+                    return candidate;
+            }
+
+            return suffix;
         }
         public sealed class NotesColumn : ItemFilterColumn
         {

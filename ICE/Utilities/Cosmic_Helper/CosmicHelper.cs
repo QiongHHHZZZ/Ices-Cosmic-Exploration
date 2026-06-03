@@ -110,10 +110,17 @@ public static unsafe partial class CosmicHelper
             var cond = Svc.Data.GetExcelSheet<WKSMissionLotterySpecialCond>().GetRow(condId);
             var weatherName = cond.WeatherRequired.Value.Name.ToString();
             if (!string.IsNullOrWhiteSpace(weatherName))
-                return weatherName;
+                return T(weatherName);
         }
 
-        return weather.ToString();
+        return weather switch
+        {
+            CosmicWeather.UmbralWind => T("Umbral Wind"),
+            CosmicWeather.MoonDust => T("Moon Dust"),
+            CosmicWeather.ClearSkies => T("Clear Skies"),
+            CosmicWeather.FairSkies => T("Fair Skies"),
+            _ => T(weather.ToString()),
+        };
     }
 
     public static Dictionary<uint, uint> MissionScoreDict = new(); // MissionID -> Score

@@ -95,23 +95,6 @@ namespace ICE.Ui.MainUi
                         }
                     }
                 }
-                if (ImGui_Ice.Sidebar_CollaspableHeader("Hub Activities", SidebarTabs.HubActivites, icon: FontAwesomeIcon.Home))
-                {
-                    ImGui_Ice.DrawSelectable_Image(65112, "Credit Shopping", WindowSelection.CreditShopping);
-                    ImGui_Ice.DrawSelectable_Image(65127, "Gambling Settings", WindowSelection.GambaShopping);
-
-                    if (ShowDronebitSettings())
-                        ImGui_Ice.DrawSelectable_Image(65138, "Dronebit Settings", WindowSelection.DroneShopping);
-                }
-                if (ImGui_Ice.Sidebar_CollaspableHeader("Settings", SidebarTabs.Settings, icon: FontAwesomeIcon.Cog))
-                {
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Stop, "Stop When...", WindowSelection.StopWhen);
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Leaf, "Gathering Profile", WindowSelection.GatheringProfiles);
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.SortAmountUp, "Mission Priority", WindowSelection.MissionPriority);
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Route, "Travel & Pathfinding", WindowSelection.TravelSettings);
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.PersonBurst, "Character Settings", WindowSelection.CharacterSettings);
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.UserCog, "Misc Settings", WindowSelection.MiscSettings);
-                }
                 var currentClass = C.SelectedJob;
                 var classIcon = ImGui_Ice.GetGreyscaleJob(currentClass);
                 if (ImGui_Ice.Sidebar_CollaspableHeader(T("Select Class"), SidebarTabs.ClassSelection, imageTexture: classIcon))
@@ -149,7 +132,9 @@ namespace ICE.Ui.MainUi
                 {
                     ImGui_Ice.DrawSelectable_Image(65112, T("Credit Shopping"), WindowSelection.CreditShopping);
                     ImGui_Ice.DrawSelectable_Image(65127, T("Gambling Settings"), WindowSelection.GambaShopping);
-                    ImGui_Ice.DrawSelectable_Image(65138, T("Dronebit Settings"), WindowSelection.DroneShopping);
+
+                    if (ShowDronebitSettings())
+                        ImGui_Ice.DrawSelectable_Image(65138, T("Dronebit Settings"), WindowSelection.DroneShopping);
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader(T("Settings"), SidebarTabs.Settings, icon: FontAwesomeIcon.Cog))
                 {

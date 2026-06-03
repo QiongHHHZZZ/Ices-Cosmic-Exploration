@@ -101,12 +101,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 if (SelectedJob != 0)
                 {
                     var classIcon = CosmicHelper.ClassInfoDict[SelectedJob];
-                    DrawImageTabButton("Class Progress", ProgressTabId, ref selectedTabId, classIcon.JobIcon.GetWrapOrEmpty());
+                    DrawImageTabButton(T("Class Progress"), ProgressTabId, ref selectedTabId, classIcon.JobIcon.GetWrapOrEmpty());
                 }
                 else
                 {
                     var allClassTexture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), "ICE.Resources.CosmicClassTracker.png").GetWrapOrEmpty();
-                    DrawImageTabButton("All Class progresses", ProgressTabId, ref selectedTabId, allClassTexture);
+                    DrawImageTabButton(T("All Class progresses"), ProgressTabId, ref selectedTabId, allClassTexture);
                 }
 
                 foreach (var moon in CosmicMoonRegistry.All.OrderBy(m => m.ExpeditionTabIndex))
@@ -141,7 +141,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     var texture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), moon.IconResource).GetWrapOrEmpty();
                     ImGui.SameLine();
-                    DrawImageTabButton($"{moon.DisplayName} [{completed} / {missions.Count()}]", tabId, ref selectedTabId, texture);
+                    DrawImageTabButton(T("{0} [{1} / {2}]", T(moon.DisplayName), completed, missions.Count()), tabId, ref selectedTabId, texture);
                 }
                 ImGui_Ice.EndCategoryButtonRow();
             }
@@ -250,15 +250,15 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                 if (ImGui.BeginTable($"ExpeditionLog_Table", 9, tableFlags))
                 {
-                    ImGui.TableSetupColumn("Enabled");
-                    ImGui.TableSetupColumn("Job");
-                    ImGui.TableSetupColumn("Kind");
-                    ImGui.TableSetupColumn("ID");
+                    ImGui.TableSetupColumn(T("Enabled"));
+                    ImGui.TableSetupColumn(T("Job"));
+                    ImGui.TableSetupColumn(T("Kind"));
+                    ImGui.TableSetupColumn(T("ID"));
                     ImGui.TableSetupColumn("✓");
-                    ImGui.TableSetupColumn("Mission Name");
-                    ImGui.TableSetupColumn("Turnin Mode");
-                    ImGui.TableSetupColumn("Profile Setting");
-                    ImGui.TableSetupColumn("Notes");
+                    ImGui.TableSetupColumn(T("Mission Name"));
+                    ImGui.TableSetupColumn(T("Turnin Mode"));
+                    ImGui.TableSetupColumn(T("Profile Setting"));
+                    ImGui.TableSetupColumn(T("Notes"));
 
                     // TODO: Make it to where type/rank is shown here instead of notes
 
@@ -371,7 +371,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.TableNextColumn();
                         if (missionInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining))
                         {
-                            ImGui_Ice.Table_FullCenterText("Auto");
+                            ImGui_Ice.Table_FullCenterText(T("Auto"));
                             if (missionConfig.TurninGoal != TurninState.Gold)
                             {
                                 missionConfig.TurninGoal = TurninState.Gold;
@@ -419,8 +419,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     ImGui.BeginTooltip();
                                     ImGuiEx.Icon(color, FontAwesomeIcon.Trophy);
                                     ImGui.SameLine();
-                                    ImGui.Text($"{tooltipLabel} — turn in at {state.ToString().ToLower()} or better");
-                                    ImGui.Text($"Right click to set minimum turnin to {state.ToString().ToLower()}");
+                                    var turninLabel = T(tooltipLabel);
+                                    ImGui.Text(T("{0}: turn in at {1} or better", turninLabel, turninLabel));
+                                    ImGui.Text(T("Right click to set minimum turnin to {0}", turninLabel));
                                     ImGui.EndTooltip();
                                 }
                             }
@@ -439,28 +440,32 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         if (gatherProfile && !collectable)
                         {
                             string profileName = "???";
+                            string profileButtonName = profileName;
                             if (C.GatherProfiles.TryGetValue(missionConfig.GProfileId, out var profileSetting))
                             {
-                                profileName = profileSetting.Name;
+                                profileName = GetGatherProfileDisplayName(profileSetting.Name);
+                                profileButtonName = GetGatherProfileButtonName(profileSetting.Name);
                             }
                             else
                             {
                                 profileName = "???";
                             }
 
-                            if (ImGui_Ice.Table_CenteredButton($"{profileName}"))
+                            var profileButtonLabel = FitButtonLabel(profileButtonName, ImGui.GetContentRegionAvail().X);
+                            if (ImGui_Ice.Table_CenteredButton(profileButtonLabel))
                             {
                                 ImGui.OpenPopup("Selecting Gathering Profile");
                             }
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text(T("Select profile to use"));
+                                ImGui.Text(profileName);
+                                ImGui.TextDisabled(T("Select profile to use"));
                                 ImGui.EndTooltip();
                             }
                             if (ImGui.BeginPopup("Selecting Gathering Profile"))
                             {
-                                ImGui.Text($"Currently Selected: {profileName}");
+                                ImGui.Text(T("Currently Selected: {0}", profileName));
                                 ImGui.Separator();
 
                                 foreach (var profile in C.GatherProfiles)
@@ -468,7 +473,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     var id = profile.Key;
                                     bool profileSelected = missionConfig.GProfileId == id;
                                     ImGui.PushID($"{id}_{profile.Value.Name}");
-                                    if (ImGui.RadioButton(profile.Value.Name, profileSelected))
+                                    if (ImGui.RadioButton(GetGatherProfileDisplayName(profile.Value.Name), profileSelected))
                                     {
                                         missionConfig.GProfileId = id;
                                         C.Save();
@@ -481,17 +486,17 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                         else if (gatherProfile && collectable)
                         {
-                            ImGui_Ice.Table_FullCenterText("Auto");
+                            ImGui_Ice.Table_FullCenterText(T("Auto"));
                         }
                         else if (missionInfo.Attributes.HasFlag(MissionAttributes.Fish))
                         {
-                            if (ImGui_Ice.Table_CenteredButton($"Select Profile"))
+                            if (ImGui_Ice.Table_CenteredButton(T("Select Profile")))
                             {
                                 ImGui.OpenPopup("Select Fishing Profile");
                             }
                             if (ImGui.BeginPopup(T("Select Fishing Profile")))
                             {
-                                ImGui.Text($"Fishing profile: {missionInfo.Name}");
+                                ImGui.Text(T("Fishing profile: {0}", missionInfo.Name));
                                 ImGui.Separator();
                                 bool builtInPreset = missionConfig.Use_BuildinPreset;
                                 if (ImGui.Checkbox(T("Use Built In Preset"), ref builtInPreset))
@@ -499,8 +504,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     missionConfig.Use_BuildinPreset = builtInPreset;
                                     C.Save();
                                 }
-                                ImGuiEx.HelpMarker("Having this enabled means it will use the default preset that is included with the plugin for autohook. \n" +
-                                                   "If you would like to use one that you already have in autohook, you can un-checkmark this and type the name of it below");
+                                ImGuiEx.HelpMarker(T("Having this enabled means it will use the default preset that is included with the plugin for autohook. \n" +
+                                                   "If you would like to use one that you already have in autohook, you can un-checkmark this and type the name of it below"));
                                 using (ImRaii.Disabled(builtInPreset))
                                 {
                                     string presetName = missionConfig.AutoHookPresetName;
@@ -526,7 +531,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             {
                                 ImGui.TextDisabled($"{entry}");
                                 ImGui.SameLine();
-                                ImGui.Text($"Mission: {missionInfo.Name}");
+                                ImGui.Text(T("Mission: {0}", missionInfo.Name));
 
                                 Mission_Table.CrafterManagement(missionInfo, entry);
 
@@ -563,7 +568,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 if (missionInfo.SequenceMissions_Previous.Count() != 0)
                                 {
                                     ImGui.Separator();
-                                    ImGui.Text($"Previous Missions");
+                                    ImGui.Text(T("Previous Missions"));
                                     foreach (var prevMission in missionInfo.SequenceMissions_Previous)
                                     {
                                         ImGui.Text($"[{prevMission}] - {CosmicHelper.SheetMissionDict[prevMission].Name}");
@@ -573,7 +578,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 if (missionInfo.SequenceMissions_Next.Count() != 0)
                                 {
                                     ImGui.Separator();
-                                    ImGui.Text($"Next Missions");
+                                    ImGui.Text(T("Next Missions"));
                                     foreach (var nextMission in missionInfo.SequenceMissions_Next)
                                     {
                                         ImGui.Text($"[{nextMission}] - {CosmicHelper.SheetMissionDict[nextMission].Name}");
@@ -602,7 +607,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (ImGui.IsItemHovered())
                             {
                                 ImGui.BeginTooltip();
-                                ImGui.Text($"Weather: {missionInfo.Weather}");
+                                ImGui.Text(T("Weather: {0}", CosmicHelper.GetCosmicWeatherName(missionInfo.Weather)));
                                 ImGui.EndTooltip();
                             }
                             notesCount++;
@@ -658,7 +663,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             {
                                 ImGui.BeginTooltip();
                                 ImGui.Text(notes.NoteInfo);
-                                ImGui.Text($"Average Score Per Minute: {notes.SPM:N2}");
+                                ImGui.Text(T("Average Score Per Minute: {0:N2}", notes.SPM));
 
                                 ImGui.EndTooltip();
                             }
@@ -714,10 +719,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                 if (ImGui.BeginTable("Class Progress: All", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
                 {
-                    ImGui.TableSetupColumn("Job");
-                    ImGui.TableSetupColumn("Relic");
+                    ImGui.TableSetupColumn(T("Job"));
+                    ImGui.TableSetupColumn(T("Relic"));
                     ImGui.TableSetupColumn("##Relic_XPBar");
-                    ImGui.TableSetupColumn("Score");
+                    ImGui.TableSetupColumn(T("Score"));
                     ImGui.TableSetupColumn("##Score_XPBar");
 
                     ImGui.TableHeadersRow();
@@ -798,7 +803,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui_Ice.Table_FullCenterText($"Class Score");
+                    ImGui_Ice.Table_FullCenterText(T("Class Score"));
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
@@ -820,7 +825,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text($"Stage");
+                    ImGui.Text(T("Stage"));
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
@@ -868,7 +873,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 }
 
                 if (ImGui.IsItemHovered())
-                    DrawTooltip(() => ImGui.Text($"Weather: {missionInfo.Weather}"));
+                    DrawTooltip(() => ImGui.Text(T("Weather: {0}", CosmicHelper.GetCosmicWeatherName(missionInfo.Weather))));
             }
             else if (missionInfo.IsTimed)
             {
@@ -920,6 +925,60 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui_Ice.Table_FullCenterText(rank);
             }
         }
+
+        private static string GetGatherProfileDisplayName(string profileName)
+            => profileName switch
+            {
+                "Default" => T("Default"),
+                "Timed Missions" => T("Timed Missions"),
+                "Limited Nodes" => T("Limited Nodes"),
+                "Chained" => T("Chained"),
+                "Boon" => T("Boon"),
+                "Chained + Boon" => T("Chained + Boon"),
+                "Dual Class" => T("Dual Class"),
+                "Gather X Amount" => T("Gather X Amount"),
+                "Greater Reach [Gather X]" => T("Greater Reach [Gather X]"),
+                "Greater Reach [Boon]" => T("Greater Reach [Boon]"),
+                "Greater Reach [Chain]" => T("Greater Reach [Chain]"),
+                "Greater Reach [Boon + Chain]" => T("Greater Reach [Boon + Chain]"),
+                _ => profileName,
+            };
+
+        private static string GetGatherProfileButtonName(string profileName)
+            => profileName switch
+            {
+                "Default" => T("Default"),
+                "Timed Missions" => T("Timed Missions"),
+                "Limited Nodes" => T("Limited Nodes"),
+                "Chained" => T("Chained"),
+                "Boon" => T("Boon Short"),
+                "Chained + Boon" => T("Chained + Boon Short"),
+                "Dual Class" => T("Dual Class"),
+                "Gather X Amount" => T("Gather X Amount"),
+                "Greater Reach [Gather X]" => T("Greater Reach Gather X Short"),
+                "Greater Reach [Boon]" => T("Greater Reach Boon Short"),
+                "Greater Reach [Chain]" => T("Greater Reach Chain Short"),
+                "Greater Reach [Boon + Chain]" => T("Greater Reach Boon Chain Short"),
+                _ => profileName,
+            };
+
+        private static string FitButtonLabel(string label, float buttonWidth)
+        {
+            var maxTextWidth = MathF.Max(1f, buttonWidth - ImGui.GetStyle().FramePadding.X * 2f);
+            if (ImGui.CalcTextSize(label).X <= maxTextWidth)
+                return label;
+
+            const string suffix = "...";
+            for (var length = label.Length - 1; length > 0; length--)
+            {
+                var candidate = label[..length] + suffix;
+                if (ImGui.CalcTextSize(candidate).X <= maxTextWidth)
+                    return candidate;
+            }
+
+            return suffix;
+        }
+
         private static void DrawCenteredImage(IDalamudTextureWrap image, float size)
         {
             var cellWidth = ImGui.GetContentRegionAvail().X;

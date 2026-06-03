@@ -478,6 +478,10 @@ namespace ICE.Ui
                 MissionAttributes.ProvisionalTimed => T("Time Required"),
                 MissionAttributes.ProvisionalWeather => T("Weather Required"),
                 MissionAttributes.ProvisionalSequential => T("Sequential Missions Required"),
+                MissionAttributes.GreaterReach_GatherX => T("Greater Reach [Gather X]"),
+                MissionAttributes.GreaterReach_Chain => T("Greater Reach [Chain]"),
+                MissionAttributes.GreaterReach_Boon => T("Greater Reach [Boon]"),
+                MissionAttributes.GreaterReach_Boon_Chain => T("Greater Reach [Boon + Chain]"),
                 _ => attribute.ToString()
             };
         }

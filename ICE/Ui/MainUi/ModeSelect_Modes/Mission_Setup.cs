@@ -283,12 +283,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.SetTooltip(T("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n") +
-                                         "1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n" +
-                                         "2: You must not have the tool eqipped for this to run full auto. \n" +
-                                         "\t- This is due to the fact that I cba coding this in at this time. (might change my mind in the future *shrugs*)\n" +
-                                         "3: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
-                                         "4: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
-                                         "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing");
+                                         T("1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n") +
+                                         T("2: You must not have the tool eqipped for this to run full auto. \n") +
+                                         T("\t- This is due to the fact that I cba coding this in at this time. (might change my mind in the future *shrugs*)\n") +
+                                         T("3: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n") +
+                                         T("4: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n") +
+                                         T("\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing"));
                     }
 
                     ImGui.Separator();

@@ -551,9 +551,13 @@ namespace ICE.Ui.DebugWindowTabs
         private static string MoonName(uint territoryId)
         {
             if (territoryId == 1237)
-                return "Sinus Ardorum";
+                return T("Sinus Ardorum");
             else if (territoryId == 1291)
-                return "Phaenna";
+                return T("Phaenna");
+            else if (territoryId == 1310)
+                return T("Oizys");
+            else if (territoryId == 1319)
+                return T("Auxesia");
             else
             {
                 return "???";

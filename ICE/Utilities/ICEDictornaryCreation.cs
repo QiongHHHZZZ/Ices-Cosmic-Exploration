@@ -713,10 +713,13 @@ public sealed partial class ICE
         #region Score Loading
 
         CosmicHelper.LoadMissionScores();
+        const uint maxReasonableMissionScore = 1000;
 
         foreach (var entry in C.ScoreKeeper)
         {
-            if (CosmicHelper.SheetMissionDict.TryGetValue(entry.Key, out var missionEntry) && missionEntry.ClassScore == 0)
+            if (CosmicHelper.SheetMissionDict.TryGetValue(entry.Key, out var missionEntry)
+                && missionEntry.ClassScore == 0
+                && entry.Value is > 0 and < maxReasonableMissionScore)
                 missionEntry.ClassScore = entry.Value;
         }
 
@@ -728,7 +731,8 @@ public sealed partial class ICE
             {
                 entry.Value.ClassScore = score;
             }
-            else if (C.ScoreKeeper.TryGetValue(missionId, out var storedScore) && storedScore != 0)
+            else if (C.ScoreKeeper.TryGetValue(missionId, out var storedScore)
+                     && storedScore is > 0 and < maxReasonableMissionScore)
             {
                 entry.Value.ClassScore = storedScore;
             }

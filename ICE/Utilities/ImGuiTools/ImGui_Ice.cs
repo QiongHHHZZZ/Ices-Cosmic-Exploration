@@ -700,31 +700,59 @@ public static partial class ImGui_Ice
     }
     internal static bool DrawRankButton(string label, MissionFilter missionType, Mission_Table? missionTable, FontAwesomeIcon? icon = null, float spacingAfter = 5, bool disabled = false)
     {
+        return DrawFilterChip(
+            label,
+            missionType.ToString(),
+            () => C.MissionFilter.HasFlag(missionType),
+            () => C.MissionFilter = C.MissionFilter.HasFlag(missionType)
+                ? C.MissionFilter & ~missionType
+                : C.MissionFilter | missionType,
+            missionTable,
+            icon,
+            spacingAfter,
+            disabled);
+    }
+
+    internal static bool DrawItemFilterButton(string label, ItemFilter filterType, Mission_Table? missionTable, FontAwesomeIcon? icon = null, float spacingAfter = 5, bool disabled = false)
+    {
+        return DrawFilterChip(
+            label,
+            filterType.ToString(),
+            () => C.ItemFilter.HasFlag(filterType),
+            () => C.ItemFilter = C.ItemFilter.HasFlag(filterType)
+                ? C.ItemFilter & ~filterType
+                : C.ItemFilter | filterType,
+            missionTable,
+            icon,
+            spacingAfter,
+            disabled);
+    }
+
+    private static bool DrawFilterChip(
+        string label,
+        string idSuffix,
+        Func<bool> isExpandedGetter,
+        Action toggle,
+        Mission_Table? missionTable,
+        FontAwesomeIcon? icon = null,
+        float spacingAfter = 5,
+        bool disabled = false)
+    {
         float scale = ImGuiHelpers.GlobalScale;
 
-        // Setting the values of the content size (padding, spacing, etc) that way it's used across the board
         float horizontalPadding = 8 * scale;
         float verticalPadding = 4 * scale;
         float iconTextSpacing = 4 * scale;
 
-        // These are to make sure that they're drawn in place
         var drawList = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorScreenPos();
-
-        // Calculate text size
         var textSize = ImGui.CalcTextSize(label);
-
-        // Calculate icon width if present
         float iconWidth = icon.HasValue ? textSize.Y + iconTextSpacing : 0;
-
-        // Calculate button dimensions based on content
         float contentWidth = horizontalPadding * 2 + iconWidth + textSize.X;
         float contentHeight = verticalPadding * 2 + textSize.Y;
 
-        // Initialize category state if needed
-        bool isExpanded = C.MissionFilter.HasFlag(missionType);
+        bool isExpanded = isExpandedGetter();
 
-        // Calculate interaction state
         var buttonRect = new Vector2(cursorPos.X + contentWidth, cursorPos.Y + contentHeight);
         bool isHovered = !disabled && ImGui.IsMouseHoveringRect(cursorPos, buttonRect)
                       && ImGui.IsWindowHovered(ImGuiHoveredFlags.AllowWhenBlockedByPopup | ImGuiHoveredFlags.ChildWindows);
@@ -732,29 +760,21 @@ public static partial class ImGui_Ice
 
         if (isClicked)
         {
-            // I hate fucking ? statments lol
-            C.MissionFilter = isExpanded
-                ? C.MissionFilter & ~missionType  // was on → turn off 
-                : C.MissionFilter | missionType;  // was off → turn on
+            toggle();
             C.SaveDebounced();
             missionTable?.SetFilterDirty();
         }
 
-        // Determine colors based on state
-        var headerColor = GetButtonColor(isExpanded, isHovered, disabled);
-        var textColor = disabled
-            ? ImGui.GetColorU32(ImGuiCol.TextDisabled)
-            : ImGui.GetColorU32(ImGuiCol.Text);
+        var headerColor = GetRankButtonColor(isExpanded, isHovered, disabled);
+        var borderColor = GetRankButtonBorderColor(isExpanded, isHovered, disabled);
+        var textColor = GetRankButtonTextColor(isExpanded, disabled);
 
-        // Draw background rectangle with rounded corners (scaled)
         drawList.AddRectFilled(cursorPos, buttonRect, headerColor, 5.0f * scale);
+        drawList.AddRect(cursorPos, buttonRect, borderColor, 5.0f * scale, ImDrawFlags.RoundCornersAll, 1.0f * scale);
 
-        // Draw content with disabled color if needed
         ImGui.SetCursorScreenPos(new Vector2(cursorPos.X + horizontalPadding, cursorPos.Y + verticalPadding));
-
         ImGui.PushStyleColor(ImGuiCol.Text, textColor);
 
-        // Draw icon if provided
         if (icon.HasValue)
         {
             ImGuiEx.Icon(icon.Value);
@@ -764,15 +784,56 @@ public static partial class ImGui_Ice
         ImGui.Text(label);
         ImGui.PopStyleColor();
 
-        // Create an invisible button to properly reserve space and handle layout
         ImGui.SetCursorScreenPos(cursorPos);
-        ImGui.InvisibleButton($"##{label}_{missionType.ToString()}_btn", new Vector2(contentWidth, contentHeight));
-
-        // Add spacing after the button (scaled)
-        ImGui.SameLine(0, spacingAfter * scale);
+        ImGui.InvisibleButton($"##{label}_{idSuffix}_btn", new Vector2(contentWidth, contentHeight));
+        if (spacingAfter >= 0)
+            ImGui.SameLine(0, spacingAfter * scale);
 
         return isExpanded;
     }
+
+    private static uint GetRankButtonColor(bool isExpanded, bool isHovered, bool disabled)
+    {
+        if (disabled)
+            return ColorWithAlpha(ImGuiCol.Button, 0.45f);
+
+        if (isExpanded)
+            return ImGui.GetColorU32(isHovered ? ImGuiCol.ButtonHovered : ImGuiCol.Button);
+
+        var frame = ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(ImGuiCol.FrameBg));
+        var button = ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(ImGuiCol.Button));
+        var mix = isHovered ? 0.48f : 0.22f;
+        return ImGui.ColorConvertFloat4ToU32(LerpColor(frame, button, mix) with { W = isHovered ? 0.92f : 0.82f });
+    }
+
+    private static uint GetRankButtonBorderColor(bool isExpanded, bool isHovered, bool disabled)
+    {
+        if (disabled)
+            return ImGui.GetColorU32(ImGuiCol.Border);
+
+        if (isExpanded)
+            return ImGui.GetColorU32(isHovered ? ImGuiCol.ButtonHovered : ImGuiCol.Button);
+
+        if (isHovered)
+            return ColorWithAlpha(ImGuiCol.ButtonHovered, 0.72f);
+
+        return ColorWithAlpha(ImGuiCol.Border, 0.82f);
+    }
+
+    private static uint GetRankButtonTextColor(bool isExpanded, bool disabled)
+    {
+        if (disabled)
+            return ImGui.GetColorU32(ImGuiCol.TextDisabled);
+
+        return ImGui.GetColorU32(isExpanded ? ImGuiCol.Text : ImGuiCol.TextDisabled);
+    }
+
+    private static uint ColorWithAlpha(ImGuiCol color, float alpha)
+        => ImGui.ColorConvertFloat4ToU32(ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(color)) with { W = alpha });
+
+    private static Vector4 LerpColor(Vector4 from, Vector4 to, float amount)
+        => from + (to - from) * amount;
+
     public static uint GetButtonColor(bool isExpanded, bool isHovered, bool disabled)
     {
         if (disabled)
@@ -790,6 +851,19 @@ public static partial class ImGui_Ice
             return ImGui.GetColorU32(ImGuiCol.TabActive);
 
         return ImGui.GetColorU32(ImGuiCol.Button);
+    }
+
+    internal static Vector2 GetVisibleContentRegionAvail(float minX = 1f, float minY = 1f)
+    {
+        var available = ImGui.GetContentRegionAvail();
+        var cursorScreenPos = ImGui.GetCursorScreenPos();
+        var viewport = ImGui.GetMainViewport();
+        var visibleMax = viewport.WorkPos + viewport.WorkSize;
+        var visibleAvailable = visibleMax - cursorScreenPos;
+
+        return new Vector2(
+            MathF.Max(minX, MathF.Min(available.X, visibleAvailable.X)),
+            MathF.Max(minY, MathF.Min(available.Y, visibleAvailable.Y)));
     }
     public static void DrawImageBox(ISharedImmediateTexture texture, string? label = null, float imageZoom = 1.5f, float spacingAfter = 5)
     {

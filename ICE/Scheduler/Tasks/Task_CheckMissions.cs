@@ -905,7 +905,7 @@ namespace ICE.Scheduler.Tasks
                 var mapId = sheetInfo.MapPosition;
                 var gatherInfo = GatheringRouteLoader.GetRoute(missionTerritory, mapId);
 
-                if (gatherInfo.Count == 0)
+                if (gatherInfo == null || gatherInfo.Count == 0)
                 {
                     IceLogging.Error("Hey, so this is actually missing the information for it. So going to just actually add it to the unsupported mission list", tag);
                     UnsupportedMissions.Ids.Add(missionId);
@@ -940,9 +940,12 @@ namespace ICE.Scheduler.Tasks
             {
                 var location = sheetInfo.MapPosition;
                 var territory = sheetInfo.TerritoryId;
-                var fishingHole = GatheringUtil.MoonFishingLocations[territory][location];
+                List<GatheringUtil.FisherSpotInfo>? fishingHole = null;
+                bool missingFishingHole = !GatheringUtil.MoonFishingLocations.TryGetValue(territory, out var territoryFishingHoles)
+                    || !territoryFishingHoles.TryGetValue(location, out fishingHole)
+                    || fishingHole.Count == 0;
 
-                if (fishingHole == null || fishingHole.Count == 0)
+                if (missingFishingHole)
                 {
                     IceLogging.Error("We've seemed to have ran into a problem with the fishing hole... either it's missing spots, or it doesn't exist. Please report back to me on this with logs leading up to this\n" +
                         $"Mission ID: {missionId} | Map Position: {location} | Moon Territory: {territory}\n" +
@@ -989,6 +992,9 @@ namespace ICE.Scheduler.Tasks
                     randomFishingHole = Vector3.Zero;
                     return true;
                 }
+
+                if (missingFishingHole)
+                    return true;
 
                 if (randomFishingHole == Vector3.Zero)
                 {

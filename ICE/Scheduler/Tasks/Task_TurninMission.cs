@@ -427,14 +427,20 @@ namespace ICE.Scheduler.Tasks
             {
                 scoreDifference = scoreDifference / multiplier;
                 IceLogging.Debug($"Base Mission score is: {scoreDifference}");
-                C.ScoreKeeper[PreviousMissionId] = (uint)scoreDifference;
 
-                if (scoreDifference < 1000)
+                if (scoreDifference is > 0 and < 1000)
                 {
+                    C.ScoreKeeper[PreviousMissionId] = (uint)scoreDifference;
                     if (CosmicHelper.SheetMissionDict.TryGetValue(PreviousMissionId, out var missionInfo))
                     {
                         missionInfo.ClassScore = (uint)scoreDifference;
                     }
+                    C.Save();
+                }
+                else
+                {
+                    IceLogging.Debug($"Ignoring unreasonable mission score value: {scoreDifference}");
+                    C.ScoreKeeper.Remove(PreviousMissionId);
                     C.Save();
                 }
             }

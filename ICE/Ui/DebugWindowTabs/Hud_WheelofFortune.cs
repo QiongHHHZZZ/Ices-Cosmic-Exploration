@@ -14,7 +14,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var lotto) && lotto.IsAddonReady)
             {
-                ImGui.Text($"Lottery addon is visible!");
+                ImGui.Text(T("Lottery addon is visible!"));
 
                 if (ImGui.Button($"Left wheel select"))
                 {

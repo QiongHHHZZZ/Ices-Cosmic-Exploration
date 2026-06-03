@@ -164,13 +164,13 @@ if (ImGui.Checkbox(T("Disable Pathfinding to Red Alerts"), ref DisableRedAlertPa
             }
 
             bool delayAether = C.Delay_Aethernet;
-            if (ImGui.Checkbox("Add delay to athernet / npc travel", ref delayAether))
+            if (ImGui.Checkbox(T("Add delay to athernet / npc travel"), ref delayAether))
             {
                 C.Delay_Aethernet = delayAether;
                 C.Save();
             }
-            ImGuiEx.HelpMarker("Adds a random delay before interacting with the aethershard / red alert npc travel.\n" +
-                "The delays will be before, and a little bit inbetween interacting with menus");
+            ImGuiEx.HelpMarker(T("Adds a random delay before interacting with the aethershard / red alert npc travel.\n" +
+                "The delays will be before, and a little bit inbetween interacting with menus"));
         }
         private static void StuckSettings()
         {

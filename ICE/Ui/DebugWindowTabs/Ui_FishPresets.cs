@@ -141,7 +141,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
             else
             {
-                ImGui.Text($"No mission selected currently. Woops [{selectedMission}]");
+                ImGui.Text(T("No mission selected currently. Woops [{0}]", selectedMission));
             }
         }
 

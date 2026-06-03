@@ -30,7 +30,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         public static unsafe void Draw()
         {
-            ImGui.Text($"Artisan Is Busy? {P.Artisan.IsBusy()}");
+            ImGui.Text(T("Artisan Is Busy? {0}", P.Artisan.IsBusy()));
             ImGui.Text($"{EzThrottler.GetRemainingTime("[Main Item(s)] Starting Main Craft")}");
             if (ImGui.Button(T("Artisan, craft this")))
             {
@@ -119,7 +119,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.Separator();
-            ImGui.Text($"Is ICE Running? | {P.IceIpc.IsRunning()}");
+            ImGui.Text(T("Is ICE Running? | {0}", P.IceIpc.IsRunning()));
             if (ImGui.Button(T("Only Missions Via IPC")))
             {
                 HashSet<uint> missionListIds = new() { 1, 3, 4, 7, 9, 11 };
@@ -140,10 +140,10 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 P.IceIpc.ChangeSetting(SettingChange, SettingState);
             }
-            if (ImGui.Button(T("Assign Artisan Food Test")))
-            {
-                P.Artisan.AssignArtisanRecipe(48797, 46253);
-            }
+            //if (ImGui.Button(T("Assign Artisan Food Test")))
+            //{
+            //    P.Artisan.AssignArtisanRecipe(48797, 46253);
+            //}
             if (ImGui.Button(T("Set temp setting")))
             {
                 P.Artisan.ChangeSolver(37084, "Progress Only Solver", true);
@@ -180,16 +180,16 @@ namespace ICE.Ui.DebugWindowTabs
                     }
                 }
             }
-            ImGui.DragUInt("MM Step Use", ref MMSAmount, 1, 0, 20);
-            ImGui.DragUInt("MM Recipe Usage", ref MMMaxUse, 1, 0, 3);
-            ImGui.Checkbox("Set MM Temp", ref tempMM);
-            if (ImGui.Button("Set Miracle Solver"))
+            ImGui.DragUInt(T("MM Step Use"), ref MMSAmount, 1, 0, 20);
+            ImGui.DragUInt(T("MM Recipe Usage"), ref MMMaxUse, 1, 0, 3);
+            ImGui.Checkbox(T("Set MM Temp"), ref tempMM);
+            if (ImGui.Button(T("Set Miracle Solver")))
             {
                 P.Artisan.ChangeStandardMinimumStepsBeforeMiracle(MMSAmount, tempMM);
                 P.Artisan.ChangeStandardMaxMaterialMiracleUses(MMMaxUse, tempMM);
             }
             ImGui.SameLine();
-            if (ImGui.Button("Restore Temp MM"))
+            if (ImGui.Button(T("Restore Temp MM")))
             {
                 P.Artisan.SetTempStandardMinimumStepsBeforeMiracleBackToNormal();
                 P.Artisan.SetTempStandardMaxMaterialMiracleUsesBackToNormal();

@@ -47,7 +47,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 if (ImGui.BeginTabItem(T("Current Agenda")))
                 {
                     var selectedJobIcon = CosmicHelper.ClassInfoDict[SelectedJob].JobIcon;
-                    var selectedJobName = CosmicHelper.ClassInfoDict[SelectedJob].JobName;
+                    var selectedJobName = CosmicHelper.GetJobName(SelectedJob);
 
                     ImGui.Image(selectedJobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
                     ImGui.SameLine();
@@ -66,7 +66,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 {
                                     var classInfo = CosmicHelper.ClassInfoDict[jobId];
                                     var jobIcon = classInfo.JobIcon;
-                                    var jobName = classInfo.JobName;
+                                    var jobName = CosmicHelper.GetJobName(jobId);
                                     bool isSelected = jobId == SelectedJob;
 
                                     ImGui.TableNextRow();
@@ -420,7 +420,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 foreach (var jobId in JobOptions)
                                 {
                                     var jobIcon = CosmicHelper.ClassInfoDict[jobId].JobIcon;
-                                    var jobName = CosmicHelper.ClassInfoDict[jobId].JobName;
+                                    var jobName = CosmicHelper.GetJobName(jobId);
                                     bool isSelected = jobId == SelectedJob;
 
                                     ImGui.TableNextRow();

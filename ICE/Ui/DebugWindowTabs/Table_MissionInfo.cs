@@ -72,7 +72,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                     // Optional: Show a tooltip or notification
                     // You could also use a popup or status message here
-                    ImGui.SetTooltip($"Copied {fishingMissions.Length} fishing missions to clipboard!");
+                    ImGui.SetTooltip(T("Copied {0} fishing missions to clipboard!", fishingMissions.Length));
                 }
                 else
                 {
@@ -312,7 +312,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text($"X: {entry.Value.MapPosition.X} | Y: {entry.Value.MapPosition.Y}");
+                            ImGui.Text(T("X: {0} | Y: {1}", entry.Value.MapPosition.X, entry.Value.MapPosition.Y));
                             ImGui.EndTooltip();
                         }
                         ImGui.SameLine();
@@ -323,7 +323,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text($"X: {entry.Value.MapPosition.X} | Y: {entry.Value.MapPosition.Y}");
+                            ImGui.Text(T("X: {0} | Y: {1}", entry.Value.MapPosition.X, entry.Value.MapPosition.Y));
                             ImGui.EndTooltip();
                         }
                     }

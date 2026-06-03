@@ -29,19 +29,19 @@ namespace ICE.Ui.MainUi.Settings
         }
 
         private static string newProfileName = "";
-        private static string[] MissionTypes = 
+        private static string[] MissionTypes =
         [
-            "限量节点", 
-            "采集数量", 
-            "限时任务", 
-            "连锁任务", 
-            "额外采集奖励任务", 
-            "连锁+额外采集奖励任务", 
+            "限量节点",
+            "采集数量",
+            "限时任务",
+            "连续任务",
+            "额外采集奖励任务",
+            "连续+额外采集奖励任务",
             "双职业任务",
             "广阔采集[采集数量]",
             "广阔采集[额外采集]",
-            "广阔采集[连锁]",
-            "广阔采集[额外采集+连锁]",
+            "广阔采集[连续]",
+            "广阔采集[额外采集+连续]",
         ];
         private static readonly string[] RankLabels = ["全部任务", "D级及以上", "C级及以上", "B级及以上", "A级及以上", "EX及以上", "仅EX+"];
         private static MissionKinds _selectedMission = MissionKinds.LimitedNodes;

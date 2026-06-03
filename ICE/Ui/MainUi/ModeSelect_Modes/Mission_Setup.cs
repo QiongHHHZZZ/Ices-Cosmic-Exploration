@@ -52,6 +52,15 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         private static List<CosmicHelper.MissionInfo> TableItems = [];
         private static int ItemCount = 0;
 
+        // Search bar state: which text-searchable column the search bar targets, plus the current search text
+        private static int _searchColumnIdx = 0;
+        private static string _searchText = string.Empty;
+        private static Mission_Table.TableViewMode _tableViewMode = Mission_Table.TableViewMode.Full;
+        private static bool _openCustomColumnPopup;
+        private static Vector2 _tableViewPopupPos;
+        private static readonly List<ColumnString<CosmicHelper.MissionInfo>> _searchableColumns = [];
+        private static readonly Dictionary<string, string> _searchColumnLabelCache = [];
+
         public static void Draw()
         {
             using var style = ImRaii.PushStyle(ImGuiStyleVar.ChildRounding, 10).Push(ImGuiStyleVar.ChildBorderSize, 1);
@@ -299,30 +308,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             {
                 if (!bodyChild.Success) return;
 
-                float scrollbarSize = ImGui.GetStyle().ScrollbarSize;
-                float buttonRowHeight = (ImGui.GetTextLineHeight() + 8 * scale + 4 * scale) + scrollbarSize;
-
-                using (var missionButtons = ImRaii.Child("##tab_scroll", new Vector2(0, buttonRowHeight), false, ImGuiWindowFlags.HorizontalScrollbar))
-                {
-                    if (!missionButtons.Success)
-                        return;
-
-                    ImGui_Ice.DrawRankButton("Red Alert", MissionFilter.RedAlert, MissionTable);
-                    ImGui_Ice.DrawRankButton("Sequence", MissionFilter.Sequence, MissionTable);
-                    ImGui_Ice.DrawRankButton("Weather", MissionFilter.Weather, MissionTable);
-                    ImGui_Ice.DrawRankButton("Timed", MissionFilter.Timed, MissionTable);
-                    ImGui_Ice.DrawRankButton("A Rank", MissionFilter.ARank, MissionTable);
-                    ImGui_Ice.DrawRankButton("B Rank", MissionFilter.BRank, MissionTable);
-                    ImGui_Ice.DrawRankButton("C Rank", MissionFilter.CRank, MissionTable);
-                    ImGui_Ice.DrawRankButton("D Rank", MissionFilter.DRank, MissionTable);
-
-                    ImGui_Ice.EndCategoryButtonRow();
-                }
+                DrawMissionToolbar(scale);
 
                 var bottomSpace = ImGui.GetTextLineHeight() + 6f;
                 bottomSpace += 12f; // prevent the tabs from creating a scrollbar
 
-                Vector2 size = new(ImGui.GetContentRegionAvail().X, ImGui.GetContentRegionAvail().Y - bottomSpace);
+                var available = ImGui_Ice.GetVisibleContentRegionAvail();
+                Vector2 size = new(MathF.Max(1f, available.X), MathF.Max(1f, available.Y - bottomSpace));
                 if (ImGui.BeginChild("###MissionTableV3", size, false))
                 {
                     try
@@ -340,7 +332,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         var filterActive = MissionTable.FilteredItems.Count != 0 && MissionTable.FilteredItems.Count != ItemCount;
                         var filterCount = filterActive ? $" (of {ItemCount})" : "";
                         var height = ImGui.GetFrameHeight();
-                        MissionTable.Draw(height + 4f);
+                        MissionTable.ViewMode = _tableViewMode;
+                        MissionTable.Draw(height + 2f);
                     }
                     catch (Exception ex)
                     {
@@ -349,6 +342,330 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 }
                 ImGui.EndChild();
             }
+        }
+
+        private static void DrawMissionToolbar(float scale)
+        {
+            var style = ImGui.GetStyle();
+            float cardHeight = ImGui.GetTextLineHeight() + ImGui.GetFrameHeight() + 24 * scale;
+            float groupRowHeight = cardHeight + style.ScrollbarSize + 4 * scale;
+            float toolbarHeight = groupRowHeight + ImGui.GetFrameHeight() + style.ItemSpacing.Y + 16 * scale;
+
+            using var toolbarStyle = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, new Vector2(8 * scale, 7 * scale))
+                .Push(ImGuiStyleVar.ItemSpacing, new Vector2(8 * scale, 6 * scale));
+
+            using (var toolbar = ImRaii.Child("##missionToolbar", new Vector2(0, toolbarHeight), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+            {
+                if (!toolbar.Success)
+                    return;
+
+                using (var filterStrip = ImRaii.Child("##missionFilterStrip", new Vector2(0, groupRowHeight), false, ImGuiWindowFlags.HorizontalScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+                {
+                    if (filterStrip.Success)
+                    {
+                        DrawFilterCard("Tasks", GetFilterCardWidth(scale, T("Tasks"), T("Red Alert"), T("Sequence"), T("Weather"), T("Timed"), T("A Rank"), T("B Rank"), T("C Rank"), T("D Rank")), cardHeight, scale, () =>
+                        {
+                            ImGui_Ice.DrawRankButton(T("Red Alert"), MissionFilter.RedAlert, MissionTable);
+                            ImGui_Ice.DrawRankButton(T("Sequence"), MissionFilter.Sequence, MissionTable);
+                            ImGui_Ice.DrawRankButton(T("Weather"), MissionFilter.Weather, MissionTable);
+                            ImGui_Ice.DrawRankButton(T("Timed"), MissionFilter.Timed, MissionTable);
+                            ImGui_Ice.DrawRankButton(T("A Rank"), MissionFilter.ARank, MissionTable);
+                            ImGui_Ice.DrawRankButton(T("B Rank"), MissionFilter.BRank, MissionTable);
+                            ImGui_Ice.DrawRankButton(T("C Rank"), MissionFilter.CRank, MissionTable);
+                            ImGui_Ice.DrawRankButton(T("D Rank"), MissionFilter.DRank, MissionTable, spacingAfter: -1);
+                        });
+                        ImGui.SameLine(0, 8 * scale);
+
+                        DrawFilterCard("Experience", GetFilterCardWidth(scale, T("Experience"), "I", "II", "III", "IV", "V", "VI", "VII"), cardHeight, scale, () =>
+                        {
+                            ImGui_Ice.DrawItemFilterButton("I", ItemFilter.HasI, MissionTable);
+                            ImGui_Ice.DrawItemFilterButton("II", ItemFilter.HasII, MissionTable);
+                            ImGui_Ice.DrawItemFilterButton("III", ItemFilter.HasIII, MissionTable);
+                            ImGui_Ice.DrawItemFilterButton("IV", ItemFilter.HasIV, MissionTable);
+                            ImGui_Ice.DrawItemFilterButton("V", ItemFilter.HasV, MissionTable);
+                            ImGui_Ice.DrawItemFilterButton("VI", ItemFilter.HasVI, MissionTable);
+                            ImGui_Ice.DrawItemFilterButton("VII", ItemFilter.HasVII, MissionTable, spacingAfter: -1);
+                        });
+                        ImGui.SameLine(0, 8 * scale);
+
+                        DrawFilterCard("State", GetFilterCardWidth(scale, T("State"), T("Enabled"), T("Disabled")), cardHeight, scale, () =>
+                        {
+                            ImGui_Ice.DrawItemFilterButton(T("Enabled"), ItemFilter.Enabled, MissionTable);
+                            ImGui_Ice.DrawItemFilterButton(T("Disabled"), ItemFilter.Disabled, MissionTable, spacingAfter: -1);
+                        });
+                        ImGui.SameLine(0, 8 * scale);
+
+                        DrawFilterCard("Tokens", GetFilterCardWidth(scale, T("Tokens"), T("Has Tokens"), T("No Tokens")), cardHeight, scale, () =>
+                        {
+                            ImGui_Ice.DrawItemFilterButton(T("Has Tokens"), ItemFilter.HasTokens, MissionTable);
+                            ImGui_Ice.DrawItemFilterButton(T("No Tokens"), ItemFilter.NoTokens, MissionTable, spacingAfter: -1);
+                        });
+                        ImGui.SameLine(0, 8 * scale);
+
+                        DrawFilterCard("Completion", GetFilterCardWidth(scale, T("Completion"), T("Not Completed"), T("Completed"), T("Gold")), cardHeight, scale, () =>
+                        {
+                            ImGui_Ice.DrawItemFilterButton(T("Not Completed"), ItemFilter.NotCompleted, MissionTable);
+                            ImGui_Ice.DrawItemFilterButton(T("Completed"), ItemFilter.Completed, MissionTable);
+                            ImGui_Ice.DrawItemFilterButton(T("Gold"), ItemFilter.Gold, MissionTable, spacingAfter: -1);
+                        });
+                    }
+                }
+
+                DrawSearchAndViewRow(scale);
+            }
+        }
+
+        private static float GetFilterCardWidth(float scale, string title, params string[] chipLabels)
+        {
+            var cardPaddingX = 8f * scale;
+            var chipPaddingX = 8f * scale;
+            var chipSpacing = 5f * scale;
+            var contentWidth = 0f;
+
+            for (var i = 0; i < chipLabels.Length; i++)
+            {
+                contentWidth += ImGui.CalcTextSize(chipLabels[i]).X + chipPaddingX * 2f;
+                if (i + 1 < chipLabels.Length)
+                    contentWidth += chipSpacing;
+            }
+
+            contentWidth = MathF.Max(contentWidth, ImGui.CalcTextSize(title).X);
+            return contentWidth + cardPaddingX * 2f + 2f * scale;
+        }
+
+        private static void DrawFilterCard(string label, float width, float height, float scale, Action drawContent)
+        {
+            using var cardStyle = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, new Vector2(8 * scale, 7 * scale))
+                .Push(ImGuiStyleVar.ItemSpacing, new Vector2(5 * scale, 5 * scale));
+            using var card = ImRaii.Child($"##missionFilterCard_{label}", new Vector2(width, height), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+            if (!card.Success)
+                return;
+
+            ImGui.TextColored(new Vector4(0.58f, 0.78f, 1.00f, 0.92f), T(label));
+            drawContent();
+        }
+
+        private static void DrawSearchAndViewRow(float scale)
+        {
+            if (MissionTable == null)
+                return;
+
+            _searchableColumns.Clear();
+            foreach (var header in MissionTable.Headers)
+            {
+                if (header is ColumnString<CosmicHelper.MissionInfo> colStr)
+                    _searchableColumns.Add(colStr);
+            }
+
+            if (_searchableColumns.Count == 0)
+                return;
+
+            if (_searchColumnIdx < 0 || _searchColumnIdx >= _searchableColumns.Count)
+                _searchColumnIdx = 0;
+
+            float viewButtonWidth = 142 * scale;
+            float searchViewGap = 20 * scale;
+            float searchGroupWidth = Math.Min(430 * scale, Math.Max(220 * scale, ImGui.GetContentRegionAvail().X - viewButtonWidth - searchViewGap - 8 * scale));
+
+            DrawUnifiedSearch(_searchableColumns, searchGroupWidth, scale);
+            ImGui.SameLine(0, searchViewGap);
+
+            if (ImGui.Button($"{T("View")}: {GetTableViewLabel(_tableViewMode)}", new Vector2(viewButtonWidth, 0)))
+            {
+                _tableViewPopupPos = ImGui.GetItemRectMin() + new Vector2(0, ImGui.GetItemRectSize().Y + 4 * scale);
+                ImGui.OpenPopup("##missionTableViewPopup");
+            }
+
+            DrawViewPopups(scale);
+        }
+
+        private static void DrawUnifiedSearch(List<ColumnString<CosmicHelper.MissionInfo>> searchable, float width, float scale)
+        {
+            var style = ImGui.GetStyle();
+            var drawList = ImGui.GetWindowDrawList();
+            var pos = ImGui.GetCursorScreenPos();
+            var height = ImGui.GetFrameHeight();
+            var size = new Vector2(width, height);
+            var rounding = 6f * scale;
+            var label = GetSearchColumnLabel(searchable[_searchColumnIdx].Label);
+            var selectorWidth = MathF.Min(104f * scale, MathF.Max(68f * scale, ImGui.CalcTextSize(label).X + 30f * scale));
+            var inputGap = 16f * scale;
+            var inputX = pos.X + selectorWidth + inputGap;
+
+            drawList.AddRectFilled(pos, pos + size, ImGui.GetColorU32(ImGuiCol.FrameBg), rounding);
+            drawList.AddRect(pos, pos + size, ImGui.GetColorU32(ImGuiCol.Border), rounding, ImDrawFlags.RoundCornersAll, 1f * scale);
+
+            var selectorMax = pos + new Vector2(selectorWidth, height);
+            var selectorHovered = ImGui.IsMouseHoveringRect(pos, selectorMax)
+                               && ImGui.IsWindowHovered(ImGuiHoveredFlags.ChildWindows | ImGuiHoveredFlags.AllowWhenBlockedByPopup);
+            if (selectorHovered)
+                drawList.AddRectFilled(pos, selectorMax, ImGui.GetColorU32(ImGuiCol.ButtonHovered), rounding, ImDrawFlags.RoundCornersLeft);
+
+            drawList.AddLine(
+                new Vector2(pos.X + selectorWidth, pos.Y + 5f * scale),
+                new Vector2(pos.X + selectorWidth, pos.Y + height - 5f * scale),
+                ImGui.GetColorU32(new Vector4(0.32f, 0.42f, 0.56f, 0.80f)),
+                1f * scale);
+
+            var labelSize = ImGui.CalcTextSize(label);
+            ImGui.SetCursorScreenPos(new Vector2(pos.X + MathF.Max(0, (selectorWidth - labelSize.X) * 0.5f), pos.Y + MathF.Max(0, (height - labelSize.Y) * 0.5f)));
+            ImGui.TextColored(new Vector4(0.86f, 0.93f, 1.00f, 1.00f), label);
+
+            ImGui.SetCursorScreenPos(pos);
+            if (ImGui.InvisibleButton("##searchColumnSelector", new Vector2(selectorWidth, height)))
+                ImGui.OpenPopup("##missionSearchColumnPopup");
+            if (ImGui.IsItemHovered())
+                ImGui.SetTooltip(T("Select search column."));
+
+            ImGui.SetCursorScreenPos(new Vector2(inputX, pos.Y));
+            ImGui.SetNextItemWidth(MathF.Max(1f, pos.X + width - inputX - 10f * scale));
+            using (ImRaii.PushStyle(ImGuiStyleVar.FrameBorderSize, 0)
+                   .Push(ImGuiStyleVar.FrameRounding, 0)
+                   .Push(ImGuiStyleVar.FramePadding, new Vector2(0, style.FramePadding.Y)))
+            using (ImRaii.PushColor(ImGuiCol.FrameBg, Vector4.Zero)
+                   .Push(ImGuiCol.FrameBgHovered, Vector4.Zero)
+                   .Push(ImGuiCol.FrameBgActive, Vector4.Zero))
+            {
+                if (ImGui.InputTextWithHint("##searchInput", T("Search..."), ref _searchText, 256))
+                {
+                    searchable[_searchColumnIdx].FilterValue = _searchText;
+                    MissionTable?.SetFilterDirty();
+                }
+            }
+
+            ImGui.SetCursorScreenPos(pos + new Vector2(width, 0));
+
+            DrawSearchColumnPopup(searchable, pos + new Vector2(0, height + 4f * scale), MathF.Max(selectorWidth, 150f * scale), scale);
+        }
+
+        private static void DrawSearchColumnPopup(List<ColumnString<CosmicHelper.MissionInfo>> searchable, Vector2 popupPos, float popupWidth, float scale)
+        {
+            ImGui.SetNextWindowPos(popupPos, ImGuiCond.Appearing);
+            ImGui.SetNextWindowSize(new Vector2(popupWidth, 0), ImGuiCond.Appearing);
+            PushMissionPopupStyle(scale);
+            if (ImGui.BeginPopup("##missionSearchColumnPopup"))
+            {
+                for (var i = 0; i < searchable.Count; i++)
+                {
+                    if (ImGui.Selectable($"{GetSearchColumnLabel(searchable[i].Label)}##searchColumn{i}", i == _searchColumnIdx))
+                        SetSearchColumn(searchable, i);
+                }
+
+                ImGui.EndPopup();
+            }
+            PopMissionPopupStyle();
+        }
+
+        private static string GetSearchColumnLabel(string label)
+        {
+            if (_searchColumnLabelCache.TryGetValue(label, out var cached))
+                return cached;
+
+            var newline = label.IndexOf('\n');
+            if (newline >= 0)
+            {
+                var firstLine = label[..newline].Trim();
+                var secondLine = label[(newline + 1)..];
+                if (!secondLine.Contains('|'))
+                    return _searchColumnLabelCache[label] = $"{firstLine} {secondLine.Trim()}";
+
+                return _searchColumnLabelCache[label] = GetFirstPipeSegment(firstLine);
+            }
+
+            return _searchColumnLabelCache[label] = GetFirstPipeSegment(label);
+        }
+
+        private static string GetFirstPipeSegment(string label)
+        {
+            var pipe = label.IndexOf('|');
+            return (pipe >= 0 ? label[..pipe] : label).Trim();
+        }
+
+        private static void SetSearchColumn(List<ColumnString<CosmicHelper.MissionInfo>> searchable, int columnIdx)
+        {
+            if (searchable.Count == 0 || columnIdx < 0 || columnIdx >= searchable.Count || columnIdx == _searchColumnIdx)
+                return;
+
+            searchable[_searchColumnIdx].FilterValue = string.Empty;
+            _searchColumnIdx = columnIdx;
+            searchable[_searchColumnIdx].FilterValue = _searchText;
+            MissionTable?.SetFilterDirty();
+        }
+
+        private static void DrawViewPopups(float scale)
+        {
+            ImGui.SetNextWindowPos(_tableViewPopupPos, ImGuiCond.Appearing);
+            ImGui.SetNextWindowSize(new Vector2(148 * scale, 0), ImGuiCond.Appearing);
+            PushMissionPopupStyle(scale);
+            if (ImGui.BeginPopup("##missionTableViewPopup"))
+            {
+                DrawTableViewOption(Mission_Table.TableViewMode.Compact);
+                DrawTableViewOption(Mission_Table.TableViewMode.Full);
+                DrawTableViewOption(Mission_Table.TableViewMode.Custom);
+                ImGui.EndPopup();
+            }
+            PopMissionPopupStyle();
+
+            if (_openCustomColumnPopup)
+            {
+                ImGui.OpenPopup("##missionCustomColumnPopup");
+                _openCustomColumnPopup = false;
+            }
+
+            ImGui.SetNextWindowPos(_tableViewPopupPos, ImGuiCond.Appearing);
+            ImGui.SetNextWindowSize(new Vector2(260 * scale, 0), ImGuiCond.Appearing);
+            PushMissionPopupStyle(scale);
+            if (ImGui.BeginPopup("##missionCustomColumnPopup"))
+            {
+                MissionTable?.DrawCustomColumnSelector();
+                ImGui.EndPopup();
+            }
+            PopMissionPopupStyle();
+        }
+
+        private static void PushMissionPopupStyle(float scale)
+        {
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(12 * scale, 10 * scale));
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 8 * scale);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 2 * scale);
+            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(6 * scale, 6 * scale));
+            ImGui.PushStyleColor(ImGuiCol.PopupBg, ImGui.GetColorU32(new Vector4(0.045f, 0.060f, 0.095f, 1.00f)));
+            ImGui.PushStyleColor(ImGuiCol.Border, ImGui.GetColorU32(new Vector4(0.42f, 0.64f, 0.95f, 1.00f)));
+            ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(new Vector4(0.14f, 0.30f, 0.55f, 0.92f)));
+            ImGui.PushStyleColor(ImGuiCol.HeaderHovered, ImGui.GetColorU32(new Vector4(0.20f, 0.42f, 0.75f, 1.00f)));
+            ImGui.PushStyleColor(ImGuiCol.HeaderActive, ImGui.GetColorU32(new Vector4(0.25f, 0.52f, 0.92f, 1.00f)));
+            ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetColorU32(new Vector4(0.92f, 0.96f, 1.00f, 1.00f)));
+        }
+
+        private static void PopMissionPopupStyle()
+        {
+            ImGui.PopStyleColor(6);
+            ImGui.PopStyleVar(4);
+        }
+
+        private static void DrawTableViewOption(Mission_Table.TableViewMode mode)
+        {
+            bool selected = _tableViewMode == mode;
+            var label = GetTableViewLabel(mode);
+            if (ImGui.Selectable(label, selected))
+            {
+                _tableViewMode = mode;
+                if (mode == Mission_Table.TableViewMode.Custom)
+                    _openCustomColumnPopup = true;
+            }
+            if (selected)
+                ImGui.SetItemDefaultFocus();
+        }
+
+        private static string GetTableViewLabel(Mission_Table.TableViewMode mode)
+        {
+            return mode switch
+            {
+                Mission_Table.TableViewMode.Compact => T("Compact"),
+                Mission_Table.TableViewMode.Full => T("Full"),
+                Mission_Table.TableViewMode.Custom => T("Custom"),
+                _ => T("Unknown"),
+            };
         }
     }
 }

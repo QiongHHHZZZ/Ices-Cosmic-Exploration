@@ -227,7 +227,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                         var fishingHole = GatheringUtil.MoonFishingLocations[selectedZone][selectedFlag];
 
-                        ImGui.Text($"Zone {selectedZone} - X:{selectedFlag.X} Z:{selectedFlag.Y}");
+                        ImGui.Text(T("Zone {0} - X:{1} Z:{2}", selectedZone, selectedFlag.X, selectedFlag.Y));
 
                         if (ImGui.Button(T("Add Fishing Spot")))
                         {
@@ -271,7 +271,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (selectedSpotIndex >= 0 && selectedSpotIndex < fishingHole.Count)
                         {
                             ImGui.Separator();
-                            ImGui.Text($"Editing Spot {selectedSpotIndex + 1}:");
+                            ImGui.Text(T("Editing Spot {0}:", selectedSpotIndex + 1));
 
                             var spot = fishingHole[selectedSpotIndex];
 

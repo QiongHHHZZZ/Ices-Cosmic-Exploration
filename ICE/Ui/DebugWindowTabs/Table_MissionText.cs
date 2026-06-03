@@ -43,7 +43,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (!string.IsNullOrEmpty(searchFilter))
             {
-                ImGui.Text($"Showing {filteredCount} of {totalCount} missions");
+                ImGui.Text(T("Showing {0} of {1} missions", filteredCount, totalCount));
             }
 
             // Create a child window for the scrollable results

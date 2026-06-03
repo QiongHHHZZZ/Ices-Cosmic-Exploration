@@ -8,6 +8,7 @@ using ICE.Ui.MainUi.HelpFolder;
 using ICE.Ui.MainUi.ModeSelect_Modes;
 using ICE.Ui.MainUi.Settings;
 using ICE.Ui.MainUi.Settings.Settings_Table;
+using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
 using System.Reflection;
 using static ICE.Localization.L10n;
@@ -50,7 +51,7 @@ namespace ICE.Ui
 
             ImGui.SameLine(0, 5);
 
-            var windowSizeRemaining = ImGui.GetContentRegionAvail();
+            var windowSizeRemaining = ImGui_Ice.GetVisibleContentRegionAvail();
             using (var mainBody = ImRaii.Child("mainBody_WindowV3", windowSizeRemaining, true))
             {
                 if (!mainBody.Success) return;
@@ -143,18 +144,18 @@ namespace ICE.Ui
         }
         public static string HelpInfoText(ModeSelect mode)
         {
-            return mode switch
+            return T(mode switch
             {
                 ModeSelect.Standard =>
-                    "Stand Mode \n" +
-                    "-> Used to select which missions you want to grind. It'll priortize in the following order:\n" +
+                    "Standard Mode\n" +
+                    "-> Used to select which missions you want to grind. It'll prioritize in the following order:\n" +
                     "-> Critical -> Provisional [Sequence/Timed/Weather] -> Standard [A->D]\n" +
                     "-> Select which missions you want to do, and go at it.",
                 ModeSelect.LevelMode =>
                     "Leveling Grind\n" +
                     "-> Will automatically select which mission is the best for leveling your current class based on what level bracket you're in\n" +
                     "-> These are hand picked by me, and determined by the time it takes to complete it\n" +
-                    "-> For crafters it's whatever missions take the least amount of progress" +
+                    "-> For crafters it's whatever missions take the least amount of progress\n" +
                     "-> For gathering, it's whatever is the least pain to do w/ the minimum amount of skills\n" +
                     "**These will automatically set settings for using these modes temporarily**",
                 ModeSelect.RelicMode =>
@@ -174,7 +175,7 @@ namespace ICE.Ui
                     "-> If it runs out of missions to reroll, it will just continually swap tabs until the mission is available (via provisional or critical)\n" +
                     "**This will respect the want to grind off class provisionals, and criticals if you have those enabled",
                 _ => "???? For some reason we're missing this. Please Report this to I"
-            };
+            });
         }
     }
 }

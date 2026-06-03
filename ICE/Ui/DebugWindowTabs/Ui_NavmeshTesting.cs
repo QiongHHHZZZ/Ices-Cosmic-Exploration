@@ -38,7 +38,7 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 var entry = finalPath[i];
 
-                ImGui.Text($"X: {entry.X:N2}, Y: {entry.Y:N2}, Z: {entry.Z:N2}");
+                ImGui.Text(T("X: {0:N2}, Y: {1:N2}, Z: {2:N2}", entry.X, entry.Y, entry.Z));
                 ImGui.SameLine();
                 if (ImGui.Button($"Adjust###Adjust_{entry}_{i}"))
                 {

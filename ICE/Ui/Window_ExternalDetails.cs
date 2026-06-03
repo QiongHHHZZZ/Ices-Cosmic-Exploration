@@ -9,6 +9,7 @@ using ICE.Utilities.ImGuiTools;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static ICE.Localization.L10n;
 using static MissionTimer;
 
 namespace ICE.Ui
@@ -94,7 +95,7 @@ namespace ICE.Ui
 
                 #region Mission Name
 
-                ImGui.Text($"Mission:");
+                ImGui.Text(T("Mission:"));
                 ImGui.SameLine(0, 5);
                 ImGui.TextDisabled($"[{id}]");
                 ImGui.SameLine(0, 5);
@@ -104,8 +105,8 @@ namespace ICE.Ui
 
                 if (ImGui.BeginTable("Detailed Mission Info", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
                 {
-                    ImGui.TableSetupColumn("Name");
-                    ImGui.TableSetupColumn("Info");
+                    ImGui.TableSetupColumn(T("Name"));
+                    ImGui.TableSetupColumn(T("Info"));
 
                     // Row 1
                     ImGui.TableNextRow();
@@ -117,7 +118,7 @@ namespace ICE.Ui
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text($"Planetary Credits");
+                    ImGui.Text(T("Planetary Credits"));
 
                     ImGui.TableNextColumn();
                     ImGui.Text($"{mission.LunarCredit}");
@@ -138,7 +139,7 @@ namespace ICE.Ui
                             ImGui.SameLine();
                         }
                         ImGui.AlignTextToFramePadding();
-                        ImGui.Text($"Dronebits");
+                        ImGui.Text(T("Dronebits"));
 
                         ImGui.TableNextColumn();
                         ImGui.AlignTextToFramePadding();
@@ -147,7 +148,7 @@ namespace ICE.Ui
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text($"Class Score:");
+                    ImGui.Text(T("Class Score:"));
 
                     ImGui.TableNextColumn();
                     ImGui.Text($"{mission.ClassScore}");
@@ -155,7 +156,7 @@ namespace ICE.Ui
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
                     ImGui.AlignTextToFramePadding();
-                    ImGui.Text($"Job(s)");
+                    ImGui.Text(T("Job(s)"));
 
                     ImGui.TableNextColumn();
                     foreach (var job in mission.Jobs)
@@ -169,7 +170,7 @@ namespace ICE.Ui
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
                     ImGui.AlignTextToFramePadding();
-                    ImGui.Text($"Completed:");
+                    ImGui.Text(T("Completed:"));
 
                     ImGui.TableNextColumn();
                     ImGui_Ice.CompletionStatusIcon(mission);
@@ -178,7 +179,7 @@ namespace ICE.Ui
                     {
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);
-                        ImGui.Text($"Bronze Requirement");
+                        ImGui.Text(T("Bronze Requirement"));
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{mission.BronzeScore}");
@@ -187,7 +188,7 @@ namespace ICE.Ui
                     {
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);
-                        ImGui.Text($"Silver Requirement");
+                        ImGui.Text(T("Silver Requirement"));
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{mission.SilverScore}");
@@ -238,8 +239,8 @@ namespace ICE.Ui
 
                 if (ImGui.BeginTable("Relic Exp Info Table", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
                 {
-                    ImGui.TableSetupColumn("Relix Exp Kind");
-                    ImGui.TableSetupColumn("Amount");
+                    ImGui.TableSetupColumn(T("Relix Exp Kind"));
+                    ImGui.TableSetupColumn(T("Amount"));
 
                     ImGui.TableHeadersRow();
 
@@ -276,7 +277,7 @@ namespace ICE.Ui
                                 break;
                         }
 
-                        ImGui.Text($"Lv. {type}");
+                        ImGui.Text(T("Lv. {0}", type));
                         ImGui.TableNextColumn();
                         ImGui.Text($"{xp.Value}");
                     }
@@ -288,8 +289,8 @@ namespace ICE.Ui
                 {
                     if (ImGui.BeginTable("Exp Rewards", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
                     {
-                        ImGui.TableSetupColumn("Class Exp");
-                        ImGui.TableSetupColumn("% of Level");
+                        ImGui.TableSetupColumn(T("Class Exp"));
+                        ImGui.TableSetupColumn(T("% of Level"));
 
                         ImGui.TableHeadersRow();
 
@@ -348,7 +349,7 @@ namespace ICE.Ui
                     {
                         if (flag != MissionAttributes.None && mission.Attributes.HasFlag(flag))
                         {
-                            ImGui.Text($"{EnumNameConverter(flag)}");
+                            ImGui.Text(EnumNameConverter(flag));
                         }
                     }
                 }
@@ -366,7 +367,7 @@ namespace ICE.Ui
                 }
 
                 ImGui_Ice.WindowSpacer();
-                ImGui.Text($"Mission Times!");
+                ImGui.Text(T("Mission Times!"));
 
                 if (C.MissionConfig.TryGetValue(SelectedMission, out var config))
                 {
@@ -388,8 +389,8 @@ namespace ICE.Ui
 
                     if (config.TurninRecords.Count > 0)
                     {
-                        ImGui.Text($"Best Time: {TimeSpan.FromSeconds(config.BestTime):mm\\:ss\\.ff}");
-                        ImGui.Text($"Average Time: {TimeSpan.FromSeconds(config.AverageTime):mm\\:ss\\.ff}");
+                        ImGui.Text(T("Best Time: {0}", TimeSpan.FromSeconds(config.BestTime).ToString(@"mm\:ss\.ff")));
+                        ImGui.Text(T("Average Time: {0}", TimeSpan.FromSeconds(config.AverageTime).ToString(@"mm\:ss\.ff")));
                     }
                     else
                     {
@@ -397,8 +398,8 @@ namespace ICE.Ui
                         ImGui.Text(T("Average Time: --:--:--"));
                     }
 
-                    ImGui.Text($"Times Completed: {config.TotalCompletions}");
-                    ImGui.Text($"Times Attempted: {config.TotalAttempts}");
+                    ImGui.Text(T("Times Completed: {0}", config.TotalCompletions));
+                    ImGui.Text(T("Times Attempted: {0}", config.TotalAttempts));
 
                     if (CosmicHelper.SheetMissionDict.TryGetValue(SelectedMission, out var missionInfo))
                     {
@@ -416,8 +417,8 @@ namespace ICE.Ui
                             ImGui.Text(T("This is ASSUMING:"));
                             ImGui.Text(T("1: You have immaculate rng of getting the mission you want every time"));
                             ImGui.Text(T("2: You're hitting the threshold every time"));
-                            ImGui.Text("This is based on your average time.\n" +
-                                       "So get a good couple of runs to get a good feel for the timing");
+                            ImGui.Text(T("This is based on your average time.\n" +
+                                        "So get a good couple of runs to get a good feel for the timing"));
                             ImGui.EndTooltip();
                         }
                         if (ImGui.BeginTable("Score Info: External Details", 5, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
@@ -426,7 +427,7 @@ namespace ICE.Ui
                             {
                                 ImGui.TableNextRow();
                                 ImGui.TableSetColumnIndex(0);
-                                ImGui.Text($"{entry.Key} [{entry.Value.Completions:N0}]");
+                                ImGui.Text(T("{0} [{1:N0}]", T(entry.Key.ToString()), entry.Value.Completions));
 
                                 ImGui.TableNextColumn();
                                 ImGui.Text($"{entry.Value.Score:N2}");
@@ -451,7 +452,7 @@ namespace ICE.Ui
             }
             else
             {
-                string joke = JokeList[jokeId];
+                string joke = T(JokeList[jokeId]);
                 ImGui.TextWrapped(joke);
             }
         }
@@ -460,23 +461,23 @@ namespace ICE.Ui
         {
             return attribute switch
             {
-                MissionAttributes.Craft => "Crafting",
-                MissionAttributes.Gather => "Gathering",
-                MissionAttributes.Fish => "Fishing",
-                MissionAttributes.Limited => "Limited Supplies",
-                MissionAttributes.Collectables => "Collectable",
-                MissionAttributes.ReducedItems => "Reducable Items",
-                MissionAttributes.ExpertCraft => "Expert Crafts",
-                MissionAttributes.Score_TimeRemaining => "Timed Scoring",
-                MissionAttributes.Score_Chain => "Chained Gather Scoring",
-                MissionAttributes.Score_Boon => "Gatherer's Boons Scoring",
-                MissionAttributes.Score_LargestSize => "Largest Fish Scored",
-                MissionAttributes.Score_Variety => "Variety of Fish Required",
-                MissionAttributes.Score_MinimumScore => "Mission Score Required",
-                MissionAttributes.Critical => "Critical Mission",
-                MissionAttributes.ProvisionalTimed => "Time Required",
-                MissionAttributes.ProvisionalWeather => "Weather Required",
-                MissionAttributes.ProvisionalSequential => "Sequential Missions Required",
+                MissionAttributes.Craft => T("Crafting"),
+                MissionAttributes.Gather => T("Gathering"),
+                MissionAttributes.Fish => T("Fishing"),
+                MissionAttributes.Limited => T("Limited Supplies"),
+                MissionAttributes.Collectables => T("Collectable"),
+                MissionAttributes.ReducedItems => T("Reducable Items"),
+                MissionAttributes.ExpertCraft => T("Expert Crafts"),
+                MissionAttributes.Score_TimeRemaining => T("Timed Scoring"),
+                MissionAttributes.Score_Chain => T("Chained Gather Scoring"),
+                MissionAttributes.Score_Boon => T("Gatherer's Boons Scoring"),
+                MissionAttributes.Score_LargestSize => T("Largest Fish Scored"),
+                MissionAttributes.Score_Variety => T("Variety of Fish Required"),
+                MissionAttributes.Score_MinimumScore => T("Mission Score Required"),
+                MissionAttributes.Critical => T("Critical Mission"),
+                MissionAttributes.ProvisionalTimed => T("Time Required"),
+                MissionAttributes.ProvisionalWeather => T("Weather Required"),
+                MissionAttributes.ProvisionalSequential => T("Sequential Missions Required"),
                 _ => attribute.ToString()
             };
         }

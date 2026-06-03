@@ -787,7 +787,7 @@ namespace ICE.Ui.MainUi.Settings
                     OpenMountPopup();
                 ImGui.SameLine();
                 ImGui.AlignTextToFramePadding();
-                ImGui.Text(T("Mount: {0}", C.MountName));
+                ImGui.Text(T("Mount: {0}", T(C.MountName)));
             }
             else
             {
@@ -810,7 +810,7 @@ namespace ICE.Ui.MainUi.Settings
                         OpenMountPopup();
                     ImGui.SameLine();
                     ImGui.AlignTextToFramePadding();
-                    ImGui.Text(T("Mount: {0}", effectiveMountName));
+                    ImGui.Text(T("Mount: {0}", T(effectiveMountName)));
                 }
             }
 

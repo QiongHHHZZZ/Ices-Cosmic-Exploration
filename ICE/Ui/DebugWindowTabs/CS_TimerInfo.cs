@@ -3,6 +3,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -10,13 +11,13 @@ namespace ICE.Ui.DebugWindowTabs
     {
         public static void Draw()
         {
-            ImGui.Text("All world timers:");
+            ImGui.Text(T("All world timers:"));
             TimerUpdate();
 
             if (CosmicHandler.EventInfo() is { } info)
             {
-                ImGui.Text($"State: {info.wksEvent}");
-                ImGui.Text($"Timer: {info.timer:N0}");
+                ImGui.Text(T("State: {0}", info.wksEvent));
+                ImGui.Text(T("Timer: {0:N0}", info.timer));
             }
         }
 

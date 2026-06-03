@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentWKSMission;
+using static ICE.Localization.L10n;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -16,9 +17,9 @@ namespace ICE.Ui.DebugWindowTabs
             var missionList = CosmicHandler.All_AvailableMissions();
             var tabInfo = HudInfo();
 
-            ImGui.Text($"Selected Job Index {tabInfo.SelectedJobIndex}");
-            ImGui.Text($"Selected Tab Index {tabInfo.SelectedTabIndex}");
-            ImGui.Text($"Selected Filter Index {tabInfo.SelectedFilterIndex}");
+            ImGui.Text(T("Selected Job Index {0}", tabInfo.SelectedJobIndex));
+            ImGui.Text(T("Selected Tab Index {0}", tabInfo.SelectedTabIndex));
+            ImGui.Text(T("Selected Filter Index {0}", tabInfo.SelectedFilterIndex));
 
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
             {
@@ -36,10 +37,10 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("CS: Missions Avaialble", 4, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("Job");
-                ImGui.TableSetupColumn("Id");
-                ImGui.TableSetupColumn("Name");
-                ImGui.TableSetupColumn("Flag");
+                ImGui.TableSetupColumn(T("Job"));
+                ImGui.TableSetupColumn(T("Id"));
+                ImGui.TableSetupColumn(T("Name"));
+                ImGui.TableSetupColumn(T("Flag"));
 
                 ImGui.TableHeadersRow();
 
@@ -62,7 +63,7 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text($"{sheetInfo.Name}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"Rank {sheetInfo.Rank}");
+                        ImGui.Text(T("Rank {0}", sheetInfo.Rank));
                     }
                 }
 

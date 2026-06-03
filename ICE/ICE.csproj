@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/14.0.2">
 
 	<PropertyGroup>
-		<Version>0.0.78.1</Version>
+		<Version>0.0.78.1000</Version>
 		<Description>Who said we couldn't explore the moon!.</Description>
 		<PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -12,6 +12,10 @@
 		<InformationalVersion>$([System.DateTime]::UtcNow.ToString("yyyy\-MM\-dd HH\:mm\:ss"))</InformationalVersion>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<NoWarn>CS8618; CS8625; CS8629; </NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<OutputPath>bin\$(Configuration)\</OutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
@@ -73,9 +77,6 @@
 			<AdditionalProperties>DalamudLibPath=$(DalamudLibPath)</AdditionalProperties>
 		</ProjectReference>
 		<ProjectReference Include="..\ffxiv_pictomancy\Pictomancy\Pictomancy.csproj">
-			<AdditionalProperties>DalamudLibPath=$(DalamudLibPath)</AdditionalProperties>
-		</ProjectReference>
-		<ProjectReference Include="..\OtterGui\OtterGui.csproj">
 			<AdditionalProperties>DalamudLibPath=$(DalamudLibPath)</AdditionalProperties>
 		</ProjectReference>
 	</ItemGroup>

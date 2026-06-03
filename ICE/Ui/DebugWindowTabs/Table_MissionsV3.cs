@@ -4,6 +4,8 @@ using ICE.Utilities.Cosmic_Helper;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ICE.Utilities.ImGuiTools;
+using static ICE.Localization.L10n;
 using static ICE.Utilities.Cosmic_Helper.CosmicHelper;
 
 namespace ICE.Ui.DebugWindowTabs;
@@ -19,9 +21,10 @@ internal class Table_MissionsV3
         var bottomSpace = ImGui.GetTextLineHeight() + 6f;
         bottomSpace += 12f; // prevent the tabs from creating a scrollbar
 
-        Vector2 size = new(ImGui.GetContentRegionAvail().X, ImGui.GetContentRegionAvail().Y - bottomSpace);
+        var available = ImGui_Ice.GetVisibleContentRegionAvail();
+        Vector2 size = new(MathF.Max(1f, available.X), MathF.Max(1f, available.Y - bottomSpace));
 
-        ImGui.Text($"Item Count: {ItemCount}");
+        ImGui.Text(T("Item Count: {0}", ItemCount));
         if (ImGui.BeginChild("###MissionTableV3", size, false))
         {
             var showRedAlert = C.MissionFilter.HasFlag(MissionFilter.RedAlert);
@@ -49,7 +52,7 @@ internal class Table_MissionsV3
                 var filterActive = MissionTable.FilteredItems.Count != 0 && MissionTable.FilteredItems.Count != ItemCount;
                 var filterCount = filterActive ? $" (of {ItemCount})" : "";
                 var height = ImGui.GetFrameHeight();
-                MissionTable.Draw(height + 4f);
+                MissionTable.Draw(height + 2f);
             }
             catch (Exception ex)
             {

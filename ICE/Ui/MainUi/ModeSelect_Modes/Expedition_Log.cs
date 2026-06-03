@@ -67,7 +67,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.Image(jobInfo.Value.JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
 
                     ImGui.TableNextColumn();
-                    string name = jobInfo.Value.JobName;
+                    string name = CosmicHelper.GetJobName(jobInfo.Key);
                     ImGui.AlignTextToFramePadding();
                     if (ImGui.Selectable(name, SelectedJob == jobInfo.Key, ImGuiSelectableFlags.SpanAllColumns))
                     {
@@ -107,9 +107,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             {
                 var moons = new (string Name, string Asset, ExpeditionTabs type, uint Territory)[]
                 {
-                    ("Sinus Ardorum", "ICE.Resources.Sinus_Ardorum.png", ExpeditionTabs.Sinus, 1237),
-                    ("Phaenna", "ICE.Resources.Phaenna.png", ExpeditionTabs.Phaenna, 1291),
-                    ("Oizys", "ICE.Resources.Oizys.png", ExpeditionTabs.Oizys, 1310),
+                    (T("Sinus Ardorum"), "ICE.Resources.Sinus_Ardorum.png", ExpeditionTabs.Sinus, 1237),
+                    (T("Phaenna"), "ICE.Resources.Phaenna.png", ExpeditionTabs.Phaenna, 1291),
+                    (T("Oizys"), "ICE.Resources.Oizys.png", ExpeditionTabs.Oizys, 1310),
                 };
 
                 if (SelectedJob != 0)
@@ -737,7 +737,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             {
                                 ImGui.OpenPopup("Select Fishing Profile");
                             }
-                            if (ImGui.BeginPopup("Select Fishing Profile"))
+                            if (ImGui.BeginPopup(T("Select Fishing Profile")))
                             {
                                 ImGui.Text(T("Fishing profile: {0}", missionInfo.Name));
                                 ImGui.Separator();
@@ -930,9 +930,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             {
                 var researchTypes = new (string Name, string Asset, int MaxLv)[]
                 {
-                    ("Sinus", "ICE.Resources.ResearchIcons.novice.png", 9),
-                    ("Phaenna", "ICE.Resources.ResearchIcons.intermediate.png", 14),
-                    ("Oizys", "ICE.Resources.ResearchIcons.advance.png", 17),
+                    (T("Sinus"), "ICE.Resources.ResearchIcons.novice.png", 9),
+                    (T("Phaenna"), "ICE.Resources.ResearchIcons.intermediate.png", 14),
+                    (T("Oizys"), "ICE.Resources.ResearchIcons.advance.png", 17),
                 };
 
                 if (ImGui.BeginTable("Class Progress: Icon Preview", 3, ImGuiTableFlags.SizingFixedFit))
@@ -1192,4 +1192,3 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         }
     }
 }
-

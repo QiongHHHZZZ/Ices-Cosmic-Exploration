@@ -28,6 +28,7 @@ namespace ICE.Enums
         Critical,
         Provisional,
         Standard,
+        ToolMastery,
     }
 
     public enum TurninState

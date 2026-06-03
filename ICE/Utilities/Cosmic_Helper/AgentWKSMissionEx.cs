@@ -55,7 +55,7 @@ public static unsafe class AgentWKSMissionEx
     /// internal 0–11 job index. Also syncs MissionData and clears HasSavedTab.
     /// Returns false if the sig wasn't found or the agent/data is null.
     /// </summary>
-    public static bool SetSelectedJobTab(AgentWKSMission* agent, byte classJobId)
+    public static bool SetSelectedJobTab(AgentWKSMission* agent, byte classJobId, byte categoryTab = 0)
     {
         if (_jobIndexToClassJobId == null || agent == null || agent->Data == null) return false;
 
@@ -67,7 +67,7 @@ public static unsafe class AgentWKSMissionEx
             break;
         }
 
-        agent->SelectedTab = 0;
+        agent->SelectedTab = categoryTab;
         agent->Data->SelectedJobIndex = jobIndex;
         agent->Data->UpdateFlags = 1;
         // Clear HasSavedTab to prevent the game from overwriting our set on the next tick

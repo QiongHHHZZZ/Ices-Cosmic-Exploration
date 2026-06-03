@@ -1,4 +1,6 @@
-﻿using ECommons.GameHelpers;
+﻿using ECommons.Automation.UIInput;
+using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
@@ -18,6 +20,9 @@ namespace ICE.Utilities
 {
     internal class CosmicHandler
     {
+        // WKSMission category tab index for "Tool Mastery Missions" (0 = Basic, 3 = Tool Mastery).
+        internal const byte ToolMasteryTab = 3;
+
         internal unsafe static bool IsMissionTimedOut()
         {
             var c = UIState.Instance()->MassivePcContentTodo.Director;
@@ -95,8 +100,15 @@ namespace ICE.Utilities
                     foreach (var mission in criticalList)
                         allMissions.Add(mission.MissionUnitId);
                 }
+
+                // Tool Mastery (tab 3) has no getter; only readable while that tab is selected.
+                if (wks->SelectedTab == ToolMasteryTab && wks->Data != null)
+                {
+                    foreach (var mission in wks->Data->MissionList)
+                        allMissions.Add(mission.MissionUnitId);
+                }
             }
-                
+
             return allMissions;
         }
         internal unsafe static List<uint> Basic_AvailableMissions()
@@ -174,6 +186,60 @@ namespace ICE.Utilities
             }
 
             return allMissions;
+        }
+        // Tool Mastery (tab 3) has no dedicated getter; its missions are only readable from
+        // Data.MissionList while that tab is selected. Returns empty unless we're on tab 3.
+        internal unsafe static List<uint> ToolMastery_AvailableMissions()
+        {
+            List<uint> allMissions = new();
+
+            if (GenericHelpers.TryGetAddonMaster<WKSMission>(out var wksMission) && wksMission.IsAddonReady)
+            {
+                var wks = AgentWKSMission.Instance();
+                if (wks is null || !wks->IsAgentActive() || wks->Data == null)
+                    return allMissions;
+
+                if (wks->SelectedTab == ToolMasteryTab)
+                {
+                    foreach (var mission in wks->Data->MissionList)
+                        allMissions.Add(mission.MissionUnitId);
+                }
+            }
+
+            return allMissions;
+        }
+        // Tool Mastery (tab 3) has no getter, so we must actually switch the UI to it (by clicking the
+        // tab button - the agent SelectedTab field does not move the UI). Tab buttons are sequential:
+        // Basic=17, Provisional=18, Critical=19, Tool Mastery=20 (17 + tab index). CurrentTab = AtkValues[27].
+        // Returns true once we're on the requested tab.
+        internal unsafe static bool EnsureCategoryTab(byte tab)
+        {
+            try
+            {
+                var addonPtr = Svc.GameGui.GetAddonByName("WKSMission");
+                if (addonPtr.Address == nint.Zero)
+                    return false;
+
+                var addon = (AtkUnitBase*)addonPtr.Address;
+                if (!addon->IsVisible)
+                    return false;
+
+                if (addon->AtkValues[27].UInt == tab)
+                    return true;
+
+                var btn = addon->GetComponentButtonById((uint)(17 + tab));
+                if (btn != null && btn->IsEnabled && btn->AtkResNode->IsVisible())
+                {
+                    if (EzThrottler.Throttle("WKS Switch Category Tab", 250))
+                        btn->ClickAddonButton(addon);
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                IceLogging.Error($"EnsureCategoryTab threw: {ex.Message}");
+                return false;
+            }
         }
         internal unsafe static List<uint> VisibleMissions()
         {

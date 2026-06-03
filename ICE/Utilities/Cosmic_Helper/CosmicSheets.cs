@@ -139,6 +139,14 @@ public static unsafe partial class CosmicHelper
         public bool BRank => Rank is 3;
         public bool CRank => Rank is 2;
         public bool Drank => Rank == 1 && !Attributes.HasFlag(MissionAttributes.Critical);
+        // Tool Mastery missions: Rank 6 like EX+, but not provisional/critical (EX+ are always weather/timed).
+        public bool Master => Rank == 6 && !IsProvisional && !IsCritical;
+        // Greater Reach missions are gathering missions whose base Gather flag was swapped for a
+        // GreaterReach_* variant during parsing; treat them as gathering for routing/profile purposes.
+        public bool IsGreaterReach => Attributes.HasFlag(MissionAttributes.GreaterReach_GatherX)
+            || Attributes.HasFlag(MissionAttributes.GreaterReach_Boon)
+            || Attributes.HasFlag(MissionAttributes.GreaterReach_Chain)
+            || Attributes.HasFlag(MissionAttributes.GreaterReach_Boon_Chain);
 
     }
     public static Dictionary<uint, CosmicInfo> SheetMissionDict = new();

@@ -74,10 +74,11 @@ namespace ICE.Enums
         BRank = 1 << 5,
         CRank = 1 << 6,
         DRank = 1 << 7,
+        Master = 1 << 8,
 
         All = RedAlert
             + Sequence + Weather + Timed
-            + ARank + BRank + CRank + DRank
+            + ARank + BRank + CRank + DRank + Master
     }
 
     public enum JobFilter

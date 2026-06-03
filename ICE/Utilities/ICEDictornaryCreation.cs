@@ -168,6 +168,9 @@ public sealed partial class ICE
                     122 => MissionAttributes.Fish | MissionAttributes.Collectables,
                     139 => jobs.Contains(18) ? MissionAttributes.Fish : MissionAttributes.Gather, // Critical
                     141 => MissionAttributes.Fish,
+                    // Auxesia Tool Mastery gather missions (Geological/Botanical). They use Greater Reach,
+                    // so the GreaterReach block below converts Chain+Boon into GreaterReach_Boon_Chain.
+                    312 or 313 => MissionAttributes.Gather | MissionAttributes.Score_Chain | MissionAttributes.Score_Boon,
                     _ => MissionAttributes.None
                 };
             }

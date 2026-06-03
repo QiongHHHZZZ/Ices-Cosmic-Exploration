@@ -21,6 +21,7 @@ namespace ICE.Scheduler.Tasks
             Timed,
             Sequence,
             Ex,
+            Master,
             A,
             B,
             C,
@@ -35,6 +36,7 @@ namespace ICE.Scheduler.Tasks
             [MissionKind.Timed] = new(),
             [MissionKind.Sequence] = new(),
             [MissionKind.Ex] = new(),
+            [MissionKind.Master] = new(),
             [MissionKind.A] = new(),
             [MissionKind.B] = new(),
             [MissionKind.C] = new(),
@@ -82,6 +84,7 @@ namespace ICE.Scheduler.Tasks
             {
                 entry = rank switch
                 {
+                    6 => MissionKind.Master, // Rank 6 non-provisional = Tool Mastery (separate in-game tab)
                     5 => MissionKind.Ex,
                     4 => MissionKind.A,
                     3 => MissionKind.B,
@@ -438,6 +441,13 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
 
+                // Tool Mastery missions live in their own in-game tab (no dedicated getter),
+                // so handle them explicitly regardless of MissionTypePrio ordering.
+                if (MissionLibrary[MissionKind.Master].Count > 0)
+                {
+                    P.TaskManager.Enqueue(() => CheckMissions(MissionLibrary[MissionKind.Master], MissionTypes.ToolMastery), "Checking Tool Mastery tab for missions");
+                }
+
                 P.TaskManager.Enqueue(() => FindReroll(), "Find mission to reroll for");
             }
             else
@@ -473,9 +483,35 @@ namespace ICE.Scheduler.Tasks
 
                 var job = Goldjob != 0 ? Goldjob : Mission_Settings.SelectedJob;
 
-                if (CorrectJobTab(job))
+                // Tool Mastery missions live on their own category tab (3); everything else is Basic (0).
+                byte categoryTab = type is MissionTypes.ToolMastery ? CosmicHandler.ToolMasteryTab : (byte)0;
+
+                if (CorrectJobTab(job, categoryTab))
                 {
-                    if (mode == ModeSelect.LevelMode)
+                    if (type is MissionTypes.ToolMastery)
+                    {
+                        // Tool Mastery has no tab-independent getter, so we must be on its UI tab to read
+                        // the list. Click into it first; bail this cycle until the UI is actually there.
+                        if (!CosmicHandler.EnsureCategoryTab(CosmicHandler.ToolMasteryTab))
+                            return true;
+
+                        var masterAvail = CosmicHandler.ToolMastery_AvailableMissions();
+                        IceLogging.Verbose($"Checking Tool Mastery missions.\n" +
+                            $"Loaded mission Count: {missionList.Count()}\n" +
+                            $"Available on tab: {masterAvail.Count()}", tag);
+
+                        foreach (var missionId in missionList)
+                        {
+                            if (masterAvail.Contains(missionId))
+                            {
+                                LogInfo(missionId);
+                                Insert_GrabMissionTask(missionId);
+                                return true;
+                            }
+                        }
+                        return true;
+                    }
+                    else if (mode == ModeSelect.LevelMode)
                     {
                         var levelingMission = missionList.FirstOrDefault();
                         IceLogging.Verbose($"Leveling Mission: Job: {Mission_Settings.SelectedJob} | Mission: {levelingMission} | Level: {CosmicHelper.SheetMissionDict[levelingMission].Level}", debugOnly: true);
@@ -891,7 +927,7 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Error("HEY. YOU DIDN'T READ THE HELP ME PAGE. AND NOW YOU'RE MISSING NAVMESH. So... yeah... if things break this is why");
                 return true;
             }
-            else if (sheetInfo.Attributes.HasFlag(MissionAttributes.Gather))
+            else if (sheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || sheetInfo.IsGreaterReach)
             {
                 var missionTerritory = sheetInfo.TerritoryId;
                 var mapId = sheetInfo.MapPosition;
@@ -1084,8 +1120,15 @@ namespace ICE.Scheduler.Tasks
 
                     var job = CosmicHelper.SheetMissionDict[missionId].Jobs.First();
 
-                    if (CorrectJobTab(job))
+                    // Tool Mastery missions are only readable/grabbable from their own tab (3).
+                    byte categoryTab = CosmicHelper.SheetMissionDict[missionId].Master ? CosmicHandler.ToolMasteryTab : (byte)0;
+
+                    if (CorrectJobTab(job, categoryTab))
                     {
+                        // Tool Mastery missions are only readable/grabbable from their own UI tab.
+                        if (categoryTab == CosmicHandler.ToolMasteryTab && !CosmicHandler.EnsureCategoryTab(CosmicHandler.ToolMasteryTab))
+                            return false;
+
                         IceLogging.Verbose("On the correct tab, we're going to see the total mission count", tag);
                         var allmissions = CosmicHandler.All_AvailableMissions();
                         IceLogging.Verbose($"All mission count: {allmissions.Count()} | Goal: {missionId}");
@@ -1182,6 +1225,7 @@ namespace ICE.Scheduler.Tasks
 
                             switch (rank)
                             {
+                                case 6: // Master, treated as EX+ tier
                                 case 5: AExRank.Add(missionId); break;
                                 case 4: ARank.Add(missionId); break;
                                 case 3: BRank.Add(missionId); break;
@@ -1438,7 +1482,7 @@ namespace ICE.Scheduler.Tasks
         }
 
         // functions that are used across things
-        private static unsafe bool CorrectJobTab(uint job)
+        private static unsafe bool CorrectJobTab(uint job, byte categoryTab = 0)
         {
             var agent = AgentWKSMission.Instance();
             if (agent == null)
@@ -1449,7 +1493,7 @@ namespace ICE.Scheduler.Tasks
                 return false;
             }
 
-            return AgentWKSMissionEx.SetSelectedJobTab(agent, (byte)job);
+            return AgentWKSMissionEx.SetSelectedJobTab(agent, (byte)job, categoryTab);
         }
         private static void Notes()
         {

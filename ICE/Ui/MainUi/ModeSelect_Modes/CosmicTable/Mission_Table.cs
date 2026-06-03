@@ -1,13 +1,10 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using ICE.OldYamlConfig;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
-using JetBrains.Annotations;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using static ICE.ConfigFiles.Config;
 using static ICE.Localization.L10n;
@@ -171,7 +168,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             C.SaveDebounced();
         }
     }
-
     internal class Mission_Table : Table<MissionInfo>, IDisposable
     {
         // TODO: Create default width's for all of these...
@@ -984,8 +980,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public MissionColumn()
             {
                 Flags = ImGuiTableColumnFlags.None;
-                SetFlags(MissionFilter.RedAlert, MissionFilter.Sequence, MissionFilter.Weather, MissionFilter.Timed, MissionFilter.ARank, MissionFilter.BRank, MissionFilter.CRank, MissionFilter.DRank);
-                SetNames(T("Red Alert"), T("Sequence"), T("Weather"), T("Timed"), T("A Rank"), T("B Rank"), T("C Rank"), T("D Rank"));
+                SetFlags(MissionFilter.RedAlert, MissionFilter.Sequence, MissionFilter.Weather, MissionFilter.Timed, MissionFilter.ARank, MissionFilter.BRank, MissionFilter.CRank, MissionFilter.DRank, MissionFilter.Master);
+                SetNames(T("Red Alert"), T("Sequence"), T("Weather"), T("Timed"), T("A Rank"), T("B Rank"), T("C Rank"), T("D Rank"), T("Master"));
             }
 
             private static int GetMissionPriority(CosmicInfo info)
@@ -1036,6 +1032,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     {
                         string rank = item.SheetInfo.Rank switch
                         {
+                            6 => "M",
                             5 or 4 => "A",
                             3 => "B",
                             2 => "C",
@@ -1060,6 +1057,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 if (FilterValue.HasFlag(MissionFilter.BRank) && sheetInfo.BRank && !special) return true;
                 if (FilterValue.HasFlag(MissionFilter.CRank) && sheetInfo.CRank && !special) return true;
                 if (FilterValue.HasFlag(MissionFilter.DRank) && sheetInfo.Drank && !special) return true;
+                if (FilterValue.HasFlag(MissionFilter.Master) && sheetInfo.Master) return true;
 
                 return false;
             }
@@ -1363,7 +1361,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + buttonInset);
                 var buttonSize = new Vector2(MathF.Max(1f, ImGuiUtil.CurrentColumnWidth - buttonInset * 2f), 0);
                 bool craftProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Craft);
-                bool gatherProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Gather);
+                bool gatherProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || sheetInfo.IsGreaterReach;
                 bool collectable = sheetInfo.Attributes.HasFlag(MissionAttributes.Collectables) || sheetInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
                 bool fishProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Fish);
 
@@ -1541,18 +1539,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
             return suffix;
         }
-        public sealed class NotesColumn : ItemFilterColumn
-        {
-            public NotesColumn()
-            {
-                Flags = ImGuiTableColumnFlags.None;
-                SetFlags(ItemFilter.BestSPM, ItemFilter.Sequence, ItemFilter.Unlock, ItemFilter.NoNotes);
-                SetNames(T("Best Score Per Minute"), T("Sequence"), T("Needs Unlocked"), T("No Notes"));
-            }
-            public override void DrawColumn(MissionInfo item, int idx)
-                => DrawNoteIcons(item, false);
-        }
-
         private static void DrawNoteIcons(MissionInfo item, bool inlineAfterPreviousItem)
         {
             var sheetInfo = item.SheetInfo;

@@ -370,12 +370,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 {
                     if (filterStrip.Success)
                     {
-                        DrawFilterCard("Tasks", GetFilterCardWidth(scale, T("Tasks"), T("Red Alert"), T("Sequence"), T("Weather"), T("Timed"), T("A Rank"), T("B Rank"), T("C Rank"), T("D Rank")), cardHeight, scale, () =>
+                        DrawFilterCard("Tasks", GetFilterCardWidth(scale, T("Tasks"), T("Red Alert"), T("Sequence"), T("Weather"), T("Timed"), T("Master"), T("A Rank"), T("B Rank"), T("C Rank"), T("D Rank")), cardHeight, scale, () =>
                         {
                             ImGui_Ice.DrawRankButton(T("Red Alert"), MissionFilter.RedAlert, MissionTable);
                             ImGui_Ice.DrawRankButton(T("Sequence"), MissionFilter.Sequence, MissionTable);
                             ImGui_Ice.DrawRankButton(T("Weather"), MissionFilter.Weather, MissionTable);
                             ImGui_Ice.DrawRankButton(T("Timed"), MissionFilter.Timed, MissionTable);
+                            ImGui_Ice.DrawRankButton(T("Master"), MissionFilter.Master, MissionTable);
                             ImGui_Ice.DrawRankButton(T("A Rank"), MissionFilter.ARank, MissionTable);
                             ImGui_Ice.DrawRankButton(T("B Rank"), MissionFilter.BRank, MissionTable);
                             ImGui_Ice.DrawRankButton(T("C Rank"), MissionFilter.CRank, MissionTable);

@@ -35,7 +35,8 @@ internal static class CosmicMapMarkerNudges
 
             // Auxesia 
             1607, // 8 Node BTN - A Rank
-            1641, 1642, 1643 // BTN Nodes that overlap with the MIN nodes in the same area
+            1641, 1642, 1643, 1644, // BTN Nodes that overlap with the MIN nodes in the same area
+            1647, 1648, 1649 // BTN Master missions overlapping the MIN Master nodes at (-633, 246)
         };
 
         if (MissionNudges.Contains(missionRowId))

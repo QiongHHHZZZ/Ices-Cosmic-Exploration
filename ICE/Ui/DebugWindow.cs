@@ -1,3 +1,4 @@
+using Dalamud.Interface;
 using ICE.Ui.DebugWindowTabs;
 using ICE.Ui.MainUi.HelpFolder;
 using System.Collections.Generic;
@@ -7,6 +8,8 @@ namespace ICE.Ui;
 
 internal class DebugWindow : Window
 {
+    private bool _showSidebar = true;
+
     public DebugWindow() :
         base(T("ICE {0} Debugger ###IceCosmicDebug1", P.GetType().Assembly.GetName().Version?.ToString() ?? "unknown"))
     {
@@ -16,6 +19,16 @@ internal class DebugWindow : Window
             MinimumSize = new Vector2(100, 100),
             MaximumSize = new Vector2(3000, 3000)
         };
+
+        // Title-bar toggle for the left tab list, so the window can be shrunk down to just the content.
+        TitleBarButtons.Add(new TitleBarButton
+        {
+            Icon = FontAwesomeIcon.Bars,
+            IconOffset = new Vector2(2, 1),
+            Click = _ => _showSidebar = !_showSidebar,
+            ShowTooltip = () => ImGui.SetTooltip(_showSidebar ? T("Hide tab list") : T("Show tab list")),
+        });
+
         P.windowSystem.AddWindow(this);
     }
 
@@ -83,27 +96,31 @@ internal class DebugWindow : Window
     {
         float spacing = 10f;
         float leftPanelWidth = 200f;
-        float rightPanelWidth = ImGui.GetContentRegionAvail().X - leftPanelWidth - spacing;
         float childHeight = ImGui.GetContentRegionAvail().Y;
 
-        if (ImGui.BeginChild("DebugSelector", new Vector2(leftPanelWidth, childHeight), true))
+        if (_showSidebar)
         {
-            foreach (var viewName in DebugViews.Keys)
+            if (ImGui.BeginChild("DebugSelector", new Vector2(leftPanelWidth, childHeight), true))
             {
-                bool isSelected = (selectedDebugView == viewName);
-                string label = isSelected ? $"→ {viewName}" : $"   {viewName}";
-
-                if (ImGui.Selectable(label, isSelected))
+                foreach (var viewName in DebugViews.Keys)
                 {
-                    selectedDebugView = viewName;
+                    bool isSelected = (selectedDebugView == viewName);
+                    string label = isSelected ? $"→ {viewName}" : $"   {viewName}";
+
+                    if (ImGui.Selectable(label, isSelected))
+                    {
+                        selectedDebugView = viewName;
+                    }
                 }
             }
+            ImGui.EndChild();
+
+            ImGui.SameLine(0, spacing);
         }
-        ImGui.EndChild();
 
-        ImGui.SameLine(0, spacing);
+        float rightPanelWidth = ImGui.GetContentRegionAvail().X;
 
-        if (ImGui.BeginChild("DebugContent", new System.Numerics.Vector2(rightPanelWidth, childHeight), true))
+        if (ImGui.BeginChild("DebugContent", new Vector2(rightPanelWidth, childHeight), true))
         {
             if (DebugViews.TryGetValue(selectedDebugView, out var drawAction))
             {

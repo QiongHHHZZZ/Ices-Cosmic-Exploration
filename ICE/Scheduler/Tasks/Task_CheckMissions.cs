@@ -437,8 +437,7 @@ namespace ICE.Scheduler.Tasks
                         }
                         case MissionTypes.DroneSearch:
                         {
-                            // TODO: Add Auxesia Support
-                            if (C.Cosmodrone_Run && PlayerHelper.IsInOizys())
+                            if (C.Cosmodrone_Run && (PlayerHelper.IsInOizys()||PlayerHelper.IsInAuxesia()))
                             {
                                 P.TaskManager.Enqueue(() => Task_ArtifactSearch.RefreshMapInfo(), "Inserting Drone Task");
                             }

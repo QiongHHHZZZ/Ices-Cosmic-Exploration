@@ -59,7 +59,7 @@ public static partial class CosmicHelper
         [1237] = 45691, // sinus
         [1291] = 48146, // phaenna
         [1310] = 48147, // Oizys
-        [1319] = 48148, // moon 4
+        [1319] = 48148, // Auxesia
     };
 
     public class Dronebit

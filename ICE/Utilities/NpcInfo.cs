@@ -30,7 +30,7 @@ internal static class NpcData // Renamed the class to avoid conflict
 
     public static Dictionary<uint, Dictionary<NpcType, NPCInfo>> MoonNpcs = new()
     {
-        [1237] = new Dictionary<NpcType, NPCInfo>
+        [1237] = new Dictionary<NpcType, NPCInfo> // sinus
         {
             [NpcType.Repair] = new NPCInfo // Repair | Gil Gear Vendor
             {
@@ -69,7 +69,7 @@ internal static class NpcData // Renamed the class to avoid conflict
 
             }
         },
-        [1291] = new Dictionary<NpcType, NPCInfo>
+        [1291] = new Dictionary<NpcType, NPCInfo> // phaenna
         {
             [NpcType.Repair] = new NPCInfo
             {
@@ -107,7 +107,7 @@ internal static class NpcData // Renamed the class to avoid conflict
                 Location_Circle = new(343.46f, 52.64f, -441.80f),
             }
         },
-        [1310] = new Dictionary<NpcType, NPCInfo>
+        [1310] = new Dictionary<NpcType, NPCInfo> // Oizys
         {
             [NpcType.Repair] = new NPCInfo // Repair | Gil Gear Vendor
             {
@@ -148,8 +148,53 @@ internal static class NpcData // Renamed the class to avoid conflict
             {
                 NpcId = 1052645,
                 Name = "Lefleda",
-                Location_Circle = new(-156.91f, 0.50f, 143.07f),
                 Location_Npc = new(-155.02f, 0.50f, 144.58f),
+                Location_Circle = new(-156.91f, 0.50f, 143.07f),
+            }
+        },
+        [1319] = new Dictionary<NpcType, NPCInfo> // Auxesia
+        {
+            [NpcType.Repair] = new NPCInfo // Repair | Gil Gear Vendor
+            {
+                NpcId = 1056825,
+                Name = "Godgyth",
+                Location_Npc = new Vector3(317.60f, 205.75f, 374.77f),
+                Location_Circle = new Vector3(315.01f, 205.64f, 375.59f),
+            },
+            [NpcType.Credit] = new NPCInfo // Credit Exchange Vendor
+            {
+                NpcId = 1056824,
+                Name = "Mesouaidonque",
+                Location_Npc = new Vector3(317.73f, 205.75f, 376.69f),
+                Location_Circle = new Vector3(315.01f, 205.64f, 375.59f),
+            },
+            [NpcType.Relic] = new NPCInfo // Relic NPC
+            {
+                NpcId = 1056821,
+                Name = "Researchingway",
+                Location_Npc = new Vector3(291.00f, 206.21f, 402.57f),
+                Location_Circle = new Vector3(291.08f, 205.64f, 399.60f),
+            },
+            [NpcType.Gamba] = new NPCInfo // Cosmic Fortune aka Gamba Wheel
+            {
+                NpcId = 1056826,
+                Name = "Orbitingway",
+                Location_Npc = new Vector3(290.94f, 206.21f, 349.35f),
+                Location_Circle = new Vector3(290.90f, 205.64f, 352.39f),
+            },
+            [NpcType.Drone] = new NPCInfo
+            {
+                NpcId = 1056828,
+                Name = "Kaede",
+                Location_Npc = new Vector3(302.20f, 205.64f, 398.5f),
+                Location_Circle = new Vector3(301.25f, 205.64f, 396.5f),
+            },
+            [NpcType.RedAlert] = new NPCInfo()
+            {
+                NpcId = 1056819,
+                Name = "Lefleda",
+                Location_Npc = new(280.41f, 205.64f, 352.49f),
+                Location_Circle = new(280.47f, 205.64f, 354.54f),
             }
         },
     };

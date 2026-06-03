@@ -1,11 +1,12 @@
 {
-  "Author": "Ice, QiongHHHZZZ(汉化&适配)",
-  "Name": "Ice's Cosmic Exploration (ICE)",
-  "Punchline": "欢迎来到月球。",
-  "Description": "国服维护版宇宙探索插件，支持采集、制作、钓鱼与任务自动化。",
+  "Author": "Ice",
+  "Name": "Ice's Cosmic Exploration",
+  "Punchline": "The gathering companion that we all needed.",
+  "Description": "A little helper to go gather your heart out.",
   "ApplicableVersion": "any",
   "Tags": [
     "Gatherers"
   ],
-  "IconUrl": "https://raw.githubusercontent.com/QiongHHHZZZ/DalamudPlugins/main/icons/ice.png"
+  "RepoUrl": "https://github.com/LeontopodiumNivale14/Ices-Cosmic-Exploration",
+  "IconUrl": "https://puni.sh/api/plugins/icon/70"
 }

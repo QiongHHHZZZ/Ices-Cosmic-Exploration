@@ -155,7 +155,7 @@ public sealed partial class ICE
                     106 => MissionAttributes.Gather | MissionAttributes.Score_Chain,
                     107 => MissionAttributes.Gather | MissionAttributes.Score_Boon,
                     108 => MissionAttributes.Gather | MissionAttributes.Score_Chain | MissionAttributes.Score_Boon,
-                    109 or 111 => MissionAttributes.Gather | MissionAttributes.Collectables,
+                    109 or 111 or 372 => MissionAttributes.Gather | MissionAttributes.Collectables,
                     110 => MissionAttributes.Gather | MissionAttributes.ReducedItems | MissionAttributes.Score_TimeRemaining,
                     112 => MissionAttributes.Gather | MissionAttributes.ReducedItems,
                     113 => MissionAttributes.Fish | MissionAttributes.Score_Variety | MissionAttributes.Score_TimeRemaining,
@@ -171,6 +171,7 @@ public sealed partial class ICE
                     // Auxesia Tool Mastery gather missions (Geological/Botanical). They use Greater Reach,
                     // so the GreaterReach block below converts Chain+Boon into GreaterReach_Boon_Chain.
                     312 or 313 => MissionAttributes.Gather | MissionAttributes.Score_Chain | MissionAttributes.Score_Boon,
+
                     _ => MissionAttributes.None
                 };
             }

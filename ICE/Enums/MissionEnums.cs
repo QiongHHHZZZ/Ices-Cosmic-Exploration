@@ -39,6 +39,8 @@ namespace ICE.Enums
         Gold = 3,
         Critical = 4,
         SequenceGold = 5,
+        // Never turn in on score; only when the mission timer expires. Useful for missions that
+        // extend their timer as you hit goals (e.g. Tool Mastery) so you keep maxing score.
         TimeExpired = 6,
     }
 

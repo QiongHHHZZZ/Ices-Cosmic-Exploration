@@ -1302,7 +1302,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     if (C.MissionConfig.TryGetValue(item.Id, out var configInfo))
                     {
                         var highestTurnin = configInfo.TurninGoal;
-                        var showTimeExpired = item.SheetInfo.Rank == 6;
                         var timeExpired = highestTurnin == TurninState.TimeExpired;
                         var goldEnabled = !timeExpired && highestTurnin >= TurninState.Gold;
                         var silverEnabled = !timeExpired && highestTurnin >= TurninState.Silver;
@@ -1312,24 +1311,21 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         using (ImRaii.PushFont(UiBuilder.IconFont))
                             buttonWidth = ImGui.CalcTextSize(FontAwesomeIcon.Trophy.ToIconString()).X + ImGui.GetStyle().FramePadding.X * 2f;
 
-                        var buttonCount = showTimeExpired ? 4f : 3f;
+                        var buttonCount = 4f;
                         var totalWidth = buttonWidth * buttonCount + spacing * (buttonCount - 1f);
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + MathF.Max(0, (ImGuiUtil.CurrentColumnWidth - totalWidth) * 0.5f));
 
-                        if (showTimeExpired)
+                        using (ImRaii.PushColor(ImGuiCol.Text, timeExpired ? GoldColor : DisabledColor))
                         {
-                            using (ImRaii.PushColor(ImGuiCol.Text, timeExpired ? GoldColor : DisabledColor))
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Clock, "##TimeExpired"))
                             {
-                                if (ImGuiEx.IconButton(FontAwesomeIcon.Clock, "##TimeExpired"))
-                                {
-                                    configInfo.TurninGoal = TurninState.TimeExpired;
-                                    C.SaveDebounced();
-                                }
+                                configInfo.TurninGoal = TurninState.TimeExpired;
+                                C.SaveDebounced();
                             }
-                            if (ImGui.IsItemHovered())
-                                ImGui.SetTooltip("Only turn in when the mission timer expires (keep gathering for max score).\nUseful for Tool Mastery missions that extend their timer on goal completion.");
-                            ImGui.SameLine(0, spacing);
                         }
+                        if (ImGui.IsItemHovered())
+                            ImGui.SetTooltip("Only turn in when the mission timer expires (keep gathering for max score).\nUseful for Tool Mastery missions that extend their timer on goal completion.");
+                        ImGui.SameLine(0, spacing);
                         using (ImRaii.PushColor(ImGuiCol.Text, goldEnabled ? GoldColor : DisabledColor))
                         {
                             if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold"))

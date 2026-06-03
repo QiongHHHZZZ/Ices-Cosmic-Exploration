@@ -917,6 +917,8 @@ namespace ICE.Scheduler.Tasks
             var sheetInfo = CosmicHelper.SheetMissionDict[missionId];
             var missionConfig = C.MissionConfig[missionId];
 
+            IceLogging.Info($"[MoveCheck] id={missionId} attrs=[{sheetInfo.Attributes}] gather={sheetInfo.IsGatherMission} fish={sheetInfo.IsFishMission} gr={sheetInfo.IsGreaterReach} unsupported={UnsupportedMissions.Ids.Contains(missionId)} manual={missionConfig.ManualMode} mapPos=({sheetInfo.MapPosition.X},{sheetInfo.MapPosition.Y})", tag);
+
             if (missionConfig.ManualMode || UnsupportedMissions.Ids.Contains(missionId))
             {
                 IceLogging.Info("Mission is currently in manual mode, or not supported. So not going to pathfind to it.", tag);
@@ -927,7 +929,7 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Error("HEY. YOU DIDN'T READ THE HELP ME PAGE. AND NOW YOU'RE MISSING NAVMESH. So... yeah... if things break this is why");
                 return true;
             }
-            else if (sheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || sheetInfo.IsGreaterReach)
+            else if (sheetInfo.IsGatherMission || sheetInfo.IsGreaterReach)
             {
                 var missionTerritory = sheetInfo.TerritoryId;
                 var mapId = sheetInfo.MapPosition;
@@ -964,7 +966,7 @@ namespace ICE.Scheduler.Tasks
                     return true;
                 }
             }
-            else if (sheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
+            else if (sheetInfo.IsFishMission)
             {
                 var location = sheetInfo.MapPosition;
                 var territory = sheetInfo.TerritoryId;

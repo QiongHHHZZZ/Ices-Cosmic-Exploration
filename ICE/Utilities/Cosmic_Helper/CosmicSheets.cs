@@ -141,6 +141,11 @@ public static unsafe partial class CosmicHelper
         public bool Drank => Rank == 1 && !Attributes.HasFlag(MissionAttributes.Critical);
         // Tool Mastery missions: Rank 6 like EX+, but not provisional/critical (EX+ are always weather/timed).
         public bool Master => Rank == 6 && !IsProvisional && !IsCritical;
+        // Work type by job (16=MIN, 17=BTN, 18=FSH), matching Task_ExecuteMission. Use these for routing/
+        // movement instead of the Gather/Fish attribute flags: some missions (e.g. Tool Mastery) carry no
+        // mapped WKSMissionText attribute yet still gather/fish, so the attribute flags miss them.
+        public bool IsGatherMission => Jobs.Contains(16) || Jobs.Contains(17);
+        public bool IsFishMission => Jobs.Contains(18);
         // Greater Reach missions are gathering missions whose base Gather flag was swapped for a
         // GreaterReach_* variant during parsing; treat them as gathering for routing/profile purposes.
         public bool IsGreaterReach => Attributes.HasFlag(MissionAttributes.GreaterReach_GatherX)

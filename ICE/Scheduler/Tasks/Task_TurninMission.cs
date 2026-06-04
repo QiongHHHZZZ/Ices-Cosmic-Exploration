@@ -30,6 +30,17 @@ namespace ICE.Scheduler.Tasks
                 );
         }
 
+        internal static bool IsInsideCriticalMissionCircle(CosmicHelper.CosmicInfo mission)
+        {
+            if (mission.Radius <= 0)
+                return false;
+
+            var player2D = new Vector2(Player.Position.X, Player.Position.Z);
+            var flagPos = new Vector2(mission.MapPosition.X, mission.MapPosition.Y);
+
+            return Vector2.Distance(player2D, flagPos) <= mission.Radius;
+        }
+
         public static bool CheckRedAlert()
         {
             string tag = "Red Alert Check";
@@ -40,6 +51,13 @@ namespace ICE.Scheduler.Tasks
                 if (sheetInfo.IsCritical)
                 {
                     IceLogging.Verbose("Critical mission was found, checking for location info", tag);
+
+                    if (IsInsideCriticalMissionCircle(sheetInfo))
+                    {
+                        IceLogging.Verbose("Already inside critical mission circle, skipping teleport and pathing directly to turn-in", tag);
+                        P.TaskManager.Insert(() => RedAlert_CloseToTurnin(), "Checking to make sure we're close enough");
+                        return true;
+                    }
 
                     if (CosmicHelper.CriticalLocations.TryGetValue(id, out var location) && location.RawLocation != Vector3.Zero)
                     {

@@ -1000,7 +1000,8 @@ namespace ICE.Scheduler.Tasks
                         }
                         else
                         {
-                            if (Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(fishingLoc.Value, tag))
+                            if (!Task_Fishing.IsInsideMissionFishingCircle(sheetInfo) &&
+                                Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(fishingLoc.Value, tag))
                             {
                                 Task_Fishing.MarkMissionEntryPrepared(missionId);
                                 randomFishingHole = Vector3.Zero;

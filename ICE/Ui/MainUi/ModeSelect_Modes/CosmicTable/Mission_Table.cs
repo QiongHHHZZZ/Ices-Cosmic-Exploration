@@ -581,6 +581,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         Window_ExternalDetails.SelectedMission = mission.Id;
                         Utils.SetGatheringRing(mission.SheetInfo.TerritoryId, (int)mission.SheetInfo.MapPosition.X, (int)mission.SheetInfo.MapPosition.Y, mission.SheetInfo.Radius, mission.SheetInfo.Name);
                     }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("X: {0:N0}, Z: {1:N0}", mission.SheetInfo.MapPosition.X, mission.SheetInfo.MapPosition.Y));
+                        ImGui.EndTooltip();
+                    }
                     drewIcon = true;
                 }
                 if (CosmicHelper.CriticalLocations.TryGetValue(mission.Id, out var criticalLoc))
@@ -1079,6 +1085,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                             SetCenteredX(ImGui.CalcTextSize(iconText).X);
                             ImGui.TextUnformatted(iconText);
                         }
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text(T("Time Slot"));
+                            ImGui.Text($"{item.SheetInfo.StartTime:D2}:00 - {item.SheetInfo.EndTime:D2}:00");
+                            ImGui.EndTooltip();
+                        }
                     }
                     else
                     {
@@ -1310,16 +1323,24 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         var totalWidth = buttonWidth * buttonCount + spacing * (buttonCount - 1f);
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + MathF.Max(0, (ImGuiUtil.CurrentColumnWidth - totalWidth) * 0.5f));
 
+                        var showTimeExpiredTurnin = item.SheetInfo.Rank == 6 && !item.SheetInfo.IsProvisional;
                         using (ImRaii.PushColor(ImGuiCol.Text, timeExpired ? GoldColor : DisabledColor))
                         {
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Clock, "##TimeExpired"))
+                            if (showTimeExpiredTurnin)
                             {
-                                configInfo.TurninGoal = TurninState.TimeExpired;
-                                C.SaveDebounced();
+                                if (ImGuiEx.IconButton(FontAwesomeIcon.Clock, "##TimeExpired"))
+                                {
+                                    configInfo.TurninGoal = TurninState.TimeExpired;
+                                    C.SaveDebounced();
+                                }
+                                if (ImGui.IsItemHovered())
+                                    ImGui.SetTooltip(T("Only turn in when the mission timer expires (keep gathering for max score).\nUseful for Tool Mastery missions that extend their timer on goal completion."));
+                            }
+                            else
+                            {
+                                ImGui.Dummy(new Vector2(buttonWidth, ImGui.GetFrameHeight()));
                             }
                         }
-                        if (ImGui.IsItemHovered())
-                            ImGui.SetTooltip(T("Only turn in when the mission timer expires (keep gathering for max score).\nUseful for Tool Mastery missions that extend their timer on goal completion."));
                         ImGui.SameLine(0, spacing);
                         using (ImRaii.PushColor(ImGuiCol.Text, goldEnabled ? GoldColor : DisabledColor))
                         {

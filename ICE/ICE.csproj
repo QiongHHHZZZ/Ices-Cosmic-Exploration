@@ -81,6 +81,5 @@
 
 	<ItemGroup>
 	  <Folder Include="Resources\GatheringRoutes\1310_Oizys\" />
-	  <Folder Include="Resources\GatheringRoutes\1319_Auxesia\" />
 	</ItemGroup>
 </Project>

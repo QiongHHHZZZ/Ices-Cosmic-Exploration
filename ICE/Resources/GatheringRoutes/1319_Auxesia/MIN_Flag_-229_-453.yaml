@@ -1,0 +1,121 @@
+zone_id: 1319
+zone_name: Auxesia
+job: MIN
+flag:
+  x: -229
+  y: -453
+author: Leontopodium Nivale
+date_modified: 2026-06-03T22:47:55.1708718Z
+nodes:
+- node_id: 35703
+  position:
+    x: -244.4014
+    y: 144.8116
+    z: -427.1371
+  land_zone:
+    x: -244.10187
+    y: 144.42566
+    z: -429.1591
+  radius_start: 123
+  radius_end: 262
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35704
+  position:
+    x: -236.7715
+    y: 145.429
+    z: -429.7979
+  land_zone:
+    x: -236.82811
+    y: 144.57372
+    z: -431.437
+  radius_start: 124
+  radius_end: 229
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35705
+  position:
+    x: -224.4754
+    y: 144.9457
+    z: -429.3419
+  land_zone:
+    x: -224.35905
+    y: 144.42567
+    z: -430.71793
+  radius_start: 120
+  radius_end: 243
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35706
+  position:
+    x: -207.614
+    y: 144.8774
+    z: -448.2607
+  land_zone:
+    x: -209.62788
+    y: 144.42567
+    z: -448.33337
+  radius_start: 41
+  radius_end: 145
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35707
+  position:
+    x: -197.5123
+    y: 145.2141
+    z: -455.5029
+  land_zone:
+    x: -199.01192
+    y: 144.42567
+    z: -456.03232
+  radius_start: 50
+  radius_end: 146
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35708
+  position:
+    x: -199.1323
+    y: 144.8833
+    z: -463.4042
+  land_zone:
+    x: -200.01404
+    y: 144.42566
+    z: -461.98248
+  radius_start: 343
+  radius_end: 104
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35709
+  position:
+    x: -212.5522
+    y: 144.8581
+    z: -472.5059
+  land_zone:
+    x: -211.35509
+    y: 144.42567
+    z: -471.88266
+  radius_start: 200
+  radius_end: 351
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35710
+  position:
+    x: -215.8701
+    y: 145.2358
+    z: -480.3047
+  land_zone:
+    x: -215.70383
+    y: 144.51753
+    z: -479.00317
+  radius_start: 295
+  radius_end: 39
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0

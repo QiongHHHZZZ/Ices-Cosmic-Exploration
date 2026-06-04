@@ -1,0 +1,93 @@
+zone_id: 1319
+zone_name: Auxesia
+job: BTN
+flag:
+  x: -58
+  y: 679
+author: Leontopodium Nivale
+date_modified: 2026-06-03T21:50:22.8169273Z
+nodes:
+- node_id: 35783
+  position:
+    x: -59.59124
+    y: 165.5353
+    z: 712.2648
+  land_zone:
+    x: -60.599655
+    y: 164.32716
+    z: 711.475
+  radius_start: 359
+  radius_end: 101
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0.69
+- node_id: 35784
+  position:
+    x: -59.40371
+    y: 167.8058
+    z: 718.3982
+  land_zone:
+    x: -59.87285
+    y: 166.01085
+    z: 717.54297
+  radius_start: 103
+  radius_end: 213
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35786
+  position:
+    x: -95.56685
+    y: 165.5696
+    z: 692.0157
+  land_zone:
+    x: -94.56094
+    y: 164.42397
+    z: 691.6347
+  radius_start: 164
+  radius_end: 282
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35785
+  position:
+    x: -95.18115
+    y: 165.2623
+    z: 688.695
+  land_zone:
+    x: -94.46495
+    y: 164.29082
+    z: 689.5827
+  radius_start: 265
+  radius_end: 29
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35781
+  position:
+    x: -40.46963
+    y: 165.4777
+    z: 653.6134
+  land_zone:
+    x: -40.11446
+    y: 164.62033
+    z: 654.99304
+  radius_start: 251
+  radius_end: 33
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0.43
+- node_id: 35782
+  position:
+    x: -31.21397
+    y: 168.2141
+    z: 654.5856
+  land_zone:
+    x: -32.49837
+    y: 166.4621
+    z: 654.7438
+  radius_start: 52
+  radius_end: 158
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0

@@ -1,0 +1,121 @@
+zone_id: 1319
+zone_name: Auxesia
+job: BTN
+flag:
+  x: 519
+  y: 708
+author: Leontopodium Nivale
+date_modified: 2026-06-03T21:50:16.1030590Z
+nodes:
+- node_id: 35760
+  position:
+    x: 479.3787
+    y: 185.1771
+    z: 742.3368
+  land_zone:
+    x: 479.00314
+    y: 184.2806
+    z: 741.22974
+  radius_start: 360
+  radius_end: 238
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35759
+  position:
+    x: 483.7888
+    y: 185.3391
+    z: 740.2153
+  land_zone:
+    x: 484.18726
+    y: 184.2806
+    z: 738.66974
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35761
+  position:
+    x: 497.1385
+    y: 185.2328
+    z: 715.7909
+  land_zone:
+    x: 496.31076
+    y: 184.2806
+    z: 716.9737
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35762
+  position:
+    x: 500.9811
+    y: 185.4485
+    z: 718.4391
+  land_zone:
+    x: 500.5253
+    y: 184.2806
+    z: 719.515
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35763
+  position:
+    x: 530.9698
+    y: 185.7358
+    z: 707.2645
+  land_zone:
+    x: 531.4106
+    y: 184.2806
+    z: 708.29553
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35764
+  position:
+    x: 535.0794
+    y: 185.3368
+    z: 704.6815
+  land_zone:
+    x: 535.4464
+    y: 184.2806
+    z: 706.27484
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35765
+  position:
+    x: 550.2322
+    y: 185.7009
+    z: 691.9396
+  land_zone:
+    x: 551.7806
+    y: 184.2806
+    z: 693.2993
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0
+- node_id: 35766
+  position:
+    x: 554.259
+    y: 185.422
+    z: 687.4847
+  land_zone:
+    x: 555.27295
+    y: 184.2806
+    z: 688.3919
+  radius_start: 180
+  radius_end: 179
+  min_distance: 1
+  max_distance: 2
+  fan_height: 0

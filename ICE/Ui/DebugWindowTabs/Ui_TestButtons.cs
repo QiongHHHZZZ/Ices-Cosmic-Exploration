@@ -243,7 +243,7 @@ namespace ICE.Ui.DebugWindowTabs
             //  1          - Unknown 10
             //  1          - Unknown 11
 
-            ImGui.Text($"{WKSManager.Instance()->State.CurrentMission.MissionUnitRowId}");
+            ImGui.Text($"{CosmicHelper.CurrentLunarMission}");
 
             if (ImGui.Button("Test Drone Buy"))
             {

@@ -12,7 +12,11 @@ namespace ICE.Scheduler.Tasks
         public static void Enqueue()
         {
             var Id = CosmicHelper.CurrentLunarMission;
-            var mission = CosmicHelper.SheetMissionDict[Id];
+            if (!CosmicHelper.SheetMissionDict.TryGetValue(Id, out var mission))
+            {
+                IceLogging.Warning($"Unable to resolve current mission [{Id}] for score check. Waiting for WKS mission state.", "Task: Score Check");
+                return;
+            }
 
             var jobs = mission.Jobs;
 
@@ -485,31 +489,19 @@ namespace ICE.Scheduler.Tasks
         }
         private static unsafe uint CurrentCollectedTotal()
         {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return 0;
-
-            return managerPtr->State.CurrentMission.CollectedTotal;
+            return CosmicHelper.CurrentMissionCollectedTotal;
         }
         private static unsafe uint CurrentIndividualTotal()
         {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return 0;
-
-            return managerPtr->State.CurrentMission.CollectedIndividual;
+            return CosmicHelper.CurrentMissionCollectedIndividual;
         }
         private static unsafe uint CurrentScore()
         {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return 0;
-
-            return managerPtr->State.CurrentMission.Score;
+            return CosmicHelper.CurrentMissionScore;
         }
         public static unsafe MissionRank CurrentRank()
         {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return MissionRank.None;
-
-            return managerPtr->State.CurrentMission.Rank;
+            return CosmicHelper.CurrentMissionRank;
         }
     }
 }

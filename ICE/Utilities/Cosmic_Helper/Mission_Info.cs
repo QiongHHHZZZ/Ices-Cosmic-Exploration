@@ -3,6 +3,7 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic_Helper;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using ClientMissionRank = FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSMissionModule.MissionRank;
 
 namespace ICE.Utilities.Cosmic_Helper;
 
@@ -19,11 +20,11 @@ public static partial class CosmicHelper
         {
             try
             {
-                var manager = WKSManager.Instance();
+                var manager = (WKSManagerCustom*)WKSManager.Instance();
                 if (manager == null)
                     return 0; // or some default value
 
-                return manager->State.CurrentMission.MissionUnitRowId;
+                return manager->CurrentMissionId;
             }
             catch (AccessViolationException)
             {
@@ -37,6 +38,43 @@ public static partial class CosmicHelper
             }
         }
     }
+
+    public static unsafe uint CurrentMissionScore
+    {
+        get
+        {
+            var manager = (WKSManagerCustom*)WKSManager.Instance();
+            return manager == null ? 0 : manager->CurrentScore;
+        }
+    }
+
+    public static unsafe uint CurrentMissionCollectedTotal
+    {
+        get
+        {
+            var manager = (WKSManagerCustom*)WKSManager.Instance();
+            return manager == null ? 0u : manager->CollectedTotal;
+        }
+    }
+
+    public static unsafe uint CurrentMissionCollectedIndividual
+    {
+        get
+        {
+            var manager = (WKSManagerCustom*)WKSManager.Instance();
+            return manager == null ? 0u : manager->CollectedIndividual;
+        }
+    }
+
+    public static unsafe ClientMissionRank CurrentMissionRank
+    {
+        get
+        {
+            var manager = (WKSManagerCustom*)WKSManager.Instance();
+            return manager == null ? ClientMissionRank.None : (ClientMissionRank)manager->CurrentRank;
+        }
+    }
+
     public static unsafe uint? CurrentBait => WKSManager.Instance()->State.FishingBait;
     // public static unsafe uint CurrentLunarDevelopment => ExcelHelper.DevGrade.GetRow(WKSManager.Instance()->DevGrade).Unknown6;
     public static unsafe uint CurrentLunarDevelopment = 0;

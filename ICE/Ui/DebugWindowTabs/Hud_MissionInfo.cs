@@ -40,48 +40,51 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableNextColumn();
                     ImGui.Text($"{missionId}");
 
-                    if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var mission) && !mission.Attributes.HasFlag(MissionAttributes.Critical))
+                    if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var mission))
                     {
-                        ImGui.TableNextColumn();
-                        ImGui.TableSetColumnIndex(0);
-                        ImGui.Text("Current Score:");
-                        ImGui.TableNextColumn();
+                        if (!mission.Attributes.HasFlag(MissionAttributes.Critical))
+                        {
+                            ImGui.TableNextColumn();
+                            ImGui.TableSetColumnIndex(0);
+                            ImGui.Text("Current Score:");
+                            ImGui.TableNextColumn();
 
-                        ImGui.Text($"{CurrentScore()}");
+                            ImGui.Text($"{CurrentScore()}");
 
-                        ImGui.TableNextRow();
-                        ImGui.TableSetColumnIndex(0);
-                        ImGui.Text($"Current State");
+                            ImGui.TableNextRow();
+                            ImGui.TableSetColumnIndex(0);
+                            ImGui.Text($"Current State");
 
-                        ImGui.TableNextColumn();
-                        ImGui.Text($"{Task_CheckScore.CurrentRank()}");
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{Task_CheckScore.CurrentRank()}");
 
 
-                        ImGui.TableNextRow();
-                        ImGui.TableSetColumnIndex(0);
-                        ImGui.Text("Is Mission Timed out");
+                            ImGui.TableNextRow();
+                            ImGui.TableSetColumnIndex(0);
+                            ImGui.Text("Is Mission Timed out");
 
-                        ImGui.TableNextColumn();
-                        ImGui.Text($"{CosmicHandler.IsMissionTimedOut()}");
-                    }
-                    else if (mission.Attributes.HasFlag(MissionAttributes.Critical))
-                    {
-                        ImGui.TableNextRow();
-                        ImGui.TableSetColumnIndex(0);
-                        ImGui.Text("Critical Value:");
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{CosmicHandler.IsMissionTimedOut()}");
+                        }
+                        else
+                        {
+                            ImGui.TableNextRow();
+                            ImGui.TableSetColumnIndex(0);
+                            ImGui.Text("Critical Value:");
 
-                        ImGui.TableNextColumn();
-                        ImGui.Text($"{x.CriticalScore}");
-                    }
-                    
-                    if (mission.Attributes.HasFlag(MissionAttributes.Fish))
-                    {
-                        ImGui.TableNextRow();
-                        ImGui.TableSetColumnIndex(0);
-                        ImGui.Text(T("Current Bait"));
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{x.CriticalScore}");
+                        }
 
-                        ImGui.TableNextColumn();
-                        ImGui.Text($"{CosmicHelper.CurrentBait}");
+                        if (mission.Attributes.HasFlag(MissionAttributes.Fish))
+                        {
+                            ImGui.TableNextRow();
+                            ImGui.TableSetColumnIndex(0);
+                            ImGui.Text(T("Current Bait"));
+
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{CosmicHelper.CurrentBait}");
+                        }
                     }
 
                     ImGui.TableNextRow();
@@ -162,10 +165,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         private static unsafe uint CurrentScore()
         {
-            var managerPtr = WKSManager.Instance();
-            if (managerPtr == null) return 0;
-
-            return managerPtr->State.CurrentMission.Score;
+            return CosmicHelper.CurrentMissionScore;
         }
     }
 }

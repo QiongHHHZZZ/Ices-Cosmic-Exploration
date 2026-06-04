@@ -54,9 +54,7 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.Text(T("Current Territory/ZoneId: {0}", Player.Territory.RowId));
             if (PlayerHelper.IsInCosmicZone())
             {
-                var manager = WKSManager.Instance();
-                var currentMission = manager->State.CurrentMission.MissionUnitRowId;
-
+                var currentMission = CosmicHelper.CurrentLunarMission;
                 ImGui.Text(T("Current Mission: {0}", currentMission));
             }
             if (Svc.Targets.Target != null)

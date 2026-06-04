@@ -38,7 +38,14 @@ namespace ICE.Scheduler.Tasks
             {
                 IceLogging.Debug("Not currently gathering, starting fresh instead");
                 P.TaskManager.EnqueueDelay(100);
-                if (CosmicHelper.SheetMissionDict[CosmicHelper.CurrentLunarMission].Attributes.HasFlag(MissionAttributes.ReducedItems))
+                var currentMission = CosmicHelper.CurrentLunarMission;
+                if (!CosmicHelper.SheetMissionDict.TryGetValue(currentMission, out var missionInfo))
+                {
+                    IceLogging.Warning($"Unable to resolve current gather mission [{currentMission}]. Waiting for WKS mission state.", "Gather: Enqueue");
+                    return;
+                }
+
+                if (missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems))
                 {
                     Task_CheckScore.Enqueue();
                     P.TaskManager.Enqueue(() => CheckReduceMission(), "Checking to see if we need to reduce items");
@@ -471,7 +478,7 @@ namespace ICE.Scheduler.Tasks
 
             if (TryGetClosestVisibleMissionNode(missionEntry, out var visibleNode) && visibleNode != null)
             {
-                if (!Task_NavmeshMove.Task_NavTo(visibleNode.Position, distance: 3.5f, npcLoc: visibleNode.Position, moveCloseToDistance: 3.0f).Value)
+                if (!Task_NavmeshMove.Task_NavTo(visibleNode.Position, distance: 3.0f, npcLoc: visibleNode.Position, moveCloseToDistance: 2.0f).Value)
                 {
                     UseCordial();
                     return false;

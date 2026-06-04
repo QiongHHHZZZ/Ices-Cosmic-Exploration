@@ -46,7 +46,7 @@ namespace ICE.Scheduler.Tasks
 
         #region Navmesh Stuff
 
-        public static bool? Task_NavTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null, bool mountBeforeMove = false)
+        public static bool? Task_NavTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null, bool mountBeforeMove = false, float moveCloseToDistance = 0f)
         {
             string handle = "[Navmesh Task_NavTo]";
 
@@ -93,7 +93,7 @@ namespace ICE.Scheduler.Tasks
             }
 
             // Handle starting navmesh
-            return HandleStartNavmesh(pos, distance, stayMounted, npcLoc, usingCosmoliner, mounted, distanceToTarget, handle, useMount, mountBeforeMove);
+            return HandleStartNavmesh(pos, distance, stayMounted, npcLoc, usingCosmoliner, mounted, distanceToTarget, handle, useMount, mountBeforeMove, moveCloseToDistance);
         }
         public static bool? Task_GatherMove(GathNodeInfo routeinfo, bool waitForBusy = true, float distance = 3.5f, bool stayMounted = false, bool mountBeforeMove = false)
         {
@@ -232,7 +232,7 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        private static bool? HandleStartNavmesh(Vector3 pos, float distance, bool stayMounted, Vector3? npcLoc, bool usingCosmoliner, bool mounted, float distanceToTarget, string handle, bool useMount = false, bool mountBeforeMove = false)
+        private static bool? HandleStartNavmesh(Vector3 pos, float distance, bool stayMounted, Vector3? npcLoc, bool usingCosmoliner, bool mounted, float distanceToTarget, string handle, bool useMount = false, bool mountBeforeMove = false, float moveCloseToDistance = 0f)
         {
 
             if (C.CrazyTaxiArrow)
@@ -279,7 +279,10 @@ namespace ICE.Scheduler.Tasks
 
                 var targetPos = pos;
 
-                P.Navmesh.PathfindAndMoveTo(targetPos, false);
+                if (moveCloseToDistance > 0)
+                    P.Navmesh.PathfindAndMoveCloseTo(targetPos, false, moveCloseToDistance);
+                else
+                    P.Navmesh.PathfindAndMoveTo(targetPos, false);
             }
 
             return false;

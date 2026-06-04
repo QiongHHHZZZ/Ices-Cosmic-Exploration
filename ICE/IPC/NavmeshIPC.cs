@@ -20,6 +20,7 @@ public class NavmeshIPC
     [EzIPC("Nav.%m")] public readonly Func<Vector3, Vector3, bool, Task<List<Vector3>>> Pathfind;
 
     [EzIPC("SimpleMove.%m")] public readonly Func<Vector3, bool, bool> PathfindAndMoveTo;
+    [EzIPC("SimpleMove.%m")] public readonly Func<Vector3, bool, float, bool> PathfindAndMoveCloseTo;
     [EzIPC("SimpleMove.%m")] public readonly Func<bool> PathfindInProgress;
 
     [EzIPC("Path.%m")] public readonly Action<List<Vector3>, bool> MoveTo;

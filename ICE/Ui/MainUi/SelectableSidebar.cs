@@ -16,12 +16,12 @@ namespace ICE.Ui.MainUi
 {
     internal class SelectableSidebar
     {
-        public static void Draw()
+        public static void Draw(float? heightOverride = null, float? widthOverride = null)
         {
             var scale = ImGuiHelpers.GlobalScale;
             int baseSize = 220;
-            var scaledWidth = baseSize * scale;
-            var height = ImGui.GetContentRegionAvail().Y;
+            var scaledWidth = widthOverride ?? baseSize * scale;
+            var height = heightOverride ?? ImGui.GetContentRegionAvail().Y;
 
             using (var MainUi_Sidebar = ImRaii.Child("MainUi_Sidebar", new Vector2(scaledWidth, height), true))
             {

@@ -179,7 +179,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             Custom,
         }
 
-        public TableViewMode ViewMode { get; set; } = TableViewMode.Full;
+        public TableViewMode ViewMode { get; set; } = TableViewMode.Compact;
         public bool[] CustomColumnVisibility { get; private set; } = [];
         private readonly HashSet<uint> _availableMissionIds = [];
         private long _nextAvailableMissionRefresh;

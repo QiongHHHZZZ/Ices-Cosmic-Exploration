@@ -54,7 +54,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         // Search bar state: which text-searchable column the search bar targets, plus the current search text
         private static int _searchColumnIdx = 0;
         private static string _searchText = string.Empty;
-        private static Mission_Table.TableViewMode _tableViewMode = Mission_Table.TableViewMode.Full;
+        private static Mission_Table.TableViewMode _tableViewMode = Mission_Table.TableViewMode.Compact;
         private static bool _openCustomColumnPopup;
         private static Vector2 _tableViewPopupPos;
         private static readonly List<ColumnString<CosmicHelper.MissionInfo>> _searchableColumns = [];
@@ -69,9 +69,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             using (var headerChild = ImRaii.Child("##modeSelect_StandardHeader", new Vector2(0, 45 * scale), true, ImGuiWindowFlags.NoScrollbar))
             {
-                if (!headerChild.Success) return;
-
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 10 * scale);
+                if (headerChild.Success)
+                {
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 10 * scale);
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5 * scale);
 
                 string modeType = string.Empty;
@@ -307,7 +307,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     }
 
 
-                    ImGui.EndPopup();
+                        ImGui.EndPopup();
+                    }
                 }
             }
 
@@ -315,29 +316,22 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             {
                 if (!bodyChild.Success) return;
 
+                EnsureMissionTable();
                 DrawMissionToolbar(scale);
 
-                var bottomSpace = ImGui.GetTextLineHeight() + 6f;
-                bottomSpace += 12f; // prevent the tabs from creating a scrollbar
+                var bottomSpace = ImGui.GetTextLineHeight() + 18f; // prevent the tabs from creating a scrollbar
+                var available = ImGui.GetContentRegionAvail();
+                var tableHeight = available.Y - bottomSpace;
 
-                var available = ImGui_Ice.GetVisibleContentRegionAvail();
-                Vector2 size = new(MathF.Max(1f, available.X), MathF.Max(1f, available.Y - bottomSpace));
-                if (ImGui.BeginChild("###MissionTableV3", size, false))
+                if (MissionTable == null || available.X <= 2f || tableHeight <= ImGui.GetFrameHeight() * 3f)
+                    return;
+
+                using (var tableChild = ImRaii.Child("###MissionTableV3", new Vector2(available.X, tableHeight), false))
                 {
+                    if (!tableChild.Success) return;
+
                     try
                     {
-                        if (MissionTable == null && CosmicHelper.SheetMissionDict.Count > 0)
-                        {
-                            foreach (var mission in CosmicHelper.SheetMissionDict)
-                            {
-                                CosmicHelper.MissionInfo missionDetails = new() { Id = mission.Key };
-                                TableItems.Add(missionDetails);
-                            }
-                            ItemCount = TableItems.Count();
-                            MissionTable = new(TableItems);
-                        }
-                        var filterActive = MissionTable.FilteredItems.Count != 0 && MissionTable.FilteredItems.Count != ItemCount;
-                        var filterCount = filterActive ? $" (of {ItemCount})" : "";
                         var height = ImGui.GetFrameHeight();
                         MissionTable.ViewMode = _tableViewMode;
                         MissionTable.Draw(height + 2f);
@@ -347,8 +341,20 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         IceLogging.Error(ex.Message, "Drawing Mission Table");
                     }
                 }
-                ImGui.EndChild();
             }
+        }
+
+        private static void EnsureMissionTable()
+        {
+            if (MissionTable != null || CosmicHelper.SheetMissionDict.Count == 0)
+                return;
+
+            TableItems.Clear();
+            foreach (var mission in CosmicHelper.SheetMissionDict)
+                TableItems.Add(new CosmicHelper.MissionInfo { Id = mission.Key });
+
+            ItemCount = TableItems.Count;
+            MissionTable = new(TableItems);
         }
 
         private static void DrawMissionToolbar(float scale)

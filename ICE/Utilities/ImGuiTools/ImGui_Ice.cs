@@ -856,14 +856,9 @@ public static partial class ImGui_Ice
     internal static Vector2 GetVisibleContentRegionAvail(float minX = 1f, float minY = 1f)
     {
         var available = ImGui.GetContentRegionAvail();
-        var cursorScreenPos = ImGui.GetCursorScreenPos();
-        var viewport = ImGui.GetMainViewport();
-        var visibleMax = viewport.WorkPos + viewport.WorkSize;
-        var visibleAvailable = visibleMax - cursorScreenPos;
-
         return new Vector2(
-            MathF.Max(minX, MathF.Min(available.X, visibleAvailable.X)),
-            MathF.Max(minY, MathF.Min(available.Y, visibleAvailable.Y)));
+            MathF.Max(minX, available.X),
+            MathF.Max(minY, available.Y));
     }
     public static void DrawImageBox(ISharedImmediateTexture texture, string? label = null, float imageZoom = 1.5f, float spacingAfter = 5)
     {

@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Textures;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using ICE.Ui.MainUi;
@@ -27,11 +28,12 @@ namespace ICE.Ui
             Flags = ImGuiWindowFlags.NoScrollbar;
             SizeConstraints = new()
             {
-                MinimumSize = new Vector2(500, 500),
+                MinimumSize = new Vector2(640, 520),
                 MaximumSize = new Vector2(4000, 4000),
             };
             TitleBarButtons.Add(new() { ShowTooltip = () => ImGui.SetTooltip(T("♥ Ko-fi (Buy me an ice coffee)")), Icon = FontAwesomeIcon.Heart, IconOffset = new(1, 1), Click = _ => GenericHelpers.ShellStart("https://ko-fi.com/ice643269") });
 
+            ForceMainWindow = false;
             P.windowSystem.AddWindow(this);
 
             AllowPinning = true;
@@ -47,11 +49,33 @@ namespace ICE.Ui
         {
             using var style = ImRaii.PushStyle(ImGuiStyleVar.ChildRounding, 10).Push(ImGuiStyleVar.ChildBorderSize, 1);
 
-            SelectableSidebar.Draw();
+            var available = ImGui.GetContentRegionAvail();
+            if (available.X <= 2f || available.Y <= 2f)
+                return;
 
-            ImGui.SameLine(0, 5);
+            var scale = ImGuiHelpers.GlobalScale;
+            var gap = 5f * scale;
+            var preferredSidebarWidth = 220f * scale;
+            var minSidebarWidth = 140f * scale;
+            var minMainWidth = 280f * scale;
 
-            var windowSizeRemaining = ImGui_Ice.GetVisibleContentRegionAvail();
+            var sidebarWidth = preferredSidebarWidth;
+            if (available.X - sidebarWidth - gap < minMainWidth)
+                sidebarWidth = MathF.Max(minSidebarWidth, available.X * 0.35f);
+
+            sidebarWidth = MathF.Min(sidebarWidth, MathF.Max(1f, available.X - gap - minMainWidth));
+            if (sidebarWidth <= 2f)
+                return;
+
+            SelectableSidebar.Draw(available.Y, sidebarWidth);
+
+            ImGui.SameLine(0, gap);
+
+            var mainAvailable = ImGui.GetContentRegionAvail();
+            if (mainAvailable.X <= 2f || mainAvailable.Y <= 2f)
+                return;
+
+            var windowSizeRemaining = new Vector2(mainAvailable.X, available.Y);
             using (var mainBody = ImRaii.Child("mainBody_WindowV3", windowSizeRemaining, true))
             {
                 if (!mainBody.Success) return;

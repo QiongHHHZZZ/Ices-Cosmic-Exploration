@@ -604,9 +604,11 @@ namespace ICE.Scheduler.Tasks
                     _preparedMissionIdForEntryTp == _activeMissionIdForEntryTp;
 
                 bool insideMissionCircle = IsInsideMissionFishingCircle(CosmicHelper.CurrentMissionInfo);
+                bool insideCriticalArea = Task_TurninMission.IsInsideTargetCriticalMissionArea(_activeMissionIdForEntryTp, CosmicHelper.CurrentMissionInfo);
 
                 if (!alreadyPreparedBeforeAccept &&
                     !insideMissionCircle &&
+                    !insideCriticalArea &&
                     TryDailyRoutinesTeleportToFishingSpot(fishingPos, handle))
                 {
                     return false;

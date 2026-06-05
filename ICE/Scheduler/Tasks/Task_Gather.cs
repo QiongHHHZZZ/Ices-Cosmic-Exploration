@@ -467,9 +467,11 @@ namespace ICE.Scheduler.Tasks
 
                 // Skip runtime TP when we're already inside this mission's official flag circle.
                 bool insideMissionCircle = IsInsideMissionGatherCircle(missionEntry);
+                bool insideCriticalArea = Task_TurninMission.IsInsideTargetCriticalMissionArea(_activeMissionIdForEntryTp, missionEntry);
 
                 if (!alreadyPreparedBeforeAccept &&
                     !insideMissionCircle &&
+                    !insideCriticalArea &&
                     TryDailyRoutinesTeleportToGatherLandZone(gatherAreaPosition, "[Gathering: PathAndCheckNode DRTP]"))
                 {
                     return false;

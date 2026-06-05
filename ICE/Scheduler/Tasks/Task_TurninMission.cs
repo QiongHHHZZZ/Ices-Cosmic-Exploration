@@ -30,15 +30,36 @@ namespace ICE.Scheduler.Tasks
                 );
         }
 
-        internal static bool IsInsideCriticalMissionCircle(CosmicHelper.CosmicInfo mission)
+        internal static bool IsInsideCriticalMissionCircle(CosmicHelper.CosmicInfo mission, float extraRadius = 0f)
         {
-            if (mission.Radius <= 0)
+            var radius = mission.Radius > 0 ? mission.Radius + extraRadius : extraRadius;
+            if (radius <= 0)
                 return false;
 
             var player2D = new Vector2(Player.Position.X, Player.Position.Z);
             var flagPos = new Vector2(mission.MapPosition.X, mission.MapPosition.Y);
 
-            return Vector2.Distance(player2D, flagPos) <= mission.Radius;
+            return Vector2.Distance(player2D, flagPos) <= radius;
+        }
+
+        internal static bool IsInsideTargetCriticalMissionArea(uint missionId, CosmicHelper.CosmicInfo mission)
+        {
+            if (!mission.IsCritical)
+                return false;
+
+            // Critical/gather map markers can be slightly tighter than the visible yellow ring.
+            // Keep this target-specific so one red-alert circle never blocks travel to another.
+            if (IsInsideCriticalMissionCircle(mission, 25f))
+                return true;
+
+            if (!CosmicHelper.CriticalLocations.TryGetValue(missionId, out var location) || location.RawLocation == Vector3.Zero)
+                return false;
+
+            var player2D = new Vector2(Player.Position.X, Player.Position.Z);
+            var location2D = new Vector2(location.RawLocation.X, location.RawLocation.Z);
+            var radius = Math.Max(mission.Radius > 0 ? mission.Radius + 25f : 0f, 75f);
+
+            return Vector2.Distance(player2D, location2D) <= radius;
         }
 
         public static bool CheckRedAlert()

@@ -945,17 +945,19 @@ namespace ICE.Scheduler.Tasks
                 {
                     var startNode = gatherInfo[0];
 
-                    if (Task_Gather.IsInsideMissionGatherCircle(sheetInfo))
+                    if (Task_Gather.IsInsideMissionGatherCircle(sheetInfo) ||
+                        Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo))
                     {
                         Task_Gather.MarkMissionEntryPrepared(missionId);
-                        IceLogging.Info("Already inside mission gathering circle, continuing to grab mission", tag);
+                        IceLogging.Info("Already inside mission gathering/critical circle, continuing to grab mission", tag);
                         return true;
                     }
 
                     IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now", tag);
 
                     // CN-MAINT: Gather mission entry rule: outside flag circle -> TP once, fallback nav if TP unavailable.
-                    if (Task_Gather.TryDailyRoutinesTeleportToGatherLandZone(startNode.LandZone, tag))
+                    if (!Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo) &&
+                        Task_Gather.TryDailyRoutinesTeleportToGatherLandZone(startNode.LandZone, tag))
                     {
                         Task_Gather.MarkMissionEntryPrepared(missionId);
                         return false;
@@ -1001,6 +1003,7 @@ namespace ICE.Scheduler.Tasks
                         else
                         {
                             if (!Task_Fishing.IsInsideMissionFishingCircle(sheetInfo) &&
+                                !Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo) &&
                                 Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(fishingLoc.Value, tag))
                             {
                                 Task_Fishing.MarkMissionEntryPrepared(missionId);
@@ -1017,10 +1020,11 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
 
-                if (Task_Fishing.IsInsideMissionFishingCircle(sheetInfo))
+                if (Task_Fishing.IsInsideMissionFishingCircle(sheetInfo) ||
+                    Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo))
                 {
                     Task_Fishing.MarkMissionEntryPrepared(missionId);
-                    IceLogging.Info("Already inside mission fishing circle, continuing to grab mission", tag);
+                    IceLogging.Info("Already inside mission fishing/critical circle, continuing to grab mission", tag);
                     randomFishingHole = Vector3.Zero;
                     return true;
                 }
@@ -1040,7 +1044,8 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    if (Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(randomFishingHole, tag))
+                    if (!Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo) &&
+                        Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(randomFishingHole, tag))
                     {
                         Task_Fishing.MarkMissionEntryPrepared(missionId);
                         return false;

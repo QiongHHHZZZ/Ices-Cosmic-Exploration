@@ -1,0 +1,117 @@
+{
+  "route_id": 109,
+  "territory_id": 1310,
+  "gathering_job_id": 16,
+  "author": "Leontopodium Nivale",
+  "date_modified": "2026-06-06T02:15:25.4460201Z",
+  "node": [
+    {
+      "node_id": 35554,
+      "position": {
+        "x": -295.8246,
+        "y": 105.6867,
+        "z": 887.3044
+      },
+      "land_zone": {
+        "x": -297.65076,
+        "y": 104.63232,
+        "z": 887.46313
+      },
+      "radius_start": 0,
+      "radius_end": 359,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35555,
+      "position": {
+        "x": -292.4102,
+        "y": 106.1496,
+        "z": 875.63
+      },
+      "land_zone": {
+        "x": -293.03076,
+        "y": 105.064316,
+        "z": 876.81757
+      },
+      "radius_start": 0,
+      "radius_end": 359,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35552,
+      "position": {
+        "x": -290.0676,
+        "y": 104.398,
+        "z": 900.2715
+      },
+      "land_zone": {
+        "x": -291.24835,
+        "y": 103.6731,
+        "z": 899.5879
+      },
+      "radius_start": 0,
+      "radius_end": 359,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35551,
+      "position": {
+        "x": -271.5339,
+        "y": 104.211,
+        "z": 902.0678
+      },
+      "land_zone": {
+        "x": -272.4869,
+        "y": 103.40752,
+        "z": 901.9255
+      },
+      "radius_start": 0,
+      "radius_end": 359,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35553,
+      "position": {
+        "x": -275.5671,
+        "y": 105.7775,
+        "z": 884.4634
+      },
+      "land_zone": {
+        "x": -276.77118,
+        "y": 104.78518,
+        "z": 884.25397
+      },
+      "radius_start": 0,
+      "radius_end": 359,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35556,
+      "position": {
+        "x": -277.11,
+        "y": 107.1566,
+        "z": 866.4009
+      },
+      "land_zone": {
+        "x": -277.33582,
+        "y": 106.126785,
+        "z": 867.2902
+      },
+      "radius_start": 0,
+      "radius_end": 359,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    }
+  ]
+}

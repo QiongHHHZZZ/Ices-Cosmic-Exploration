@@ -15,6 +15,8 @@ public partial class Config
         { 4, new CosmicHelper.XPType { CurrentXP = 150, NeededXP = 400} },
         { 5, new CosmicHelper.XPType { CurrentXP = 200, NeededXP = 500} },
     };
+    public Vector4 Picto_GatherFan { get; set; } = new(1, 1, 1, 1);
+    public Vector4 Picto_SelectedFan { get; set; } = new(1, 1, 1, 1);
     public uint PictoColor_Circle { get; set; } = 2616716297;
     public uint PictoColor_Dot { get; set; } = 2616716297;
     public uint PictoColor_Cone { get; set; } = 0;

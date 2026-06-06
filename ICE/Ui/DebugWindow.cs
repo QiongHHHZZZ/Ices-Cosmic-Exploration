@@ -62,7 +62,7 @@ internal class DebugWindow : Window
         ["Ui: Select String"] = () => Ui_RedAlertString.Draw(),
         ["Ui: Fishing Hole Editor"] = () => Ui_Fish_HoleEditor.Draw(),
         ["Ui: Fishing Preset Editor"] = () => Ui_FishPresets.Draw(),
-        ["Ui: Gather Editor"] = () => Ui_GatherRoute_Editor.Draw(),
+        ["Ui: Gather Editor"] = () => Ui_GatherEditor.Draw(),
         ["Ui: Log Viewer"] = () => helpSelect_Logs.Draw_Debug(),
         ["Ui: Player Gearsets"] = () => Ui_Gearsets.Draw(),
 

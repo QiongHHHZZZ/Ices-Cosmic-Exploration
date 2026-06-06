@@ -126,6 +126,8 @@ public static unsafe partial class CosmicHelper
         }
         public CustomNotes BestSPM { get; set; } = new();
         public List<uint> MissionUnlock { get; set; } = new();
+        public uint Gather_MapKey { get; set; } = new();
+        public uint Critical_MapKey { get; set; } = new();
 
         public bool IsProvisional => Attributes.HasFlag(MissionAttributes.ProvisionalWeather)
             || Attributes.HasFlag(MissionAttributes.ProvisionalSequential)

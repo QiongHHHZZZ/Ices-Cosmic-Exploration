@@ -1,0 +1,153 @@
+{
+  "route_id": 116,
+  "territory_id": 1310,
+  "gathering_job_id": 16,
+  "author": "Leontopodium Nivale",
+  "date_modified": "2026-06-06T03:10:58.2456419Z",
+  "node": [
+    {
+      "node_id": 35486,
+      "position": {
+        "x": -612.0062,
+        "y": -34.6218,
+        "z": -200.0117
+      },
+      "land_zone": {
+        "x": -612.6023,
+        "y": -35.786797,
+        "z": -201.52095
+      },
+      "radius_start": 311,
+      "radius_end": 12,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35485,
+      "position": {
+        "x": -618.0475,
+        "y": -36.4894,
+        "z": -198.1008
+      },
+      "land_zone": {
+        "x": -618.6932,
+        "y": -37.742554,
+        "z": -199.4119
+      },
+      "radius_start": 284,
+      "radius_end": 26,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35487,
+      "position": {
+        "x": -653.9366,
+        "y": -41.53056,
+        "z": -194.4103
+      },
+      "land_zone": {
+        "x": -654.13184,
+        "y": -42.37525,
+        "z": -196.02585
+      },
+      "radius_start": 323,
+      "radius_end": 27,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35488,
+      "position": {
+        "x": -673.038,
+        "y": -41.8804,
+        "z": -200.329
+      },
+      "land_zone": {
+        "x": -671.696,
+        "y": -42.478363,
+        "z": -200.38945
+      },
+      "radius_start": 344,
+      "radius_end": 169,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35491,
+      "position": {
+        "x": -683.1051,
+        "y": -40.97188,
+        "z": -190.9702
+      },
+      "land_zone": {
+        "x": -681.35046,
+        "y": -41.73076,
+        "z": -190.80484
+      },
+      "radius_start": 55,
+      "radius_end": 141,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35492,
+      "position": {
+        "x": -685.29,
+        "y": -41.60217,
+        "z": -195.6147
+      },
+      "land_zone": {
+        "x": -683.73627,
+        "y": -42.405735,
+        "z": -196.2304
+      },
+      "radius_start": 348,
+      "radius_end": 103,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35489,
+      "position": {
+        "x": -682.6017,
+        "y": -42.1814,
+        "z": -210.1358
+      },
+      "land_zone": {
+        "x": -682.29144,
+        "y": -43.00326,
+        "z": -208.56534
+      },
+      "radius_start": 140,
+      "radius_end": 204,
+      "min_distance": 2,
+      "max_distance": 3,
+      "fan_height": 0
+    },
+    {
+      "node_id": 35490,
+      "position": {
+        "x": -678.5057,
+        "y": -42.8154,
+        "z": -210.7902
+      },
+      "land_zone": {
+        "x": -677.69684,
+        "y": -43.702168,
+        "z": -209.67477
+      },
+      "radius_start": 73,
+      "radius_end": 204,
+      "min_distance": 1,
+      "max_distance": 2,
+      "fan_height": 0
+    }
+  ]
+}

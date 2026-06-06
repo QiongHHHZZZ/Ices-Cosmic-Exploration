@@ -22,7 +22,7 @@ public static partial class CosmicHelper
             {
                 var manager = (WKSManagerCustom*)WKSManager.Instance();
                 if (manager == null)
-                    return 0; // or some default value
+                    return 0;
 
                 return manager->CurrentMissionId;
             }

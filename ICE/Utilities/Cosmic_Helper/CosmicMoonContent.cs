@@ -1,9 +1,6 @@
-using ICE.Utilities;
-using ICE.Scheduler.Handlers;
-using ICE.Scheduler.Tasks;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
-using System.Linq;
+using ICE.Utilities.GatheringHelper.RouteLoader;
 
 namespace ICE.Utilities.Cosmic_Helper;
 
@@ -14,10 +11,10 @@ public static class CosmicMoonContent
 {
     public static bool HasGatheringRoutes(uint territoryId)
     {
-        if (!GatheringRouteLoader.LoadAllRoutes().TryGetValue(territoryId, out var flags))
+        if (!GatheringRouteLoader.LoadedRoutes.TryGetValue(territoryId, out var flags))
             return false;
 
-        return flags.Count > 0;
+        return flags.Nodes.Count > 0;
     }
 
     public static bool HasFishingHoles(uint territoryId) =>
@@ -59,7 +56,7 @@ public static class CosmicMoonContent
 
     public static (int withRoutes, int total) CountGatherMissionsWithRoutes(uint territoryId)
     {
-        var routes = GatheringRouteLoader.LoadAllRoutes();
+        var routes = GatheringRouteLoader.LoadedRoutes;
         var total = 0;
         var withRoutes = 0;
 
@@ -72,7 +69,7 @@ public static class CosmicMoonContent
 
             total++;
             if (routes.TryGetValue(territoryId, out var zoneRoutes)
-                && zoneRoutes.ContainsKey(info.MapPosition))
+                && zoneRoutes.RouteId == info.Gather_MapKey)
                 withRoutes++;
         }
 

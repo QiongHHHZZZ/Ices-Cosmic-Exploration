@@ -3,6 +3,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
+using ICE.Utilities.GatheringHelper.RouteLoader;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
 using System.Reflection;
@@ -537,7 +538,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 var cellStart = ImGui.GetCursorScreenPos();
                 var iconGap = 4f * scale;
                 var iconCount = 0;
+                var showAuxesiaFishingWarning = mission.SheetInfo.TerritoryId == CosmicMoonRegistry.Auxesia.TerritoryId && mission.SheetInfo.Jobs.Contains(18);
                 if (UnsupportedMissions.Ids.Contains(mission.Id))
+                    iconCount++;
+                if (showAuxesiaFishingWarning)
                     iconCount++;
                 if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
                     iconCount++;
@@ -568,6 +572,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 if (UnsupportedMissions.Ids.Contains(mission.Id))
                 {
                     ImGuiEx.IconWithTooltip(FontAwesomeIcon.ExclamationTriangle, T("This mission is currently not supported."));
+                    drewIcon = true;
+                }
+
+                if (showAuxesiaFishingWarning)
+                {
+                    if (drewIcon)
+                        ImGui.SameLine();
+
+                    ImGuiEx.IconWithTooltip(FontAwesomeIcon.ExclamationTriangle,
+                        T("Fishing isn't directly supported yet, but fishing hole locations are available. Import an AutoHook wiki preset, then set the first preset name under Fishing Settings."));
                     drewIcon = true;
                 }
 
@@ -612,8 +626,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
             if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather))
             {
-                var gatherInfo = GatheringRouteLoader.GetRoute(mission.SheetInfo.TerritoryId, mission.SheetInfo.MapPosition);
-                if (gatherInfo == null || gatherInfo.Count is 0)
+                var gatherInfo = GatheringRouteLoader.GetRoute(mission.SheetInfo.Gather_MapKey);
+                if (gatherInfo == null || gatherInfo.Nodes.Count is 0)
                     UnsupportedMissions.Ids.Add(mission.Id);
             }
             else if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))

@@ -13,6 +13,7 @@ namespace ICE.Utilities
 
         // Gather Specifics
         internal static Vector2 previousMap = Vector2.Zero;
+        internal static uint previousRouteId = 0;
         internal static int nodeCounter = 0;
         internal static int nodeTotal = 0;
         

@@ -273,6 +273,7 @@ namespace ICE.Scheduler.Tasks
                         var totalExpCount = relicInfo.CurrentExp.Count();
                         if (totalExpCount != 0)
                         {
+                            IceLogging.Verbose($"Current Lv: {relicInfo.Stage_Current} | Next Lv: {relicInfo.Stage_Next}");
                             IceLogging.Verbose($"Total Exp Types: {relicInfo.CurrentExp.Count()}");
                             foreach (var exp in relicInfo.CurrentExp)
                             {

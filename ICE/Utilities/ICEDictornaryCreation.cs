@@ -3,6 +3,7 @@ using ICE.Ui;
 using ICE.Ui.MainUi.Settings;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
+using ICE.Utilities.GatheringHelper.RouteLoader;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ICE.ConfigFiles.Config;
@@ -115,6 +116,19 @@ public sealed partial class ICE
             var marker = missionToDo.MapMarker;
             Vector2 mapFlag = new(marker.Value.X - 1024, (marker.Value.Y - 1024));
             int radius = marker.Value.Radius;
+
+            uint marker_Gather = 0;
+            uint marker_Critical = 0;
+
+            List<uint> gatherJobs = new() { 16, 17, 18 }; 
+            if (entry.MissionToDo[0].RowId != 0 && jobs.ContainsAny(gatherJobs))
+            {
+                marker_Gather = entry.MissionToDo[0].Value.MapMarker.RowId;
+            }
+            if (entry.MissionToDo[1].RowId != 0)
+            {
+                marker_Critical = entry.MissionToDo[0].Value.MapMarker.RowId;
+            }
 
             // Stacked map markers — nudge slightly so route editor keys stay unique per mission row.
             if (CosmicMapMarkerNudges.TryGetOverride(keyId, out var overrideFlag))
@@ -603,6 +617,9 @@ public sealed partial class ICE
 
                     TemporaryActionId = tempActionId,
                     TemporaryActionCount = tempActionCount,
+
+                    Gather_MapKey = marker_Gather,
+                    Critical_MapKey = marker_Critical,
                 };
             }
         }
@@ -782,6 +799,81 @@ public sealed partial class ICE
             }
         }
 
+        foreach (var marker in Svc.Data.GetExcelSheet<WKSMissionMapMarker>())
+        {
+            if (marker.RowId == 0)
+                continue;
+            else
+            {
+                var iconId = marker.Icon;
+                var x = marker.X - 1024;
+                var y = marker.Y - 1024;
+                var radius = marker.Radius;
+                List<uint> jobs = new();
+
+                if (iconId == 63886)
+                {
+                    uint territory = 0;
+                    List<uint> missionIds = new();
+
+                    foreach (var mission in SheetMissionDict)
+                    {
+                        if (mission.Value.Critical_MapKey == marker.RowId)
+                        {
+                            territory = mission.Value.TerritoryId;
+                            missionIds.Add(mission.Key);
+                            foreach (var job in mission.Value.Jobs)
+                            {
+                                if (!jobs.Contains(job))
+                                    jobs.Add(job);
+                            }
+                        }
+                    }
+
+                    GatheringUtil.CriticalSpots[marker.RowId] = new()
+                    {
+                        IconId = 63886,
+                        Radius = radius,
+                        X = x,
+                        Y = y,
+                        MissionIds = missionIds,
+                        TerritoryId = territory,
+                        JobId = jobs
+                    };
+                }
+                else
+                {
+                    uint territory = 0;
+                    List<uint> missionIds = new();
+
+                    foreach (var mission in SheetMissionDict)
+                    {
+                        if (mission.Value.Gather_MapKey == marker.RowId)
+                        {
+                            territory = mission.Value.TerritoryId;
+                            missionIds.Add(mission.Key);
+                            foreach (var job in mission.Value.Jobs)
+                            {
+                                if (!jobs.Contains(job))
+                                    jobs.Add(job);
+                            }
+                        }
+                    }
+
+                    GatheringUtil.GatherSpots[marker.RowId] = new()
+                    {
+                        Radius = radius,
+                        X = x,
+                        Y = y,
+                        TerritoryId = territory,
+                        MissionIds = missionIds,
+                        JobId = jobs
+                    };
+                }
+            }
+
+        }
+
         EnsureAllMission();
         GatheringUtil.RegisterPresets();
         CosmicMoonContent.LogContentSummary();
@@ -868,11 +960,6 @@ public sealed partial class ICE
 
     private static void MigrateConfigSettings()
     {
-        if (!C.OldConfigMigrateV1)
-        {
-            // That means we're still on the old config version. Time to migrate if it exist
-            ConfigMigration.MigrateFromOldYaml(C);
-        }
         if (!C.MigratedOldArtisan)
         {
             Artisan_MigrateNew();
@@ -992,5 +1079,24 @@ public sealed partial class ICE
         var dye2 = Task_Gamba.DefaultGambaItems.Where(x => x.ItemId == 52256).FirstOrDefault();
         if (dye2 != null && !C.GambaItemWeights.Contains(dye2))
             C.GambaItemWeights.Add(dye2);
+    }
+    public static void UpdateMissingGathering()
+    {
+        foreach (var mission in CosmicHelper.SheetMissionDict)
+        {
+            if (mission.Value.Jobs.Contains(16) || mission.Value.Jobs.Contains(17))
+            {
+                var key = mission.Value.Gather_MapKey;
+                if (GatheringRouteLoader.LoadedRoutes.TryGetValue(key, out var routeInfo))
+                {
+                    if (routeInfo.Nodes is null)
+                        UnsupportedMissions.Ids.Add(mission.Key);
+                }
+                else
+                {
+                    UnsupportedMissions.Ids.Add(mission.Key);
+                }
+            }
+        }
     }
 }

@@ -4,11 +4,10 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ICE.Sounds;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
+using ICE.Utilities.GatheringHelper.RouteLoader;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.Localization.L10n;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -256,7 +255,7 @@ namespace ICE.Scheduler.Tasks
             {
                 if (modeSelected == ModeSelect.RelicMode && C.XPRelicOnlyEnabled)
                 {
-                    IceLogging.ChatInfo(T("\"Only selected missions\" is enabled for Relic Grind, but no selected missions match your current job. Please select missions for this job, switch jobs, or disable the option."), "[I.C.E.]");
+                    IceLogging.ChatInfo("\"Only selected missions\" is enabled for Relic Grind, but no selected missions match your current job. Please select missions for this job, switch jobs, or disable the option.", "[I.C.E.]");
                     if (C.PlaySoundAlert)
                     {
                         _ = SoundPlayer.PlaySoundAsync();
@@ -587,7 +586,7 @@ namespace ICE.Scheduler.Tasks
                             foreach (var exp in classInfo.CurrentExp)
                                 urgency[exp.Key] = 1f - (float)exp.Value.Current / exp.Value.Max;
                         }
-
+                        
                         if (urgency.All(x => x.Value <= 0))
                         {
                             IceLogging.Verbose("We seem to be completed with the exp, but also, I don't have a mode setup for score farming yet. So setting the last exp value to be 1 so it just grabs a mission", tag);
@@ -875,41 +874,6 @@ namespace ICE.Scheduler.Tasks
             }
         }
         private static Vector3 randomFishingHole = Vector3.Zero;
-
-        private static bool TryDailyRoutinesTeleportToPersonalReturn(Vector3 destination, string tag)
-        {
-            if (!C.PersonalReturnUseDailyRoutinesTP)
-                return false;
-
-            if (Player.DistanceTo(destination) < 3f)
-                return false;
-
-            if (!Utils.HasPlugin("DailyRoutines"))
-            {
-                if (EzThrottler.Throttle("PersonalReturnMissingDailyRoutines", 8000))
-                {
-                    IceLogging.Warning("未检测到 Daily Routines，已回退原有寻路。", tag);
-                }
-                return false;
-            }
-
-            if (EzThrottler.Throttle("PersonalReturnDailyRoutinesTeleport", 2500))
-            {
-                var command = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "/pdrtp pos {0:F2} {1:F2} {2:F2}",
-                    destination.X,
-                    destination.Y,
-                    destination.Z);
-
-                Svc.Commands.ProcessCommand(command);
-                IceLogging.Debug($"已尝试 Daily Routines 传送：{command}", tag);
-                return true;
-            }
-
-            return false;
-        }
-
         private static bool? CheckForMovementRequired(uint missionId)
         {
             string tag = "[Check Missions: Movement Check]";
@@ -931,11 +895,11 @@ namespace ICE.Scheduler.Tasks
             }
             else if (sheetInfo.IsGatherMission || sheetInfo.IsGreaterReach)
             {
-                var missionTerritory = sheetInfo.TerritoryId;
-                var mapId = sheetInfo.MapPosition;
-                var gatherInfo = GatheringRouteLoader.GetRoute(missionTerritory, mapId);
+                var route = sheetInfo.Gather_MapKey;
 
-                if (gatherInfo == null || gatherInfo.Count == 0)
+                var gatherInfo = GatheringRouteLoader.GetRoute(route);
+
+                if (gatherInfo == null || gatherInfo.Nodes.Count == 0)
                 {
                     IceLogging.Error("Hey, so this is actually missing the information for it. So going to just actually add it to the unsupported mission list", tag);
                     UnsupportedMissions.Ids.Add(missionId);
@@ -943,7 +907,7 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    var startNode = gatherInfo[0];
+                    var startNode = gatherInfo.Nodes[0];
 
                     if (Task_Gather.IsInsideMissionGatherCircle(sheetInfo) ||
                         Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo))
@@ -953,11 +917,20 @@ namespace ICE.Scheduler.Tasks
                         return true;
                     }
 
+                    foreach (var node in gatherInfo.Nodes)
+                    {
+                        if (Player.DistanceTo(node.Position) < 5)
+                        {
+                            Task_Gather.MarkMissionEntryPrepared(missionId);
+                            IceLogging.Info("We're close enough to the node! So continuing onto grabbing the mission", tag);
+                            return true;
+                        }
+                    }
+
                     IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now", tag);
 
-                    // CN-MAINT: Gather mission entry rule: outside flag circle -> TP once, fallback nav if TP unavailable.
-                    if (!Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo) &&
-                        Task_Gather.TryDailyRoutinesTeleportToGatherLandZone(startNode.LandZone, tag))
+                    // CN-MAINT: Gather mission entry rule: outside flag/critical circle -> DRTP once, fallback nav if TP unavailable.
+                    if (Task_Gather.TryDailyRoutinesTeleportToGatherLandZone(startNode.LandZone, tag))
                     {
                         Task_Gather.MarkMissionEntryPrepared(missionId);
                         return false;
@@ -972,12 +945,9 @@ namespace ICE.Scheduler.Tasks
             {
                 var location = sheetInfo.MapPosition;
                 var territory = sheetInfo.TerritoryId;
-                List<GatheringUtil.FisherSpotInfo>? fishingHole = null;
-                bool missingFishingHole = !GatheringUtil.MoonFishingLocations.TryGetValue(territory, out var territoryFishingHoles)
-                    || !territoryFishingHoles.TryGetValue(location, out fishingHole)
-                    || fishingHole.Count == 0;
-
-                if (missingFishingHole)
+                if (!GatheringUtil.MoonFishingLocations.TryGetValue(territory, out var zoneFishing)
+                    || !zoneFishing.TryGetValue(location, out var fishingHole)
+                    || fishingHole.Count == 0)
                 {
                     IceLogging.Error("We've seemed to have ran into a problem with the fishing hole... either it's missing spots, or it doesn't exist. Please report back to me on this with logs leading up to this\n" +
                         $"Mission ID: {missionId} | Map Position: {location} | Moon Territory: {territory}\n" +
@@ -996,41 +966,28 @@ namespace ICE.Scheduler.Tasks
                         if (Player.DistanceTo(fishingLoc.Value) < 3)
                         {
                             IceLogging.Info($"We have a custom fishing hole set, and we're close to it. {fishingLoc.Value}", tag);
-                            Task_Fishing.MarkMissionEntryPrepared(missionId);
                             randomFishingHole = Vector3.Zero;
                             return true;
                         }
                         else
                         {
-                            if (!Task_Fishing.IsInsideMissionFishingCircle(sheetInfo) &&
-                                !Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo) &&
-                                Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(fishingLoc.Value, tag))
-                            {
-                                Task_Fishing.MarkMissionEntryPrepared(missionId);
-                                randomFishingHole = Vector3.Zero;
-                                return false;
-                            }
-
                             IceLogging.Verbose($"We have a custom fishing hole set, and we're not within fishing range. Queueing up moving to it: {fishingLoc.Value}");
                             Task_NavmeshMove.Enqueue_NavmeshTask(fishingLoc.Value);
-                            Task_Fishing.MarkMissionEntryPrepared(missionId);
                             randomFishingHole = Vector3.Zero;
                             return true;
                         }
                     }
                 }
 
-                if (Task_Fishing.IsInsideMissionFishingCircle(sheetInfo) ||
-                    Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo))
+                foreach (var fishingSpot in fishingHole)
                 {
-                    Task_Fishing.MarkMissionEntryPrepared(missionId);
-                    IceLogging.Info("Already inside mission fishing/critical circle, continuing to grab mission", tag);
-                    randomFishingHole = Vector3.Zero;
-                    return true;
+                    if (Player.DistanceTo(fishingSpot.FishingSpot) < 3)
+                    {
+                        IceLogging.Info($"We've reached our fishing spot! We are current at: {fishingSpot.FishingSpot}", tag);
+                        randomFishingHole = Vector3.Zero;
+                        return true;
+                    }
                 }
-
-                if (missingFishingHole)
-                    return true;
 
                 if (randomFishingHole == Vector3.Zero)
                 {
@@ -1044,16 +1001,8 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    if (!Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo) &&
-                        Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(randomFishingHole, tag))
-                    {
-                        Task_Fishing.MarkMissionEntryPrepared(missionId);
-                        return false;
-                    }
-
                     IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now");
                     Task_NavmeshMove.Enqueue_NavmeshTask(randomFishingHole);
-                    Task_Fishing.MarkMissionEntryPrepared(missionId);
                     randomFishingHole = Vector3.Zero;
                     return true;
                 }
@@ -1070,11 +1019,6 @@ namespace ICE.Scheduler.Tasks
                     var territory = Player.Territory.RowId;
                     if (C.CrafterLocations.TryGetValue(territory, out var location))
                     {
-                        if (TryDailyRoutinesTeleportToPersonalReturn(location, tag))
-                        {
-                            return false;
-                        }
-
                         IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now");
                         Task_NavmeshMove.Enqueue_NavmeshTask(location);
                         return true;

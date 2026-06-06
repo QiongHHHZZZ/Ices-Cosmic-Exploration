@@ -44,7 +44,7 @@ public static class GatheringRouteLoader
     {
         var assembly = Assembly.GetExecutingAssembly();
         var resources = assembly.GetManifestResourceNames()
-            .Where(r => r.Contains("GatheringRoutes") && r.EndsWith(".json"));
+            .Where(r => r.Contains("GatherRoutes") && r.EndsWith(".json"));
 
         foreach (var resourceName in resources)
         {

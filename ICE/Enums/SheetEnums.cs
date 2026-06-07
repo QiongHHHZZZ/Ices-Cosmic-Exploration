@@ -31,6 +31,7 @@ namespace ICE.Enums
         ProvisionalTimed = 1 << 14,      // Timed Mission
         ProvisionalWeather = 1 << 15,    // Weather Mission
         ProvisionalSequential = 1 << 16, // Sequential Mission
+        Master = 1 << 21,                // Master Mission
 
         GreaterReach_GatherX = 1 << 17,  // Greater Reach + Gather 100 Items
         GreaterReach_Chain = 1 << 18,    // Greater Reach + Chain Scoring

@@ -493,7 +493,7 @@ namespace ICE.Scheduler.Tasks
                         // Tool Mastery has no tab-independent getter, so we must be on its UI tab to read
                         // the list. Click into it first; bail this cycle until the UI is actually there.
                         if (!CosmicHandler.EnsureCategoryTab(CosmicHandler.ToolMasteryTab))
-                            return true;
+                            return false;
 
                         var masterAvail = CosmicHandler.ToolMastery_AvailableMissions();
                         IceLogging.Verbose($"Checking Tool Mastery missions.\n" +
@@ -1141,8 +1141,9 @@ namespace ICE.Scheduler.Tasks
 
                     var job = CosmicHelper.SheetMissionDict[missionId].Jobs.First();
 
+                    // TODO: Need to just clean this up later, the function to directly grab it is no longer necessary
                     // Tool Mastery missions are only readable/grabbable from their own tab (3).
-                    byte categoryTab = CosmicHelper.SheetMissionDict[missionId].Master ? CosmicHandler.ToolMasteryTab : (byte)0;
+                    byte categoryTab = CosmicHelper.SheetMissionDict[missionId].IsMaster ? CosmicHandler.ToolMasteryTab : (byte)0;
 
                     if (CorrectJobTab(job, categoryTab))
                     {

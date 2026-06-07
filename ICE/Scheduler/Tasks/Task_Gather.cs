@@ -131,6 +131,7 @@ namespace ICE.Scheduler.Tasks
             var missionInfo = CosmicHelper.CurrentMissionInfo;
             bool collectableItem = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables);
             bool reduceItems = missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
+            bool ScoreMode = missionInfo.IsMaster && C.MissionConfig[CosmicHelper.CurrentLunarMission].TurninGoal == TurninState.TimeExpired;
 
             bool CheckDelay()
             {
@@ -168,6 +169,11 @@ namespace ICE.Scheduler.Tasks
                     // This should prevent us from actually attempting to do another gathering action, while we are currently doing one
                     if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady)
                     {
+                        if (EzThrottler.Throttle("Log message"))
+                        {
+                            IceLogging.Debug($"Collectable: {collectableItem} | Reduce: {reduceItems} | Score Mode: {ScoreMode}");
+                        }
+
                         if (reduceItems || collectableItem)
                         {
                             // We need to find an item where it's a collectable so we can just initiate the gathering window
@@ -196,9 +202,12 @@ namespace ICE.Scheduler.Tasks
                             if (CheckDelay())
                                 return false;
 
-                            if (UseGatherAction(configId, gatherChance, boonChance, gather.CurrentIntegrity, gather.TotalIntegrity, playerGp))
+                            if (!ScoreMode)
                             {
-                                return false;
+                                if (UseGatherAction(configId, gatherChance, boonChance, gather.CurrentIntegrity, gather.TotalIntegrity, playerGp))
+                                {
+                                    return false;
+                                }
                             }
 
                             // Find the item with the largest deficit
@@ -227,7 +236,14 @@ namespace ICE.Scheduler.Tasks
                             else
                             {
                                 // we must not need any of those items, so going to just do a first item gather
-                                gather.GatheredItems.Where(x => x.ItemID != 0).FirstOrDefault().Gather();
+                                if (!ScoreMode)
+                                    gather.GatheredItems
+                                        .Where(x => x.ItemID != 0)
+                                        .Where(x => !x.IsCollectable)
+                                        .FirstOrDefault()
+                                        ?.Gather();
+                                else
+                                    gather.GatheredItems.Where(x => x.ItemID != 0).FirstOrDefault()?.Gather();
                                 return false;
                             }
                         }

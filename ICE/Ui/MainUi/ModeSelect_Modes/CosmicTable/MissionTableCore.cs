@@ -316,7 +316,7 @@ internal class Table<TItem>
         }
     }
 
-    public bool WouldBeVisible(TItem value)
+    public virtual bool WouldBeVisible(TItem value)
     {
         for (var i = 0; i < Headers.Length; i++)
         {

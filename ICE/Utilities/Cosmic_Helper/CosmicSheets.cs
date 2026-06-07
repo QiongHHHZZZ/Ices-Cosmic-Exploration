@@ -137,12 +137,13 @@ public static unsafe partial class CosmicHelper
         public bool IsWeather => Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
         public bool IsTimed => Attributes.HasFlag(MissionAttributes.ProvisionalTimed);
         public bool IsSequence => Attributes.HasFlag(MissionAttributes.ProvisionalSequential);
+        public bool IsMaster => Attributes.HasFlag(MissionAttributes.Master);
         public bool ARank => Rank is 5 or 4;
         public bool BRank => Rank is 3;
         public bool CRank => Rank is 2;
         public bool Drank => Rank == 1 && !Attributes.HasFlag(MissionAttributes.Critical);
-        // Tool Mastery missions: Rank 6 like EX+, but not provisional/critical (EX+ are always weather/timed).
-        public bool Master => Rank == 6 && !IsProvisional && !IsCritical;
+        // Legacy alias for Tool Mastery missions.
+        public bool Master => IsMaster;
         // Work type by job (16=MIN, 17=BTN, 18=FSH), matching Task_ExecuteMission. Use these for routing/
         // movement instead of the Gather/Fish attribute flags: some missions (e.g. Tool Mastery) carry no
         // mapped WKSMissionText attribute yet still gather/fish, so the attribute flags miss them.

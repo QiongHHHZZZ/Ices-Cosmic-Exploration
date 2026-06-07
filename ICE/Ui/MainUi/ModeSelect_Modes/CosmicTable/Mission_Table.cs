@@ -181,6 +181,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
         }
 
         public TableViewMode ViewMode { get; set; } = TableViewMode.Compact;
+        public string SearchText { get; set; } = string.Empty;
         public bool[] CustomColumnVisibility { get; private set; } = [];
         private readonly HashSet<uint> _availableMissionIds = [];
         private long _nextAvailableMissionRefresh;
@@ -241,6 +242,19 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
         {
             ApplyViewModeToColumnFlags();
             RefreshAvailableMissionCache();
+        }
+
+        public override bool WouldBeVisible(MissionInfo value)
+        {
+            if (!base.WouldBeVisible(value))
+                return false;
+
+            var search = SearchText.Trim();
+            if (search.Length == 0)
+                return true;
+
+            return value.Id.ToString().Contains(search, StringComparison.OrdinalIgnoreCase)
+                || value.SheetInfo.Name.Contains(search, StringComparison.OrdinalIgnoreCase);
         }
 
         protected override int GetStretchColumnIndex(IReadOnlyList<int> visibleColumns)
@@ -1062,7 +1076,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 if (info.IsSequence) return 9;
                 if (info.IsWeather) return 8;
                 if (info.IsTimed) return 7;
-                // Rank 6 = Provisional (handled above), 5 = Ex, 4 = A, 3 = B, 2 = C, 1 = D
+                if (info.IsMaster) return 6;
+                // 5 = Ex, 4 = A, 3 = B, 2 = C, 1 = D
                 return (int)info.Rank;
             }
 
@@ -1136,7 +1151,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 if (FilterValue.HasFlag(MissionFilter.BRank) && sheetInfo.BRank && !special) return true;
                 if (FilterValue.HasFlag(MissionFilter.CRank) && sheetInfo.CRank && !special) return true;
                 if (FilterValue.HasFlag(MissionFilter.DRank) && sheetInfo.Drank && !special) return true;
-                if (FilterValue.HasFlag(MissionFilter.Master) && sheetInfo.Master) return true;
+                if (FilterValue.HasFlag(MissionFilter.Master) && sheetInfo.IsMaster) return true;
 
                 return false;
             }
@@ -1337,7 +1352,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         var totalWidth = buttonWidth * buttonCount + spacing * (buttonCount - 1f);
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + MathF.Max(0, (ImGuiUtil.CurrentColumnWidth - totalWidth) * 0.5f));
 
-                        var showTimeExpiredTurnin = item.SheetInfo.Rank == 6 && !item.SheetInfo.IsProvisional;
+                        var showTimeExpiredTurnin = item.SheetInfo.IsMaster;
                         using (ImRaii.PushColor(ImGuiCol.Text, timeExpired ? GoldColor : DisabledColor))
                         {
                             if (showTimeExpiredTurnin)

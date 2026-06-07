@@ -956,6 +956,8 @@ namespace ICE.Ui.MainUi.Settings
         // -------------------------------------------------------------------------
         private static void RelicJobSwap(CharacterOverride? ov)
         {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Toolbox, T("Class Swap"));
+            ImGui.Dummy(new(0, 5));
             if (ov == null)
             {
                 bool swapJobs = C.Relic_SwapJob;

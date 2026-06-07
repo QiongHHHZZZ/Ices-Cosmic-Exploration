@@ -141,25 +141,22 @@ public sealed partial class ICE
 
             if (jobs.Count > 1)
             {
-                // Dual class speficially. This one always has 2 classes in there. (Sinus Exclusive)
-
-                if (jobs.Contains(18))
-                    attributes = MissionAttributes.Craft | MissionAttributes.Fish;
-                else
-                    attributes = MissionAttributes.Craft | MissionAttributes.Gather;
+                // Dual class specifically. Always has 2 classes. (Sinus Exclusive)
+                attributes = jobs.Contains(18)
+                    ? MissionAttributes.Craft | MissionAttributes.Fish
+                    : MissionAttributes.Craft | MissionAttributes.Gather;
             }
             else if (CosmicHelper.CrafterJobList.Any(x => jobs.Contains(x)))
             {
-                // Purely just a crafting job. Not going to mark this as special in any other way at the moment. 
-                // Expert Recipies will get checked later
+                // Purely a crafting job. Expert Recipes checked later.
                 attributes = MissionAttributes.Craft;
             }
             else
             {
-                if (jobs.Contains(18))
-                    attributes |= MissionAttributes.Fish;
-                else
-                    attributes |= MissionAttributes.Gather;
+                // Gather/Fish base — used as the switch fallback
+                MissionAttributes gatherOrFish = jobs.Contains(18)
+                    ? MissionAttributes.Fish
+                    : MissionAttributes.Gather;
 
                 attributes = missionToDo.WKSMissionText.RowId switch
                 {
@@ -169,24 +166,27 @@ public sealed partial class ICE
                     106 => MissionAttributes.Gather | MissionAttributes.Score_Chain,
                     107 => MissionAttributes.Gather | MissionAttributes.Score_Boon,
                     108 => MissionAttributes.Gather | MissionAttributes.Score_Chain | MissionAttributes.Score_Boon,
-                    109 or 111 or 372 => MissionAttributes.Gather | MissionAttributes.Collectables,
+                    109 or 111 or 372
+                         => MissionAttributes.Gather | MissionAttributes.Collectables,
                     110 => MissionAttributes.Gather | MissionAttributes.ReducedItems | MissionAttributes.Score_TimeRemaining,
                     112 => MissionAttributes.Gather | MissionAttributes.ReducedItems,
                     113 => MissionAttributes.Fish | MissionAttributes.Score_Variety | MissionAttributes.Score_TimeRemaining,
-                    114 or 115 => MissionAttributes.Fish | MissionAttributes.Score_TimeRemaining,
+                    114 or 115
+                         => MissionAttributes.Fish | MissionAttributes.Score_TimeRemaining,
                     116 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Score_Variety,
                     117 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Score_LargestSize,
                     118 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Collectables,
-                    119 or 121 => MissionAttributes.Fish,
+                    119 or 121
+                         => MissionAttributes.Fish,
                     120 => MissionAttributes.Fish | MissionAttributes.Score_LargestSize,
                     122 => MissionAttributes.Fish | MissionAttributes.Collectables,
-                    139 => jobs.Contains(18) ? MissionAttributes.Fish : MissionAttributes.Gather, // Critical
+                    139 => gatherOrFish,            // Critical — job-dependent
                     141 => MissionAttributes.Fish,
-                    // Auxesia Tool Mastery gather missions (Geological/Botanical). They use Greater Reach,
-                    // so the GreaterReach block below converts Chain+Boon into GreaterReach_Boon_Chain.
+                    // Auxesia Tool Mastery gather missions (Geological/Botanical).
+                    // GreaterReach block below converts Chain+Boon into GreaterReach_Boon_Chain.
                     312 or 313 => MissionAttributes.Gather | MissionAttributes.Score_Chain | MissionAttributes.Score_Boon,
 
-                    _ => MissionAttributes.None
+                    _ => gatherOrFish
                 };
             }
 
@@ -194,6 +194,14 @@ public sealed partial class ICE
             attributes |= weather != CosmicWeather.None ? MissionAttributes.ProvisionalWeather : MissionAttributes.None;
             attributes |= (startTime != 0 || endTime != 0) ? MissionAttributes.ProvisionalTimed : MissionAttributes.None;
             attributes |= previousMissionId != 0 ? MissionAttributes.ProvisionalSequential : MissionAttributes.None;
+
+            const MissionAttributes provisionalMask =
+                MissionAttributes.ProvisionalWeather |
+                MissionAttributes.ProvisionalTimed |
+                MissionAttributes.ProvisionalSequential;
+
+            if (rank == 6 && !attributes.HasFlag(MissionAttributes.Critical) && (attributes & provisionalMask) == MissionAttributes.None)
+                attributes |= MissionAttributes.Master;
 
             tempActionId = missionToDo.TemporaryAction.RowId;
             tempActionCount = missionToDo.Unknown14;

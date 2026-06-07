@@ -51,14 +51,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         private static List<CosmicHelper.MissionInfo> TableItems = [];
         private static int ItemCount = 0;
 
-        // Search bar state: which text-searchable column the search bar targets, plus the current search text
-        private static int _searchColumnIdx = 0;
+        // Search bar state: free text search against mission ID and name.
         private static string _searchText = string.Empty;
         private static Mission_Table.TableViewMode _tableViewMode = Mission_Table.TableViewMode.Compact;
         private static bool _openCustomColumnPopup;
         private static Vector2 _tableViewPopupPos;
-        private static readonly List<ColumnString<CosmicHelper.MissionInfo>> _searchableColumns = [];
-        private static readonly Dictionary<string, string> _searchColumnLabelCache = [];
 
         public static void Draw()
         {
@@ -293,17 +290,21 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     ImGui.Separator();
                     bool relic_AllowRedAlert = C.Relic_IncludeCriticals;
-                    if (ImGui.Checkbox(T("Allow Red Alerts for Relic"), ref relic_AllowRedAlert))
+                    if (ImGui.Checkbox(T("Relic Mode: Allow Red Alerts"), ref relic_AllowRedAlert))
                     {
                         C.Relic_IncludeCriticals = relic_AllowRedAlert;
                         C.Save();
                     }
 
                     bool OnlySelected = C.XPRelicOnlyEnabled;
-                    if (ImGui.Checkbox(T("Only selected missions"), ref OnlySelected))
+                    if (ImGui.Checkbox(T("Relic Mode: Only Enabled"), ref OnlySelected))
                     {
                         C.XPRelicOnlyEnabled = OnlySelected;
                         C.Save();
+                    }
+                    if (ImGui.Button(T("Open Job Swap Settings")))
+                    {
+                        C.SelectedTab = WindowSelection.CharacterSettings;
                     }
 
 
@@ -354,7 +355,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 TableItems.Add(new CosmicHelper.MissionInfo { Id = mission.Key });
 
             ItemCount = TableItems.Count;
-            MissionTable = new(TableItems);
+            MissionTable = new(TableItems)
+            {
+                SearchText = _searchText,
+            };
         }
 
         private static void DrawMissionToolbar(float scale)
@@ -464,24 +468,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             if (MissionTable == null)
                 return;
 
-            _searchableColumns.Clear();
-            foreach (var header in MissionTable.Headers)
-            {
-                if (header is ColumnString<CosmicHelper.MissionInfo> colStr)
-                    _searchableColumns.Add(colStr);
-            }
-
-            if (_searchableColumns.Count == 0)
-                return;
-
-            if (_searchColumnIdx < 0 || _searchColumnIdx >= _searchableColumns.Count)
-                _searchColumnIdx = 0;
-
             float viewButtonWidth = 142 * scale;
             float searchViewGap = 20 * scale;
             float searchGroupWidth = Math.Min(430 * scale, Math.Max(220 * scale, ImGui.GetContentRegionAvail().X - viewButtonWidth - searchViewGap - 8 * scale));
 
-            DrawUnifiedSearch(_searchableColumns, searchGroupWidth, scale);
+            DrawUnifiedSearch(searchGroupWidth, scale);
             ImGui.SameLine(0, searchViewGap);
 
             if (ImGui.Button($"{T("View")}: {GetTableViewLabel(_tableViewMode)}", new Vector2(viewButtonWidth, 0)))
@@ -493,7 +484,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             DrawViewPopups(scale);
         }
 
-        private static void DrawUnifiedSearch(List<ColumnString<CosmicHelper.MissionInfo>> searchable, float width, float scale)
+        private static void DrawUnifiedSearch(float width, float scale)
         {
             var style = ImGui.GetStyle();
             var drawList = ImGui.GetWindowDrawList();
@@ -501,38 +492,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             var height = ImGui.GetFrameHeight();
             var size = new Vector2(width, height);
             var rounding = 6f * scale;
-            var label = GetSearchColumnLabel(searchable[_searchColumnIdx].Label);
-            var selectorWidth = MathF.Min(104f * scale, MathF.Max(68f * scale, ImGui.CalcTextSize(label).X + 30f * scale));
-            var inputGap = 16f * scale;
-            var inputX = pos.X + selectorWidth + inputGap;
+            var inputPaddingX = 12f * scale;
 
             drawList.AddRectFilled(pos, pos + size, ImGui.GetColorU32(ImGuiCol.FrameBg), rounding);
             drawList.AddRect(pos, pos + size, ImGui.GetColorU32(ImGuiCol.Border), rounding, ImDrawFlags.RoundCornersAll, 1f * scale);
 
-            var selectorMax = pos + new Vector2(selectorWidth, height);
-            var selectorHovered = ImGui.IsMouseHoveringRect(pos, selectorMax)
-                               && ImGui.IsWindowHovered(ImGuiHoveredFlags.ChildWindows | ImGuiHoveredFlags.AllowWhenBlockedByPopup);
-            if (selectorHovered)
-                drawList.AddRectFilled(pos, selectorMax, ImGui.GetColorU32(ImGuiCol.ButtonHovered), rounding, ImDrawFlags.RoundCornersLeft);
-
-            drawList.AddLine(
-                new Vector2(pos.X + selectorWidth, pos.Y + 5f * scale),
-                new Vector2(pos.X + selectorWidth, pos.Y + height - 5f * scale),
-                ImGui.GetColorU32(new Vector4(0.32f, 0.42f, 0.56f, 0.80f)),
-                1f * scale);
-
-            var labelSize = ImGui.CalcTextSize(label);
-            ImGui.SetCursorScreenPos(new Vector2(pos.X + MathF.Max(0, (selectorWidth - labelSize.X) * 0.5f), pos.Y + MathF.Max(0, (height - labelSize.Y) * 0.5f)));
-            ImGui.TextColored(new Vector4(0.86f, 0.93f, 1.00f, 1.00f), label);
-
-            ImGui.SetCursorScreenPos(pos);
-            if (ImGui.InvisibleButton("##searchColumnSelector", new Vector2(selectorWidth, height)))
-                ImGui.OpenPopup("##missionSearchColumnPopup");
-            if (ImGui.IsItemHovered())
-                ImGui.SetTooltip(T("Select search column."));
-
-            ImGui.SetCursorScreenPos(new Vector2(inputX, pos.Y));
-            ImGui.SetNextItemWidth(MathF.Max(1f, pos.X + width - inputX - 10f * scale));
+            ImGui.SetCursorScreenPos(new Vector2(pos.X + inputPaddingX, pos.Y));
+            ImGui.SetNextItemWidth(MathF.Max(1f, width - inputPaddingX * 2f));
             using (ImRaii.PushStyle(ImGuiStyleVar.FrameBorderSize, 0)
                    .Push(ImGuiStyleVar.FrameRounding, 0)
                    .Push(ImGuiStyleVar.FramePadding, new Vector2(0, style.FramePadding.Y)))
@@ -542,68 +508,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             {
                 if (ImGui.InputTextWithHint("##searchInput", T("Search..."), ref _searchText, 256))
                 {
-                    searchable[_searchColumnIdx].FilterValue = _searchText;
+                    if (MissionTable != null)
+                        MissionTable.SearchText = _searchText;
                     MissionTable?.SetFilterDirty();
                 }
             }
 
             ImGui.SetCursorScreenPos(pos + new Vector2(width, 0));
-
-            DrawSearchColumnPopup(searchable, pos + new Vector2(0, height + 4f * scale), MathF.Max(selectorWidth, 150f * scale), scale);
-        }
-
-        private static void DrawSearchColumnPopup(List<ColumnString<CosmicHelper.MissionInfo>> searchable, Vector2 popupPos, float popupWidth, float scale)
-        {
-            ImGui.SetNextWindowPos(popupPos, ImGuiCond.Appearing);
-            ImGui.SetNextWindowSize(new Vector2(popupWidth, 0), ImGuiCond.Appearing);
-            PushMissionPopupStyle(scale);
-            if (ImGui.BeginPopup("##missionSearchColumnPopup"))
-            {
-                for (var i = 0; i < searchable.Count; i++)
-                {
-                    if (ImGui.Selectable($"{GetSearchColumnLabel(searchable[i].Label)}##searchColumn{i}", i == _searchColumnIdx))
-                        SetSearchColumn(searchable, i);
-                }
-
-                ImGui.EndPopup();
-            }
-            PopMissionPopupStyle();
-        }
-
-        private static string GetSearchColumnLabel(string label)
-        {
-            if (_searchColumnLabelCache.TryGetValue(label, out var cached))
-                return cached;
-
-            var newline = label.IndexOf('\n');
-            if (newline >= 0)
-            {
-                var firstLine = label[..newline].Trim();
-                var secondLine = label[(newline + 1)..];
-                if (!secondLine.Contains('|'))
-                    return _searchColumnLabelCache[label] = $"{firstLine} {secondLine.Trim()}";
-
-                return _searchColumnLabelCache[label] = GetFirstPipeSegment(firstLine);
-            }
-
-            return _searchColumnLabelCache[label] = GetFirstPipeSegment(label);
-        }
-
-        private static string GetFirstPipeSegment(string label)
-        {
-            var pipe = label.IndexOf('|');
-            return (pipe >= 0 ? label[..pipe] : label).Trim();
-        }
-
-        private static void SetSearchColumn(List<ColumnString<CosmicHelper.MissionInfo>> searchable, int columnIdx)
-        {
-            if (searchable.Count == 0 || columnIdx < 0 || columnIdx >= searchable.Count || columnIdx == _searchColumnIdx)
-                return;
-
-            searchable[_searchColumnIdx].FilterValue = string.Empty;
-            _searchColumnIdx = columnIdx;
-            searchable[_searchColumnIdx].FilterValue = _searchText;
-            MissionTable?.SetFilterDirty();
         }
 
         private static void DrawViewPopups(float scale)

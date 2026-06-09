@@ -214,7 +214,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 _enabledColumn, _completionColumn, _idColumn, _planetColumn,
                 _jobColumn, _missionColumn, _nameColumn, _classScoreColumn, _spmColumn,
                 _cosmoColumn, _lunarColumn, _droneColumn, _planetTokenColumn,
-                _turninColumn, _allExpColumn];
+                _turninColumn];
 
 
             var tierFlags = new (int tier, ItemFilter flag)[]
@@ -284,13 +284,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 MissionColumn => 40f,
                 NameColumn => 90f,
                 ClassScoreColumn => 44f,
-                SPMColumn => 56f,
+                SPMColumn => 74f,
                 ScoreSummaryColumn => 86f,
                 CosmocreditColumn => 46f,
                 LunarCreditColumn => 46f,
                 CreditSummaryColumn => 84f,
-                DroneCreditColumn => 48f,
-                PlanetTokensColumn => 48f,
+                DroneCreditColumn => 42f,
+                PlanetTokensColumn => 42f,
                 TurninColumn => 140f,
                 AllRelicExpColum => 136f,
                 RelicExpColumn => 30f,
@@ -417,11 +417,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 CosmocreditColumn => 46f,
                 LunarCreditColumn => 46f,
                 CreditSummaryColumn => 92f,
-                DroneCreditColumn => 48f,
-                PlanetTokensColumn => 48f,
-                SPMColumn => 56f,
+                DroneCreditColumn => 42f,
+                PlanetTokensColumn => 42f,
+                SPMColumn => 74f,
                 TurninColumn => 140f,
-                AllRelicExpColum => 150f,
+                AllRelicExpColum => 140f,
                 RelicExpColumn => 30f,
                 ProfileColumn => 128f,
                 _ => 76f,
@@ -501,6 +501,18 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 ImGui.PushID(item.Id);
 
+                var mission = CosmicHelper.CurrentLunarMission;
+
+                if (mission != 0 && mission == item.Id)
+                {
+                    ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, ImGui.GetColorU32(new Vector4(0.0f, 1.0f, 0.2f, 0.25f)));
+                }
+                else if (CosmicHandler.All_AvailableMissions().Contains(item.Id))
+                {
+                    ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, ImGui.GetColorU32(new Vector4(0.0f, 1.0f, 0.2f, 0.25f)));
+                }
+
+
                 bool disabled = C.SelectedMode == ModeSelect.MissionGoldMode
                              || C.SelectedMode == ModeSelect.LevelMode
                              || (C.SelectedMode == ModeSelect.RelicMode && !C.XPRelicOnlyEnabled);
@@ -559,7 +571,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     iconCount++;
                 if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
                     iconCount++;
-                if (CosmicHelper.CriticalLocations.ContainsKey(mission.Id))
+                if (GatheringUtil.CriticalSpots.ContainsKey(mission.SheetInfo.Critical_MapKey))
                     iconCount++;
                 iconCount += CountNoteIcons(mission);
 
@@ -617,15 +629,27 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     }
                     drewIcon = true;
                 }
-                if (CosmicHelper.CriticalLocations.TryGetValue(mission.Id, out var criticalLoc))
+                if (GatheringUtil.CriticalSpots.TryGetValue(mission.SheetInfo.Critical_MapKey, out var criticalInfo))
                 {
                     if (drewIcon)
                         ImGui.SameLine();
 
                     if (ImGuiEx.IconButton(FontAwesomeIcon.FlagCheckered, $"CriticalFlag_{mission.Id}"))
                     {
-                        Utils.SetFlagForNPC(mission.SheetInfo.TerritoryId, criticalLoc.MapInfo.X, criticalLoc.MapInfo.Y);
+                        Utils.SetGatheringRing(mission.SheetInfo.TerritoryId, criticalInfo.X, criticalInfo.Y, criticalInfo.Radius, $"Red Alert: {mission.SheetInfo.Name}", criticalInfo.IconId);
                     }
+#if DEBUG
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text($"Critical Route: {mission.SheetInfo.Critical_MapKey}");
+                        ImGui.Separator();
+                        ImGui.Text($"Map Cordinates: {criticalInfo.X} | {criticalInfo.Y}");
+                        ImGui.Separator();
+                        ImGui.Text($"World Position: {criticalInfo.WorldCords.X:N2} | {criticalInfo.WorldCords.Y:N2} | {criticalInfo.WorldCords.Z:N2}");
+                        ImGui.EndTooltip();
+                    }
+#endif
                     drewIcon = true;
                 }
 
@@ -780,7 +804,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 Flags = ImGuiTableColumnFlags.NoResize;
             }
             public override float Width => Math.Max(
-                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.CalcTextSize(Label + "x").X + ImGui.GetStyle().CellPadding.X * 2,
                 ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
             );
             public override string ToName(MissionInfo mission) => mission.SheetInfo.DronebitReward.ToString();
@@ -831,7 +855,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 SetNames(T("Has Tokens"), T("No Tokens"));
             }
             public override float Width => Math.Max(
-                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.CalcTextSize(Label + "x").X + ImGui.GetStyle().CellPadding.X * 2,
                 ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
             );
             public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.TokenItemAmount.CompareTo(rhs.SheetInfo.TokenItemAmount);
@@ -1510,6 +1534,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 bool gatherProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || sheetInfo.IsGreaterReach;
                 bool collectable = sheetInfo.Attributes.HasFlag(MissionAttributes.Collectables) || sheetInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
                 bool fishProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Fish);
+                bool master = sheetInfo.IsMaster;
 
                 ImGui.PushID($"Mission: {item.Id}");
 
@@ -1543,7 +1568,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
                 if (gatherProfile)
                 {
-                    if (!collectable)
+                    if (!collectable || master)
                     {
                         string profileName = "???";
                         string profileButtonName = profileName;

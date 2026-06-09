@@ -28,6 +28,7 @@ public partial class Config
         MissionTypes.Critical,
         MissionTypes.Provisional,
         MissionTypes.Standard,
+        MissionTypes.ToolMastery,
     };
     public List<uint> JobPrio { get; set; } = new()
     {

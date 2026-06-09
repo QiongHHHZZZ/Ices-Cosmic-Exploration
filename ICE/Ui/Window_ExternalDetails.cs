@@ -5,6 +5,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Ui.MainUi.ModeSelect_Modes;
 using ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable;
 using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
 using System;
 using System.Collections.Generic;
@@ -220,7 +221,7 @@ namespace ICE.Ui
                         }
                     }
 
-                    if (CosmicHelper.CriticalLocations.TryGetValue(SelectedMission, out var criticalLoc))
+                    if (GatheringUtil.CriticalSpots.TryGetValue(mission.Critical_MapKey, out var criticalInfo))
                     {
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);
@@ -230,7 +231,7 @@ namespace ICE.Ui
                         ImGuiEx.Icon(FontAwesomeIcon.Flag);
                         if (ImGui.IsItemClicked())
                         {
-                            Utils.SetFlagForNPC(mission.TerritoryId, criticalLoc.MapInfo.X, criticalLoc.MapInfo.Y);
+                            Utils.SetFlagForNPC(mission.TerritoryId, criticalInfo.X, criticalInfo.Y);
                         }
                     }
 

@@ -15,8 +15,11 @@ public static unsafe partial class GatheringUtil
         public int Radius { get; set; } = 0;
         public uint IconId { get; set; } = 0;
         public List<uint> JobId { get; set; } = new();
+        public Vector3 WorldCords { get; set; } = Vector3.Zero;
+        public uint NpcSelector { get; set; } = 0;
     }
 
-    public static Dictionary<uint, MapInfo> GatherSpots = new();
     public static Dictionary<uint, MapInfo> CriticalSpots = new();
+
+    public static Dictionary<uint, MapInfo> GatherSpots = new();
 }

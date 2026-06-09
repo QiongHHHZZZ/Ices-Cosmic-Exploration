@@ -17,6 +17,7 @@ public partial class Config
     public bool UseGatheringFood { get; set; } = false;
     public uint GatheringFood { get; set; } = 0;
     public int FoodMinRank { get; set; } = 0; // 0=all, 1=D+, 2=C+, 3=B+, 4=A+, 5=Ex+, 6=Ex+ only
+    public int GatherFanSectionSize { get; set; } = 360;
 
     public List<GatherProfile> GatherSettings { get; set; } = new()
     {

@@ -271,6 +271,12 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         P.Navmesh.PathfindAndMoveTo(nodeInfo.LandZone, false);
                     }
+                    ImGui.SameLine();
+                    if (ImGui.Button("Move To [Fan]"))
+                    {
+                        Task_NavmeshMove.ResetGatherMove();
+                        P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_GatherMove(nodeInfo, stayMounted: true));
+                    }
 
                     ImGui.Dummy(new(0, 5));
                     if (ImGui.Button($"Player Start: {nodeInfo.LandZone}"))

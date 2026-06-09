@@ -44,9 +44,12 @@ internal static unsafe class PlayerHandlers
 
         if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("WKSReward", out var addon) && GenericHelpers.IsAddonReady(addon))
         {
-            if (EzThrottler.Throttle("Closing the reward popup"))
+            if (C.HideRewardWindow)
             {
-                GenericHandlers.FireCallback("WKSReward", true, -1);
+                if (EzThrottler.Throttle("Closing the reward popup"))
+                {
+                    GenericHandlers.FireCallback("WKSReward", true, -1);
+                }
             }
         }
 

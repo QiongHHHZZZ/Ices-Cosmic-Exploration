@@ -1,8 +1,11 @@
-﻿using Dalamud.Interface.Utility.Raii;
+﻿using Dalamud.Interface;
+using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
 using Newtonsoft.Json;
+using SharpDX.Direct2D1.Effects;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -45,6 +48,67 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             {
                 if (ImGui.BeginTabItem(T("Current Agenda")))
                 {
+                    float scale = ImGuiHelpers.GlobalScale;
+
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 10 * scale);
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5 * scale);
+
+                    string modeType = string.Empty;
+                    FontAwesomeIcon modeIcon = FontAwesomeIcon.List;
+
+                    bool standard = C.SelectedMode == ModeSelect.Standard;
+                    bool relicMode = C.SelectedMode == ModeSelect.RelicMode;
+                    bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
+                    bool goldMode = C.SelectedMode == ModeSelect.MissionGoldMode;
+                    bool agendaMode = C.SelectedMode == ModeSelect.AgendaMode;
+
+
+                    if (standard)
+                        modeType = T("Standard Mode");
+                    else if (relicMode)
+                    {
+                        modeType = T("Relic Grind Mode");
+                        modeIcon = FontAwesomeIcon.ArrowUpRightDots;
+                    }
+                    else if (xpLeveling)
+                    {
+                        modeType = T("Leveling Grind Mode");
+                        modeIcon = FontAwesomeIcon.Leaf;
+                    }
+                    else if (goldMode)
+                    {
+                        modeType = T("Gold Completion Grind Mode");
+                        modeIcon = FontAwesomeIcon.Trophy;
+                    }
+                    else if (agendaMode)
+                    {
+                        modeType = T("Cosmic Agenda Mode");
+                        modeIcon = FontAwesomeIcon.ClipboardList;
+                    }
+
+                    ImGuiEx.IconWithText(modeIcon, modeType);
+
+                    ImGui.SameLine(0, 10 * scale);
+
+                    // Adjust the Y position to center the button vertically with the text
+                    float textHeight = ImGui.GetTextLineHeight();
+                    float buttonHeight = ImGui.GetFrameHeight();
+                    float yOffset = (textHeight - buttonHeight) / 2f;
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
+
+                    if (ImGuiEx.IconButtonWithText(FontAwesomeIcon.Play, T("Mode Selection")))
+                    {
+                        ImGui.OpenPopup("Mode Select | Select Mode Window");
+                    }
+                    if (ImGui.BeginPopup("Mode Select | Select Mode Window"))
+                    {
+                        MainWindow.ModeSelection();
+
+                        ImGui.EndPopup();
+                    }
+
+                    ImGui.Dummy(new(0, 5));
+
                     var selectedJobIcon = CosmicHelper.ClassInfoDict[SelectedJob].JobIcon;
                     var selectedJobName = CosmicHelper.GetJobName(SelectedJob);
 

@@ -80,33 +80,17 @@ namespace ICE.Utilities
                 if (!wks->IsAgentActive())
                     return allMissions;
 
-                StdVector<MissionEntry> basicList = default;
-                if (wks->GetBasicMissions(&basicList))
-                {
-                    foreach (var mission in basicList)
-                        allMissions.Add(mission.MissionUnitId);
-                }
+                foreach (var mission in Basic_AvailableMissions())
+                    allMissions.Add(mission);
 
-                StdVector<MissionEntry> provisionalList = default;
-                if (wks->GetProvisionalMissions(&provisionalList))
-                {
-                    foreach (var mission in provisionalList)
-                        allMissions.Add(mission.MissionUnitId);
-                }
+                foreach (var mission in Provisional_AvailableMissions())
+                    allMissions.Add(mission);
 
-                StdVector<MissionEntry> criticalList = default;
-                if (AgentWKSMissionEx.GetCriticalMissions(wks, &criticalList))
-                {
-                    foreach (var mission in criticalList)
-                        allMissions.Add(mission.MissionUnitId);
-                }
+                foreach (var mission in Critical_AvailableMissions())
+                    allMissions.Add(mission);
 
-                // Tool Mastery (tab 3) has no getter; only readable while that tab is selected.
-                if (wks->SelectedTab == ToolMasteryTab && wks->Data != null)
-                {
-                    foreach (var mission in wks->Data->MissionList)
-                        allMissions.Add(mission.MissionUnitId);
-                }
+                foreach (var mission in Mastery_AvailableMissions())
+                    allMissions.Add(mission);
             }
 
             return allMissions;
@@ -147,13 +131,6 @@ namespace ICE.Utilities
                 if (!wks->IsAgentActive())
                     return allMissions;
 
-                StdVector<MissionEntry> basicList = default;
-                if (wks->GetBasicMissions(&basicList))
-                {
-                    foreach (var mission in basicList)
-                        allMissions.Add(mission.MissionUnitId);
-                }
-
                 StdVector<MissionEntry> provisionalList = default;
                 if (wks->GetProvisionalMissions(&provisionalList))
                 {
@@ -178,7 +155,7 @@ namespace ICE.Utilities
                     return allMissions;
 
                 StdVector<MissionEntry> criticalList = default;
-                if (AgentWKSMissionEx.GetCriticalMissions(wks, &criticalList))
+                if (wks->GetCriticalMissions(&criticalList))
                 {
                     foreach (var mission in criticalList)
                         allMissions.Add(mission.MissionUnitId);
@@ -187,27 +164,32 @@ namespace ICE.Utilities
 
             return allMissions;
         }
-        // Tool Mastery (tab 3) has no dedicated getter; its missions are only readable from
-        // Data.MissionList while that tab is selected. Returns empty unless we're on tab 3.
-        internal unsafe static List<uint> ToolMastery_AvailableMissions()
+        internal unsafe static List<uint> Mastery_AvailableMissions()
         {
             List<uint> allMissions = new();
-
             if (GenericHelpers.TryGetAddonMaster<WKSMission>(out var wksMission) && wksMission.IsAddonReady)
             {
                 var wks = AgentWKSMission.Instance();
-                if (wks is null || !wks->IsAgentActive() || wks->Data == null)
+                if (wks is null)
                     return allMissions;
 
-                if (wks->SelectedTab == ToolMasteryTab)
+                if (!wks->IsAgentActive())
+                    return allMissions;
+
+                if (Player.Territory.RowId != CosmicMoonRegistry.Auxesia.TerritoryId)
+                    return allMissions;
+
+                StdVector<MissionEntry> masterList = default;
+                if (AgentWKSMissionEx.GetMasterMissions(wks, &masterList))
                 {
-                    foreach (var mission in wks->Data->MissionList)
+                    foreach (var mission in masterList)
                         allMissions.Add(mission.MissionUnitId);
                 }
             }
 
             return allMissions;
         }
+
         // Tool Mastery (tab 3) has no getter, so we must actually switch the UI to it (by clicking the
         // tab button - the agent SelectedTab field does not move the UI). Tab buttons are sequential:
         // Basic=17, Provisional=18, Critical=19, Tool Mastery=20 (17 + tab index). CurrentTab = AtkValues[27].
@@ -313,6 +295,17 @@ namespace ICE.Utilities
                 return CosmicHelper.Status.Completed;
             else
                 return CosmicHelper.Status.None;
+        }
+        internal static unsafe uint GetScore()
+        {
+            var manager = WKSManager.Instance();
+            if (manager == null) return 0;
+
+            var missionManager = manager->MissionModule;
+            if (missionManager == null) return 0;
+
+            var mission = manager->State.CurrentMission;
+            return mission.Score;
         }
     }
 }

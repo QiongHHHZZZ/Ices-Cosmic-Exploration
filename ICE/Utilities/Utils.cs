@@ -126,7 +126,7 @@ public static unsafe class Utils
             IceLogging.Error($"InteractWithObject: Exception: {ex}");
         }
     }
-    public static unsafe void SetGatheringRing(uint territoryId, int x, int y, int radius, string? tooltip = "Node Location")
+    public static unsafe void SetGatheringRing(uint territoryId, int x, int y, int radius, string? tooltip = "Node Location", uint iconId = 60561)
     {
         var map = ExcelHelper.TerritorySheet.GetRow(territoryId).Map.Value;
         var agent = AgentMap.Instance();
@@ -136,7 +136,7 @@ public static unsafe class Utils
 
         agent->FlagMarkerCount = 0;
         // agent->IsFlagMarkerSet = false;
-        agent->SetFlagMapMarker(territoryId, map.RowId, x, y);
+        agent->SetFlagMapMarker(territoryId, map.RowId, x, y, iconId);
         agent->TempMapMarkerCount = 0;
         agent->AddGatheringTempMarker(x, y, radius, tooltip: tooltip);
         agent->OpenMap(map.RowId, territoryId, tooltip, MapType.GatheringLog);

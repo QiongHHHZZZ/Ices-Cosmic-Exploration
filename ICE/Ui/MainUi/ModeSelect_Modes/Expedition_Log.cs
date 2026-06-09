@@ -358,13 +358,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
 #endif
                         }
-                        if (CosmicHelper.CriticalLocations.TryGetValue(Id, out var criticalLoc))
+                        if (GatheringUtil.CriticalSpots.TryGetValue(missionInfo.Critical_MapKey, out var criticalLoc))
                         {
                             ImGui.SameLine();
                             ImGuiEx.Icon(FontAwesomeIcon.FlagCheckered);
                             if (ImGui.IsItemClicked())
                             {
-                                Utils.SetFlagForNPC(missionInfo.TerritoryId, criticalLoc.MapInfo.X, criticalLoc.MapInfo.Y);
+                                Utils.SetFlagForNPC(missionInfo.TerritoryId, criticalLoc.X, criticalLoc.Y);
                             }
                         }
 
@@ -441,7 +441,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
                             ImGui.PopStyleColor();
                             if (ImGui.IsItemHovered())
-                                ImGui.SetTooltip("Only turn in when the mission timer expires (keep gathering for max score).");
+                                ImGui.SetTooltip(T("Only turn in when the mission timer expires (keep gathering for max score)."));
                         }
 
                         ImGui.TableNextColumn();

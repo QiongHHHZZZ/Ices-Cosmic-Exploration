@@ -1,5 +1,6 @@
 ﻿using ICE.ConfigFiles;
 using ICE.Ui;
+using ICE.Ui.DebugWindowTabs;
 using ICE.Ui.MainUi.Settings;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
@@ -121,13 +122,13 @@ public sealed partial class ICE
             uint marker_Critical = 0;
 
             List<uint> gatherJobs = new() { 16, 17, 18 }; 
-            if (entry.MissionToDo[0].RowId != 0 && jobs.ContainsAny(gatherJobs))
+            if (entry.MissionToDo[0].RowId != 0)
             {
                 marker_Gather = entry.MissionToDo[0].Value.MapMarker.RowId;
             }
             if (entry.MissionToDo[1].RowId != 0)
             {
-                marker_Critical = entry.MissionToDo[0].Value.MapMarker.RowId;
+                marker_Critical = entry.MissionToDo[1].Value.MapMarker.RowId;
             }
 
             // Stacked map markers — nudge slightly so route editor keys stay unique per mission row.
@@ -176,8 +177,7 @@ public sealed partial class ICE
                     116 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Score_Variety,
                     117 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Score_LargestSize,
                     118 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Collectables,
-                    119 or 121
-                         => MissionAttributes.Fish,
+                    119 or 121 => MissionAttributes.Fish,
                     120 => MissionAttributes.Fish | MissionAttributes.Score_LargestSize,
                     122 => MissionAttributes.Fish | MissionAttributes.Collectables,
                     139 => gatherOrFish,            // Critical — job-dependent
@@ -185,7 +185,7 @@ public sealed partial class ICE
                     // Auxesia Tool Mastery gather missions (Geological/Botanical).
                     // GreaterReach block below converts Chain+Boon into GreaterReach_Boon_Chain.
                     312 or 313 => MissionAttributes.Gather | MissionAttributes.Score_Chain | MissionAttributes.Score_Boon,
-
+                    314 => MissionAttributes.Gather | MissionAttributes.Collectables,
                     _ => gatherOrFish
                 };
             }
@@ -884,6 +884,7 @@ public sealed partial class ICE
 
         EnsureAllMission();
         GatheringUtil.RegisterPresets();
+        UpdateCriticalWeather();
         CosmicMoonContent.LogContentSummary();
 
         #region Config Stuff
@@ -933,11 +934,30 @@ public sealed partial class ICE
             var id = mission.Key;
             if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var missionInfo))
             {
+                if (!missionInfo.Jobs.Contains(18))
+                    continue;
+
                 if (missionInfo.Fish_Presets.Count > 0)
                 {
                     // we have a fishing preset here. Time to check to see if we need to enable it (if it doesn't have a custom profile)
+                    if (!mission.Value.Use_BuildinPreset)
+                    {
+                        if (mission.Value.AutoHookPresetName == string.Empty)
+                        {
+                            mission.Value.Use_BuildinPreset = true;
+                            C.SaveDebounced();
+                        }
+                        else
+                        {
+                            IceLogging.Verbose($"[{id}] has a preset. Name: {mission.Value.AutoHookPresetName}", "I.C.E. Dictionary Creation");
+                        }
+                    }
                     if (!mission.Value.Use_BuildinPreset && mission.Value.AutoHookPresetName == string.Empty)
                         mission.Value.Use_BuildinPreset = true;
+                }
+                else
+                {
+                    IceLogging.Verbose($"[{id}] has no presets", "I.C.E. Dictionary Creation");
                 }
             }
         }
@@ -960,6 +980,8 @@ public sealed partial class ICE
 
             GatherSettings.SetupAllProfiles();
         }
+        if (!C.MissionTypePrio.Contains(MissionTypes.ToolMastery))
+            C.MissionTypePrio.Add(MissionTypes.ToolMastery);
 
         C.Save();
 

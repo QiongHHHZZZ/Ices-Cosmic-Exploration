@@ -5,6 +5,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Scheduler.Handlers.PictoStuff;
 using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.GatheringHelper.RouteLoader;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -95,11 +96,19 @@ namespace ICE.Scheduler.Tasks
             // Handle starting navmesh
             return HandleStartNavmesh(pos, distance, stayMounted, npcLoc, usingCosmoliner, mounted, distanceToTarget, handle, useMount, mountBeforeMove, moveCloseToDistance);
         }
+        private static readonly Dictionary<uint, Vector3> _cachedGatherPositions = new();
+        private static uint _lastGatherNodeKey = 0;
+
+        public static void ResetGatherMove()
+        {
+            _cachedGatherPositions.Clear();
+            _lastGatherNodeKey = 0;
+        }
+
         public static bool? Task_GatherMove(NodeInfo routeinfo, bool waitForBusy = true, float distance = 3.5f, bool stayMounted = false, bool mountBeforeMove = false)
         {
             string handle = "Navmesh: Gather Move";
 
-            // Cache frequently accessed values
             bool usingCosmoliner = Svc.Condition[ConditionFlag.Unknown101];
             bool mounted = Player.Mounted;
             bool inMission = CosmicHelper.CurrentLunarMission != 0;
@@ -110,14 +119,12 @@ namespace ICE.Scheduler.Tasks
             if (EzThrottler.Throttle("Navmesh message throttle", navmeshThrottleMs))
                 IceLogging.Verbose("Executing Navmesh Task", handle, debugOnly: true);
 
-            // Early exit if navmesh not installed
             if (!P.Navmesh.Installed)
             {
                 IceLogging.Info("We seem to be missing navmesh... so we're just going to exit here", handle);
                 return true;
             }
 
-            // Handle navmesh not ready
             if (!P.Navmesh.IsReady())
             {
                 if (EzThrottler.Throttle("Waiting on navmesh", waitingThrottleMs))
@@ -128,37 +135,60 @@ namespace ICE.Scheduler.Tasks
                 return false;
             }
 
-            // This is where we need to get a random point in a fan if possible...
-            // Esentially going to pass this once mainly for the pathing, and then if we meed the minimum distance the HandleRunningNavmesh should take care of properly returning if we're within interacting range once stop moving
-
             Vector3 nodePos = routeinfo.Position;
-            Vector3 playerPos = Player.Position;
-            float angleToPlayer = CalculateAngleToPlayer(nodePos, playerPos);
+            uint nodeKey = routeinfo.NodeId;
 
-            float node_MinAngle = routeinfo.RadiusStart;
-            float node_MaxAngle = routeinfo.RadiusEnd;
-
-            bool isInsideFan = IsAngleInRange(angleToPlayer, node_MinAngle, node_MaxAngle);
-            float sectionSize = isInsideFan ? 30f : 60f;
-
-            var (sectionMin, sectionMax) = GetNearestSection(node_MinAngle, node_MaxAngle, angleToPlayer, sectionSize);
-            float selectedAngle = RandomAngleInRange(sectionMin, sectionMax);
-            float selectedDistance = NextFloat(routeinfo.MinDistance, routeinfo.MaxDistance);
-
-            Vector3 randomPosition = CalculateFanPosition(nodePos, selectedAngle, selectedDistance, routeinfo.FanHeight);
-            // if (EzThrottler.Throttle("Gather Route Throttle", 3000))
-            // IceLogging.Debug($"[GatherMove] angleToPlayer={angleToPlayer:F1}, node_MinAngle={node_MinAngle:F1}, node_MaxAngle={node_MaxAngle:F1}, sectionMin={sectionMin:F1}, sectionMax={sectionMax:F1}, selectedAngle={selectedAngle:F1}, selectedDistance={selectedDistance:F2}, minDist={routeinfo.Distance_Min}, maxDist={routeinfo.Distance_Max}, randomPosition={randomPosition}", handle);
-
-            float distanceToTarget = Player.DistanceTo(nodePos);
-
-            // Handle running navmesh
-            if (P.Navmesh.IsRunning())
+            if (_lastGatherNodeKey != nodeKey || !_cachedGatherPositions.ContainsKey(nodeKey))
             {
-                return HandleRunningNavmesh(randomPosition, waitForBusy, distance, stayMounted, nodePos, usingCosmoliner, mounted, useMount, minMountDistance, dismountDistance, distanceToTarget, handle);
+                float node_MinAngle = routeinfo.RadiusStart;
+                float node_MaxAngle = routeinfo.RadiusEnd;
+                float rangeSpan = GetRangeSpan(node_MinAngle, node_MaxAngle);
+                float sectionSize = C.GatherFanSectionSize;
+
+                float selectedAngle;
+                if (rangeSpan >= 359.9f)
+                {
+                    // Full fan — pure random, no bias
+                    selectedAngle = RandomAngleInRange(node_MinAngle, node_MaxAngle);
+                }
+                else
+                {
+                    // Partial fan — find the section closest to where the player is approaching from
+                    float angleToPlayer = CalculateAngleToPlayer(nodePos, Player.Position);
+                    var (sectionMin, sectionMax) = GetNearestSection(node_MinAngle, node_MaxAngle, angleToPlayer, sectionSize);
+                    selectedAngle = RandomAngleInRange(sectionMin, sectionMax);
+                }
+
+                float selectedDistance = NextFloat(routeinfo.MinDistance, routeinfo.MaxDistance);
+
+                Vector3 randomPosition = CalculateFanPosition(nodePos, selectedAngle, selectedDistance, routeinfo.FanHeight);
+                _cachedGatherPositions[nodeKey] = randomPosition;
+                _lastGatherNodeKey = nodeKey;
+
+                IceLogging.Debug($"[GatherMove] New cached position: angle={selectedAngle:F1}, dist={selectedDistance:F2}, pos={randomPosition}", handle);
             }
 
-            // Handle starting navmesh
-            return HandleStartNavmesh(randomPosition, distance, stayMounted, nodePos, usingCosmoliner, mounted, distanceToTarget, handle, useMount, mountBeforeMove);
+            Vector3 cachedPos = _cachedGatherPositions[nodeKey];
+            float distanceToTarget = Player.DistanceTo(nodePos);
+
+            if (P.Navmesh.IsRunning())
+            {
+                var result = HandleRunningNavmesh(cachedPos, waitForBusy, distance, stayMounted, nodePos, usingCosmoliner, mounted, useMount, minMountDistance, dismountDistance, distanceToTarget, handle);
+                if (result == true)
+                {
+                    _cachedGatherPositions.Remove(nodeKey);
+                    _lastGatherNodeKey = 0;
+                }
+                return result;
+            }
+
+            var startResult = HandleStartNavmesh(cachedPos, distance, stayMounted, nodePos, usingCosmoliner, mounted, distanceToTarget, handle, useMount, mountBeforeMove);
+            if (startResult == true)
+            {
+                _cachedGatherPositions.Remove(nodeKey);
+                _lastGatherNodeKey = 0;
+            }
+            return startResult;
         }
         private static bool ShouldUseMount(bool inMission)
         {
@@ -761,6 +791,8 @@ namespace ICE.Scheduler.Tasks
             string tag = "Navmesh: Position -> Red Alert";
             var territoryId = Player.Territory.RowId;
 
+            var criticalKey = CosmicHelper.SheetMissionDict[missionId].Critical_MapKey;
+
             if (!C.UseRedAlertNpc)
             {
                 IceLogging.Info("We were told not to use the red alert NPC travel method, so we're going to just nope out of here", tag);
@@ -770,9 +802,9 @@ namespace ICE.Scheduler.Tasks
             {
                 if (planetInfo.TryGetValue(NpcData.NpcType.RedAlert, out var npcInfo))
                 {
-                    if (!CosmicHelper.CriticalLocations.TryGetValue(missionId, out var approxStart))
+                    if (!GatheringUtil.CriticalSpots.TryGetValue(criticalKey, out var approxStart))
                     {
-                        IceLogging.Warning($"No red-alert turn-in coords for mission {missionId} on {CosmicMoonRegistry.GetDisplayName(territoryId)} — add to RedAlert_Selection", tag);
+                        IceLogging.Warning($"No red-alert turn-in coords for critical route: {criticalKey} on {CosmicMoonRegistry.GetDisplayName(territoryId)} — add to RedAlert_Selection", tag);
                         return true;
                     }
 
@@ -785,7 +817,7 @@ namespace ICE.Scheduler.Tasks
                         _PathCalculations = Task.Run(async () =>
                         {
                             method.pathTo = await FindPath(start, npcInfo.Location_Circle);
-                            method.pathFrom = await FindPath(approxStart.RawLocation, destination);
+                            method.pathFrom = await FindPath(approxStart.WorldCords, destination);
                         });
                         if (EzThrottler.Throttle("Started task: Direct"))
                             IceLogging.Verbose("Started to calculate path", tag);
@@ -1044,6 +1076,8 @@ namespace ICE.Scheduler.Tasks
             var territoryId = Player.Territory.RowId;
             var method = TravelMethods[TravelTypes.Hub_RedAlert];
 
+            var criticalKey = CosmicHelper.SheetMissionDict[missionId].Critical_MapKey;
+
             if (!C.UseHubReturn)
                 return true;
 
@@ -1053,7 +1087,7 @@ namespace ICE.Scheduler.Tasks
             if (!CosmicHelper.SheetMissionDict[missionId].IsCritical)
                 return true;
 
-            if (!CosmicHelper.CriticalLocations.TryGetValue(missionId, out var approxStart))
+            if (!GatheringUtil.CriticalSpots.TryGetValue(criticalKey, out var criticalInfo))
             {
                 IceLogging.Warning($"No red-alert turn-in coords for mission {missionId} — hub return via NPC skipped");
                 return true;
@@ -1077,7 +1111,7 @@ namespace ICE.Scheduler.Tasks
                                 _PathCalculations = Task.Run(async () =>
                                 {
                                     method.pathTo = await FindPath(HubCenter, npcInfo.Location_Circle);
-                                    method.pathFrom = await FindPath(approxStart.RawLocation, destination);
+                                    method.pathFrom = await FindPath(criticalInfo.WorldCords, destination);
                                 });
                                 if (EzThrottler.Throttle("Started task: Direct"))
                                     IceLogging.Verbose("Started to calculate path", tag);
@@ -1316,8 +1350,9 @@ namespace ICE.Scheduler.Tasks
             string tag = "Travel: Via RedAlert NPC";
 
             IceLogging.Verbose("Travel via Npc commenced", tag);
+            var criticalKey = CosmicHelper.SheetMissionDict[missionId].Critical_MapKey;
 
-            if (CosmicHelper.CriticalLocations.TryGetValue(missionId, out var redAlert))
+            if (GatheringUtil.CriticalSpots.TryGetValue(criticalKey, out var criticalInfo))
             {
                 if (Player.DistanceTo(redAlertNpc.Location_Circle) < 5)
                 {
@@ -1345,8 +1380,8 @@ namespace ICE.Scheduler.Tasks
                     {
                         if (EzThrottler.Throttle("Selecting teleport option"))
                         {
-                            IceLogging.Verbose($"Selecting Option: {redAlert.NpcSelection} for mission: {missionId}", tag);
-                            selectString.Entries[redAlert.NpcSelection].Select();
+                            IceLogging.Verbose($"Selecting Option: {criticalInfo.NpcSelector} for mission: {missionId}", tag);
+                            selectString.Entries[criticalInfo.NpcSelector].Select();
                         }
                     }
                     else if (GenericHelpers.TryGetAddonMaster<SelectYesno>(out var yesNo) && yesNo.IsAddonReady)
@@ -1385,7 +1420,7 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
                 }
-                else if (Player.DistanceTo(redAlert.RawLocation) < 75)
+                else if (Player.DistanceTo(criticalInfo.WorldCords) < 75)
                 {
                     if (!PlayerHelper.IsScreenReady())
                         return false;
@@ -1540,20 +1575,32 @@ namespace ICE.Scheduler.Tasks
             allowedMax = NormalizeAngle(allowedMax);
             targetAngle = NormalizeAngle(targetAngle);
 
-            float closestPointInRange = IsAngleInRange(targetAngle, allowedMin, allowedMax)
-                ? targetAngle
-                : GetAngularDistance(targetAngle, allowedMin) < GetAngularDistance(targetAngle, allowedMax)
-                    ? allowedMin
-                    : allowedMax;
+            if (IsAngleInRange(targetAngle, allowedMin, allowedMax))
+            {
+                // Target is inside fan — center section on it as before
+                float half = sectionSize / 2f;
+                float secMin = ClampAngleToRange(NormalizeAngle(targetAngle - half), allowedMin, allowedMax, true);
+                float secMax = ClampAngleToRange(NormalizeAngle(targetAngle + half), allowedMin, allowedMax, false);
+                return (secMin, secMax);
+            }
+            else
+            {
+                // Target is outside fan — find nearest edge and carve inward
+                bool nearMax = GetAngularDistance(targetAngle, allowedMax) < GetAngularDistance(targetAngle, allowedMin);
 
-            float half = sectionSize / 2f;
-            float secMin = NormalizeAngle(closestPointInRange - half);
-            float secMax = NormalizeAngle(closestPointInRange + half);
-
-            secMin = ClampAngleToRange(secMin, allowedMin, allowedMax, true);
-            secMax = ClampAngleToRange(secMax, allowedMin, allowedMax, false);
-
-            return (secMin, secMax);
+                if (nearMax)
+                {
+                    // Nearest edge is allowedMax, carve inward toward allowedMin
+                    float secMin = ClampAngleToRange(NormalizeAngle(allowedMax - sectionSize), allowedMin, allowedMax, true);
+                    return (secMin, allowedMax);
+                }
+                else
+                {
+                    // Nearest edge is allowedMin, carve inward toward allowedMax
+                    float secMax = ClampAngleToRange(NormalizeAngle(allowedMin + sectionSize), allowedMin, allowedMax, false);
+                    return (allowedMin, secMax);
+                }
+            }
         }
 
         private static float RandomAngleInRange(float min, float max)

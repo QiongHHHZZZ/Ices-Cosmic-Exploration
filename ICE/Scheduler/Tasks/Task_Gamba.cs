@@ -14,6 +14,7 @@ namespace ICE.Scheduler.Tasks
             new() { ItemId = 44505, Weight = 200, Type = GambaType.Mount },   // Vacuum Suit Identification Key
             new() { ItemId = 47973, Weight = 200, Type = GambaType.Mount },   // Warp Loader Identification Key
             new() { ItemId = 50441, Weight = 200, Type = GambaType.Mount },   // Volatile Gravity Vacuum Suit Identification Key
+            new() { ItemId = 52267, Weight = 200, Type = GambaType.Mount },   // Cosmic Armored Weapon Beta Identification Key
 
             // Emotes
             new() { ItemId = 44509, Weight = 25, Type = GambaType.Emote },    // Ballroom Etiquette - Personal Perfection
@@ -23,11 +24,13 @@ namespace ICE.Scheduler.Tasks
             new() { ItemId = 47937, Weight = 50, Type = GambaType.Outfit },   // Cosmosuit Coffer
             new() { ItemId = 47095, Weight = 50, Type = GambaType.Outfit },   // Star Pilot Attire Coffer
             new() { ItemId = 50828, Weight = 50, Type = GambaType.Outfit },   // Powersuit Coffer
+            new() { ItemId = 52605, Weight = 25, Type = GambaType.Outfit },   // Cosmic Operator's Attire Coffer
 
             // Minions
             new() { ItemId = 47966, Weight = 25, Type = GambaType.Minion },   // Micro Rover
             new() { ItemId = 46782, Weight = 25, Type = GambaType.Minion },   // Model Suit
             new() { ItemId = 50323, Weight = 25, Type = GambaType.Minion },   // Droningway
+            new() { ItemId = 52275, Weight = 25, Type = GambaType.Minion },   // Lite-loader
 
             // Accessories
             new() { ItemId = 48154, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Tinted Sunglasses
@@ -35,6 +38,7 @@ namespace ICE.Scheduler.Tasks
             new() { ItemId = 46840, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Scaevan Headgear
             new() { ItemId = 50458, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Holovisor
             new() { ItemId = 50455, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Holospecs
+            new() { ItemId = 52449, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Wrap-around Sunglasses
 
             // Orchestration
             new() { ItemId = 48210, Weight = 0, Type = GambaType.Orchestrion }, // Stargazers Orchestrion Roll
@@ -42,6 +46,8 @@ namespace ICE.Scheduler.Tasks
             new() { ItemId = 48221, Weight = 0, Type = GambaType.Orchestrion }, // Close in the Distance (Instrumental) Orchestrion Roll
             new() { ItemId = 46155, Weight = 0, Type = GambaType.Orchestrion }, // Kaleidoscope Orchestrion Roll
             new() { ItemId = 50803, Weight = 0, Type = GambaType.Orchestrion }, // The Uncharted Way Orchestrion Roll
+            new() { ItemId = 52359, Weight = 0, Type = GambaType.Orchestrion }, // Landscaping Orchestrion Roll
+            new() { ItemId = 52648, Weight = 0, Type = GambaType.Orchestrion }, // Carrots of Brilliance Orchestrion Roll
 
             // Housing Items
             new() { ItemId = 23892, Weight = 0, Type = GambaType.Housing }, // Verdant Partition
@@ -54,6 +60,9 @@ namespace ICE.Scheduler.Tasks
             new() { ItemId = 46173, Weight = 0, Type = GambaType.Housing }, // Cosmoseat
             new() { ItemId = 49849, Weight = 0, Type = GambaType.Housing }, // Imitation Cosmoportal
             new() { ItemId = 49850, Weight = 0, Type = GambaType.Housing }, // Cosmomodule Floor Panel
+            new() { ItemId = 51277, Weight = 0, Type = GambaType.Housing }, // Cosmic Metal Shelf
+            new() { ItemId = 51279, Weight = 0, Type = GambaType.Housing }, // Cosmic Partition
+            new() { ItemId = 51278, Weight = 0, Type = GambaType.Housing }, // Cosmic Steps
 
             // Dyes
             new() { ItemId = 52255, Weight = 0, Type = GambaType.Dye }, // Wide Spectrum #1 Dye

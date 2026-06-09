@@ -19,6 +19,7 @@ namespace ICE.Ui
         public OverlayWindow() : base(T("ICE Overlay"))
         {
             Flags = ImGuiWindowFlags.None;
+            RespectCloseHotkey = false;
      
             P.windowSystem.AddWindow(this);
             TitleBarButtons.Add(

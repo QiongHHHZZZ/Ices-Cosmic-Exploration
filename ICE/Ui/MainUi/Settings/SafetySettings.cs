@@ -88,6 +88,12 @@ if (ImGui.SliderInt(T("Delay Post Relic Turnin"), ref delayRelic, 0, 5000))
                 C.Delay_Gather = gatherDelay;
                 C.Save();
             }
+            bool closeRewardPopup = C.HideRewardWindow;
+            if (ImGui.Checkbox(T("Auto Close Reward Popups"), ref closeRewardPopup))
+            {
+                C.HideRewardWindow = closeRewardPopup;
+                C.Save();
+            }
         }
     }
 }

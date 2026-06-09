@@ -14,8 +14,11 @@ public static unsafe class AgentWKSMissionEx
     private delegate bool GetCriticalMissionsDelegate(AgentWKSMission* agent, StdVector<AgentWKSMission.MissionEntry>* list);
     private delegate byte JobIndexToClassJobIdDelegate(AgentWKSMission* agent, byte jobIndex);
 
+    private delegate bool GetMasterMissionsDelegate(AgentWKSMission* agent, StdVector<AgentWKSMission.MissionEntry>* list);
+
     private static readonly GetCriticalMissionsDelegate? _getCriticalMissions;
     private static readonly JobIndexToClassJobIdDelegate? _jobIndexToClassJobId;
+    private static readonly GetCriticalMissionsDelegate? _getMasteryMissions;
 
     static AgentWKSMissionEx()
     {
@@ -38,6 +41,16 @@ public static unsafe class AgentWKSMissionEx
         {
             IceLogging.Error($"{ex.Message} | [AgentWKSMissionEx] Failed to scan JobIndexToClassJobId sig");
         }
+
+        try
+        {
+            var ptr = Svc.SigScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC ?? 4C 8B F2 48 8B D9 E8 ?? ?? ?? ?? 48 8B 4B");
+            _getMasteryMissions = Marshal.GetDelegateForFunctionPointer<GetCriticalMissionsDelegate>(ptr);
+        }
+        catch(Exception ex)
+        {
+            IceLogging.Error($"{ex.Message} | [AgentWKSMissionEx] Failed to scan MasterMission sig");
+        }
     }
 
     /// <summary>
@@ -48,6 +61,12 @@ public static unsafe class AgentWKSMissionEx
     {
         if (_getCriticalMissions == null || agent == null) return false;
         return _getCriticalMissions(agent, list);
+    }
+
+    public static bool GetMasterMissions(AgentWKSMission* agent, StdVector<AgentWKSMission.MissionEntry>* list)
+    {
+        if (_getMasteryMissions == null || agent == null) return false;
+        return _getMasteryMissions(agent, list);
     }
 
     /// <summary>

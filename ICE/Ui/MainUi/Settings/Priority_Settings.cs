@@ -146,6 +146,7 @@ namespace ICE.Ui.MainUi.Settings
                         MissionTypes.Critical => FontAwesomeIcon.Bell,
                         MissionTypes.Provisional => FontAwesomeIcon.HourglassHalf,
                         MissionTypes.Standard => FontAwesomeIcon.Star,
+                        MissionTypes.ToolMastery => FontAwesomeIcon.Meteor,
                         _ => FontAwesomeIcon.Question
                     };
                     ImGuiEx.Icon(icon);

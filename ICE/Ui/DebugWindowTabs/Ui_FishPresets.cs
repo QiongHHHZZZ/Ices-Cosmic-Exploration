@@ -96,7 +96,7 @@ namespace ICE.Ui.DebugWindowTabs
                 if (ImGui.Button(T("Import New Preset")))
                 {
                     var clipboard = ImGui.GetClipboardText();
-                    if (clipboard.StartsWith("AH4_"))
+                    if (clipboard.StartsWith("AH"))
                     {
                         missionInfo.Fish_Presets.Add(clipboard);
                     }
@@ -169,7 +169,7 @@ namespace ICE.Ui.DebugWindowTabs
             var sb = new StringBuilder();
             if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var mission))
             {
-                sb.AppendLine($"\t\t[{selectedMission}] = new()");
+                sb.AppendLine($"\t\tFishingPreset[{selectedMission}] = new()");
                 sb.AppendLine("\t\t{");
 
                 foreach (var preset in mission.Fish_Presets)
@@ -177,7 +177,7 @@ namespace ICE.Ui.DebugWindowTabs
                     sb.AppendLine($"\t\t\t\"{preset}\",");
                 }
 
-                sb.AppendLine("\t\t},");
+                sb.AppendLine("\t\t};");
             }
 
             return sb.ToString();

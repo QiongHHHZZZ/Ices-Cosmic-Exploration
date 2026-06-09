@@ -263,7 +263,7 @@ namespace ICE.Scheduler.Tasks
                 if (C.StopOnceRelicFinished)
                 {
                     var relicInfo = cosmicClassInfo[(uint)jobId];
-                    bool potentionalTurnin = relicInfo.Stage_Current != relicInfo.Stage_Next;
+                    bool potentionalTurnin = relicInfo.Stage_Current < relicInfo.Stage_Next;
                     bool canTurnin = true;
 
                     if (potentionalTurnin)
@@ -536,7 +536,7 @@ namespace ICE.Scheduler.Tasks
                 var jobId = Mission_Settings.SelectedJob;
                 var relicInfo = relicProgress[jobId];
 
-                bool isUpgradable = relicInfo.Stage_Current != relicInfo.Stage_Next;
+                bool isUpgradable = relicInfo.Stage_Current < relicInfo.Stage_Next;
 
                 if (isUpgradable)
                 {

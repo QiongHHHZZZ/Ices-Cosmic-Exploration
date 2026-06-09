@@ -52,7 +52,7 @@ public static class CosmicMoonContent
         CosmicHelper.SheetMissionDict.Count(x =>
             x.Value.TerritoryId == territoryId
             && x.Value.IsCritical
-            && CosmicHelper.CriticalLocations.ContainsKey(x.Key));
+            && GatheringUtil.CriticalSpots.Any(x => x.Value.TerritoryId == territoryId));
 
     public static (int withRoutes, int total) CountGatherMissionsWithRoutes(uint territoryId)
     {

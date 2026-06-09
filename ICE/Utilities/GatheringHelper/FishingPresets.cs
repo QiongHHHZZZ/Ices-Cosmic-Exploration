@@ -21,7 +21,10 @@ public static partial class GatheringUtil
         foreach (var moon in CosmicMoonRegistry.All)
         {
             if (FishingRegistrars.TryGetValue(moon.TerritoryId, out var register))
+            {
+                IceLogging.Verbose($"Registering Presets for: {moon.TerritoryId}");
                 register();
+            }
             else
                 PluginLog.Warning($"[FishingPresets] No registrar for {moon.DisplayName} ({moon.TerritoryId})");
         }
@@ -29,11 +32,4 @@ public static partial class GatheringUtil
 
     internal static bool HasFishingRegistrar(uint territoryId) =>
         FishingRegistrars.ContainsKey(territoryId);
-
-    private static void RegisterAuxesia()
-    {
-        // Auxesia fish presets (territory 1319) — wire up after MoonFishingLocations[1319] exists.
-        // Copy Fishing_Oizys.cs: one FishingPreset[missionRowId] = new() { "AutoHook preset name" } per FSH mission.
-        // Mission row IDs start at 1370 (see CosmicMissionBlocks.AuxesiaStart).
-    }
 }

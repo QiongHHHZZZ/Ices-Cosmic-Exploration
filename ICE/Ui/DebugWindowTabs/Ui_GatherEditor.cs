@@ -217,6 +217,7 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     if (routeInfo.Nodes != null)
                     {
+                        NodeInfo removeNode = new();
                         for (int i = 0; i < routeInfo.Nodes.Count; i++)
                         {
                             var node = routeInfo.Nodes[i];
@@ -254,7 +255,14 @@ namespace ICE.Ui.DebugWindowTabs
                                     selectedNode = node;
                                 }
                             }
+                            ImGui.SameLine();
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trash, $"Remove {node.NodeId}"))
+                            {
+                                removeNode = node;
+                            }
                         }
+                        if (routeInfo.Nodes.Contains(removeNode))
+                            routeInfo.Nodes.Remove(removeNode);
                     }
                 }
                 ImGui.EndChild();

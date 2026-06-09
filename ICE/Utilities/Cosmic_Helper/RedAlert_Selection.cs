@@ -225,7 +225,7 @@ public static partial class CosmicHelper
     };
     private static CriticalInfo Floracane1β = new()
     {
-        RawLocation = new(-654.14f, 184.99f, 290.08f),
+        RawLocation = new(-235.59f, 145.15f, -504.55f),
         NpcSelection = 1,
     };
     private static CriticalInfo Floracane2α = new()

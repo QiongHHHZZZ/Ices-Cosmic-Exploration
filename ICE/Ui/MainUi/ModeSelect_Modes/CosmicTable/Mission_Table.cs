@@ -1519,7 +1519,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + buttonInset);
                 var buttonSize = new Vector2(MathF.Max(1f, ImGuiUtil.CurrentColumnWidth - buttonInset * 2f), 0);
                 bool craftProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Craft);
-                bool gatherProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || sheetInfo.IsGreaterReach;
+                bool gatherProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Gather);
                 bool collectable = sheetInfo.Attributes.HasFlag(MissionAttributes.Collectables) || sheetInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
                 bool fishProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Fish);
                 bool master = sheetInfo.IsMaster;
@@ -1608,7 +1608,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         ImGuiUtil.Center(T("Auto"));
                     }
                 }
-                else if (sheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
+                else if (fishProfile)
                 {
                     if (C.MissionConfig.TryGetValue(item.Id, out var config))
                     {
@@ -1635,7 +1635,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                 if (ImGui.InputText(T("Preset Name"), ref presetName))
                                 {
                                     config.AutoHookPresetName = presetName;
-                                    C.Save();
+                                    C.SaveDebounced();
+                                }
+                                if (ImGui.Button(T("Try and apply above profile")))
+                                {
+                                    P.AutoHook.SetPreset(presetName);
+                                }
+                                if (ImGui.IsItemHovered())
+                                {
+                                    ImGui.SetTooltip(T("Allows testing to make sure that you have the preset name\n" +
+                                        "typed in correctly. This is *case* specific so"));
                                 }
                             }
 

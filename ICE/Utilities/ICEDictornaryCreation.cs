@@ -1067,7 +1067,7 @@ public sealed partial class ICE
                 IceLogging.Debug($"Added/Fixed Mission: {mission.Key}");
             }
         }
-        C.Save();
+        C.SaveDebounced();
     }
     public static void Artisan_MigrateNew()
     {

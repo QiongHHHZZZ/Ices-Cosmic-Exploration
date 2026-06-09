@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
 	<PropertyGroup>
-		<Version>0.0.78.8001</Version>
+		<Version>0.0.78.10000</Version>
 		<Description>Who said we couldn't explore the moon!.</Description>
 		<PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -67,11 +67,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="ECommons" Version="3.2.1.6" />
+		<PackageReference Include="ECommons" Version="3.2.1.9" />
 		<PackageReference Include="NAudio" Version="2.3.0" />
 		<PackageReference Include="Pictomancy" Version="1.0.9" />
 		<PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100.6" />
-		<PackageReference Include="YamlDotNet" Version="18.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

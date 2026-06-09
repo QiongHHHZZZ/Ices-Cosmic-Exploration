@@ -16,9 +16,9 @@
       },
       "ECommons": {
         "type": "Direct",
-        "requested": "[3.2.1.6, )",
-        "resolved": "3.2.1.6",
-        "contentHash": "vr3lF7VyCEFaSB4nPbunH35WzIqfd40dMH4fmNkWO9dnOVDGuPD3eIc98APYUWduNU/LjAGnnQdrxHj5s+C1gg=="
+        "requested": "[3.2.1.9, )",
+        "resolved": "3.2.1.9",
+        "contentHash": "3xH+DsMgitCYyCVkXBeId/n6dmGGimH8/IXVubq6zA6otSe8phmmu0dD+Yh6dM5HQF0m0DLDkr4d5U8UMGR2vw=="
       },
       "NAudio": {
         "type": "Direct",
@@ -52,12 +52,6 @@
         "requested": "[10.0.26100.6, )",
         "resolved": "10.0.26100.6",
         "contentHash": "QjL9vliSWmscUv6A7bjvsryHjYnY0norqvCNcLXSdEy1VIIzMF6FiS7BuvLTBuGUeN9FY4zJbU65OsHEv7jG9A=="
-      },
-      "YamlDotNet": {
-        "type": "Direct",
-        "requested": "[18.0.0, )",
-        "resolved": "18.0.0",
-        "contentHash": "ptHVgcYmLejGuWXV7RMFoEqFKYMXnieOlWLPzEslfDtzZ9ngMhjYwykfqjBN2+fMEAEyobozkj07lKEpR4dssA=="
       },
       "JetBrains.Annotations": {
         "type": "Transitive",

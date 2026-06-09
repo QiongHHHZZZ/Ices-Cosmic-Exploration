@@ -585,6 +585,11 @@ internal static class L10n
         ["Import Selected Profile"] = "导入配置",
         ["Setup Gathering Profiles"] = "初始化采集配置",
         ["Preset Name"] = "预设名称",
+        ["Try and apply above profile"] = "测试并应用上方预设",
+        ["Allows testing to make sure that you have the preset name\n" +
+         "typed in correctly. This is *case* specific so"]
+            = "用于测试预设名称是否填写正确。\n" +
+              "该名称区分大小写。",
         ["PLEASE NOTE:\n"] = "请注意：\n",
         ["PLEASE NOTE:\n" +
          "This will wipe out all your current profiles, and apply what I would suggest for each one.\n" +

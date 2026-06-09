@@ -83,6 +83,12 @@ namespace ICE.Ui.DebugWindowTabs
                     if (GatheringUtil.CriticalSpots.TryGetValue(entry.Value.Critical_MapKey, out var criticalInfo))
                     {
                         ImGuiEx.Icon(FontAwesomeIcon.FlagCheckered);
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text($"World Cords: {criticalInfo.WorldCords.X:N2}, {criticalInfo.WorldCords.Y:N2}, {criticalInfo.WorldCords.Z:N2}");
+                            ImGui.EndTooltip();
+                        }
                         if (ImGui.IsItemClicked())
                         {
                             if (P.Navmesh.Installed)

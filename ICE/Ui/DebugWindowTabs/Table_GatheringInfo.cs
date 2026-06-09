@@ -29,8 +29,8 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.TableSetupColumn(T("Mission Name"));
                 for (int i = 1; i < 4; i++)
                 {
-                    ImGui.TableSetupColumn($"Gather Item [{i}]");
-                    ImGui.TableSetupColumn($"Amount [{i}]");
+                    ImGui.TableSetupColumn(T("Gather Item [{0}]", i));
+                    ImGui.TableSetupColumn(T("Amount [{0}]", i));
                 }
                 ImGui.TableSetupColumn(T("Mission Radius"));
                 ImGui.TableSetupColumn(T("Critical Location"));
@@ -86,7 +86,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text($"World Cords: {criticalInfo.WorldCords.X:N2}, {criticalInfo.WorldCords.Y:N2}, {criticalInfo.WorldCords.Z:N2}");
+                            ImGui.Text(T("World Coordinates: {0:N2}, {1:N2}, {2:N2}", criticalInfo.WorldCords.X, criticalInfo.WorldCords.Y, criticalInfo.WorldCords.Z));
                             ImGui.EndTooltip();
                         }
                         if (ImGui.IsItemClicked())

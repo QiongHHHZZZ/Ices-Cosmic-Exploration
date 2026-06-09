@@ -256,7 +256,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 }
                             }
                             ImGui.SameLine();
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trash, $"Remove {node.NodeId}"))
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trash, T("Remove {0}", node.NodeId)))
                             {
                                 removeNode = node;
                             }
@@ -275,12 +275,12 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text($"Node: {nodeInfo.NodeId}");
                     ImGui.Text($"X: {nodeInfo.Position.X:N2} | Y: {nodeInfo.Position.Y:N2} | Z: {nodeInfo.Position.Z:N2}");
 
-                    if (ImGui.Button("Nav Move To"))
+                    if (ImGui.Button(T("Nav Move To")))
                     {
                         P.Navmesh.PathfindAndMoveTo(nodeInfo.LandZone, false);
                     }
                     ImGui.SameLine();
-                    if (ImGui.Button("Move To [Fan]"))
+                    if (ImGui.Button(T("Move To [Fan]")))
                     {
                         Task_NavmeshMove.ResetGatherMove();
                         P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_GatherMove(nodeInfo, stayMounted: true));

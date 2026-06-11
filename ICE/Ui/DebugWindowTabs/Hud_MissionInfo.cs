@@ -83,10 +83,20 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.Text(T("Current Bait"));
 
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{CosmicHelper.CurrentBait}");
+                            ImGui.Text($"{CosmicHelper.CurrentBait()}");
                         }
                     }
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Collected Individual");
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{CosmicHelper.CurrentIndividual()}");
 
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text($"Collected Total");
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{CosmicHelper.CurrentTotal()}");
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
                     if (ImGui.Button("Cosmo Pouch"))

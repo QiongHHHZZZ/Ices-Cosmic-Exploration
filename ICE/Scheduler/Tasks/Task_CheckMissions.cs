@@ -921,9 +921,9 @@ namespace ICE.Scheduler.Tasks
             var sheetInfo = CosmicHelper.SheetMissionDict[missionId];
             var missionConfig = C.MissionConfig[missionId];
 
-            IceLogging.Info($"[MoveCheck] id={missionId} attrs=[{sheetInfo.Attributes}] gather={sheetInfo.IsGatherMission} fish={sheetInfo.IsFishMission} unsupported={UnsupportedMissions.Ids.Contains(missionId)} manual={missionConfig.ManualMode} mapPos=({sheetInfo.MapPosition.X},{sheetInfo.MapPosition.Y})", tag);
+            IceLogging.Info($"[MoveCheck] id={missionId} attrs=[{sheetInfo.Attributes}] gather={sheetInfo.IsGatherMission} fish={sheetInfo.IsFishMission} unsupported={UnsupportedMissions.Ids.Contains(missionId)} mapPos=({sheetInfo.MapPosition.X},{sheetInfo.MapPosition.Y})", tag);
 
-            if (missionConfig.ManualMode || UnsupportedMissions.Ids.Contains(missionId))
+            if (UnsupportedMissions.Ids.Contains(missionId))
             {
                 IceLogging.Info("Mission is currently in manual mode, or not supported. So not going to pathfind to it.", tag);
                 return true;

@@ -62,6 +62,7 @@ namespace ICE.Scheduler.Tasks
                 if (CosmicHelper.SheetMissionDict.TryGetValue(currentMission, out var sheetInfo))
                 {
                     var rank = CurrentRank();
+                    var currentScore = CosmicHandler.GetScore();
 
                     if (rank == MissionRank.Failed)
                     {
@@ -112,7 +113,6 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
-                        var currentScore = CurrentScore();
                         var bronzeScore = sheetInfo.BronzeScore;
 
                         if (currentScore < bronzeScore && sheetInfo.BronzeScore != 0)
@@ -155,9 +155,18 @@ namespace ICE.Scheduler.Tasks
                             {
                                 var config = C.MissionConfig[currentMission];
 
-                                shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold) ||
-                                               (config.TurninGoal is TurninState.Silver && rank >= MissionRank.Silver) ||
-                                               (config.TurninGoal is TurninState.Bronze && rank >= MissionRank.Bronze);
+                                if (sheetInfo.IsMaster)
+                                {
+                                    shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold)
+                                        || (config.TurninGoal is TurninState.Master_Score && rank >= MissionRank.Gold && currentScore >= config.Master_Score)
+                                        || (config.TurninGoal is TurninState.TimeExpired && rank >= MissionRank.Gold && CosmicHandler.IsMissionTimedOut());
+                                }
+                                else
+                                {
+                                    shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold)
+                                        || (config.TurninGoal is TurninState.Silver && rank >= MissionRank.Silver)
+                                        || (config.TurninGoal is TurninState.Bronze && rank >= MissionRank.Bronze);
+                                }
                             }
 
                             if (shouldTurnin)
@@ -190,7 +199,7 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
             }
-            else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+            else if (GenericHelpers.TryGetAddonMaster<WKSHud>(out var moonHud) && moonHud.IsAddonReady)
             {
                 if (EzThrottler.Throttle("Opening the moon hud", 1000))
                 {
@@ -205,8 +214,9 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "[Check Score: Craft]";
 
-            var currentScore = CurrentScore();
+            var currentScore = CosmicHandler.GetScore();
             var rank = CurrentRank();
+            var currentMission = CosmicHelper.CurrentLunarMission;
 
             if (rank == MissionRank.Failed)
             {
@@ -221,7 +231,7 @@ namespace ICE.Scheduler.Tasks
                 return false;
             }
 
-            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
+            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>(out var missionInfo) && missionInfo.IsAddonReady)
             {
                 var id = CosmicHelper.CurrentLunarMission;
                 if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var sheet))
@@ -269,9 +279,20 @@ namespace ICE.Scheduler.Tasks
                         {
                             var config = C.MissionConfig[id];
 
-                            shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold) ||
-                                           (config.TurninGoal is TurninState.Silver && rank >= MissionRank.Silver) ||
-                                           (config.TurninGoal is TurninState.Bronze && rank >= MissionRank.Bronze);
+                            var sheetInfo = CosmicHelper.SheetMissionDict[currentMission];
+
+                            if (sheetInfo.IsMaster)
+                            {
+                                shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold)
+                                    || (config.TurninGoal is TurninState.Master_Score && rank >= MissionRank.Gold && currentScore >= config.Master_Score)
+                                    || (config.TurninGoal is TurninState.TimeExpired && rank >= MissionRank.Gold && CosmicHandler.IsMissionTimedOut());
+                            }
+                            else
+                            {
+                                shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold)
+                                    || (config.TurninGoal is TurninState.Silver && rank >= MissionRank.Silver)
+                                    || (config.TurninGoal is TurninState.Bronze && rank >= MissionRank.Bronze);
+                            }
                         }
 
                         if (shouldTurnin)
@@ -303,7 +324,7 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
             }
-            else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+            else if (GenericHelpers.TryGetAddonMaster<WKSHud>(out var moonHud) && moonHud.IsAddonReady)
             {
                 if (EzThrottler.Throttle("Opening the moon hud", 1000))
                 {
@@ -318,7 +339,7 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "[Check Score: Gather]";
 
-            var currentScore = CurrentScore();
+            var currentScore = CosmicHandler.GetScore();
             var rank = CurrentRank();
 
             if (rank == MissionRank.Failed)
@@ -329,7 +350,7 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
 
-            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
+            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>(out var missionInfo) && missionInfo.IsAddonReady)
             {
                 var id = CosmicHelper.CurrentLunarMission;
                 if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var sheet))
@@ -386,10 +407,20 @@ namespace ICE.Scheduler.Tasks
                         else
                         {
                             var config = C.MissionConfig[id];
+                            var sheetInfo = CosmicHelper.SheetMissionDict[id];
 
-                            shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold) ||
-                                           (config.TurninGoal is TurninState.Silver && rank >= MissionRank.Silver) ||
-                                           (config.TurninGoal is TurninState.Bronze && rank >= MissionRank.Bronze);
+                            if (sheetInfo.IsMaster)
+                            {
+                                shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold)
+                                    || (config.TurninGoal is TurninState.Master_Score && rank >= MissionRank.Gold && currentScore >= config.Master_Score)
+                                    || (config.TurninGoal is TurninState.TimeExpired && rank >= MissionRank.Gold && CosmicHandler.IsMissionTimedOut());
+                            }
+                            else
+                            {
+                                shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold)
+                                    || (config.TurninGoal is TurninState.Silver && rank >= MissionRank.Silver)
+                                    || (config.TurninGoal is TurninState.Bronze && rank >= MissionRank.Bronze);
+                            }
                         }
 
                         if (shouldTurnin)
@@ -421,7 +452,7 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
             }
-            else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+            else if (GenericHelpers.TryGetAddonMaster<WKSHud>(out var moonHud) && moonHud.IsAddonReady)
             {
                 if (EzThrottler.Throttle("Opening the moon hud", 1000))
                 {
@@ -436,9 +467,10 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "Score Check: Dual Class";
 
-            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
+            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>(out var missionInfo) && missionInfo.IsAddonReady)
             {
-                var currentScore = CurrentScore();
+                var currentScore = CosmicHandler.GetScore()
+                    ;
                 var rank = CurrentRank();
                 var Id = CosmicHelper.CurrentLunarMission;
 
@@ -494,10 +526,6 @@ namespace ICE.Scheduler.Tasks
         private static unsafe uint CurrentIndividualTotal()
         {
             return CosmicHelper.CurrentMissionCollectedIndividual;
-        }
-        private static unsafe uint CurrentScore()
-        {
-            return CosmicHelper.CurrentMissionScore;
         }
         public static unsafe MissionRank CurrentRank()
         {

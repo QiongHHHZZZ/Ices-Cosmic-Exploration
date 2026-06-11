@@ -269,9 +269,9 @@ public sealed partial class ICE
                         var requiredAmount = recipeRow.AmountIngredient[0];
                         var requiredItem2 = recipeRow.Ingredient[1].RowId;
                         var requiredAmount2 = recipeRow.AmountIngredient[1];
-                        bool expertMat = recipeRow.IsExpert;
 
                         var recipeInfo = CosmicHelper.SpecificRecipeInfo(craftJob, recipeId);
+                        bool expertMat = recipeInfo.Expert;
                         var itemIcon = recipeRow.ItemResult.Value.Icon;
                         var itemName = recipeRow.ItemResult.Value.Name.ToString();
 
@@ -330,8 +330,8 @@ public sealed partial class ICE
                         }
                         var requiredItem = recipeRow.Ingredient[0].RowId;
                         var requiredAmount = recipeRow.AmountIngredient[0];
-                        bool requiredItemExpert = recipeRow.IsExpert;
                         var req_recipeInfo = CosmicHelper.SpecificRecipeInfo(craftJob, recipeId);
+                        bool requiredItemExpert = req_recipeInfo.Expert;
                         var req_itemIcon = recipeRow.ItemResult.Value.Icon;
                         var req_itemName = recipeRow.ItemResult.Value.Name.ToString();
 
@@ -358,10 +358,10 @@ public sealed partial class ICE
                         var preRecipeRow = Svc.Data.GetExcelSheet<Recipe>().GetRow(preRecipeId);
                         var preItemId = preRecipeRow.ItemResult.RowId;
                         var preAmountNeeded = requiredAmount;
-                        var preCraftExpert = preRecipeRow.IsExpert;
 
                         var crateId = preRecipeRow.Ingredient[0].RowId;
                         var pre_recipeInfo = CosmicHelper.SpecificRecipeInfo(craftJob, preRecipeId);
+                        var preCraftExpert = req_recipeInfo.Expert;
                         var pre_itemIcon = preRecipeRow.ItemResult.Value.Icon;
                         var pre_itemName = preRecipeRow.ItemResult.Value.Name.ToString();
 
@@ -401,9 +401,9 @@ public sealed partial class ICE
                             }
                             var requiredItem = recipeRow.Ingredient[0].RowId;
                             var requiredAmount = recipeRow.AmountIngredient[0];
-                            bool expertCraft = recipeRow.IsExpert;
 
                             var recipeInfo = CosmicHelper.SpecificRecipeInfo(craftJob, recipeId);
+                            bool expertCraft = recipeInfo.Expert;
                             var itemIcon = recipeRow.ItemResult.Value.Icon;
                             var itemName = recipeRow.ItemResult.Value.Name.ToString();
 
@@ -906,14 +906,6 @@ public sealed partial class ICE
         // This is here, merely for the reason of I want a random joke to show up every time they boot up the plugin. I even added some more!
         var random = new Random();
         Window_ExternalDetails.jokeId = random.Next(0, Window_ExternalDetails.JokeList.Count-1);
-
-        if (!C.ShowManualMode)
-        {
-            foreach (var mission in C.MissionConfig)
-            {
-                mission.Value.ManualMode = false;
-            }
-        }
 
         foreach (var fishPreset in GatheringUtil.FishingPreset)
         {

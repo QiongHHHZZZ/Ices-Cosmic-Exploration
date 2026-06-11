@@ -652,6 +652,21 @@ namespace ICE.Ui
                 }
                 if (open)
                 {
+                    bool stopWhen = C.StopAtRelicLv;
+                    if (ImGui.Checkbox(T("Stop At Relic Lv."), ref stopWhen))
+                    {
+                        C.StopAtRelicLv = stopWhen;
+                        C.Save();
+                    }
+                    ImGui.SameLine();
+                    int relicLv = C.RelicLv;
+                    ImGui.SetNextItemWidth(150);
+                    if (ImGui.SliderInt("##RelicLvSlider", ref relicLv, 1, 20))
+                    {
+                        C.RelicLv = relicLv;
+                        C.SaveDebounced();
+                    }
+
                     ImGui_Ice.Draw_ExpTable(currentJobId);
                 }
             }

@@ -210,6 +210,20 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.EndTooltip();
                     }
                 }
+                if (!P.AutoHook.UpdatedPlugin() && CosmicMoonRegistry.Auxesia.TerritoryId == Player.Territory.RowId)
+                {
+                    ImGui.SameLine(0, 10 * scale);
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
+                    ImGuiEx.Icon(EColor.Red, FontAwesomeIcon.ExclamationTriangle);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("Hey! Your version of autohook is not currently supported on this planet"));
+                        ImGui.Text(T("You need to (currently) be on the testing version to be able fish automated here"));
+                        ImGui.Text(T("There will be another warning to pop up if you try and run this still and it selects a fishing mission..."));
+                        ImGui.EndTooltip();
+                    }
+                }
 
                 ImGui.SameLine(0, 10 * scale);
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);

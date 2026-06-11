@@ -1,4 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -23,20 +26,16 @@ namespace ICE.Scheduler.Tasks
 
         private static bool? WaitingForArtisan()
         {
+            string tag = "Craft: Waiting for Artisan";
+
             if (!P.Artisan.IsBusy())
             {
-                IceLogging.Info("Artisan is no longer running, continuing the process");
+                IceLogging.Info("Artisan is no longer running, continuing the process", tag);
                 return true;
             }
             else
             {
-                if (Svc.Condition[ConditionFlag.ExecutingCraftingAction])
-                {
-                    // Need to add a timer check here. Make it configuarable maybe... 10s?
-                    // If the timer exceeds 10 seconds, then that means we're stuck in an animation lock
-                    // then need to cancel them all and just force abandon lock failsafe
-                }
-                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud))
+                if (GenericHelpers.TryGetAddonMaster<WKSHud>(out var moonHud))
                 {
                     if (!AddonHelper.IsAddonActive("WKSMissionInfomation"))
                     {
@@ -49,6 +48,7 @@ namespace ICE.Scheduler.Tasks
             }
             return false;
         }
+
         private static uint throttleCounter = 0;
         private static void InsertArtisanWait(KeyValuePair<ushort, CosmicHelper.CraftingInfo> item, int amount)
         {

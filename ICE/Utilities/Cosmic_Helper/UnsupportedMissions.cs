@@ -9,8 +9,6 @@ namespace ICE.Utilities.Cosmic_Helper
     {
         public static readonly HashSet<uint> Ids = new HashSet<uint>
         {
-            0,
-
             // Oizyr Missions
         };
     }

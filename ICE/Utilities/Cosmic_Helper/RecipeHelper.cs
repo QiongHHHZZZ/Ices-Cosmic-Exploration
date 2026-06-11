@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TerraFX.Interop.Windows;
 
 namespace ICE.Utilities.Cosmic_Helper;
 
@@ -16,6 +17,7 @@ public static partial class CosmicHelper
         public int Durability { get; set; } = 0;
         public int Progress { get; set; } = 0;
         public int Quality { get; set; } = 0;
+        public bool Expert { get; set; } = false;
     }
     public static RecipeInfo SpecificRecipeInfo(uint jobId, uint recipeId)
     {
@@ -29,6 +31,7 @@ public static partial class CosmicHelper
         info.Progress = recipeLevelValue == 0 ? RecipeDifficulty(recipeSheet, levelTable) : RecipeDifficulty(recipeSheet);
         info.Durability = RecipeDurability(recipeSheet);
         info.Quality = recipeLevelValue == 0 ? RecipeMaxQuality(recipeSheet, levelTable) : RecipeMaxQuality(recipeSheet);
+        info.Expert = recipeSheet.RecipeLevelTable.Value.ConditionsFlag != 15;
 
         /*
         var recipe = Svc.Data.GetExcelSheet<Recipe>().GetRow(recipeId);

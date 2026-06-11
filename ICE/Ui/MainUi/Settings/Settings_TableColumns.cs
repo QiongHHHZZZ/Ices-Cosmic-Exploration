@@ -80,11 +80,6 @@ if (ImGui.Checkbox(T("Auto Hide/Show Planet Tokens"), ref autoShowToken))
                 if (ImGui.Checkbox(T("Show Manual Mode Column"), ref showManualMode))
                 {
                     C.ShowManualMode = showManualMode;
-                    if (!showManualMode)
-                    {
-                        foreach (var mission in C.MissionConfig)
-                            mission.Value.ManualMode = false;
-                    }
                     C.Save();
                 }
             }
@@ -101,11 +96,6 @@ if (ImGui.Checkbox(T("Auto Hide/Show Planet Tokens"), ref autoShowToken))
             if (ImGui.Checkbox(T("Show Manual Mode Column"), ref showManualMode))
             {
                 C.ShowManualMode = showManualMode;
-                if (!showManualMode)
-                {
-                    foreach (var mission in C.MissionConfig)
-                        mission.Value.ManualMode = false;
-                }
                 C.Save();
             }
         }

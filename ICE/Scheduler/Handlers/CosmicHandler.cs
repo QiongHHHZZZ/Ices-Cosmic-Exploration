@@ -307,5 +307,6 @@ namespace ICE.Utilities
             var mission = manager->State.CurrentMission;
             return mission.Score;
         }
+
     }
 }

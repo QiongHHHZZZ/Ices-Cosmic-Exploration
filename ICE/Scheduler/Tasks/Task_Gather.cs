@@ -160,9 +160,6 @@ namespace ICE.Scheduler.Tasks
             bool collectableItem = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables);
             bool reduceItems = missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
 
-            bool QuickGather = missionInfo.IsMaster && ((C.MissionConfig[CosmicHelper.CurrentLunarMission].TurninGoal < TurninState.TimeExpired && collectableItem) || !collectableItem);
-            bool allowBuffs = QuickGather || !missionInfo.IsMaster;
-
             if (Svc.Condition[ConditionFlag.Gathering])
             {
                 // We should always have this condition up while we're gathering. Even if a revisit happens
@@ -173,7 +170,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         if (EzThrottler.Throttle("Log message"))
                         {
-                            IceLogging.Debug($"Collectable: {collectableItem} | Reduce: {reduceItems} | Score Mode: {QuickGather}");
+                            IceLogging.Debug($"Collectable: {collectableItem} | Reduce: {reduceItems}");
                         }
 
                         if (reduceItems || (collectableItem && !missionInfo.IsMaster))
@@ -204,12 +201,9 @@ namespace ICE.Scheduler.Tasks
                             if (CheckDelay())
                                 return false;
 
-                            if (allowBuffs)
+                            if (UseGatherAction(configId, gatherChance, boonChance, gather.CurrentIntegrity, gather.TotalIntegrity, playerGp))
                             {
-                                if (UseGatherAction(configId, gatherChance, boonChance, gather.CurrentIntegrity, gather.TotalIntegrity, playerGp))
-                                {
-                                    return false;
-                                }
+                                return false;
                             }
 
                             // Find the item with the largest deficit
@@ -237,15 +231,11 @@ namespace ICE.Scheduler.Tasks
                             }
                             else
                             {
-                                // we must not need any of those items, so going to just do a first item gather
-                                if (allowBuffs)
-                                    gather.GatheredItems
-                                        .Where(x => x.ItemID != 0)
-                                        .Where(x => !x.IsCollectable)
-                                        .FirstOrDefault()
-                                        ?.Gather();
-                                else
-                                    gather.GatheredItems.Where(x => x.ItemID != 0).FirstOrDefault()?.Gather();
+                                gather.GatheredItems
+                                    .Where(x => x.ItemID != 0)
+                                    .Where(x => !x.IsCollectable)
+                                    .FirstOrDefault()
+                                    ?.Gather();
                                 return false;
                             }
                         }
@@ -274,6 +264,8 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
+                GreaterReachCount = 0;
+                HadGreaterReach = false;
                 GatherDelayThrottle = 0;
                 return true;
             }
@@ -579,6 +571,10 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+
+        public static uint GreaterReachCount = 0;
+        public static bool HadGreaterReach = false;
+
         public static unsafe bool UseGatherAction(int profileId, int gatherChance, int? boonChance, int currentDur, int maxDur, int availableGp)
         {
             C.GatherProfiles.TryGetValue(profileId, out var gatherProfile);
@@ -705,9 +701,18 @@ namespace ICE.Scheduler.Tasks
                 }
             }
 
+            if (HadGreaterReach)
+            {
+                GreaterReachCount += 1;
+                HadGreaterReach = false;
+            }
+
             if (PlayerHelper.HasStatusId(4437) && (currentDur == 1 || currentDur == maxDur - 4) && PlayerHelper.GetGp() != PlayerHelper.MaxGp())
             {
-                ActionManager.Instance()->UseAction(ActionType.GeneralAction, 27);
+                HadGreaterReach = true;
+
+                if (EzThrottler.Throttle("Using Greater Reach", 500))
+                    ActionManager.Instance()->UseAction(ActionType.GeneralAction, 27);
                 return true;
             }
 
@@ -796,6 +801,7 @@ namespace ICE.Scheduler.Tasks
                                     && PlayerHelper.GetGp() >= gatherBuff.MinGp
                                     && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
                                     && (maxDur >= gatherBuff.MinUsableDurability)
+                                    && (GreaterReachCount < 4)
                                     && properLvl,
                 "BountifulYieldII" => gatherBuff.Enabled
                                    && !hasStatus && !PlayerHelper.HasStatusId(actionInfo.StatusId2)

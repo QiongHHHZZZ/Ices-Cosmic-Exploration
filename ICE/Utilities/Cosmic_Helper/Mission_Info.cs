@@ -75,7 +75,31 @@ public static partial class CosmicHelper
         }
     }
 
-    public static unsafe uint? CurrentBait => WKSManager.Instance()->State.FishingBait;
+    public static unsafe uint CurrentBait()
+    {
+        var manager = WKSManager.Instance();
+        if (manager == null)
+            return 0;
+
+        return manager->State.FishingBait;
+    }
+    public static unsafe uint CurrentIndividual()
+    {
+        var manager = WKSManager.Instance();
+        if (manager == null)
+            return 0;
+
+        return manager->State.CurrentMission.CollectedIndividual;
+    }
+
+    public static unsafe uint CurrentTotal()
+    {
+        var manager = WKSManager.Instance();
+        if (manager == null)
+            return 0;
+
+        return manager->State.CurrentMission.CollectedTotal;
+    }
     // public static unsafe uint CurrentLunarDevelopment => ExcelHelper.DevGrade.GetRow(WKSManager.Instance()->DevGrade).Unknown6;
     public static unsafe uint CurrentLunarDevelopment = 0;
 

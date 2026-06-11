@@ -13,100 +13,141 @@ public class Shop_Cosmocredits
             Name = "Star Crew Jacket",
             Cost = 8400,
             Tab = 1,
-            Index = 10,
+            Index = 14,
         },
         [47930] = new ItemInfo
         {
             Name = "Star Crew Gloves",
             Cost = 4800,
             Tab = 1,
-            Index = 11,
+            Index = 15,
         },
         [47931] = new ItemInfo
         {
             Name = "Star Crew Trousers",
             Cost = 7200,
             Tab = 1,
-            Index = 12,
+            Index = 16,
         },
         [47932] = new ItemInfo
         {
             Name = "Star Crew Boots",
             Cost = 4800,
             Tab = 1,
-            Index = 13,
+            Index = 17,
         },
         [47279] = new ItemInfo
         {
             Name = "Star Captain Hat",
             Cost = 4800,
             Tab = 1,
-            Index = 17,
+            Index = 21,
         },
         [47280] = new ItemInfo
         {
             Name = "Star Captain Coat",
             Cost = 8400,
             Tab = 1,
-            Index = 18,
+            Index = 22,
         },
         [47281] = new ItemInfo
         {
             Name = "Star Captain Gloves",
             Cost = 4800,
             Tab = 1,
-            Index = 19,
+            Index = 23,
         },
         [47282] = new ItemInfo
         {
             Name = "Star Captain Trousers",
             Cost = 7200,
             Tab = 1,
-            Index = 20,
+            Index = 24,
         },
         [47283] = new ItemInfo
         {
             Name = "Star Captain Boots",
             Cost = 4800,
             Tab = 1,
-            Index = 21,
+            Index = 25,
         },
         [50303] = new ItemInfo
         {
             Name = "Star Admiral's Helm",
             Cost = 4800,
             Tab = 1,
-            Index = 27,
+            Index = 31,
         },
         [50304] = new ItemInfo
         {
             Name = "Star Admiral's Coat",
             Cost = 8400,
             Tab = 1,
-            Index = 28,
+            Index = 32,
         },
         [50305] = new ItemInfo
         {
             Name = "Star Admiral's Gloves",
             Cost = 4800,
             Tab = 1,
-            Index = 29,
+            Index = 33,
         },
         [50306] = new ItemInfo
         {
             Name = "Star Admiral's Trousers",
             Cost = 7200,
             Tab = 1,
-            Index = 30,
+            Index = 34,
         },
         [50307] = new ItemInfo
         {
             Name = "Star Admiral's Boots",
             Cost = 4800,
             Tab = 1,
-            Index = 31,
+            Index = 35,
         },
-
+        [52418] = new ItemInfo
+        {
+            Name = "Cosmic Explorer's Cap",
+            Cost = 4800,
+            Tab = 1,
+            Index = 37,
+        },
+        [52419] = new ItemInfo
+        {
+            Name = "Cosmic Explorer's Jacket",
+            Cost = 8400,
+            Tab = 1,
+            Index = 38,
+        },
+        [52420] = new ItemInfo
+        {
+            Name = "Cosmic Explorer's Halfgloves",
+            Cost = 4800,
+            Tab = 1,
+            Index = 39,
+        },
+        [52421] = new ItemInfo
+        {
+            Name = "Cosmic Explorer's Slops",
+            Cost = 7200,
+            Tab = 1,
+            Index = 40,
+        },
+        [52423] = new ItemInfo
+        {
+            Name = "Cosmic Explorer's Tights",
+            Cost = 7200,
+            Tab = 1,
+            Index = 41,
+        },
+        [52422] = new ItemInfo
+        {
+            Name = "Cosmic Explorer's Boots",
+            Cost = 4800,
+            Tab = 1,
+            Index = 42,
+        },
 
         #endregion
 
@@ -133,159 +174,201 @@ public class Shop_Cosmocredits
             Tab = 3,
             Index = 2,
         },
+        [52271] = new ItemInfo
+        {
+            Name = "Excavating Vacuum Suit Identification Key",
+            Cost = 20000,
+            Tab = 3,
+            Index = 3,
+        },
+        [52272] = new ItemInfo
+        {
+            Name = "Carbide Grey Warp Loader Identification Key",
+            Cost = 20000,
+            Tab = 3,
+            Index = 4,
+        },
         [48091] = new ItemInfo
         {
             Name = "Cosmic Exploration Framer's Kit",
             Cost = 6000,
             Tab = 3,
-            Index = 3,
+            Index = 5,
         },
         [46768] = new ItemInfo
         {
             Name = "Cosmic Constructs Framer's Kit",
             Cost = 6000,
             Tab = 3,
-            Index = 4,
+            Index = 6,
         },
         [50019] = new ItemInfo
         {
             Name = "Cosmic Fantasy Framer's Kit",
             Cost = 6000,
             Tab = 3,
-            Index = 5,
+            Index = 7,
+        },
+        [51996] = new ItemInfo
+        {
+            Name = "Cosmic Growth Framer's Kit",
+            Cost = 6000,
+            Tab = 3,
+            Index = 8,
         },
         [46816] = new ItemInfo
         {
             Name = "Vacuum Suit Card",
             Cost = 4000,
             Tab = 3,
-            Index = 6,
+            Index = 9,
         },
         [46817] = new ItemInfo
         {
             Name = "Namingway Card",
             Cost = 6000,
             Tab = 3,
-            Index = 7,
+            Index = 10,
         },
         [49787] = new ItemInfo
         {
             Name = "Interstellar Dhalmel Card",
             Cost = 4000,
             Tab = 3,
-            Index = 8,
+            Index = 11,
+        },
+        [52041] = new ItemInfo
+        {
+            Name = "Cosmic Armored Weapon Beta Card",
+            Cost = 4000,
+            Tab = 3,
+            Index = 12,
         },
         [47985] = new ItemInfo
         {
             Name = "Ballroom Etiquette - Bearing Insult",
             Cost = 9600,
             Tab = 3,
-            Index = 9,
+            Index = 13,
         },
         [48153] = new ItemInfo
         {
             Name = "The Faces We Wear - Reading Glasses",
             Cost = 6000,
             Tab = 3,
-            Index = 14,
+            Index = 18,
         },
         [46838] = new ItemInfo
         {
             Name = "The Faces We Wear - Ornamented Leather Eyepatch (Left)",
             Cost = 3000,
             Tab = 3,
-            Index = 15,
+            Index = 19,
         },
         [46839] = new ItemInfo
         {
             Name = "The Faces We Wear - Ornamented Leather Eyepatch (Right)",
             Cost = 3000,
             Tab = 3,
-            Index = 16,
+            Index = 20,
         },
         [48211] = new ItemInfo
         {
             Name = "Hey, Cid! Orchestrion Roll",
             Cost = 6000,
             Tab = 3,
-            Index = 22,
+            Index = 26,
         },
         [48213] = new ItemInfo
         {
             Name = "The Airship Orchestrion Roll",
             Cost = 6000,
             Tab = 3,
-            Index = 23,
+            Index = 27,
         },
         [46156] = new ItemInfo
         {
             Name = "Carrots of Passion Orchestrion Roll",
             Cost = 6000,
             Tab = 3,
-            Index = 24,
+            Index = 28,
         },
         [49836] = new ItemInfo
         {
             Name = "Cosmomodule Inner Wall",
             Cost = 4000,
             Tab = 3,
-            Index = 25,
+            Index = 29,
         },
         [49837] = new ItemInfo
         {
             Name = "Cosmomodule Flooring",
             Cost = 4000,
             Tab = 3,
-            Index = 26,
+            Index = 30,
         },
         [48732] = new ItemInfo
         {
             Name = "Cosmochair",
             Cost = 3000,
             Tab = 3,
-            Index = 32,
+            Index = 36,
         },
         [48735] = new ItemInfo
         {
             Name = "Stellar Lamppost",
             Cost = 3000,
             Tab = 3,
-            Index = 33,
+            Index = 43,
         },
         [46176] = new ItemInfo
         {
             Name = "Docking Station Cover",
             Cost = 3000,
             Tab = 3,
-            Index = 34,
+            Index = 44,
         },
         [46177] = new ItemInfo
         {
             Name = "Cosmic Circumferbench",
             Cost = 3000,
             Tab = 3,
-            Index = 35,
+            Index = 45,
         },
         [49870] = new ItemInfo
         {
             Name = "Cosmic Safety Lamp",
             Cost = 3000,
             Tab = 3,
-            Index = 36,
+            Index = 46,
         },
         [49871] = new ItemInfo
         {
             Name = "Cosmic Antenna",
             Cost = 3000,
             Tab = 3,
-            Index = 37,
+            Index = 47,
         },
         [49872] = new ItemInfo
         {
             Name = "Shady Cosmoshelter",
             Cost = 3000,
             Tab = 3,
-            Index = 38,
+            Index = 48,
+        },
+        [51280] = new ItemInfo
+        {
+            Name = "Auxesian Waygate",
+            Cost = 3000,
+            Tab = 3,
+            Index = 49,
+        },
+        [51281] = new ItemInfo
+        {
+            Name = "Auxesian Waylight",
+            Cost = 3000,
+            Tab = 3,
+            Index = 50,
         },
 
         #endregion
@@ -542,7 +625,6 @@ public class Shop_Cosmocredits
         },
 
         #endregion
-
     };
 
     public class ItemInfo

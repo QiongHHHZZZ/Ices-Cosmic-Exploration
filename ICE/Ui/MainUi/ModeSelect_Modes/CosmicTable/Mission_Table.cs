@@ -291,7 +291,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 CreditSummaryColumn => 84f,
                 DroneCreditColumn => 42f,
                 PlanetTokensColumn => 42f,
-                TurninColumn => 140f,
+                TurninColumn => 96f,
                 AllRelicExpColum => 136f,
                 RelicExpColumn => 30f,
                 ProfileColumn => 104f,
@@ -420,7 +420,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 DroneCreditColumn => 42f,
                 PlanetTokensColumn => 42f,
                 SPMColumn => 74f,
-                TurninColumn => 140f,
+                TurninColumn => 96f,
                 AllRelicExpColum => 140f,
                 RelicExpColumn => 30f,
                 ProfileColumn => 128f,
@@ -630,11 +630,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.BeginTooltip();
-                        ImGui.Text($"Critical Route: {mission.SheetInfo.Critical_MapKey}");
+                        ImGui.Text(T("Critical Route: {0}", mission.SheetInfo.Critical_MapKey));
                         ImGui.Separator();
-                        ImGui.Text($"Map Cordinates: {criticalInfo.X} | {criticalInfo.Y}");
+                        ImGui.Text(T("Map Coordinates: {0} | {1}", criticalInfo.X, criticalInfo.Y));
                         ImGui.Separator();
-                        ImGui.Text($"World Position: {criticalInfo.WorldCords.X:N2} | {criticalInfo.WorldCords.Y:N2} | {criticalInfo.WorldCords.Z:N2}");
+                        ImGui.Text(T("World Position: {0:N2} | {1:N2} | {2:N2}", criticalInfo.WorldCords.X, criticalInfo.WorldCords.Y, criticalInfo.WorldCords.Z));
                         ImGui.EndTooltip();
                     }
 #endif
@@ -1312,14 +1312,14 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 get
                 {
-                    const int amount = 4;
+                    const int amount = 3;
 
                     var iconWidth = ImGui.GetFrameHeight(); // IconButton is square, frameHeight x frameHeight
                     var spacing = ImGui.GetStyle().ItemSpacing.X;
                     var cellPadding = ImGui.GetStyle().CellPadding.X * 2;
 
                     var headerWidth = ImGui.CalcTextSize(Label).X + cellPadding;
-                    var contentWidth = iconWidth * amount + spacing * (amount - 1) + cellPadding + 26f * ImGuiHelpers.GlobalScale;
+                    var contentWidth = iconWidth * amount + spacing * (amount - 1) + cellPadding;
 
                     return Math.Max(headerWidth, contentWidth);
                 }
@@ -1338,7 +1338,88 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public override void DrawColumn(MissionInfo item, int idx)
             {
                 if (item.SheetInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining) || item.SheetInfo.IsCritical)
+                {
                     ImGuiUtil.Center(T("Auto"));
+                }
+                else if (item.SheetInfo.IsMaster)
+                {
+                    string masterPopup = "Master Settings: Popup";
+                    var buttonLabel = T("Master Short Settings");
+                    var spacing = ImGui.GetStyle().ItemSpacing.X;
+                    var iconButtonSize = new Vector2(ImGui.GetFrameHeight());
+                    var iconButtonWidth = iconButtonSize.X;
+                    var buttonWidth = MathF.Min(ImGuiUtil.CurrentColumnWidth, iconButtonWidth * 3f + spacing * 2f);
+
+                    ImGui.PushID($"Mission_{item.Id}");
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + MathF.Max(0, (ImGuiUtil.CurrentColumnWidth - buttonWidth) * 0.5f));
+                    if (ImGui.Button(buttonLabel, new Vector2(buttonWidth, 0)))
+                    {
+                        ImGui.OpenPopup(masterPopup);
+                    }
+                    if (ImGui.BeginPopup(masterPopup))
+                    {
+                        ImGui.Text($"[{item.Id}] - {item.SheetInfo.Name}");
+
+                        if (C.MissionConfig.TryGetValue(item.Id, out var configInfo))
+                        {
+                            var selectedMode = configInfo.TurninGoal;
+                            var timeExpired = selectedMode == TurninState.TimeExpired;
+                            var scoreMode = selectedMode == TurninState.Master_Score;
+                            var quickTurnin = selectedMode == TurninState.Gold;
+
+
+                            if (ImGui.RadioButton(T("Timed Turnin") + "##TurninGoalRadio", timeExpired))
+                            {
+                                configInfo.TurninGoal = TurninState.TimeExpired;
+                                C.SaveDebounced();
+                            }
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.SetTooltip(T("Will turnin once the timer runs out\n" +
+                                    "Currently there isn't a way to stop artisan from crafting, it's been requested\n" +
+                                    "Please give it time"));
+                            }
+                            ImGui.Separator();
+                            if (ImGui.RadioButton(T("Score Goal") + "##ScoreGoalRadio", scoreMode))
+                            {
+                                configInfo.TurninGoal = TurninState.Master_Score;
+                                C.SaveDebounced();
+                            }
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.SetTooltip(T("Will turnin when 1 of the 2 things are met:\n" +
+                                    "1: Score that you personally have set has been met\n" +
+                                    "2: Timer has ran out\n" +
+                                    "You can set your score with this mode yourself, due to not knowing the scoring break points\n" +
+                                    "Yet"));
+                            }
+                            ImGui.SameLine();
+                            var masterScore = configInfo.Master_Score;
+                            ImGui.SetNextItemWidth(150);
+                            if (ImGui.InputUInt(T("Score Goal") + "##ScoreGoalInput", ref masterScore))
+                            {
+                                configInfo.Master_Score = masterScore;
+                                C.SaveDebounced();
+                            }
+                            ImGui.Separator();
+                            if (ImGui.RadioButton(T("Quick Turnin") + "##QuickTurninRadio", quickTurnin))
+                            {
+                                configInfo.TurninGoal = TurninState.Gold;
+                                C.SaveDebounced();
+                            }
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.SetTooltip(T("Will turnin the mission as soon as it can\n" +
+                                    "Very useful for quick score farming, mount tokens.\n" +
+                                    "For BTN/MIN, this will gather the non-collectable item"));
+                            }
+                        }
+
+                        ImGui.EndPopup();
+                    }
+
+                    ImGui.PopID();
+                }
                 else
                 {
                     Vector4 BronzeColor = new Vector4(0.804f, 0.498f, 0.196f, 1.0f);
@@ -1351,41 +1432,19 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     if (C.MissionConfig.TryGetValue(item.Id, out var configInfo))
                     {
                         var highestTurnin = configInfo.TurninGoal;
-                        var timeExpired = highestTurnin == TurninState.TimeExpired;
-                        var goldEnabled = !timeExpired && highestTurnin >= TurninState.Gold;
-                        var silverEnabled = !timeExpired && highestTurnin >= TurninState.Silver;
-                        var bronzeEnabled = !timeExpired && highestTurnin >= TurninState.Bronze;
+                        var goldEnabled = highestTurnin >= TurninState.Gold;
+                        var silverEnabled = highestTurnin >= TurninState.Silver;
+                        var bronzeEnabled = highestTurnin >= TurninState.Bronze;
                         var spacing = ImGui.GetStyle().ItemSpacing.X;
-                        var buttonWidth = ImGui.GetFrameHeight();
-                        using (ImRaii.PushFont(UiBuilder.IconFont))
-                            buttonWidth = ImGui.CalcTextSize(FontAwesomeIcon.Trophy.ToIconString()).X + ImGui.GetStyle().FramePadding.X * 2f;
+                        var buttonSize = new Vector2(ImGui.GetFrameHeight());
+                        var buttonWidth = buttonSize.X;
 
-                        var buttonCount = 4f;
+                        var buttonCount = 3f;
                         var totalWidth = buttonWidth * buttonCount + spacing * (buttonCount - 1f);
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + MathF.Max(0, (ImGuiUtil.CurrentColumnWidth - totalWidth) * 0.5f));
-
-                        var showTimeExpiredTurnin = item.SheetInfo.IsMaster;
-                        using (ImRaii.PushColor(ImGuiCol.Text, timeExpired ? GoldColor : DisabledColor))
-                        {
-                            if (showTimeExpiredTurnin)
-                            {
-                                if (ImGuiEx.IconButton(FontAwesomeIcon.Clock, "##TimeExpired"))
-                                {
-                                    configInfo.TurninGoal = TurninState.TimeExpired;
-                                    C.SaveDebounced();
-                                }
-                                if (ImGui.IsItemHovered())
-                                    ImGui.SetTooltip(T("Only turn in when the mission timer expires (keep gathering for max score).\nUseful for Tool Mastery missions that extend their timer on goal completion."));
-                            }
-                            else
-                            {
-                                ImGui.Dummy(new Vector2(buttonWidth, ImGui.GetFrameHeight()));
-                            }
-                        }
-                        ImGui.SameLine(0, spacing);
                         using (ImRaii.PushColor(ImGuiCol.Text, goldEnabled ? GoldColor : DisabledColor))
                         {
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold"))
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold", buttonSize))
                             {
                                 configInfo.TurninGoal = TurninState.Gold;
                                 C.SaveDebounced();
@@ -1394,7 +1453,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         ImGui.SameLine(0, spacing);
                         using (ImRaii.PushColor(ImGuiCol.Text, silverEnabled ? SilverColor : DisabledColor))
                         {
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Silver"))
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Silver", buttonSize))
                             {
                                 configInfo.TurninGoal = TurninState.Silver;
                                 C.SaveDebounced();
@@ -1404,7 +1463,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         ImGui.SameLine(0, spacing);
                         using (ImRaii.PushColor(ImGuiCol.Text, bronzeEnabled ? BronzeColor : DisabledColor))
                         {
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Bronze"))
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Bronze", buttonSize))
                             {
                                 configInfo.TurninGoal = TurninState.Bronze;
                                 C.SaveDebounced();
@@ -1645,6 +1704,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                 {
                                     ImGui.SetTooltip(T("Allows testing to make sure that you have the preset name\n" +
                                         "typed in correctly. This is *case* specific so"));
+                                }
+                                ImGui.SameLine();
+                                if (ImGui.Button(T("Clear Profile")))
+                                {
+                                    config.AutoHookPresetName = string.Empty;
+                                    C.SaveDebounced();
                                 }
                             }
 

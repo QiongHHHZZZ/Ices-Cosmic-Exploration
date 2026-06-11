@@ -86,7 +86,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
             if (ImGui.Button(T("Swap Bait... simple")))
             {
-                if (CosmicHelper.CurrentBait == 0)
+                if (CosmicHelper.CurrentBait() == 0)
                 {
                     IceLogging.Debug("Bait is not currently equipped");
                 }
@@ -95,18 +95,11 @@ namespace ICE.Ui.DebugWindowTabs
             }
             if (ImGui.Button(T("Stupid Test")))
             {
-                if (CosmicHelper.CurrentBait == 0)
+                if (CosmicHelper.CurrentBait() == 0)
                 {
                     IceLogging.Debug($"No bait is equipped");
                 }
-                else if (CosmicHelper.CurrentBait == null)
-                {
-                    IceLogging.Debug("Bait is null... aka not in the middle of a mission");
-                }
-                else
-                {
-                    IceLogging.Debug($"Current bait: {CosmicHelper.CurrentBait}");
-                }
+                IceLogging.Debug($"Current bait: {CosmicHelper.CurrentBait()}");
             }
 
             if (ImGui.Button(T("Enable AutoHook")))
@@ -208,6 +201,22 @@ namespace ICE.Ui.DebugWindowTabs
                         P.Artisan.SetTempSolverBackToNormal(preCraft.Value.RecipeId);
                     }
                 }
+            }
+            if (ImGui.Button("Disable Endurance"))
+            {
+                P.Artisan.SetEnduranceStatus(false);
+            }
+            if (ImGui.Button("Test Toast"))
+            {
+                string message = T("[I.C.E.] You didn't read the little warning in the mission setup\n" +
+                    "You need to update autohook for you to be able to fish here on Auxesia.\n" +
+                    "Please swap to testing version");
+                Svc.Chat.Print(new()
+                {
+                    Type = Dalamud.Game.Text.XivChatType.ErrorMessage,
+                    Message = message,
+                });
+                Svc.Toasts.ShowNormal($"{message}");
             }
         }
 

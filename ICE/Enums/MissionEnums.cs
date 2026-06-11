@@ -42,6 +42,7 @@ namespace ICE.Enums
         // Never turn in on score; only when the mission timer expires. Useful for missions that
         // extend their timer as you hit goals (e.g. Tool Mastery) so you keep maxing score.
         TimeExpired = 6,
+        Master_Score = 7,
     }
 
     public enum ArtisanCraftType

@@ -370,7 +370,7 @@ namespace ICE.Scheduler.Tasks
                 _fishingDebug = new FishingDebug();
             }
 
-            if (CosmicHelper.CurrentBait == 0)
+            if (CosmicHelper.CurrentBait() == 0)
             {
                 if (EzThrottler.Throttle("Equipping bait"))
                 {

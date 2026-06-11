@@ -16,6 +16,8 @@ public partial class Config
     public bool StopOnceHitCosmicScore { get; set; } = false;
     public int CosmicScoreCap { get; set; } = 500_000;
     public bool StopOnceRelicFinished { get; set; } = false;
+    public bool StopAtRelicLv { get; set; } = false;
+    public int RelicLv { get; set; } = 20;
     public List<ProvisionalTypes> MissionPrio { get; set; } = new()
     {
         ProvisionalTypes.ProvisionalWeather,
@@ -56,9 +58,9 @@ public partial class Config
     public class MissionSettings
     {
         public bool Enabled { get; set; } = false;
-        public bool ManualMode { get; set; } = false;
         public int GProfileId { get; set; } = 0;
         public TurninState TurninGoal { get; set; } = TurninState.Gold;
+        public uint Master_Score { get; set; } = 1000;
         public bool Use_BuildinPreset { get; set; } = false;
         public string AutoHookPresetName { get; set; } = string.Empty;
         public double BestTime { get; set; } = double.MaxValue;

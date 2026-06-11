@@ -70,7 +70,7 @@ namespace ICE.Scheduler.Tasks
                         bool dualMission = (s.HasFlag(MissionAttributes.Craft) && (s.HasFlag(MissionAttributes.Gather) || s.HasFlag(MissionAttributes.Fish)));
                         // In the middle of a dual mission. 
                         // First, checking to see if you're in the middle of a gathering or crafting action
-                        if (C.OnlyGrabMission_Debug || config.ManualMode || UnsupportedMissions.Ids.Contains(currentMissionId))
+                        if (C.OnlyGrabMission_Debug || UnsupportedMissions.Ids.Contains(currentMissionId))
                         {
                             // TODO: Remove this once properly coded
                             if (s.HasFlag(MissionAttributes.Fish))
@@ -348,6 +348,21 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
                 }
+                if (C.StopAtRelicLv)
+                {
+                    var relicInfo = cosmicClassInfo[(uint)jobId];
+                    // if 15 <= 20
+                    if (C.RelicLv <= relicInfo.Stage_Current)
+                    {
+                        IceLogging.ChatInfo($"Stopping the plugin as your current tool is at {relicInfo.Stage_Current} and your goal was: {C.RelicLv}");
+                        SchedulerMain.State = IceState.Idle;
+                        if (C.PlaySoundAlert)
+                        {
+                            _ = SoundPlayer.PlaySoundAsync();
+                        }
+                        return true;
+                    }
+                }
 
                 IceLogging.Info("We have passed all stop when checks. So going to just do a general check on what we need to do", tag);
                 P.TaskManager.Enqueue(() => HubActivityCheck(), "Checking for reasons to go to hub");
@@ -379,7 +394,7 @@ namespace ICE.Scheduler.Tasks
 
             foreach (var entry in agenda)
             {
-                IceLogging.Verbose($"Checking:\t" +
+                IceLogging.Verbose($"Checking:\n" +
                     $"Job: {entry.SelectedJob}\n" +
                     $"Agenda: {entry.SelectedMode}");
 
@@ -393,7 +408,7 @@ namespace ICE.Scheduler.Tasks
                 bool MaxLevelExp = true;
                 foreach (var exp in relicInfo.CurrentExp)
                 {
-                    if (relicInfo.Stage_Current != relicInfo.Stage_Next)
+                    if (relicInfo.Stage_Current < relicInfo.Stage_Next)
                     {
                         MaxLevelExp = false;
                         break;
@@ -433,7 +448,20 @@ namespace ICE.Scheduler.Tasks
 
                 if (!achieved)
                 {
+                    var progress = goal switch
+                    {
+                        _ when CosmicMoonRegistry.IsMaxRelicPlaylistGoal(goal) => $"{relicLevel}/{CosmicMoonRegistry.GetMaxRelicGoal(goal)}",
+                        PlaylistOptions.SelectedRelicLv => $"{relicLevel}/{entry.SelectedRelicLevel}",
+                        PlaylistOptions.CreditAmount => $"{creditAmount}/{entry.CreditAmount}",
+                        PlaylistOptions.PlanetAmount => $"{planetCreditAmount}/{entry.PlanetAmount}",
+                        PlaylistOptions.DronebitAmount => $"{dronebitAmount}/{entry.DronebitAmount}",
+                        PlaylistOptions.ClassLevel => $"{level}/{entry.ClassLevel}",
+                        PlaylistOptions.ClassScore => $"{classScore}/{entry.ClassScore}",
+                        PlaylistOptions.ToolMaxExp or PlaylistOptions.GoldClassMissions => $"{achieved}",
+                        _ => "?"
+                    };
                     IceLogging.Info($"Priority has been found to achieve: {goal}. Going to aim to complete this goal", tag);
+                    IceLogging.Debug($"[Goal Check] {goal}: {progress} (achieved={achieved})", tag);
                     Mission_Settings.Mode = entry.SelectedMode;
                     Mission_Settings.SelectedJob = entry.SelectedJob;
                     P.TaskManager.Enqueue(() => HubActivityCheck(), "Checking for reason to go to hub");

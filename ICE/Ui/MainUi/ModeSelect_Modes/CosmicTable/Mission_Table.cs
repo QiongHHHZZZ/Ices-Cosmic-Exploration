@@ -7,6 +7,7 @@ using ICE.Utilities.GatheringHelper.RouteLoader;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
 using System.Reflection;
+using TerraFX.Interop.Windows;
 using static ICE.ConfigFiles.Config;
 using static ICE.Localization.L10n;
 using static ICE.Utilities.Cosmic_Helper.CosmicHelper;
@@ -481,7 +482,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
         {
 
         }
-
         public sealed class EnabledColumn : ItemFilterColumn
         {
             public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
@@ -1129,8 +1129,33 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
+                        if (item.SheetInfo.IsTimed)
+                        {
                             ImGui.Text(T("Time Slot"));
                             ImGui.Text($"{item.SheetInfo.StartTime:D2}:00 - {item.SheetInfo.EndTime:D2}:00");
+                        }
+                        else if (item.SheetInfo.IsSequence)
+                        {
+                            ImGui.Text(T("Sequence Missions"));
+                            if (item.SheetInfo.SequenceMissions_Previous.Count() > 0)
+                            {
+                                ImGui.Separator();
+                                ImGui.Text(T("Previous Missions"));
+                                foreach (var mission in item.SheetInfo.SequenceMissions_Previous)
+                                {
+                                    ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
+                                }
+                            }
+                            if (item.SheetInfo.SequenceMissions_Next.Count() > 0)
+                            {
+                                ImGui.Separator();
+                                ImGui.Text(T("Next Missions"));
+                                foreach (var mission in item.SheetInfo.SequenceMissions_Next)
+                                {
+                                    ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
+                                }
+                            }
+                        }
                             ImGui.EndTooltip();
                         }
                     }
@@ -1193,6 +1218,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     return critical.Score != 0;
                 }
 
+                if (item.SheetInfo.IsMaster && scoreInfo.TryGetValue(TurninState.Master_Score, out var masterScore))
+                {
+                    state = TurninState.Master_Score;
+                    reward = masterScore;
+                    return masterScore.Score != 0;
+                }
+
                 if (scoreInfo.TryGetValue(TurninState.SequenceGold, out var seqGold) && seqGold.Score != 0)
                 {
                     state = TurninState.SequenceGold;
@@ -1218,6 +1250,15 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     ? reward.Score
                     : 0;
             }
+            private string GetName(TurninState state)
+            {
+                return state switch
+                {
+                    TurninState.SequenceGold => "Gold Sequence",
+                    TurninState.Master_Score => "Master",
+                    _ => state.ToString()
+                };
+            }
 
             public override string ToName(MissionInfo item) => $"{GetScore(item):N2}";
             public override int Compare(MissionInfo x, MissionInfo y) => GetScore(x).CompareTo(GetScore(y));
@@ -1238,10 +1279,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         TurninState.Gold => new(0.85f, 0.70f, 0.0f, 1.0f), // slightly muted gold
                         TurninState.Critical => new(0.7f, 0.1f, 0.9f, 1.0f), // purple feels "special"
                         TurninState.SequenceGold => new(0.95f, 0.60f, 0.0f, 1.0f),  // amber-gold, more orange warmth
+                        TurninState.Master_Score => new(1.0f, 0.95f, 0.8f, 1.0f), // Radiant White/Gold
                         _ => new(0.5f, 0.5f, 0.5f, 0.8f)
                     };
 
-                    bool isBright = bestState is TurninState.Gold or TurninState.Silver or TurninState.SequenceGold;
+                    bool isBright = bestState is TurninState.Gold or TurninState.Silver or TurninState.SequenceGold or TurninState.Master_Score;
                     Vector4 textColor = isBright ? new(0.1f, 0.1f, 0.1f, 1.0f) : new(1.0f, 1.0f, 1.0f, 1.0f);
 
                     using (ImRaii.PushColor(ImGuiCol.Button, pillColor)
@@ -1255,6 +1297,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     {
                         ImGui.BeginTooltip();
                         ImGui.Text(T("Average Rewards per minute"));
+                        if (C.MissionConfig.TryGetValue(item.Id, out var config))
+                        {
+                            ImGui.Text(T("Total Completions: {0:N0}/{1:N0}", config.TotalCompletions, config.TotalAttempts));
+                        }
                         if (ImGui.BeginTable($"Score Info Table_{item.SheetInfo.MissionId}", 5, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
                         {
                             ImGui.TableSetupColumn(T("Kind"));
@@ -1267,12 +1313,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
                             foreach (var entry in item.SheetInfo.ScoreInfo())
                             {
+                                if (item.SheetInfo.IsMaster && entry.Key != TurninState.Master_Score)
+                                    continue;
+                                if (item.SheetInfo.IsCritical && entry.Key != TurninState.Critical)
+                                    continue;
                                 if (entry.Value.Score == 0)
                                     continue;
 
                                 ImGui.TableNextRow();
                                 ImGui.TableSetColumnIndex(0);
-                                ImGui.Text($"{T(entry.Key.ToString())} [{entry.Value.Completions:N0}]");
+                                ImGui.Text($"{T(GetName(entry.Key))} [{entry.Value.Completions:N0}]");
 
                                 ImGui.TableNextColumn();
                                 ImGui.Text($"{entry.Value.Score:N2}");
@@ -1615,7 +1665,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
                 if (gatherProfile)
                 {
-                    if (!collectable || master)
+                    if (!collectable)
                     {
                         string profileName = "???";
                         string profileButtonName = profileName;

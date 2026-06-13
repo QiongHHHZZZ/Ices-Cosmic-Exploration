@@ -1,6 +1,6 @@
 ﻿using Dalamud.Interface;
 using ECommons.GameHelpers;
-using ICE.Ui.DebugWindowTabs;
+using ICE.Ui.Debug_Tabs.Debug_Ui;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;

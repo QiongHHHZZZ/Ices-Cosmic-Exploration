@@ -1,4 +1,5 @@
-﻿using ECommons.GameHelpers;
+﻿using ECommons.Automation;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.ConfigFiles;
 using ICE.Utilities.Cosmic_Helper;
@@ -178,121 +179,6 @@ namespace ICE.Scheduler.Tasks
         private static int BuyAmount = 0;
         private static int KeepAmount = 0;
 
-        /*
-        private static unsafe bool? BuyGearItems()
-        {
-            bool TryPurchaseGearItem(ShopExchangeCurrency shopExchange, uint currencyAmount, Func<CosmoShoppingList, uint, int> getTargetAmount, Action<int> setAmount)
-            {
-                if (ItemId != 0)
-                {
-                    if (PlayerHelper.GetItemCount(ItemId, out var currentAmount) && currencyAmount == previousItemCount)
-                        return true;
-                    else
-                    {
-                        if (C.CosmoShopping.TryGetValue(ItemId, out var config))
-                        {
-                            config.BuyAmount -= BuyAmount;
-                            if (config.BuyAmount <= 0)
-                                config.BuyAmount = 0;
-                            C.Save();
-                        }
-
-                        setAmount(1);
-                        ItemId = 0;
-                        previousItemCount = -1;
-                        return true;
-                    }
-                }
-
-                foreach (var itemId in C.CosmoShoppingOrder_Gear)
-                {
-                    if (!C.CosmoShopping.TryGetValue(itemId, out var item))
-                        continue;
-
-                    int targetAmount = getTargetAmount(item, itemId);
-                    if (targetAmount <= 0)
-                        continue;
-
-                    var shopExchangeItem = shopExchange.BasicShopItems.FirstOrDefault(x => x.ItemId == itemId);
-                    if (shopExchangeItem == null)
-                    {
-                        if (Shop_Cosmocredits.Shop_MountsCards.TryGetValue(itemId, out var shopInfo))
-                        {
-                            if (EzThrottler.Throttle("Callback fire"))
-                                ECommons.Automation.Callback.Fire(shopExchange.Base, true, 4, -1, 1, shopInfo.Tab);
-
-                            return true;
-                        }
-                    }
-
-                    int maxAffordable = (int)(currencyAmount / shopExchangeItem.CostAmount);
-                    if (maxAffordable <= 0)
-                        continue;
-
-                    int buyAmount = 1;
-
-                    if (EzThrottler.Throttle("Selecting Item to Buy"))
-                    {
-                        shopExchangeItem.Select(buyAmount);
-                        ItemId = itemId;
-                        PlayerHelper.GetItemCount(ItemId, out previousItemCount);
-                    }
-                    return true;
-                }
-                return false;
-            }
-
-            if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var YesNo) && YesNo.IsAddonReady)
-            {
-                if (EzThrottler.Throttle($"Updating Item Count: {ItemId}", 3000))
-                    PlayerHelper.GetItemCount(ItemId, out previousItemCount);
-
-                if (EzThrottler.Throttle("Buy Item", 500))
-                {
-                    YesNo.Yes();
-                    if (BuyAmount != 0)
-                    {
-                        if (C.CosmoShopping.TryGetValue(ItemId, out var config))
-                        {
-                            config.BuyAmount -= BuyAmount;
-                            if (config.BuyAmount <= 0)
-                                config.BuyAmount = 0;
-                            C.Save();
-                        }
-                        BuyAmount = 0;
-                        KeepAmount = 0;
-                    }
-                }
-            }
-            else if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
-            {
-                var currencyAmount = shopExchange.CurrencyAmount - (uint)C.CosmoKeepAmount;
-
-                // Then try KeepAmount (accounting for what player already has)
-                if (TryPurchaseGearItem(shopExchange, currencyAmount,
-                    (item, itemId) =>
-                    {
-                        PlayerHelper.GetItemCount(itemId, out int currentCount);
-                        return Math.Max(0, item.KeepAmount - currentCount);
-                    },
-                    (amount) => KeepAmount = amount))
-                    return false;
-
-                // Try BuyAmount first
-                if (TryPurchaseGearItem(shopExchange, currencyAmount, (item, itemId) => item.BuyAmount, (amount) => BuyAmount = amount))
-                    return false;
-
-                // Finally try KeepBuying (buy max affordable)
-                if (TryPurchaseGearItem(shopExchange, currencyAmount, (item, itemId) => item.KeepBuying ? int.MaxValue : 0, (amount) => KeepAmount = amount))
-                    return false;
-
-                return true;
-            }
-
-            return false;
-        }
-        */
-
         private static uint previousItemId = 0;
         private static int previousItemCount = -1;
 
@@ -352,16 +238,17 @@ namespace ICE.Scheduler.Tasks
                     if (C.CosmoShopping.TryGetValue(itemId, out var config))
                     {
                         PlayerHelper.GetItemCount(itemId, out var currentCount);
+                        var itemInfo = Shop_Cosmocredits.Shop_MountsCards[itemId];
 
-                        IceLogging.Debug($"Checking for ItemID: {itemId}");
+                        IceLogging.Debug($"Checking for ItemID: {itemId} {itemInfo.Name}", tag);
 
-                        var shopItem = shopExchange.BasicShopItems.FirstOrDefault(x => x.ItemId == itemId);
+                        var shopItem = shopExchange.BasicShopItems.Where(x => Shop_Cosmocredits.Shop_MountsCards.ContainsKey(x.ItemId));
                         if (shopItem == null)
                         {
                             if (Shop_Cosmocredits.Shop_MountsCards.TryGetValue(itemId, out var shopInfo))
                             {
                                 if (EzThrottler.Throttle("Callback fire"))
-                                    ECommons.Automation.Callback.Fire(shopExchange.Base, true, 4, -1, 1, shopInfo.Tab);
+                                    ECommons.Automation.Callback.Fire(shopExchange.Base, true, 4, -1, 1, 3);
 
                                 IceLogging.Verbose("Selecting tab for item", tag);
 
@@ -369,10 +256,12 @@ namespace ICE.Scheduler.Tasks
                             }
                         }
 
-                        var maxAfordable = (int)(amountAvailable / shopItem.CostAmount);
+                        IceLogging.Verbose("On the correct tab, so we're going to see bout buying an item", tag);
+
+                        var maxAfordable = (int)(amountAvailable / itemInfo.Cost);
                         if (maxAfordable == 0)
                         {
-                            IceLogging.Verbose($"Skipping: {itemId} due to not being able to buy amount: {maxAfordable} | Current Amount: {currentCount}");
+                            IceLogging.Verbose($"Skipping: {itemId} due to not being able to buy amount: {maxAfordable} | Current Amount: {currentCount}", tag);
                             continue;
                         }
 
@@ -385,13 +274,13 @@ namespace ICE.Scheduler.Tasks
                         else if (config.KeepBuying && keepBuying)
                             buyItem = true;
 
-                        IceLogging.Debug($"Buy Check: {buyItem} | Single Buy: {singleBuy} | Keep Amount: {keepAmount} | Keep Buying: {keepBuying}");
+                        IceLogging.Debug($"Buy Check: {buyItem} | Single Buy: {singleBuy} | Keep Amount: {keepAmount} | Keep Buying: {keepBuying}", tag);
 
                         if (buyItem)
                         {
                             if (EzThrottler.Throttle("Selecting item", 500))
                             {
-                                shopItem.Select();
+                                ECommons.Automation.Callback.Fire(shopExchange.Base, true, 0, itemInfo.Index);
                                 previousItemId = itemId;
                                 previousItemCount = currentCount;
                             }

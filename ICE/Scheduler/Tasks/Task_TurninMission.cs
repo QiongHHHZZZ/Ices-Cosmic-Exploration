@@ -286,10 +286,10 @@ namespace ICE.Scheduler.Tasks
                         if (EzThrottler.Throttle("Setting Turnin State", 2000))
                         {
                             var rank = Task_CheckScore.CurrentRank();
-                            Mission_Settings.TurninState = rank switch
+                            Mission_Settings.TurninState = (int)rank switch
                             {
-                                MissionRank.Gold => TurninState.Gold,
-                                MissionRank.Silver => TurninState.Silver,
+                                3 => TurninState.Gold,
+                                2 => TurninState.Silver,
                                 _ => TurninState.Bronze,
                             };
                         }

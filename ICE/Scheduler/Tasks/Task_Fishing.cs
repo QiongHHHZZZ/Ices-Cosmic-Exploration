@@ -2,7 +2,7 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
-using ICE.Ui.DebugWindowTabs;
+using ICE.Ui.Debug_Tabs.Debug_Ui;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using System.Globalization;
@@ -157,6 +157,7 @@ namespace ICE.Scheduler.Tasks
         }
 
         private static int StartedFishing = 0;
+        private static int SafetyThrottle = 0;
 
         private static unsafe bool? FishCheckV2()
         {
@@ -166,11 +167,21 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Info("We're currently in the middle of fishing, so we're going to wait for us to complete");
                 StartedFishing = 0;
                 P.TaskManager.Enqueue(() => FinishFishing(), "Waiting for fishing to complete");
+                SafetyThrottle = 0;
                 return true;
             }
             else
             {
-                IceLogging.Verbose("We're not currently fishing. Checking to see what we should do", handle);
+                if (EzThrottler.Throttle("Delay Throttle", 200))
+                {
+                    SafetyThrottle += 1;
+                }
+                if (SafetyThrottle < 2)
+                    return false;
+
+                if (EzThrottler.Throttle("Checking fishing state"))
+                    IceLogging.Verbose("We're not currently fishing. Checking to see what we should do", handle);
+
                 if (Player.Mounted || Player.IsJumping)
                 {
                     if (EzThrottler.Throttle("Log message: Jump/Dismount", 1000))
@@ -208,29 +219,21 @@ namespace ICE.Scheduler.Tasks
                 {
                     IceLogging.Info("We are reporting to be out of bait, proceeding to abandon/turnin mission");
                     SchedulerMain.State = IceState.AbandonMission;
+                    SafetyThrottle = 0;
                     return true;
                 }
                 if (CosmicHelper.CurrentBait() == 0)
                 {
-                    if (EzThrottler.Throttle("Bait Message", 2000))
-                        IceLogging.Debug($"We are reporting we didn't have a bait equipped, so we're going to equip the first bait that we found: [{firstBait}]", handle);
-                    P.AutoHook.SwapBaitById(firstBait);
+                    if (EzThrottler.Throttle("Bait Message"))
+                        IceLogging.Debug($"We are reporting we didn't have a bait equipped, please be patient as we equip it [{firstBait}]", handle);
                     return false;
                 }
 
-                if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Collectables))
+                if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Collectables) && !PlayerHelper.HasStatusId(805))
                 {
-                    if (!PlayerHelper.HasStatusId(805))
+                    if (EzThrottler.Throttle("Collectable message"))
                     {
-                        if (EzThrottler.Throttle("Log Throttle for fishing", 2000))
-                            IceLogging.Debug("We need to apply collector's glove, so we're doing so", handle);
-
-                        if (!Player.IsBusy)
-                        {
-                            if (EzThrottler.Throttle("Attempting to turn on collectability"))
-                                ActionManager.Instance()->UseAction(ActionType.Action, 4101);
-                        }
-                        return false;
+                        IceLogging.Verbose("We might be missing collectors glove? Or it might still be being applied by autohook. Please give it time", handle);
                     }
                 }
                 if (_fishingDebug == null)
@@ -254,7 +257,7 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
 
-                    if (EzThrottler.Throttle("Start Fishing: AH", 2000))
+                    if (EzThrottler.Throttle("Start Fishing: AH", 500))
                     {
                         IceLogging.Verbose("We are telling fishing plugin to start via command...", handle);
                         if (ShouldEnableAutoHookRuntime())
@@ -262,21 +265,9 @@ namespace ICE.Scheduler.Tasks
                         StartFishingByAvailablePlugin(handle);
                     }
 
-                    if (EzThrottler.Throttle("Started Fishing Throttle", 1000))
+                    if (EzThrottler.Throttle("Started Fishing Throttle", 500))
                     {
-                        StartedFishing += 1;
                         IceLogging.Verbose($"+1 to waiting for fishing to actually start... {StartedFishing}", handle);
-                    }
-                    if (StartedFishing > 4)
-                    {
-                        if (EzThrottler.Throttle("Start fishing Error", 2000))
-                        {
-                            IceLogging.Error("We apperently... didn't start fishing. Which isn't good. Checking to see if we have bait", handle);
-                            P.AutoHook.SwapBaitById(firstBait);
-                        }
-
-                        if (EzThrottler.Throttle("Attempting to turn on collectability"))
-                            ActionManager.Instance()->UseAction(ActionType.Action, 4101);
                     }
                 }
                 else
@@ -286,6 +277,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.Info("We're not in a fishable angle, so going to face one", handle);
                         P.TaskManager.Enqueue(() => FacePosition(fishablePos.Value));
+                        SafetyThrottle = 0;
                         return true;
                     }
                     else
@@ -301,6 +293,7 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Info($"We found another fishing spot to move to! {nextFishingSpot.FishingSpot} | moving to it");
                             P.TaskManager.Tasks.Clear();
                             P.TaskManager.Enqueue(() => InitiateMoving(nextFishingSpot.FishingSpot), "Vnav moving to fishing");
+                            SafetyThrottle = 0;
                             return true;
                         }
                     }

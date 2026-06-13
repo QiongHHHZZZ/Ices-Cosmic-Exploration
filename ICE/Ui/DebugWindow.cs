@@ -1,4 +1,8 @@
 using Dalamud.Interface;
+using ICE.Ui.Debug_Tabs.Debug_CS;
+using ICE.Ui.Debug_Tabs.Debug_Hud;
+using ICE.Ui.Debug_Tabs.Debug_Tables;
+using ICE.Ui.Debug_Tabs.Debug_Ui;
 using ICE.Ui.DebugWindowTabs;
 using ICE.Ui.MainUi.HelpFolder;
 using System.Collections.Generic;

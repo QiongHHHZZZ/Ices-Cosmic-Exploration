@@ -74,6 +74,7 @@ public partial class Config
         public int SilverCompletions { get; set; } = 0;
         public int GoldCompletions { get; set; } = 0;
         public int CriticalCompletions { get; set; } = 0;
+        public int Master_Completion { get; set; } = 0;
         public int FailedCounters { get; set; } = 0;
         public int TotalAttempts { get; set; } = 0;
         public List<TurninData> TurninRecords { get; set; } = new();
@@ -100,15 +101,6 @@ public partial class Config
             public int MinStepsForMiracle { get; set; } = -1;
             public uint ExpertProfileId = 0;
         };
-
-        [Obsolete]
-        public bool AutoTurnin { get; set; } = true;
-        [Obsolete]
-        public bool TurninGold { get; set; } = false;
-        [Obsolete]
-        public bool TurninSilver { get; set; } = false;
-        [Obsolete]
-        public bool TurninBronze { get; set; } = false;
     }
     public class FishingLocations
     {

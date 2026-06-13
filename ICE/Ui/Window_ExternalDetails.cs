@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using static ICE.Localization.L10n;
+using static ICE.ConfigFiles.Config.MissionSettings;
 using static MissionTimer;
 
 namespace ICE.Ui
@@ -446,6 +447,41 @@ namespace ICE.Ui
 
                             ImGui.EndTable();
                         }
+                        if (config.TotalCompletions != 0)
+                        {
+                            if (ImGui.BeginChild("Mission Timers", ImGui.GetContentRegionAvail()))
+                            {
+                                // Group records by state, preserving enum order
+                                var recordsByState = config.TurninRecords
+                                    .GroupBy(r => r.State)
+                                    .OrderBy(g => (int)g.Key)
+                                    .ToList();
+
+                                if (ImGui.BeginTabBar("Completion Stats"))
+                                {
+                                    // "All" tab always shown if there are any records
+                                    if (ImGui.BeginTabItem(T("All")))
+                                    {
+                                        DrawTurninTable(config.TurninRecords);
+                                        ImGui.EndTabItem();
+                                    }
+
+                                    // One tab per state that has at least one record
+                                    foreach (var group in recordsByState)
+                                    {
+                                        var label = T(group.Key.ToString());
+                                        if (ImGui.BeginTabItem(label))
+                                        {
+                                            DrawTurninTable(group.ToList());
+                                            ImGui.EndTabItem();
+                                        }
+                                    }
+
+                                    ImGui.EndTabBar();
+                                }
+                            }
+                            ImGui.EndChild();
+                        }
                     }
                 }
 
@@ -485,6 +521,27 @@ namespace ICE.Ui
                 MissionAttributes.GreaterReach_Boon_Chain => T("Greater Reach [Boon + Chain]"),
                 _ => attribute.ToString()
             };
+        }
+        private static void DrawTurninTable(List<TurninData> records)
+        {
+            if (!ImGui.BeginTable("TurninTable", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY | ImGuiTableFlags.SizingFixedFit))
+                return;
+
+            ImGui.TableSetupScrollFreeze(0, 1);
+            ImGui.TableSetupColumn(T("Time"));
+            ImGui.TableSetupColumn(T("Turnin State"), ImGuiTableColumnFlags.WidthStretch, 100f);
+            ImGui.TableHeadersRow();
+
+            foreach (var record in records)
+            {
+                ImGui.TableNextRow();
+                ImGui.TableNextColumn();
+                ImGui.TextUnformatted($"{TimeSpan.FromSeconds(record.Time):mm\\:ss\\.ff}");
+                ImGui.TableNextColumn();
+                ImGui.TextUnformatted(T(record.State.ToString()));
+            }
+
+            ImGui.EndTable();
         }
     }
 }

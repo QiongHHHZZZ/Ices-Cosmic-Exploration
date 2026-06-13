@@ -54,7 +54,7 @@ namespace ICE.Scheduler.Tasks
             string tag = "[Task_Check Score: Fish]";
             var currentMission = CosmicHelper.CurrentLunarMission;
 
-            if (EzThrottler.Throttle("Fish Score Check Throttle", 1000))
+            if (EzThrottler.Throttle("Fish Score Check Throttle"))
                 IceLogging.Verbose($"Score check for fish was initialized. Checking for minimum requirements: [{currentMission}]", tag);
 
             if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
@@ -66,14 +66,41 @@ namespace ICE.Scheduler.Tasks
 
                     if (rank == MissionRank.Failed)
                     {
-                        IceLogging.Debug("Mission is either timed out, or out of resources. So going to force a turnin", tag);
+                        if (EzThrottler.Throttle("Timed out message"))
+                            IceLogging.Debug("Mission is either timed out, or out of resources. So going to force a turnin", tag);
                         SchedulerMain.State = IceState.AbandonMission;
                         P.TaskManager.Tasks.Clear();
                         return true;
                     }
+                    else if (sheetInfo.IsCritical)
+                    {
+                        IceLogging.Verbose($"We need to check to see if we have the minimum amount of items for the critical, checking now", tag);
+                        foreach (var fishItem in sheetInfo.Gathering_Min)
+                        {
+                            if (PlayerHelper.GetItemCount(fishItem.Key, out var amount))
+                            {
+                                if (amount < fishItem.Value)
+                                {
+                                    IceLogging.Debug("We've found a fish that we're still missing!\n" +
+                                        $"ItemID: {fishItem.Key}. We need: {fishItem.Value}. We have: {amount}", tag);
 
-                    IceLogging.Verbose("Mission info was valid, searching what we should be checking for", tag);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    else if (rank < MissionRank.Bronze)
+                    {
+                        if (EzThrottler.Throttle("Bronze Check"))
+                            IceLogging.Debug("We still haven't even met the bronze threshold for turning in, going to just check back", tag);
 
+                        return true;
+                    }
+
+                    if (EzThrottler.Throttle("Score Check"))
+                        IceLogging.Verbose("We have atleast met the bronze threshold, checking to see where to go from there", tag);
+
+                    /*
                     if (sheetInfo.Gathering_Min.Count > 0)
                     {
                         IceLogging.Verbose($"Fishing mission has a minumum amount of fish needed. Checking the specifics for each", tag);
@@ -121,6 +148,7 @@ namespace ICE.Scheduler.Tasks
                             return true;
                         }
                     }
+                    */
 
                     if (rank != MissionRank.None || sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
                     {
@@ -179,11 +207,19 @@ namespace ICE.Scheduler.Tasks
                             }
                             else
                             {
-                                var config = C.MissionConfig[currentMission];
+                                if (EzThrottler.Throttle("Score Report"))
+                                {
+                                    var config = C.MissionConfig[currentMission];
 
-                                IceLogging.Debug("We're still going for a score/not met threshold.\n" +
-                                    $"Rank: {rank.ToString()}\n" +
-                                    $"Turnin Rank: {config.TurninGoal.ToString()}");
+                                    IceLogging.Debug("We're still going for a score/not met threshold.\n" +
+                                        $"Rank: {rank.ToString()}\n" +
+                                        $"Turnin Rank: {config.TurninGoal.ToString()}", tag);
+
+                                    if (sheetInfo.IsMaster && config.TurninGoal == TurninState.Master_Score)
+                                    {
+                                        IceLogging.Verbose($"Current Score: {currentScore} | Turnin Goal: {config.Master_Score}", tag);
+                                    }
+                                }
                                 return true;
                             }
                         }

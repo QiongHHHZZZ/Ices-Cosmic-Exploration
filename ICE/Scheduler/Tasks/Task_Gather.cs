@@ -2,16 +2,17 @@
 using Dalamud.Game.ClientState.Objects.Enums;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
+using ICE.Utilities.GatheringHelper.RouteLoader;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.ConfigFiles.Config;
 using MissionRank = FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSMissionModule.MissionRank;
-using ICE.Utilities.GatheringHelper.RouteLoader;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -173,7 +174,7 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Debug($"Collectable: {collectableItem} | Reduce: {reduceItems}");
                         }
 
-                        if (reduceItems || (collectableItem && !missionInfo.IsMaster))
+                        if (reduceItems || (collectableItem))
                         {
                             // We need to find an item where it's a collectable so we can just initiate the gathering window
                             var item = gather.GatheredItems.Where(x => x.IsCollectable).FirstOrDefault();
@@ -281,6 +282,9 @@ namespace ICE.Scheduler.Tasks
             var playerGp = PlayerHelper.GetGp();
             bool missingDur = integrity < collectable.TotalIntegrity;
 
+            var config = C.MissionConfig[CosmicHelper.CurrentLunarMission];
+            var isMaster = CosmicHelper.CurrentMissionInfo.IsMaster;
+
             // Track collectability progress to detect stuck rotations
             if (collect_Current != _lastCollectability)
             {
@@ -298,7 +302,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     var currentCharge = GatheringUtil.CollectStandardCharges();
 
-                    if (currentCharge != 0 && currentCharge >= Mission_Settings.Collectable_BuffCount)
+                    if (currentCharge != 0 && (currentCharge >= Mission_Settings.Collectable_BuffCount || (config.TurninGoal == TurninState.Gold && isMaster)))
                     {
                         ActionManager.Instance()->UseAction(ActionType.GeneralAction, 27);
                     }
@@ -343,12 +347,13 @@ namespace ICE.Scheduler.Tasks
                 _lastCollectProgress = DateTime.MinValue;
 
                 // if we've gotten this far, that means we're in a state that we should just be collecting
-                if (integrity < collectable.TotalIntegrity && CanUseCollectableAction("BonusIntegrityChance", missingDur))
+                if (collectable.CurrentIntegrity == 1 && CanUseCollectableAction("BonusIntegrityChance", missingDur))
                 {
                     if (EzThrottler.Throttle("Integrity bonus"))
                         UseCollectableAction("BonusIntegrityChance");
                 }
-                else if (CanUseCollectableAction("BonusIntegrity", missingDur))
+
+                else if (CanUseCollectableAction("BonusIntegrity", collectable.CurrentIntegrity == 1))
                 {
                     if (EzThrottler.Throttle("Integrity bonus"))
                         UseCollectableAction("BonusIntegrity");
@@ -547,6 +552,9 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
+                    if (UseCordial())
+                        return false;
+
                     Utils.TryGetObjectByDataId(location.NodeId, out var node);
                     if (node != null && !Player.IsJumping)
                     {
@@ -952,63 +960,91 @@ namespace ICE.Scheduler.Tasks
                 return (int)info.Rank;
             return 0;
         }
-        public static unsafe void UseCordial()
+        public static unsafe bool UseCordial()
         {
             string tag = "Cordial Check";
 
-            if (EzThrottler.Throttle("Cordial Usage Check Throttle"))
+            if (!PlayerHelper.CustomIsBusy)
             {
-                if (!PlayerHelper.CustomIsBusy)
+                IceLogging.Debug("Cordial Checkers", tag);
+                if (C.AutoCordial)
                 {
-                    IceLogging.Debug("Cordial Checkers", tag);
-                    if (C.AutoCordial)
+                    if (C.CordialMinRank > 0 && GetCurrentMissionRank() < C.CordialMinRank)
                     {
-                        if (C.CordialMinRank > 0 && GetCurrentMissionRank() < C.CordialMinRank)
-                        {
-                            IceLogging.Debug($"Skipping cordial: mission rank {GetCurrentMissionRank()} below threshold {C.CordialMinRank}", tag);
-                            return;
-                        }
-                        IceLogging.Debug($"Min GP: {PlayerHelper.GetGp()} <= {C.CordialMinGp}", tag);
+                        IceLogging.Debug($"Skipping cordial: mission rank {GetCurrentMissionRank()} below threshold {C.CordialMinRank}", tag);
+                        return false;
+                    }
+                    IceLogging.Debug($"Min GP: {PlayerHelper.GetGp()} <= {C.CordialMinGp}", tag);
 
-                        if (PlayerHelper.GetGp() <= C.CordialMinGp)
+                    if (PlayerHelper.GetGp() <= C.CordialMinGp)
+                    {
+                        Dictionary<uint, (string Name, int GpGain)> cordials = new()
                         {
-                            Dictionary<uint, (string Name, int GpGain)> cordials = new()
-                        {
-                            { 12669,   ("Hi-Cordial",          400) },
-                            { 1006141, ("HQ Regular Cordial",  350) },
-                            { 6141,    ("NQ Regular Cordial",  300) },
-                            { 1016911, ("HQ Watered Cordial",  200) },
-                            { 16911,   ("NQ Watered Cordial",  150) }
+                            [12669] = ("Hi-Cordial", 400),
+                            [1006141] = ("HQ Regular Cordial", 350),
+                            [6141] = ("NQ Regular Cordial", 300),
+                            [1016911] = ("HQ Watered Cordial", 200),
+                            [16911] = ("NQ Watered Cordial", 150),
                         };
 
-                            foreach (var cordial in C.inverseCordialPrio ? cordials.Reverse() : cordials)
+                        foreach (var cordial in C.inverseCordialPrio ? cordials.Reverse() : cordials)
+                        {
+                            IceLogging.Verbose($"Checking Cordial: {cordial.Value.Name}", tag);
+                            bool hq = cordial.Key >= 1_000_000;
+                            uint baseId = hq ? cordial.Key - 1_000_000 : cordial.Key;
+
+                            if (PlayerHelper.GetItemCount(cordial.Key, out var amount, hq, !hq) && amount > 0)
                             {
-                                IceLogging.Verbose($"Checking Cordial: {cordial.Value.Name}", tag);
-                                bool hq = cordial.Key >= 1_000_000;
-                                if (PlayerHelper.GetItemCount(cordial.Key, out var amount, hq, !hq) && amount > 0)
+                                if (ActionManager.Instance()->GetActionStatus(ActionType.Item, 12669) == 0)
                                 {
-                                    IceLogging.Verbose($"We currently have more than 1 of {cordial.Value.Name}, so going to see if we can use it");
-                                    if (ActionManager.Instance()->GetActionStatus(ActionType.Item, cordial.Key) == 0)
+                                    if (!C.PreventOvercap || !WillOvercap(cordial.Value.GpGain))
                                     {
-                                        IceLogging.Verbose("Cooldown of cordial usage is 0, which means the action is available", tag);
-                                        if (!C.PreventOvercap || (C.PreventOvercap && !WillOvercap(cordial.Value.GpGain)))
+                                        // Find the actual inventory slot and use it directly
+                                        var inventoryManager = InventoryManager.Instance();
+                                        var inventoryTypes = new[]
                                         {
-                                            IceLogging.Verbose($"We're using a cordial: ID: {cordial.Key} | Name: {cordial.Value.Name}", tag);
-                                            ActionManager.Instance()->UseAction(ActionType.Item, cordial.Key, extraParam: 65535);
-                                            break;
+                                            InventoryType.Inventory1, InventoryType.Inventory2,
+                                            InventoryType.Inventory3, InventoryType.Inventory4
+                                        };
+
+                                        foreach (var invType in inventoryTypes)
+                                        {
+                                            var container = inventoryManager->GetInventoryContainer(invType);
+                                            if (container == null) continue;
+
+                                            for (int i = 0; i < container->Size; i++)
+                                            {
+                                                var item = container->GetInventorySlot(i);
+                                                if (item == null) continue;
+                                                if (item->ItemId == baseId && (hq == false || item->Flags.HasFlag(InventoryItem.ItemFlags.HighQuality)))
+                                                {
+                                                    IceLogging.Verbose($"We're using a cordial: ID: {cordial.Key} | Name: {cordial.Value.Name}", tag);
+                                                    AgentInventoryContext.Instance()->UseItem(cordial.Key, invType, (uint)i, 0);
+                                                    return true;
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    else
-                    {
-                        if (EzThrottler.Throttle("No Use Cordial"))
-                            IceLogging.Verbose("We don't have auto cordial enabled, continuing on", tag);
-                    }
+                }
+                else
+                {
+                    if (EzThrottler.Throttle("No Use Cordial"))
+                        IceLogging.Verbose("We don't have auto cordial enabled, continuing on", tag);
+
+                    return false;
                 }
             }
+            else
+            {
+                if (EzThrottler.Throttle("Cordial Busy"))
+                    IceLogging.Debug("Player is busy, skipping cordial check", tag);
+                return false;
+            }
+            return false;
         }
         private static bool WillOvercap(int recoveryGP)
         {

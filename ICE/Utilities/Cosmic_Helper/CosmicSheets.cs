@@ -91,6 +91,7 @@ public static unsafe partial class CosmicHelper
             Dictionary<TurninState, (int Multiplier, double AverageTime, int TotalCompleted)> stateInfo = new()
             {
                 [TurninState.Critical] = (1, config.AverageTime, config.CriticalCompletions),
+                [TurninState.Master_Score] = (1, config.AverageTime, config.Master_Completion),
                 [TurninState.Bronze] = (1, config.AverageBronzeTime, config.BronzeCompletion),
                 [TurninState.Silver] = (4, config.AverageSilverTime, config.SilverCompletions),
                 [TurninState.Gold] = (5, config.AverageGoldTime, config.GoldCompletions),
@@ -102,6 +103,8 @@ public static unsafe partial class CosmicHelper
                 if (IsCritical && state != TurninState.Critical)
                     continue;
                 else if (!IsCritical && state == TurninState.Critical)
+                    continue;
+                else if ((!IsMaster && state == TurninState.Master_Score) || (IsMaster && state != TurninState.Master_Score))
                     continue;
                 else if (state == TurninState.SequenceGold)
                 {

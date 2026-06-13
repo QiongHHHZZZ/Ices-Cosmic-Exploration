@@ -305,7 +305,7 @@ namespace ICE.Utilities
             if (missionManager == null) return 0;
 
             var mission = manager->State.CurrentMission;
-            return mission.Score;
+            return mission.ScoreUInt;
         }
 
     }

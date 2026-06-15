@@ -1012,8 +1012,7 @@ namespace ICE.Scheduler.Tasks
                         }
                         else
                         {
-                            if (!Task_Fishing.IsInsideMissionFishingCircle(sheetInfo) &&
-                                !Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo) &&
+                            if (!Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo) &&
                                 Task_Fishing.TryDailyRoutinesTeleportToFishingSpot(fishingLoc.Value, tag))
                             {
                                 Task_Fishing.MarkMissionEntryPrepared(missionId);
@@ -1030,11 +1029,10 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
 
-                if (Task_Fishing.IsInsideMissionFishingCircle(sheetInfo) ||
-                    Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo))
+                if (Task_TurninMission.IsInsideTargetCriticalMissionArea(missionId, sheetInfo))
                 {
                     Task_Fishing.MarkMissionEntryPrepared(missionId);
-                    IceLogging.Info("Already inside mission fishing/critical circle, continuing to grab mission", tag);
+                    IceLogging.Info("Already inside target critical mission area, continuing to grab mission", tag);
                     randomFishingHole = Vector3.Zero;
                     return true;
                 }

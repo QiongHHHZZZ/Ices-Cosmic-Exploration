@@ -430,7 +430,7 @@ namespace ICE.Scheduler.Tasks
                 // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
                 // CN-MAINT: AutoHook runtime state is enabled only in exclusive AutoHook mode.
                 if (Task_Fishing.ShouldEnableAutoHookRuntime())
-                    P.AutoHook.SetPluginState(true);
+                    P.AutoHook.Ah_State(true);
                 IceLogging.Info("We're starting to fish. So kicking it over to checking the fish items", handle);
                 P.TaskManager.Insert(() => CheckItems(), "Checking for items to meet the quantity set", Utils.TaskConfig);
                 return true;

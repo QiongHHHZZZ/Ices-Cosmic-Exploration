@@ -26,11 +26,11 @@ namespace ICE.Scheduler.Tasks
                 C.MissionConfig.TryGetValue(missionId, out var config);
                 bool dualClass = (gatherMission && craftMission) || (fishingMission && craftMission);
 
-                bool notUpdatedFisher = !P.AutoHook.UpdatedPlugin() && CosmicMoonRegistry.Auxesia.TerritoryId == Player.Territory.RowId && mission.Jobs.Contains(18);
+                bool notUpdatedFisher = P.AutoHook.Installed && !Utils.HasPlugin("MissFisher") && !P.AutoHook.UpdatedPlugin() && CosmicMoonRegistry.Auxesia.TerritoryId == Player.Territory.RowId && mission.Jobs.Contains(18);
 
                 if (C.OnlyGrabMission_Debug || UnsupportedMissions.Ids.Contains(missionId) || notUpdatedFisher)
                 {
-                    if (notUpdatedFisher && P.AutoHook.Installed)
+                    if (notUpdatedFisher)
                     {
                         string message = T("[I.C.E.] You didn't read the little warning in the mission setup\n" +
                             "You need to update autohook for you to be able to fish here on Auxesia.\n" +

@@ -548,6 +548,7 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Info($"Gathering window is now visible, continuing onto GatheringInteraction Task", "[Gathering: OpenGatheringMenu]");
                     P.TaskManager.Insert(() => GatherInteractV2(), "Gathering at the node", Utils.TaskConfig);
                     Mission_Settings.nodeTotal += 1;
+                    GreaterReachCount = 0;
                     return true;
                 }
                 else
@@ -850,7 +851,7 @@ namespace ICE.Scheduler.Tasks
             var jobId = (uint)Player.Job;
 
             var actionId = collectorBuffs[action].ClassAction[jobId];
-            if (EzThrottler.Throttle("Using Action Buff", 100))
+            if (PlayerHelper.CanUseAction(actionId) && EzThrottler.Throttle("Using Action Buff", 100))
             {
                 ActionManager.Instance()->UseAction(ActionType.Action, actionId);
             }
@@ -861,7 +862,8 @@ namespace ICE.Scheduler.Tasks
             var jobId = (uint)Player.Job;
 
             var actionId = collectorAction[action].ClassAction[jobId];
-            ActionManager.Instance()->UseAction(ActionType.Action, actionId);
+            if (PlayerHelper.CanUseAction(actionId) && EzThrottler.Throttle("Using Action Buff", 100))
+                ActionManager.Instance()->UseAction(ActionType.Action, actionId);
         }
         public static bool? CheckReduceMission()
         {

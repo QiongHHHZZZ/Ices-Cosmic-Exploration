@@ -155,25 +155,21 @@ public sealed partial class ICE
             else
             {
                 // Gather/Fish base — used as the switch fallback
-                MissionAttributes gatherOrFish = jobs.Contains(18)
-                    ? MissionAttributes.Fish
-                    : MissionAttributes.Gather;
+                MissionAttributes gatherOrFish = jobs.Contains(18) ? MissionAttributes.Fish : MissionAttributes.Gather;
 
                 attributes = missionToDo.WKSMissionText.RowId switch
                 {
                     103 => MissionAttributes.Gather | MissionAttributes.Limited,
                     104 => MissionAttributes.Gather | MissionAttributes.Score_TimeRemaining,
-                    105 => MissionAttributes.Gather,
+                    105 => MissionAttributes.Gather | MissionAttributes.Score_GatherX,
                     106 => MissionAttributes.Gather | MissionAttributes.Score_Chain,
                     107 => MissionAttributes.Gather | MissionAttributes.Score_Boon,
                     108 => MissionAttributes.Gather | MissionAttributes.Score_Chain | MissionAttributes.Score_Boon,
-                    109 or 111 or 372
-                         => MissionAttributes.Gather | MissionAttributes.Collectables,
+                    109 or 111 or 372 => MissionAttributes.Gather | MissionAttributes.Collectables,
                     110 => MissionAttributes.Gather | MissionAttributes.ReducedItems | MissionAttributes.Score_TimeRemaining,
                     112 => MissionAttributes.Gather | MissionAttributes.ReducedItems,
                     113 => MissionAttributes.Fish | MissionAttributes.Score_Variety | MissionAttributes.Score_TimeRemaining,
-                    114 or 115
-                         => MissionAttributes.Fish | MissionAttributes.Score_TimeRemaining,
+                    114 or 115 => MissionAttributes.Fish | MissionAttributes.Score_TimeRemaining,
                     116 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Score_Variety,
                     117 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Score_LargestSize,
                     118 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Collectables,
@@ -182,8 +178,8 @@ public sealed partial class ICE
                     122 => MissionAttributes.Fish | MissionAttributes.Collectables,
                     139 => gatherOrFish,            // Critical — job-dependent
                     141 => MissionAttributes.Fish,
-                    // Auxesia Tool Mastery gather missions (Geological/Botanical).
-                    // GreaterReach block below converts Chain+Boon into GreaterReach_Boon_Chain.
+
+                    // Auxesia Master Missions (currently)
                     312 or 313 => MissionAttributes.Gather | MissionAttributes.Score_Chain | MissionAttributes.Score_Boon,
                     314 => MissionAttributes.Gather | MissionAttributes.Collectables,
                     _ => gatherOrFish
@@ -195,10 +191,7 @@ public sealed partial class ICE
             attributes |= (startTime != 0 || endTime != 0) ? MissionAttributes.ProvisionalTimed : MissionAttributes.None;
             attributes |= previousMissionId != 0 ? MissionAttributes.ProvisionalSequential : MissionAttributes.None;
 
-            const MissionAttributes provisionalMask =
-                MissionAttributes.ProvisionalWeather |
-                MissionAttributes.ProvisionalTimed |
-                MissionAttributes.ProvisionalSequential;
+            const MissionAttributes provisionalMask = MissionAttributes.ProvisionalWeather | MissionAttributes.ProvisionalTimed | MissionAttributes.ProvisionalSequential;
 
             if (rank == 6 && !attributes.HasFlag(MissionAttributes.Critical) && (attributes & provisionalMask) == MissionAttributes.None)
                 attributes |= MissionAttributes.Master;
@@ -936,11 +929,6 @@ public sealed partial class ICE
                             foreach (var turnin in mission.Value.TurninRecords)
                             {
                                 turnin.State = TurninState.Master_Score;
-                            }
-                            if (mission.Value.TurninRecords.Any(x => x.State == TurninState.Master_Score) && mission.Value.Master_Completion == 0)
-                            {
-                                mission.Value.Master_Completion = mission.Value.TurninRecords.Where(x => x.State == TurninState.Master_Score).Count();
-                                mission.Value.BronzeCompletion = 0;
                                 anyChanged = true;
                             }
                         }

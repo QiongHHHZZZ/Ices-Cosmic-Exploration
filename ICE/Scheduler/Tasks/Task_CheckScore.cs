@@ -69,6 +69,7 @@ namespace ICE.Scheduler.Tasks
                         if (EzThrottler.Throttle("Timed out message"))
                             IceLogging.Debug("Mission is either timed out, or out of resources. So going to force a turnin", tag);
                         SchedulerMain.State = IceState.AbandonMission;
+                        P.AutoHook.Ah_State(false);
                         P.TaskManager.Tasks.Clear();
                         return true;
                     }
@@ -99,56 +100,6 @@ namespace ICE.Scheduler.Tasks
 
                     if (EzThrottler.Throttle("Score Check"))
                         IceLogging.Verbose("We have atleast met the bronze threshold, checking to see where to go from there", tag);
-
-                    /*
-                    if (sheetInfo.Gathering_Min.Count > 0)
-                    {
-                        IceLogging.Verbose($"Fishing mission has a minumum amount of fish needed. Checking the specifics for each", tag);
-                        foreach (var fishItem in sheetInfo.Gathering_Min)
-                        {
-                            if (PlayerHelper.GetItemCount(fishItem.Key, out var amount))
-                            {
-                                if (amount < fishItem.Value)
-                                {
-                                    IceLogging.Debug("We've found a fish that we're still missing!\n" +
-                                        $"ItemID: {fishItem.Key}. We need: {fishItem.Value}. We have: {amount}", tag);
-
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                    else if (sheetInfo.Fish_AmountRequired > 0)
-                    {
-                        IceLogging.Verbose("We're in a mission where we need a certain amount of fish overall. So checking that", tag);
-                        var amount = CurrentCollectedTotal();
-
-                        if (amount < sheetInfo.Fish_AmountRequired)
-                        {
-                            IceLogging.Debug($"We're not at the total amount needed for the mission. Need: {sheetInfo.Fish_AmountRequired} | Have: {amount}", tag);
-                            return true;
-                        }
-                    }
-                    else if (sheetInfo.Fish_VarietyAmount > 0)
-                    {
-                        var amount = CurrentIndividualTotal();
-                        if (amount < sheetInfo.Fish_VarietyAmount)
-                        {
-                            IceLogging.Debug($"Need a variety of fish, and we're missing some. Need: {sheetInfo.Fish_VarietyAmount} | Have: {amount}", tag);
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        var bronzeScore = sheetInfo.BronzeScore;
-
-                        if (currentScore < bronzeScore && sheetInfo.BronzeScore != 0)
-                        {
-                            IceLogging.Debug("We need to still hit the score threshold for bronze. So we're still gonna fish", tag);
-                            return true;
-                        }
-                    }
-                    */
 
                     if (rank != MissionRank.None || sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
                     {
@@ -201,6 +152,7 @@ namespace ICE.Scheduler.Tasks
                             {
                                 IceLogging.Info("The threshold for scoring was met. Time to turnin", tag);
                                 SchedulerMain.State = IceState.TurninMission;
+                                P.AutoHook.Ah_State(false);
                                 P.TaskManager.Tasks.Clear();
 
                                 return true;

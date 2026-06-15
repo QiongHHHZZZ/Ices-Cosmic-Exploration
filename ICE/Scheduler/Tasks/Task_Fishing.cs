@@ -54,8 +54,8 @@ namespace ICE.Scheduler.Tasks
 
             if (autoHookLoaded)
             {
-                // CN-MAINT: AutoHook start command.
-                Svc.Commands.ProcessCommand("/ahstart");
+                // CN-MAINT: Preserve plugin conflict policy, but use upstream AutoHook state tracking.
+                P.AutoHook.Ah_State(true);
                 return;
             }
 
@@ -128,18 +128,6 @@ namespace ICE.Scheduler.Tasks
             }
         }
 
-        internal static bool IsInsideMissionFishingCircle(CosmicHelper.CosmicInfo mission)
-        {
-            if (mission.Radius <= 0)
-                return false;
-
-            var playerPos = Player.Position;
-            var player2D = new Vector2(playerPos.X, playerPos.Z);
-            var flagPos = new Vector2(mission.MapPosition.X, mission.MapPosition.Y);
-
-            return Vector2.Distance(player2D, flagPos) <= mission.Radius;
-        }
-
         public static void Enqueue()
         {
             // think the process should be:
@@ -152,7 +140,7 @@ namespace ICE.Scheduler.Tasks
                 (
                     new(() => Task_CheckScore.Fish(), "Checking Score: Fishing"),
                     new(() => Task_Gather.UseFood(), "Checking for food usage"),
-                    new(() => FishingCheck(), "Checking Fishing State")
+                    new(() => FishCheckV2(), "Checking Fishing State")
                 );
         }
 
@@ -220,21 +208,24 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Info("We are reporting to be out of bait, proceeding to abandon/turnin mission");
                     SchedulerMain.State = IceState.AbandonMission;
                     SafetyThrottle = 0;
+                    P.AutoHook.Ah_State(false);
                     return true;
-                }
-                if (CosmicHelper.CurrentBait() == 0)
-                {
-                    if (EzThrottler.Throttle("Bait Message"))
-                        IceLogging.Debug($"We are reporting we didn't have a bait equipped, please be patient as we equip it [{firstBait}]", handle);
-                    return false;
                 }
 
                 if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Collectables) && !PlayerHelper.HasStatusId(805))
                 {
+                    uint fishCollectable = 4101;
+
                     if (EzThrottler.Throttle("Collectable message"))
                     {
                         IceLogging.Verbose("We might be missing collectors glove? Or it might still be being applied by autohook. Please give it time", handle);
                     }
+                    if (PlayerHelper.CanUseAction(fishCollectable))
+                    {
+                        if (EzThrottler.Throttle("Attempting to turn on collectability"))
+                            ActionManager.Instance()->UseAction(ActionType.Action, fishCollectable);
+                    }
+                    return false;
                 }
                 if (_fishingDebug == null)
                 {
@@ -259,9 +250,7 @@ namespace ICE.Scheduler.Tasks
 
                     if (EzThrottler.Throttle("Start Fishing: AH", 500))
                     {
-                        IceLogging.Verbose("We are telling fishing plugin to start via command...", handle);
-                        if (ShouldEnableAutoHookRuntime())
-                            P.AutoHook.SetPluginState(true);
+                        IceLogging.Verbose("We are telling fishing plugin to start...", handle);
                         StartFishingByAvailablePlugin(handle);
                     }
 
@@ -415,7 +404,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     IceLogging.Debug("Telling it to start fishing", handle);
                     if (ShouldEnableAutoHookRuntime())
-                        P.AutoHook.SetPluginState(true);
+                        P.AutoHook.Ah_State(true);
                     StartFishingByAvailablePlugin(handle);
                 }
                 else if (EzThrottler.Throttle("Adding counter for bait not equipped"))
@@ -444,7 +433,7 @@ namespace ICE.Scheduler.Tasks
             {
                 // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
                 if (ShouldEnableAutoHookRuntime())
-                    P.AutoHook.SetPluginState(true);
+                    P.AutoHook.Ah_State(true);
                 IceLogging.Info("We're starting to fish. So kicking it over to checking the fish items", handle);
                 P.TaskManager.Insert(() => FinishFishing(), "Waiting till we actually start fishing", Utils.TaskConfig);
                 BaitCounter = 0;
@@ -486,14 +475,6 @@ namespace ICE.Scheduler.Tasks
         }
         public static unsafe bool? FacePosition(Vector3 pos, float tolerance = 0.1f)
         {
-            float currentRotation = Player.Rotation;
-
-            // If rotation is still changing, wait for it to stabilize
-            if (Math.Abs(Player.Rotation - currentRotation) > tolerance)
-            {
-                return false;
-            }
-
             Vector3 direction = pos - Player.Position;
             float targetRotation = (float)Math.Atan2(direction.X, direction.Z);
 
@@ -504,7 +485,7 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
 
-            if (EzThrottler.Throttle("Facing toward the fishing hole"))
+            if (EzThrottler.Throttle("Facing toward the fishing hole", 250))
             {
                 var fwk = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance();
 
@@ -596,11 +577,9 @@ namespace ICE.Scheduler.Tasks
                     _activeMissionIdForEntryTp != 0 &&
                     _preparedMissionIdForEntryTp == _activeMissionIdForEntryTp;
 
-                bool insideMissionCircle = IsInsideMissionFishingCircle(CosmicHelper.CurrentMissionInfo);
                 bool insideCriticalArea = Task_TurninMission.IsInsideTargetCriticalMissionArea(_activeMissionIdForEntryTp, CosmicHelper.CurrentMissionInfo);
 
                 if (!alreadyPreparedBeforeAccept &&
-                    !insideMissionCircle &&
                     !insideCriticalArea &&
                     TryDailyRoutinesTeleportToFishingSpot(fishingPos, handle))
                 {

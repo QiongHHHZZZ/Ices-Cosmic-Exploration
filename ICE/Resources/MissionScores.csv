@@ -1392,10 +1392,10 @@
 1391,CRP,EX: Auxesian Fuel Development,60
 1392,CRP,EX+: Portable Weatherproof Supplies,165
 1393,CRP,EX+: Purified Biofuel Development,297
-1394,CRP,EX+: Voyager Resource Research,0
-1395,CRP,Master: Heavy Machinery Fuel Refinement,0
-1396,CRP,Master: Potent Alchemical Compound Development,0
-1397,CRP,Master: Renewable Fuel Survey,0
+1394,CRP,EX+: Voyager Resource Research,373
+1395,CRP,Master: Heavy Machinery Fuel Refinement,542
+1396,CRP,Master: Potent Alchemical Compound Development,433
+1397,CRP,Master: Renewable Fuel Survey,867
 1398,BSM, Multi-purpose Alloy Ingots,2
 1399,BSM, Aether Resistance Treatment (Bronze),2
 1400,BSM, Heavy Machinery Components I,2
@@ -1420,10 +1420,10 @@
 1419,BSM,EX: Environmental Maintenance Equipment,60
 1420,BSM,EX+: Voyager Relic Restoration,165
 1421,BSM,EX+: Aetheric Gauge Development II,297
-1422,BSM,EX+: Advanced Aetheric Gauge Development,0
-1423,BSM,Master: Boring Drill Upgrade,0
-1424,BSM,Master: Ruin Restoration Supplies,0
-1425,BSM,Master: Core Mechanism Structure Sample ,0
+1422,BSM,EX+: Advanced Aetheric Gauge Development,373
+1423,BSM,Master: Boring Drill Upgrade,542
+1424,BSM,Master: Ruin Restoration Supplies,433
+1425,BSM,Master: Core Mechanism Structure Sample ,867
 1426,ARM, Multi-purpose Alloy Ingots,2
 1427,ARM, Aether Resistance Treatment (Bronze),2
 1428,ARM, Heavy Machinery Components I,2
@@ -1448,10 +1448,10 @@
 1447,ARM,EX: Environmental Maintenance Equipment,60
 1448,ARM,EX+: Voyager Relic Restoration,165
 1449,ARM,EX+: Aetheric Gauge Development II,297
-1450,ARM,EX+: Advanced Aetheric Gauge Development,0
+1450,ARM,EX+: Advanced Aetheric Gauge Development,373
 1451,ARM,Master: Sublimator Diffuser Upgrade,542
-1452,ARM,Master: Ruin Restoration Supplies,0
-1453,ARM,Master: Voyager Terminal Reproduction,0
+1452,ARM,Master: Ruin Restoration Supplies,433
+1453,ARM,Master: Voyager Terminal Reproduction,867
 1454,GSM, Multi-purpose Alloy Ingots,2
 1455,GSM, Aether Resistance Treatment (Bronze),2
 1456,GSM, Heavy Machinery Components I,2
@@ -1476,10 +1476,10 @@
 1475,GSM,EX: Environmental Maintenance Equipment,60
 1476,GSM,EX+: Voyager Relic Restoration,165
 1477,GSM,EX+: Aetheric Gauge Development II,297
-1478,GSM,EX+: Advanced Aetheric Gauge Development,0
-1479,GSM,Master: Welder Upgrade,0
-1480,GSM,Master: Ruin Restoration Supplies,0
-1481,GSM,Master: Voyager Terminal Reproduction,0
+1478,GSM,EX+: Advanced Aetheric Gauge Development,373
+1479,GSM,Master: Welder Upgrade,542
+1480,GSM,Master: Ruin Restoration Supplies,433
+1481,GSM,Master: Voyager Terminal Reproduction,867
 1482,LTW, Multi-purpose Rope,2
 1483,LTW, Reinforced Construction Materials,2
 1484,LTW, Ruin Restoration Supplies,2
@@ -1504,10 +1504,10 @@
 1503,LTW,EX: Auxesian Fuel Development,60
 1504,LTW,EX+: Portable Weatherproof Supplies,165
 1505,LTW,EX+: Cosmic Operator Suits,297
-1506,LTW,EX+: Voyager Resource Research,0
-1507,LTW,Master: Improved Cosmic Suits,0
-1508,LTW,Master: Improved Pilot Suits,0
-1509,LTW,Master: Fine-grade Powersuits,0
+1506,LTW,EX+: Voyager Resource Research,373
+1507,LTW,Master: Improved Cosmic Suits,542
+1508,LTW,Master: Improved Pilot Suits,433
+1509,LTW,Master: Fine-grade Powersuits,867
 1510,WVR, Multi-purpose Rope,2
 1511,WVR, Reinforced Construction Materials,2
 1512,WVR, Ruin Restoration Supplies,2
@@ -1532,10 +1532,10 @@
 1531,WVR,EX: Auxesian Fuel Development,60
 1532,WVR,EX+: Portable Weatherproof Supplies,165
 1533,WVR,EX+: Explorer Suits,297
-1534,WVR,EX+: Voyager Resource Research,0
-1535,WVR,Master: Improved Crew Suits,0
-1536,WVR,Master: Improved Captain's Suits,0
-1537,WVR,Master: Star Admiral's Ornamentation,0
+1534,WVR,EX+: Voyager Resource Research,373
+1535,WVR,Master: Improved Crew Suits,542
+1536,WVR,Master: Improved Captain's Suits,433
+1537,WVR,Master: Star Admiral's Ornamentation,867
 1538,ALC, Mineral Resource Procurement,2
 1539,ALC, Long-life Potables,2
 1540,ALC, Experimental Loporrit Enrichment,2
@@ -1560,10 +1560,10 @@
 1559,ALC,EX: Launch Party Liquor,60
 1560,ALC,EX+: Periphery Provisions,165
 1561,ALC,EX+: Renewable Resource Development,297
-1562,ALC,EX+: The Ultimate Yeast,0
-1563,ALC,Master: Advanced Ruins Formula,0
-1564,ALC,Master: Advanced Restoration Materials,0
-1565,ALC,Master: Cosmic Tool Catalyst,0
+1562,ALC,EX+: The Ultimate Yeast,373
+1563,ALC,Master: Advanced Ruins Formula,542
+1564,ALC,Master: Advanced Restoration Materials,433
+1565,ALC,Master: Cosmic Tool Catalyst,867
 1566,CUL, Mineral Resource Procurement,2
 1567,CUL, Long-life Potables,2
 1568,CUL, Experimental Loporrit Enrichment,2
@@ -1588,10 +1588,10 @@
 1587,CUL,EX: Launch Party Liquor,60
 1588,CUL,EX+: Periphery Provisions,165
 1589,CUL,EX+: Renewable Resource Development,297
-1590,CUL,EX+: The Ultimate Yeast,0
-1591,CUL,Master: Cosmic Meals,0
-1592,CUL,Master: Edible Auxesian Flora,0
-1593,CUL,Master: Cosmic Tool Catalyst,0
+1590,CUL,EX+: The Ultimate Yeast,373
+1591,CUL,Master: Cosmic Meals,542
+1592,CUL,Master: Edible Auxesian Flora,433
+1593,CUL,Master: Cosmic Tool Catalyst,867
 1594,MIN, Base Vicinity Survey,3
 1595,MIN, Ruins Infrastructure Survey,2
 1596,MIN, Fundamental Mineral Procurement,3
@@ -1614,12 +1614,12 @@
 1613,MIN,EX: Ruins Material Procurement,50
 1614,MIN,EX: Granny Nickel Mining Analysis,40
 1615,MIN,EX: Collection of Oizys-strain Samples,61
-1616,MIN,EX+: Aether-rich Mineral Survey,0
+1616,MIN,EX+: Aether-rich Mineral Survey,164
 1617,MIN,EX+: Rare Alchemical Material Procurement,151
-1618,MIN,EX+: Aether-rich Sample Extraction,0
-1619,MIN,Master: Auxesia Geological Research,0
-1620,MIN,Master: Auxesia Botanical Research,0
-1621,MIN,Master: Auxesia Ecological Research,0
+1618,MIN,EX+: Aether-rich Sample Extraction,164
+1619,MIN,Master: Auxesia Geological Research,1302
+1620,MIN,Master: Auxesia Botanical Research,1302
+1621,MIN,Master: Auxesia Ecological Research,977
 1622,BTN, Base Vicinity Survey,3
 1623,BTN, Aetherial Current Survey,2
 1624,BTN, Fundamental Flora Procurement,3
@@ -1642,12 +1642,12 @@
 1641,BTN,EX: Ruins Material Procurement,50
 1642,BTN,EX: Dayspring Dew Harvesting Analysis,40
 1643,BTN,EX: Mineralized Log Collection,61
-1644,BTN,EX+: Aether-rich Bark Survey,0
+1644,BTN,EX+: Aether-rich Bark Survey,164
 1645,BTN,EX+: Rare Alchemical Material Procurement,151
-1646,BTN,EX+: Aether-rich Sample Extraction,0
-1647,BTN,Master: Auxesia Geological Research,217
-1648,BTN,Master: Auxesia Botanical Research,0
-1649,BTN,Master: Auxesia Ecological Research,217
+1646,BTN,EX+: Aether-rich Sample Extraction,164
+1647,BTN,Master: Auxesia Geological Research,1302
+1648,BTN,Master: Auxesia Botanical Research,1302
+1649,BTN,Master: Auxesia Ecological Research,977
 1650,FSH, Aquaculture Impact Survey,2
 1651,FSH, Timberpond Specimen Survey,6
 1652,FSH, Timberpond Environmental Survey,5
@@ -1672,10 +1672,10 @@
 1671,FSH,EX: Large Mutant Distribution Survey,42
 1672,FSH,EX+: Full Bloom Fountain Specimen Survey,423
 1673,FSH,EX+: Western Nervure Cultivation Survey,240
-1674,FSH,EX+: Stratostone Shores Environmental Survey,0
-1675,FSH,Master: Botanifish Diversity Survey,0
-1676,FSH,Master: Botanifish Ecosystem Survey,0
-1677,FSH,Master: Legendary Botanifish Survey,0
+1674,FSH,EX+: Stratostone Shores Environmental Survey,459
+1675,FSH,Master: Botanifish Diversity Survey,454
+1676,FSH,Master: Botanifish Ecosystem Survey,3657
+1677,FSH,Master: Legendary Botanifish Survey,4824
 1678,CRP, Firepower Fuel,215
 1679,CRP, Wakening Incense,215
 1680,BSM, Plant Incineration Equipment,215

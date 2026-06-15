@@ -63,12 +63,6 @@ public partial class Config
         public uint Master_Score { get; set; } = 1000;
         public bool Use_BuildinPreset { get; set; } = false;
         public string AutoHookPresetName { get; set; } = string.Empty;
-        public double BestTime { get; set; } = double.MaxValue;
-        public double AverageTime { get; set; } = 0;
-        public double AverageBronzeTime { get; set; } = 0;
-        public double AverageSilverTime { get; set; } = 0;
-        public double AverageGoldTime { get; set; } = 0;
-        public double AverageCriticalTime { get; set; } = 0;
         public int TotalCompletions { get; set; } = 0;
         public int BronzeCompletion { get; set; } = 0;
         public int SilverCompletions { get; set; } = 0;
@@ -78,6 +72,25 @@ public partial class Config
         public int FailedCounters { get; set; } = 0;
         public int TotalAttempts { get; set; } = 0;
         public List<TurninData> TurninRecords { get; set; } = new();
+        public double AverageGoalTime(TurninState state)
+        {
+            var records = TurninRecords.Where(x => x.State == state).ToList();
+            return records.Any() ? records.Average(t => t.Time) : 0;
+        }
+        public double AverageTime()
+        {
+            var records = TurninRecords.ToList();
+            return records.Any() ? records.Average(t => t.Time) : 0;
+        }
+        public double BestGoalTime(TurninState state)
+        {
+            var records = TurninRecords.Where(x => x.State == state).ToList();
+            return records.Any() ? records.Min(t => t.Time) : double.MaxValue;
+        }
+        public double BestTimeOverall()
+        {
+            return TurninRecords.Any() ? TurninRecords.Min(t => t.Time) : double.MaxValue;
+        }
         public Dictionary<uint, ArtisanSettings> CraftSettings { get; set; } = new();
 
         public class TurninData

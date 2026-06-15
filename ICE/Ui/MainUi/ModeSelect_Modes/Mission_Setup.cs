@@ -210,7 +210,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.EndTooltip();
                     }
                 }
-                if (!P.AutoHook.UpdatedPlugin() && CosmicMoonRegistry.Auxesia.TerritoryId == Player.Territory.RowId)
+                if (P.AutoHook.Installed && !Utils.HasPlugin("MissFisher") && !P.AutoHook.UpdatedPlugin() && CosmicMoonRegistry.Auxesia.TerritoryId == Player.Territory.RowId)
                 {
                     ImGui.SameLine(0, 10 * scale);
                     ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);

@@ -90,11 +90,11 @@ public static unsafe partial class CosmicHelper
 
             Dictionary<TurninState, (int Multiplier, double AverageTime, int TotalCompleted)> stateInfo = new()
             {
-                [TurninState.Critical] = (1, config.AverageTime, config.CriticalCompletions),
-                [TurninState.Master_Score] = (1, config.AverageTime, config.Master_Completion),
-                [TurninState.Bronze] = (1, config.AverageBronzeTime, config.BronzeCompletion),
-                [TurninState.Silver] = (4, config.AverageSilverTime, config.SilverCompletions),
-                [TurninState.Gold] = (5, config.AverageGoldTime, config.GoldCompletions),
+                [TurninState.Critical] = (1, config.AverageTime(), config.CriticalCompletions),
+                [TurninState.Master_Score] = (1, config.AverageTime(), config.Master_Completion),
+                [TurninState.Bronze] = (1, config.AverageGoalTime(TurninState.Bronze), config.BronzeCompletion),
+                [TurninState.Silver] = (4, config.AverageGoalTime(TurninState.Silver), config.SilverCompletions),
+                [TurninState.Gold] = (5, config.AverageGoalTime(TurninState.Gold), config.GoldCompletions),
                 [TurninState.SequenceGold] = new()
             };
 
@@ -215,7 +215,7 @@ public static unsafe partial class CosmicHelper
             if (!C.MissionConfig.TryGetValue(mission.MissionId, out var config))
                 return new RewardInfo();
 
-            totalTime += config.AverageGoldTime;
+            totalTime += config.AverageGoalTime(TurninState.Gold);
             totalScore += mission.ClassScore * 5;
             totalCosmo += mission.CosmoCredit * 5;
             totalPlanet += mission.LunarCredit * 5;

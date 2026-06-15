@@ -63,6 +63,8 @@ public class MissionTimer
             stats.GoldCompletions++;
         else if (Mission_Settings.TurninState == TurninState.Critical)
             stats.CriticalCompletions++;
+        else if (Mission_Settings.TurninState == TurninState.Master_Score)
+            stats.Master_Completion++;
 
         // Increment total completions (always tracks full history)
         stats.TotalCompletions++;
@@ -85,24 +87,6 @@ public class MissionTimer
             stats.TurninRecords = trimmedRecords;
         }
 
-        // Calculate stats based on the (possibly limited) time history
-        if (stats.TurninRecords.Any())
-        {
-            stats.BestTime = stats.TurninRecords.Min(t => t.Time);
-            stats.AverageTime = stats.TurninRecords.Average(t => t.Time);
-
-            // Calculate per-state averages
-            var bronzeRecords = stats.TurninRecords.Where(t => t.State == TurninState.Bronze).ToList();
-            var silverRecords = stats.TurninRecords.Where(t => t.State == TurninState.Silver).ToList();
-            var goldRecords = stats.TurninRecords.Where(t => t.State == TurninState.Gold).ToList();
-            var criticalRecords = stats.TurninRecords.Where(t => t.State == TurninState.Critical).ToList();
-
-            stats.AverageBronzeTime = bronzeRecords.Any() ? bronzeRecords.Average(t => t.Time) : 0;
-            stats.AverageSilverTime = silverRecords.Any() ? silverRecords.Average(t => t.Time) : 0;
-            stats.AverageGoldTime = goldRecords.Any() ? goldRecords.Average(t => t.Time) : 0;
-            stats.AverageCriticalTime = criticalRecords.Any() ? criticalRecords.Average(t => t.Time) : 0;
-        }
-
         stats.TotalAttempts += 1;
 
         C.Save();
@@ -117,20 +101,14 @@ public class MissionTimer
 
         var stats = C.MissionConfig[missionId];
         stats.TurninRecords.Clear();
-        stats.BestTime = double.MaxValue;
-
-        stats.AverageTime = 0;
-        stats.AverageBronzeTime = 0;
-        stats.AverageSilverTime = 0;
-        stats.AverageGoldTime = 0;
-        stats.AverageCriticalTime = 0;
 
         stats.TotalCompletions = 0;
+        stats.TotalAttempts = 0;
         stats.BronzeCompletion = 0;
         stats.SilverCompletions = 0;
         stats.GoldCompletions = 0;
         stats.CriticalCompletions = 0;
-        stats.TotalAttempts = 0;
+        stats.Master_Completion = 0;
 
         C.Save();
     }

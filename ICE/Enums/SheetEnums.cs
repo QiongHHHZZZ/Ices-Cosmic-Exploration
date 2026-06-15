@@ -31,11 +31,12 @@ namespace ICE.Enums
         ProvisionalTimed = 1 << 14,      // Timed Mission
         ProvisionalWeather = 1 << 15,    // Weather Mission
         ProvisionalSequential = 1 << 16, // Sequential Mission
-        Master = 1 << 21,                // Master Mission
+        Master = 1 << 17,                // Master Mission
 
-        GreaterReach_GatherX = 1 << 17,  // Greater Reach + Gather 100 Items
-        GreaterReach_Chain = 1 << 18,    // Greater Reach + Chain Scoring
-        GreaterReach_Boon = 1 << 19,     // Greater Reach + Boon Scoring
-        GreaterReach_Boon_Chain = 1 << 20, // Greater Reach + Chain + Boon Scoring
+        GreaterReach_GatherX = 1 << 18,    // Greater Reach + Gather 100 Items
+        GreaterReach_Chain = 1 << 19,      // Greater Reach + Chain Scoring
+        GreaterReach_Boon = 1 << 20,       // Greater Reach + Boon Scoring
+        GreaterReach_Boon_Chain = 1 << 21, // Greater Reach + Chain + Boon Scoring
+        Score_GatherX = 1 << 22,           // Gathering -> Gather X Items
     }
 }

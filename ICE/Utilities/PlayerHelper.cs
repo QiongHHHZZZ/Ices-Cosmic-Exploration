@@ -238,4 +238,18 @@ public class PlayerHelper
             }
         }
     }
+    public static unsafe bool CanUseAction(uint actionId)
+    {
+        string tag = "Action Check";
+
+        var am = ActionManager.Instance();
+        if (am == null)
+        {
+            IceLogging.Verbose("Action Manager is not valid... going to just say we can use it", tag);
+            return true;
+        }
+
+        var status = am->GetActionStatus(ActionType.Action, actionId);
+        return status == 0;
+    }
 }

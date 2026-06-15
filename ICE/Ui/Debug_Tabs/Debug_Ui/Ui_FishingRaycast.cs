@@ -19,11 +19,11 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
             try
             {
                 _raycastSimple = (delegate* unmanaged<BGCollisionModule*, RaycastHit*, Vector3*, Vector3*, float, int, byte>)Svc.SigScanner.ScanText("E8 ?? ?? ?? ?? 84 C0 75 58 FF C3");
-                Svc.Log.Info("Fishing raycast initialized successfully");
+                Svc.Log.Info("钓鱼射线检测初始化成功");
             }
             catch (Exception ex)
             {
-                Svc.Log.Error($"Failed to initialize fishing raycast: {ex}");
+                Svc.Log.Error($"钓鱼射线检测初始化失败：{ex}");
             }
         }
 

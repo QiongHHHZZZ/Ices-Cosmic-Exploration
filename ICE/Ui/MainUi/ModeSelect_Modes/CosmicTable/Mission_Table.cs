@@ -1178,17 +1178,17 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public override bool FilterFunc(MissionInfo item)
             {
                 var sheetInfo = item.SheetInfo;
-                bool special = sheetInfo.IsProvisional || sheetInfo.IsCritical;
+                bool special = sheetInfo.IsProvisional || sheetInfo.IsCritical || sheetInfo.IsMaster;
 
                 if (FilterValue.HasFlag(MissionFilter.RedAlert) && sheetInfo.IsCritical) return true;
                 if (FilterValue.HasFlag(MissionFilter.Sequence) && sheetInfo.IsSequence) return true;
                 if (FilterValue.HasFlag(MissionFilter.Timed) && sheetInfo.IsTimed) return true;
                 if (FilterValue.HasFlag(MissionFilter.Weather) && sheetInfo.IsWeather) return true;
+                if (FilterValue.HasFlag(MissionFilter.Master) && sheetInfo.IsMaster) return true;
                 if (FilterValue.HasFlag(MissionFilter.ARank) && sheetInfo.ARank && !special) return true;
                 if (FilterValue.HasFlag(MissionFilter.BRank) && sheetInfo.BRank && !special) return true;
                 if (FilterValue.HasFlag(MissionFilter.CRank) && sheetInfo.CRank && !special) return true;
                 if (FilterValue.HasFlag(MissionFilter.DRank) && sheetInfo.Drank && !special) return true;
-                if (FilterValue.HasFlag(MissionFilter.Master) && sheetInfo.IsMaster) return true;
 
                 return false;
             }

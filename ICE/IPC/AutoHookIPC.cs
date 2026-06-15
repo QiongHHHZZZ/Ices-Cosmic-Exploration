@@ -23,7 +23,12 @@ namespace ICE.IPC
             return false;
         }
 
-        [EzIPC] public Action<bool> SetPluginState;
+        [EzIPC] private readonly Func<bool> GetPluginState;
+        [EzIPC] private Action<bool> SetPluginState;
+
+        [EzIPC] private readonly Func<bool> GetAutoStartFishing;
+        [EzIPC] private Action<bool> SetAutoStartFishing;
+
         [EzIPC] public Action<bool> SetAutoGigState;
         [EzIPC] public Action<string> SetPreset;
         [EzIPC] public Action<string> SetPresetAutogig;
@@ -32,5 +37,32 @@ namespace ICE.IPC
         [EzIPC] public Action DeleteSelectedPreset;
         [EzIPC] public Action DeleteAllAnonymousPresets;
         [EzIPC] public Func<uint, Task<bool>> SwapBaitById;
+
+        public void Ah_State(bool state)
+        {
+            bool stateEnabled = GetPluginState();
+            bool autoStartEnabled = GetAutoStartFishing();
+
+            if (EzThrottler.Throttle("Applying autohook states"))
+            {
+                if (state)
+                {
+                    if (!stateEnabled)
+                        SetPluginState(true);
+
+                    if (!autoStartEnabled)
+                        SetAutoStartFishing(true);
+                }
+
+                if (!state)
+                {
+                    if (stateEnabled)
+                        SetPluginState(false);
+
+                    if (autoStartEnabled)
+                        SetAutoStartFishing(false);
+                }
+            }
+        }
     }
 }

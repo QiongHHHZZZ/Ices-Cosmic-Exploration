@@ -78,6 +78,7 @@ internal static class L10n
         ["Select gathering profile for gather missions"] = "为采集任务选择采集配置",
         ["Additional mission information and requirements"] = "任务附加信息与要求",
         ["Open mission details"] = "打开任务详情",
+        ["Click button to view external details"] = "点击按钮查看外部详情",
         ["Gold Enabled"] = "已启用金奖",
         ["Silver Enabled"] = "已启用银奖",
         ["Bronze Enabled"] = "已启用铜奖",
@@ -92,12 +93,15 @@ internal static class L10n
         ["Master Short Settings"] = "超难设置",
         ["Timed Turnin"] = "计时结束交付",
         ["Score Goal"] = "分数目标",
+        ["After X Crafts"] = "制作 X 次后交付",
         ["Quick Turnin"] = "快速交付",
         ["Clear Profile"] = "清除配置",
         ["Will turnin once the timer runs out\nCurrently there isn't a way to stop artisan from crafting, it's been requested\nPlease give it time"]
             = "计时器结束后将交付任务。\n目前还没有办法让 Artisan 停止制作，这个功能已经有人请求。\n请再给它一点时间。",
         ["Will turnin when 1 of the 2 things are met:\n1: Score that you personally have set has been met\n2: Timer has ran out\nYou can set your score with this mode yourself, due to not knowing the scoring break points\nYet"]
             = "满足以下两个条件之一时交付：\n1：达到你设置的分数目标\n2：计时器结束\n由于目前还不确定具体分数断点，你可以在此模式下自行设置目标分数。",
+        ["Will turn in after X amount of crafts have been completed\nGood if you're goal is to just craft a certain amount and not worry bout score\nDO NOT. SET THIS TO SOME REDICULOUS AMOUNT AND ASK WHY IT DOESN'T WORK"]
+            = "完成指定制作次数后交付。\n适合只想制作一定数量、不关心分数的情况。\n不要设置离谱数量后再问为什么不工作。",
         ["Will turnin the mission as soon as it can\nVery useful for quick score farming, mount tokens.\nFor BTN/MIN, this will gather the non-collectable item"]
             = "只要可以交付就立即交付任务。\n非常适合快速刷技巧点、坐骑代币。\n对于园艺工/采矿工，会采集非收藏品道具。",
         ["Critical Route: {0}"] = "紧急路线：{0}",

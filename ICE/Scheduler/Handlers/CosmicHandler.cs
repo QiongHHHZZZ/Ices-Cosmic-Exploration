@@ -1,15 +1,16 @@
 ﻿using ECommons.Automation.UIInput;
 using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.STD;
 using ICE.Utilities.Cosmic_Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using TerraFX.Interop.Windows;
@@ -300,12 +301,11 @@ namespace ICE.Utilities
         {
             var manager = WKSManager.Instance();
             if (manager == null) return 0;
+            if (manager->MissionModule == null) return 0;
 
-            var missionManager = manager->MissionModule;
-            if (missionManager == null) return 0;
-
-            var mission = manager->State.CurrentMission;
-            return mission.ScoreUInt;
+            // Reinterpret the CurrentMission field as our custom overlay
+            var mission = (MissionStateCorrect*)Unsafe.AsPointer(ref manager->State.CurrentMission);
+            return mission->EffectiveScore;
         }
 
     }

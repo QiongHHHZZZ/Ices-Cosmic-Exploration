@@ -61,6 +61,7 @@ public partial class Config
         public int GProfileId { get; set; } = 0;
         public TurninState TurninGoal { get; set; } = TurninState.Gold;
         public uint Master_Score { get; set; } = 1000;
+        public uint Master_Items { get; set; } = 6;
         public bool Use_BuildinPreset { get; set; } = false;
         public string AutoHookPresetName { get; set; } = string.Empty;
         public int TotalCompletions { get; set; } = 0;

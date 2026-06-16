@@ -85,6 +85,14 @@ namespace ICE.Ui
             CollapsedCondition = ImGuiCond.Appearing;
         }
 
+        private bool _openStatsTab = false;
+        public void OpenToStatsTab(uint missionId)
+        {
+            SelectedMission = missionId;
+            P.externalDetails.IsOpen = true;
+            _openStatsTab = true;
+        }
+
         public override void Draw()
         {
             if (CosmicHelper.SheetMissionDict.TryGetValue(SelectedMission, out var sheetInfo))
@@ -112,7 +120,10 @@ namespace ICE.Ui
                         }
                     }
 
-                    if (ImGui.BeginTabItem(T("Completion Stats")))
+                    var statsFlag = _openStatsTab ? ImGuiTabItemFlags.SetSelected : ImGuiTabItemFlags.None;
+                    _openStatsTab = false;
+
+                    if (ImGui.BeginTabItem(T("Completion Stats"), statsFlag))
                     {
                         StatInfo(sheetInfo);
                         ImGui.EndTabItem();

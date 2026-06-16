@@ -274,6 +274,17 @@ namespace ICE.Scheduler.Tasks
                                 shouldTurnin = (config.TurninGoal is TurninState.Gold && rank >= MissionRank.Gold)
                                     || (config.TurninGoal is TurninState.Master_Score && rank >= MissionRank.Gold && currentScore >= config.Master_Score)
                                     || (config.TurninGoal is TurninState.TimeExpired && rank >= MissionRank.Gold && CosmicHandler.IsMissionTimedOut());
+
+                                if (sheetInfo.Jobs.ContainsAny(CosmicHelper.CrafterJobList) && config.TurninGoal is TurninState.Master_Items)
+                                {
+                                    var craftItem = sheetInfo.Crafts_Main.FirstOrDefault();
+                                    var itemId = craftItem.Value.ItemId;
+                                    shouldTurnin = PlayerHelper.GetItemCount(itemId, out var count) && count >= config.Master_Items && rank >= MissionRank.Gold;
+                                    if (EzThrottler.Throttle("Item Count Message"))
+                                    {
+                                        IceLogging.Verbose($"超难任务设置为按制作数量交付。当前数量：{count} | 目标：{config.Master_Items}");
+                                    }
+                                }
                             }
                             else
                             {

@@ -49,18 +49,12 @@ namespace ICE.IPC
                 {
                     if (!stateEnabled)
                         SetPluginState(true);
-
-                    if (!autoStartEnabled)
-                        SetAutoStartFishing(true);
                 }
 
                 if (!state)
                 {
                     if (stateEnabled)
                         SetPluginState(false);
-
-                    if (autoStartEnabled)
-                        SetAutoStartFishing(false);
                 }
             }
         }

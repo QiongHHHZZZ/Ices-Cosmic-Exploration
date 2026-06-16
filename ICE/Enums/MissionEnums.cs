@@ -43,6 +43,7 @@ namespace ICE.Enums
         // extend their timer as you hit goals (e.g. Tool Mastery) so you keep maxing score.
         TimeExpired = 6,
         Master_Score = 7,
+        Master_Items = 8,
     }
 
     public enum ArtisanCraftType

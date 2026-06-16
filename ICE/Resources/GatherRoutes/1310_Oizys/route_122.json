@@ -3,7 +3,7 @@
   "territory_id": 1310,
   "gathering_job_id": 16,
   "author": "Leontopodium Nivale",
-  "date_modified": "2026-06-06T03:21:30.8564439Z",
+  "date_modified": "2026-06-15T14:11:39.4298798Z",
   "node": [
     {
       "node_id": 35527,
@@ -17,8 +17,8 @@
         "y": -50.67587,
         "z": -320.91766
       },
-      "radius_start": 186,
-      "radius_end": 305,
+      "radius_start": 193,
+      "radius_end": 300,
       "min_distance": 1,
       "max_distance": 2,
       "fan_height": 0
@@ -35,8 +35,8 @@
         "y": -48.774677,
         "z": -315.88187
       },
-      "radius_start": 167,
-      "radius_end": 233,
+      "radius_start": 170,
+      "radius_end": 229,
       "min_distance": 1,
       "max_distance": 2,
       "fan_height": 0
@@ -53,10 +53,10 @@
         "y": -35.299683,
         "z": -250.9636
       },
-      "radius_start": 225,
-      "radius_end": 310,
+      "radius_start": 263,
+      "radius_end": 26,
       "min_distance": 1,
-      "max_distance": 2,
+      "max_distance": 1.2,
       "fan_height": 0
     },
     {
@@ -71,8 +71,8 @@
         "y": -35.485214,
         "z": -247.80939
       },
-      "radius_start": 241,
-      "radius_end": 14,
+      "radius_start": 260,
+      "radius_end": 5,
       "min_distance": 1,
       "max_distance": 2,
       "fan_height": 0.28

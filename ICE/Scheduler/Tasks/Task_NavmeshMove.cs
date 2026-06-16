@@ -555,6 +555,13 @@ namespace ICE.Scheduler.Tasks
                     AethernetId = 2015424,
                     Location = new(-242.73f, 168.05f, 321.17f),
                     LandZone = new(-243.1f, 168.0f, 320.6f)
+                },
+                new()
+                {
+                    MapSelector = 3,
+                    AethernetId = 2015425,
+                    Location = new(-599.94f, 206.55f, -375.08f),
+                    LandZone = new(-599.77f, 206.55f, -373.25f),
                 }
             }
         };

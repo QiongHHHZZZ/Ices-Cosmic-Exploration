@@ -26,6 +26,14 @@ public static partial class CosmicHelper
         info.Quality = recipeLevelValue == 0 ? RecipeMaxQuality(recipeSheet, levelTable) : RecipeMaxQuality(recipeSheet);
         // info.Expert = recipeSheet.RecipeLevelTable.Value.ConditionsFlag != 15; // Use this if something breaks... but rn it's causing issues
         info.Expert = recipeSheet.IsExpert;
+        if (recipeId == 36990)
+        {
+            IceLogging.Verbose("临时调试：配方信息\n" +
+                $"配方 ID：{recipeId}\n" +
+                $"名称：{recipeSheet.ItemResult.Value.Name.ToString()}\n" +
+                $"是否专家：{info.Expert} | {recipeSheet.IsExpert}\n" +
+                $"物品 ID：{recipeSheet.ItemResult.RowId}");
+        }
 
         /*
         var recipe = Svc.Data.GetExcelSheet<Recipe>().GetRow(recipeId);

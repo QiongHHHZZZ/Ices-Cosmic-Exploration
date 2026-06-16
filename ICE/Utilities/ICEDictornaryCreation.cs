@@ -245,6 +245,12 @@ public sealed partial class ICE
                         }
                     }
 
+                    if (keyId == 574)
+                    {
+                        string recipes = string.Join(",", recipeIds);
+                        IceLogging.Verbose($"任务 574 的配方 ID：{recipes}");
+                    }
+
                     if (recipeIds.Count == 1)
                     {
                         // Only a single item exist in this table. So into the maincrafts it goes
@@ -354,7 +360,7 @@ public sealed partial class ICE
 
                         var crateId = preRecipeRow.Ingredient[0].RowId;
                         var pre_recipeInfo = CosmicHelper.SpecificRecipeInfo(craftJob, preRecipeId);
-                        var preCraftExpert = req_recipeInfo.Expert;
+                        var preCraftExpert = pre_recipeInfo.Expert;
                         var pre_itemIcon = preRecipeRow.ItemResult.Value.Icon;
                         var pre_itemName = preRecipeRow.ItemResult.Value.Name.ToString();
 

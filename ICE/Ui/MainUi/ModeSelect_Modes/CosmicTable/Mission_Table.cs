@@ -553,9 +553,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 var iconGap = 4f * scale;
                 var iconCount = 0;
                 var showAuxesiaFishingWarning = mission.SheetInfo.TerritoryId == CosmicMoonRegistry.Auxesia.TerritoryId && mission.SheetInfo.Jobs.Contains(18);
+                var showFishingPresetWarning = mission.SheetInfo.Jobs.Contains(18) && !GatheringUtil.FishingPreset.ContainsKey(mission.Id);
                 if (UnsupportedMissions.Ids.Contains(mission.Id))
                     iconCount++;
-                if (showAuxesiaFishingWarning)
+                if (showAuxesiaFishingWarning || showFishingPresetWarning)
                     iconCount++;
                 if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
                     iconCount++;
@@ -589,7 +590,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     drewIcon = true;
                 }
 
-                if (showAuxesiaFishingWarning)
+                if (showAuxesiaFishingWarning || showFishingPresetWarning)
                 {
                     if (drewIcon)
                         ImGui.SameLine();

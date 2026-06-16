@@ -1688,6 +1688,36 @@ public static unsafe partial class GatheringUtil
             // Export for Fishing Zone 1319, Flag (-684, 630)
             [new Vector2(-684f, 630f)] = new()
             {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-630.60f, 113.60f, 588.65f),
+                    FishingSpot = new Vector3(-628.67f, 113.60f, 588.12f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-649.37f, 113.60f, 576.91f),
+                    FishingSpot = new Vector3(-648.27f, 113.60f, 575.24f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-679.52f, 113.60f, 579.18f),
+                    FishingSpot = new Vector3(-677.57f, 113.60f, 578.76f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-708.44f, 113.60f, 585.34f),
+                    FishingSpot = new Vector3(-706.48f, 113.60f, 584.92f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-629.96f, 113.60f, 627.91f),
+                    FishingSpot = new Vector3(-630.66f, 113.60f, 626.04f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-633.97f, 113.77f, 658.05f),
+                    FishingSpot = new Vector3(-633.68f, 113.77f, 656.07f),
+                },
             },
             // Export for Fishing Zone 1319, Flag (-633, 248)
             [new Vector2(-633f, 248f)] = new()
@@ -1724,8 +1754,29 @@ public static unsafe partial class GatheringUtil
                 },
             },
             // Export for Fishing Zone 1319, Flag (-604, -542)
+            // Export for Fishing Zone 1319, Flag (-604, -542)
             [new Vector2(-604f, -542f)] = new()
             {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-631.17f, 204.03f, -432.30f),
+                    FishingSpot = new Vector3(-631.65f, 204.03f, -430.36f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-639.32f, 204.17f, -435.68f),
+                    FishingSpot = new Vector3(-639.85f, 204.17f, -433.75f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-648.90f, 204.17f, -439.13f),
+                    FishingSpot = new Vector3(-649.74f, 204.17f, -437.31f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-655.91f, 204.17f, -443.08f),
+                    FishingSpot = new Vector3(-656.75f, 204.17f, -441.27f),
+                },
             },
             // Export for Fishing Zone 1319, Flag (-232, -456)
             [new Vector2(-232f, -456f)] = new()
@@ -1899,10 +1950,6 @@ public static unsafe partial class GatheringUtil
             },
 
         }
-
-        // Auxesia (1319) — fish hole coords go here. Record in debug "Fishing Hole Editor", export C#, paste below.
-        // Pattern matches [1310] Oizys above: outer key = map flag, inner list = face + cast positions.
-        // [1319] = new() { ... },
     };
 
     public static Dictionary<string, List<uint>> MoonBaits = new();

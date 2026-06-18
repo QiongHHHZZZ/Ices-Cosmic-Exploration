@@ -1,4 +1,5 @@
-﻿using Dalamud.Interface.Utility.Raii;
+﻿using Dalamud.Interface;
+using Dalamud.Interface.Utility.Raii;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
@@ -316,6 +317,20 @@ namespace ICE.Ui.MainUi.Settings
                     ImGui.EndPopup();
                 }
             }
+
+            bool selfGather = C.Gather_NoNav;
+            if (ImGui.Checkbox(T("Disable Pathfinding Between Gathering Nodes"), ref selfGather))
+            {
+                C.Gather_NoNav = selfGather;
+                C.SaveDebounced();
+            }
+            ImGui.SameLine();
+            ImGui_Ice.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
+                T("This will disable the pathfinding between the nodes WHILE in the mission\n" +
+                "But still allow the automation of skills/gathering actions/desynth between missions\n" +
+                "This is VERY testing beta, so there might be issues\n" +
+                "I swear on cuthulu's name if you enable this then ask \"Why it don't work\"" +
+                "You'll be banned by the shadow realm"));
 
             ImGui.Separator();
 

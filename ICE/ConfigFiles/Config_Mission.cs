@@ -16,6 +16,7 @@ public partial class Config
     public bool StopOnceHitCosmicScore { get; set; } = false;
     public int CosmicScoreCap { get; set; } = 500_000;
     public bool StopOnceRelicFinished { get; set; } = false;
+    public bool StopOnceStandardMissionsGolded { get; set; } = false;
     public bool StopAtRelicLv { get; set; } = false;
     public int RelicLv { get; set; } = 20;
     public List<ProvisionalTypes> MissionPrio { get; set; } = new()

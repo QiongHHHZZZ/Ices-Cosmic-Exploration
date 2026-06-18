@@ -30,7 +30,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             order.Add(PlaylistOptions.PlanetAmount);
             order.Add(PlaylistOptions.DronebitAmount);
             order.Add(PlaylistOptions.ClassLevel);
-            order.Add(PlaylistOptions.GoldClassMissions);
             return order;
         }
 
@@ -110,7 +109,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.Dummy(new(0, 5));
 
                     var selectedJobIcon = CosmicHelper.ClassInfoDict[SelectedJob].JobIcon;
-                    var selectedJobName = CosmicHelper.GetJobName(SelectedJob);
+                    var selectedJobName = T(CosmicHelper.GetJobName(SelectedJob));
 
                     ImGui.Image(selectedJobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
                     ImGui.SameLine();
@@ -130,6 +129,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     var classInfo = CosmicHelper.ClassInfoDict[jobId];
                                     var jobIcon = classInfo.JobIcon;
                                     var jobName = CosmicHelper.GetJobName(jobId);
+                                    var displayJobName = T(jobName);
                                     bool isSelected = jobId == SelectedJob;
 
                                     ImGui.TableNextRow();
@@ -141,7 +141,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     ImGui.TableNextColumn();
 
                                     // Name column with selectable
-                                    if (ImGui.Selectable($"{jobName}##{jobName}_{jobId}", isSelected, ImGuiSelectableFlags.SpanAllColumns))
+                                    if (ImGui.Selectable($"{displayJobName}##{jobName}_{jobId}", isSelected, ImGuiSelectableFlags.SpanAllColumns))
                                     {
                                         SelectedJob = jobId;
                                     }
@@ -165,6 +165,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     {
                         foreach (PlaylistOptions option in Enum.GetValues<PlaylistOptions>())
                         {
+                            if (option == PlaylistOptions.GoldClassMissions)
+                                continue;
+
                             var displayName = CosmicHelper.PlaylistOptionString(option);
                             bool isSelected = SelectedOption == option;
 
@@ -485,6 +488,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 {
                                     var jobIcon = CosmicHelper.ClassInfoDict[jobId].JobIcon;
                                     var jobName = CosmicHelper.GetJobName(jobId);
+                                    var displayJobName = T(jobName);
                                     bool isSelected = jobId == SelectedJob;
 
                                     ImGui.TableNextRow();
@@ -494,7 +498,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                                     ImGui.TableNextColumn();
 
-                                    if (ImGui.Selectable($"{jobName}##{jobName}_{jobId}", isSelected, ImGuiSelectableFlags.SpanAllColumns))
+                                    if (ImGui.Selectable($"{displayJobName}##{jobName}_{jobId}", isSelected, ImGuiSelectableFlags.SpanAllColumns))
                                     {
                                         agendaInfo.SelectedJob = jobId;
                                         C.Save();

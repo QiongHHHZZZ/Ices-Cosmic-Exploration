@@ -246,6 +246,32 @@ public static partial class CosmicHelper
         foreach (var mission in CosmicHelper.SheetMissionDict)
             mission.Value.CompletionStatus = CosmicHandler.MissionStatus(mission.Key);
     }
+
+    /// <summary>Counts gold vs total for missions that are not provisional or critical on a hub/job.</summary>
+    public static (int Golded, int Total) CountStandardMissionGold(uint jobId, uint territoryId)
+    {
+        int golded = 0, total = 0;
+        foreach (var (_, info) in SheetMissionDict)
+        {
+            if (info.TerritoryId != territoryId || !info.Jobs.Contains(jobId))
+                continue;
+            if (info.IsProvisional || info.IsCritical)
+                continue;
+
+            total++;
+            if (info.CompletionStatus == Status.Gold)
+                golded++;
+        }
+
+        return (golded, total);
+    }
+
+    public static bool AllStandardMissionsGolded(uint jobId, uint territoryId)
+    {
+        var (golded, total) = CountStandardMissionGold(jobId, territoryId);
+        return total > 0 && golded == total;
+    }
+
     public static unsafe bool Task_UpdateRelicMissionInfo()
     {
         string tag = "Task: Update Cosmic Info";

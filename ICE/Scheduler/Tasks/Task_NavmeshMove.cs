@@ -2,6 +2,7 @@
 using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Scheduler.Handlers.PictoStuff;
 using ICE.Utilities.Cosmic_Helper;
@@ -562,6 +563,7 @@ namespace ICE.Scheduler.Tasks
                     AethernetId = 2015425,
                     Location = new(-599.94f, 206.55f, -375.08f),
                     LandZone = new(-599.77f, 206.55f, -373.25f),
+                    RequiredLogLv = 232,
                 }
             }
         };
@@ -619,34 +621,20 @@ namespace ICE.Scheduler.Tasks
             return true;
         }
 
-        public static Dictionary<uint, uint> PlanetProgress { get; } =
-            CosmicMoonRegistry.All.ToDictionary(m => m.TerritoryId, m => m.DefaultAethernetLogLevel);
+        private static unsafe uint WorldProgress()
+        {
+            var wks = WKSManager.Instance();
+            if (wks == null)
+                return 0;
+
+            return wks->State.DevGrade;
+        }
 
         private static bool? CalculateAethernet(Vector3 destination)
         {
             string tag = "Navmesh: Aethernet Calculation";
             var territoryId = Player.Territory.RowId;
-            var planetProgress = PlanetProgress[territoryId];
-
-            if (planetProgress == 0)
-            {
-                if (GenericHelpers.TryGetAddonMaster<WKSHistoryBoard>("WKSHistoryBoard", out var progress) && progress.IsAddonReady)
-                {
-                    PlanetProgress[territoryId] = progress.NumEntries;
-                    IceLogging.Info($"We've updated the entried to contain the following value: {PlanetProgress[territoryId]}");
-                    if (EzThrottler.Throttle("Closing addon"))
-                        GenericHandlers.FireCallback("WKSHistoryBoard", true, -1);
-                }
-                else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var hud) && hud.IsAddonReady)
-                {
-                    if (EzThrottler.Throttle("Opening Progress Hud"))
-                    {
-                        hud.Infrastructor();
-                    }
-                }
-
-                return false;
-            }
+            var planetProgress = WorldProgress();
 
             var territory = Player.Territory.RowId;
             if (!PlanetAethernet.TryGetValue(territory, out var aetherList))
@@ -960,7 +948,7 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "[Navmesh: Calculate Hub -> Aethernet]";
             var territoryId = Player.Territory.RowId;
-            var planetProgress = PlanetProgress[territoryId];
+            var planetProgress = WorldProgress();
 
             if (CosmicMoonRegistry.TryGetHubCenter(Player.Territory.RowId, out var HubCenter))
             {

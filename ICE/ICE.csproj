@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
 	<PropertyGroup>
-		<Version>0.0.78.20000</Version>
+		<Version>0.0.78.21000</Version>
 		<Description>Who said we couldn't explore the moon!.</Description>
 		<PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -91,5 +91,10 @@
 	<!-- OtterGui depends on nested submodule OtterGuiInternal; init recursively if missing -->
 	<Target Name="EnsureOtterGuiSubmodules" BeforeTargets="BeforeBuild" Condition="!Exists('$(MSBuildThisFileDirectory)..\OtterGui\OtterGuiInternal\OtterGuiInternal.csproj')">
 		<Exec Command="git submodule update --init --recursive OtterGui" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+	</Target>
+
+	<!-- Glamourer IPC types live in the Glamourer.Api submodule -->
+	<Target Name="EnsureGlamourerApiSubmodule" BeforeTargets="BeforeBuild" Condition="!Exists('$(MSBuildThisFileDirectory)..\Glamourer.Api\Glamourer.Api.csproj')">
+		<Exec Command="git submodule update --init Glamourer.Api" WorkingDirectory="$(MSBuildThisFileDirectory).." />
 	</Target>
 </Project>

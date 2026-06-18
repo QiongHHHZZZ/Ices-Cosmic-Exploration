@@ -131,12 +131,6 @@ public sealed partial class ICE
                 marker_Critical = entry.MissionToDo[1].Value.MapMarker.RowId;
             }
 
-            // Stacked map markers — nudge slightly so route editor keys stay unique per mission row.
-            if (CosmicMapMarkerNudges.TryGetOverride(keyId, out var overrideFlag))
-                mapFlag = overrideFlag;
-            else if (CosmicMapMarkerNudges.TryGetOverlapNudge(keyId, mapFlag, out var nudgedFlag))
-                mapFlag = nudgedFlag;
-
             // Mission Attributes/Flags. Esentially a quick way to know what is what kind of mission at a quick glance
             MissionAttributes attributes = MissionAttributes.None;
 

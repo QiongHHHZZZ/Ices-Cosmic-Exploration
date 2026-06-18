@@ -332,7 +332,7 @@ namespace ICE.Ui
         {
             if (mission.Crafts_Main.Count > 0)
             {
-                Mission_Table.CrafterManagement(mission, SelectedMission);
+                CosmicHelper.CrafterManagement(mission, SelectedMission);
             }
         }
 
@@ -467,6 +467,10 @@ namespace ICE.Ui
                 MissionAttributes.Score_Variety => T("Variety of Fish Required"),
                 MissionAttributes.Score_MinimumScore => T("Mission Score Required"),
                 MissionAttributes.Score_GatherX => T("Gather X Scoring"),
+                MissionAttributes.GreaterReach_GatherX => T("Greater Reach Gather X Scoring"),
+                MissionAttributes.GreaterReach_Chain => T("Greater Reach Chain Scoring"),
+                MissionAttributes.GreaterReach_Boon => T("Greater Reach Boon Scoring"),
+                MissionAttributes.GreaterReach_Boon_Chain => T("Greater Reach Boon Chain Scoring"),
                 MissionAttributes.Critical => T("Critical Mission"),
                 MissionAttributes.ProvisionalTimed => T("Time Required"),
                 MissionAttributes.ProvisionalWeather => T("Weather Required"),

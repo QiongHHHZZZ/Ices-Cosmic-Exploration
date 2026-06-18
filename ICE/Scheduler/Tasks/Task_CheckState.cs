@@ -173,6 +173,9 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
 
+                if (TryStopWhenStandardMissionsGolded(tag) == true)
+                    return true;
+
                 IceLogging.Verbose("We're currently in agenda mode. We need to check to see if we have anything even in the agenda before we continue", tag);
                 if (C.Cosmic_Agenda.Count > 0)
                 {
@@ -364,12 +367,39 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
 
+                if (TryStopWhenStandardMissionsGolded(tag) == true)
+                    return true;
+
                 IceLogging.Info("We have passed all stop when checks. So going to just do a general check on what we need to do", tag);
                 P.TaskManager.Enqueue(() => HubActivityCheck(), "Checking for reasons to go to hub");
             }
 
             return true;
         }
+        private static bool? TryStopWhenStandardMissionsGolded(string tag)
+        {
+            if (!C.StopOnceStandardMissionsGolded || !PlayerHelper.IsInCosmicZone())
+                return null;
+
+            var jobId = Mission_Settings.SelectedJob;
+            var territory = Player.Territory.RowId;
+            var (golded, total) = CosmicHelper.CountStandardMissionGold(jobId, territory);
+            if (total == 0 || golded < total)
+                return null;
+
+            var jobName = CosmicHelper.ClassInfoDict.TryGetValue(jobId, out var jobClass) ? jobClass.JobName : jobId.ToString();
+            var moonName = CosmicMoonRegistry.GetDisplayName(territory);
+            IceLogging.ChatInfo(
+                $"Stop When Standard Missions Golded is enabled.\n" +
+                $"All {total} standard missions are gold for {jobName} on {moonName} ({golded}/{total}).",
+                "[I.C.E.]");
+            SchedulerMain.State = IceState.Idle;
+            P.TaskManager.Tasks.Clear();
+            if (C.PlaySoundAlert)
+                _ = SoundPlayer.PlaySoundAsync();
+            return true;
+        }
+
         private static bool? AgendaCheck()
         {
             string tag = "[Agenda Check]";

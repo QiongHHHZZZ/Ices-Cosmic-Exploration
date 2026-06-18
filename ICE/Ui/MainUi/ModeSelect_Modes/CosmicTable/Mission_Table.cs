@@ -1,28 +1,24 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
-using ICE.Utilities.GatheringHelper.RouteLoader;
 using ICE.Utilities.ImGuiTools;
+using OtterGui;
+using OtterGui.Table;
+using OtterGui.Text;
 using System.Collections.Generic;
 using System.Reflection;
-using TerraFX.Interop.Windows;
 using static ICE.ConfigFiles.Config;
 using static ICE.Localization.L10n;
+using static ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable.Mission_Table;
 using static ICE.Utilities.Cosmic_Helper.CosmicHelper;
 
 namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 {
     internal class VerticalCenterColumnString : ColumnString<MissionInfo>
     {
-        public override bool DrawFilter()
-        {
-            ImGui.AlignTextToFramePadding();
-            ImGui.TextUnformatted(Label);
-            return false;
-        }
-
         public override void PreDraw()
         {
             var pos = ImGui.GetCursorPosY();
@@ -30,7 +26,54 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             ImGui.SetCursorPosY(pos + offset);
         }
     }
-    internal class ItemFilterColumn : ColumnFlags<ItemFilter, MissionInfo>
+
+    internal abstract class LocalizedColumnFlags<T> : ColumnFlags<T, MissionInfo> where T : struct, Enum
+    {
+        public override bool DrawFilter()
+        {
+            using var id = ImUtf8.PushId(FilterLabel);
+            using var style = OtterGui.Raii.ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
+            ImGui.SetNextItemWidth(-Table.ArrowWidth * ImGuiHelpers.GlobalScale);
+            var all = FilterValue.HasFlag(AllFlags);
+            using var color = OtterGui.Raii.ImRaii.PushColor(ImGuiCol.FrameBg, 0x803030A0, !all);
+            using var combo = ImUtf8.Combo(""u8, Label, ComboFlags);
+
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+            {
+                SetValue(AllFlags, true);
+                return true;
+            }
+
+            if (!all)
+                ImUtf8.HoverTooltip(T("Right-click to clear filters."));
+
+            if (!combo)
+                return false;
+
+            color.Pop();
+
+            var ret = false;
+            if (ImUtf8.Checkbox(T("Enable All"), ref all))
+            {
+                SetValue(AllFlags, all);
+                ret = true;
+            }
+
+            using var indent = OtterGui.Raii.ImRaii.PushIndent(10f);
+            for (var i = 0; i < Names.Length; ++i)
+            {
+                if (!DrawCheckbox(i, out var tmp))
+                    continue;
+
+                SetValue(Values[i], tmp);
+                ret = true;
+            }
+
+            return ret;
+        }
+    }
+
+    internal class ItemFilterColumn : LocalizedColumnFlags<ItemFilter>
     {
         private ItemFilter[] FlagValues = Array.Empty<ItemFilter>();
         private string[] FlagNames = Array.Empty<string>();
@@ -39,13 +82,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
         {
             return item switch
             {
-                ItemFilter.NoItems => T("No Items"),
-                ItemFilter.Enabled => T("Enabled"),
-                ItemFilter.Disabled => T("Disabled"),
+                ItemFilter.NoItems => "No Items",
+                ItemFilter.Enabled => "Enabled",
+                ItemFilter.Disabled => "Disabled",
                 // ItemFilter.NotCompleted => "Not Completed",
                 // ItemFilter.Completed => "Completed",
                 // ItemFilter.Gold => "Gold",
-                _ => T("Unknown"),
+                _ => "Unknown",
             };
         }
 
@@ -65,14 +108,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
         protected sealed override IReadOnlyList<ItemFilter> Values => FlagValues;
 
-        protected sealed override string[] Names => FlagNames;
-
-        public sealed override bool DrawFilter()
-        {
-            ImGui.AlignTextToFramePadding();
-            ImGui.TextUnformatted(Label);
-            return false;
-        }
+        protected sealed override string[] Names => FlagNames.Select(n => T(n)).ToArray();
 
         public sealed override ItemFilter FilterValue => C.ItemFilter;
 
@@ -86,7 +122,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             C.SaveDebounced();
         }
     }
-    internal class MissionFilterColumn : ColumnFlags<MissionFilter, MissionInfo>
+    internal class MissionFilterColumn : LocalizedColumnFlags<MissionFilter>
     {
         private MissionFilter[] FlagValues = Array.Empty<MissionFilter>();
         private string[] FlagNames = Array.Empty<string>();
@@ -107,14 +143,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
         protected sealed override IReadOnlyList<MissionFilter> Values => FlagValues;
 
-        protected sealed override string[] Names => FlagNames;
-
-        public sealed override bool DrawFilter()
-        {
-            ImGui.AlignTextToFramePadding();
-            ImGui.TextUnformatted(Label);
-            return false;
-        }
+        protected sealed override string[] Names => FlagNames.Select(n => T(n)).ToArray();
 
         public sealed override MissionFilter FilterValue => C.MissionFilter;
 
@@ -128,7 +157,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             C.SaveDebounced();
         }
     }
-    internal class JobFilterColumn : ColumnFlags<JobFilter, MissionInfo>
+    internal class JobFilterColumn : LocalizedColumnFlags<JobFilter>
     {
         private JobFilter[] FlagValues = Array.Empty<JobFilter>();
         private string[] FlagNames = Array.Empty<string>();
@@ -149,14 +178,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
         protected sealed override IReadOnlyList<JobFilter> Values => FlagValues;
 
-        protected sealed override string[] Names => FlagNames;
-
-        public sealed override bool DrawFilter()
-        {
-            ImGui.AlignTextToFramePadding();
-            ImGui.TextUnformatted(Label);
-            return false;
-        }
+        protected sealed override string[] Names => FlagNames.Select(n => T(n)).ToArray();
 
         public sealed override JobFilter FilterValue => C.JobFilter;
 
@@ -174,37 +196,22 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
     {
         // TODO: Create default width's for all of these...
 
-        public enum TableViewMode
-        {
-            Compact,
-            Full,
-            Custom,
-        }
-
-        public TableViewMode ViewMode { get; set; } = TableViewMode.Compact;
-        public string SearchText { get; set; } = string.Empty;
-        public bool[] CustomColumnVisibility { get; private set; } = [];
-        private readonly HashSet<uint> _availableMissionIds = [];
-        private long _nextAvailableMissionRefresh;
-        private static readonly Dictionary<uint, double> ScorePerMinuteCache = [];
-
         public readonly EnabledColumn _enabledColumn;
         public readonly NameColumn _nameColumn = new() { Label = T("Mission Table Name") };
         public readonly IdColumn _idColumn = new() { Label = T("Mission Table ID") };
         public readonly JobColumn _jobColumn = new() { Label = T("Mission Table Job") };
-        public readonly MissionColumn _missionColumn = new() { Label = T("Rank") };
-        public readonly CompletionColumn _completionColumn = new() { Label = T("Completed") };
-        public readonly ClassScoreColumn _classScoreColumn = new() { Label = "技巧点\n任务" };
-        public readonly CosmocreditColumn _cosmoColumn = new() { Label = "信用点\n宇宙" };
-        public readonly LunarCreditColumn _lunarColumn = new() { Label = "信用点\n星球" };
-        public readonly ScoreSummaryColumn _scoreSummaryColumn = new() { Label = "技巧点\n任务|每分钟" };
-        public readonly CreditSummaryColumn _creditSummaryColumn = new() { Label = "信用点\n宇宙|星球" };
-        public readonly DroneCreditColumn _droneColumn = new() { Label = T("Dronebits") };
+        public readonly MissionColumn _missionColumn = new() { Label = T("Mission Table Rank") };
+        public readonly CompletionColumn _completionColumn = new() { Label = T("Mission Table Status") };
+        public readonly ClassScoreColumn _classScoreColumn = new() { Label = T("Mission Table Class Score") };
+        public readonly CosmocreditColumn _cosmoColumn = new() { Label = T("Mission Table Cosmo") };
+        public readonly LunarCreditColumn _lunarColumn = new() { Label = T("Mission Table Lunar") };
+        public readonly DroneCreditColumn _droneColumn = new() { Label = T("Mission Table Dronebits") };
         public readonly PlanetTokensColumn _planetTokenColumn = new() { Label = T("Mission Table Planet Tokens") };
-        public readonly SPMColumn _spmColumn = new() { Label = "技巧点\n每分钟" };
+        public readonly SPMColumn _spmColumn = new() { Label = T("Mission Table SPM") };
         public readonly TurninColumn _turninColumn = new() { Label = T("Mission Table Turnin Goal") };
         public readonly PlanetColumn _planetColumn = new() { Label = T("Mission Table Moons") };
         public readonly ProfileColumn _profileColumn = new() { Label = T("Mission Table Profile") };
+        public readonly NotesColumn _notesColumn = new() { Label = T("Mission Table Notes") };
         public readonly AllRelicExpColum _allExpColumn = new() { Label = T("Mission Table Exp") };
 
         public Mission_Table(List<MissionInfo> itemList) : base("Item_Table_V2", itemList)
@@ -213,9 +220,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
             List<Column<MissionInfo>> headers = [
                 _enabledColumn, _completionColumn, _idColumn, _planetColumn,
-                _jobColumn, _missionColumn, _nameColumn, _classScoreColumn, _spmColumn,
+                _jobColumn, _missionColumn, _nameColumn, _classScoreColumn,
                 _cosmoColumn, _lunarColumn, _droneColumn, _planetTokenColumn,
-                _turninColumn];
+                _spmColumn,  _turninColumn, _allExpColumn];
 
 
             var tierFlags = new (int tier, ItemFilter flag)[]
@@ -228,270 +235,32 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             foreach (var (tier, flag) in tierFlags)
             {
                 string tierName = tier switch { 1 => "I", 2 => "II", 3 => "III", 4 => "IV", 5 => "V", 6 => "VI", 7 => "VII", _ => "?" };
-                headers.Add(new RelicExpColumn(tier, flag) { Label = T(tierName) });
+                headers.Add(new RelicExpColumn(tier, flag) { Label = T("Mission Table Exp {0}", tierName) });
             }
 
-            headers.Add(_profileColumn);
-            Headers = [.. headers];
-            CustomColumnVisibility = Enumerable.Repeat(true, Headers.Length).ToArray();
+            headers.Add(_profileColumn, _notesColumn);
+            this.Headers = [.. headers];
 
             Sortable = true;
-            Flags |= ImGuiTableFlags.Resizable | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoSavedSettings;
-        }
-
-        protected override void PreDraw()
-        {
-            ApplyViewModeToColumnFlags();
-            RefreshAvailableMissionCache();
-        }
-
-        public override bool WouldBeVisible(MissionInfo value)
-        {
-            if (!base.WouldBeVisible(value))
-                return false;
-
-            var search = SearchText.Trim();
-            if (search.Length == 0)
-                return true;
-
-            return value.Id.ToString().Contains(search, StringComparison.OrdinalIgnoreCase)
-                || value.SheetInfo.Name.Contains(search, StringComparison.OrdinalIgnoreCase);
-        }
-
-        protected override int GetStretchColumnIndex(IReadOnlyList<int> visibleColumns)
-        {
-            for (var i = 0; i < visibleColumns.Count; i++)
-            {
-                if (Headers[visibleColumns[i]] == _nameColumn)
-                    return i;
-            }
-
-            return -1;
-        }
-
-        protected override float GetMinimumStretchColumnWidth(Column<MissionInfo> header, int index)
-            => 90f * ImGuiHelpers.GlobalScale;
-
-        protected override float GetMinimumColumnWidth(Column<MissionInfo> header, int index)
-        {
-            var scale = ImGuiHelpers.GlobalScale;
-            var width = header switch
-            {
-                EnabledColumn => 38f,
-                CompletionColumn => 38f,
-                IdColumn => 46f,
-                PlanetColumn => 38f,
-                JobColumn => 38f,
-                MissionColumn => 40f,
-                NameColumn => 90f,
-                ClassScoreColumn => 44f,
-                SPMColumn => 74f,
-                ScoreSummaryColumn => 86f,
-                CosmocreditColumn => 46f,
-                LunarCreditColumn => 46f,
-                CreditSummaryColumn => 84f,
-                DroneCreditColumn => 42f,
-                PlanetTokensColumn => 42f,
-                TurninColumn => 96f,
-                AllRelicExpColum => 136f,
-                RelicExpColumn => 30f,
-                ProfileColumn => 104f,
-                _ => 44f,
-            };
-
-            return width * scale;
-        }
-
-        private void RefreshAvailableMissionCache()
-        {
-            var now = Environment.TickCount64;
-            if (now < _nextAvailableMissionRefresh)
-                return;
-
-            _nextAvailableMissionRefresh = now + 250;
-            _availableMissionIds.Clear();
-            foreach (var missionId in CosmicHandler.All_AvailableMissions())
-                _availableMissionIds.Add(missionId);
-        }
-
-        private void ApplyViewModeToColumnFlags()
-        {
-            EnsureCustomColumnVisibility();
-
-            for (int i = 0; i < Headers.Length; i++)
-            {
-                var header = Headers[i];
-                bool visible = IsColumnVisible(header, i);
-                header.IsVisible = visible;
-                header.Flags = visible
-                    ? header.Flags & ~ImGuiTableColumnFlags.DefaultHide & ~ImGuiTableColumnFlags.Disabled
-                    : header.Flags | ImGuiTableColumnFlags.DefaultHide | ImGuiTableColumnFlags.Disabled;
-            }
-        }
-
-        private bool IsColumnVisible(Column<MissionInfo> header, int index)
-        {
-            if (header == _enabledColumn && !CanToggleMissionEnabled())
-                return false;
-
-            if (header.Flags.HasFlag(ImGuiTableColumnFlags.NoHide))
-                return true;
-
-            EnsureCustomColumnVisibility();
-            return ViewMode switch
-            {
-                TableViewMode.Compact => !IsCompactHiddenColumn(header),
-                TableViewMode.Custom => CustomColumnVisibility[index],
-                _ => true,
-            };
-        }
-
-        public void DrawCustomColumnSelector()
-        {
-            EnsureCustomColumnVisibility();
-
-            for (int i = 0; i < Headers.Length; i++)
-            {
-                var header = Headers[i];
-                if (header == _enabledColumn && !CanToggleMissionEnabled())
-                    continue;
-
-                bool visible = CustomColumnVisibility[i];
-                bool locked = header.Flags.HasFlag(ImGuiTableColumnFlags.NoHide);
-
-                ImGui.PushID(i);
-
-                if (locked)
-                    ImGui.BeginDisabled();
-
-                if (ImGui.Checkbox($"{header.Label}##customColumn", ref visible) && !locked)
-                    CustomColumnVisibility[i] = visible;
-
-                if (locked)
-                    ImGui.EndDisabled();
-
-                ImGui.PopID();
-            }
-        }
-
-        private static bool CanToggleMissionEnabled()
-            => C.SelectedMode != ModeSelect.MissionGoldMode
-            && C.SelectedMode != ModeSelect.LevelMode
-            && (C.SelectedMode != ModeSelect.RelicMode || C.XPRelicOnlyEnabled);
-
-        private void EnsureCustomColumnVisibility()
-        {
-            if (CustomColumnVisibility.Length == Headers.Length)
-                return;
-
-            CustomColumnVisibility = Enumerable.Repeat(true, Headers.Length).ToArray();
-        }
-
-        private bool IsCompactHiddenColumn(Column<MissionInfo> header)
-        {
-            return header == _classScoreColumn
-                || header == _spmColumn
-                || header == _scoreSummaryColumn
-                || header == _cosmoColumn
-                || header == _lunarColumn
-                || header == _creditSummaryColumn
-                || header == _droneColumn
-                || header == _planetTokenColumn
-                || header == _allExpColumn
-                || header is RelicExpColumn;
-        }
-
-        protected override float GetColumnWidth(Column<MissionInfo> header, int index)
-        {
-            var scale = ImGuiHelpers.GlobalScale;
-            var width = header switch
-            {
-                EnabledColumn => 40f,
-                CompletionColumn => 38f,
-                IdColumn => 52f,
-                PlanetColumn => 38f,
-                JobColumn => 38f,
-                MissionColumn => 40f,
-                NameColumn => 420f,
-                ClassScoreColumn => 44f,
-                ScoreSummaryColumn => 98f,
-                CosmocreditColumn => 46f,
-                LunarCreditColumn => 46f,
-                CreditSummaryColumn => 92f,
-                DroneCreditColumn => 42f,
-                PlanetTokensColumn => 42f,
-                SPMColumn => 74f,
-                TurninColumn => 96f,
-                AllRelicExpColum => 140f,
-                RelicExpColumn => 30f,
-                ProfileColumn => 128f,
-                _ => 76f,
-            };
-
-            return width * scale;
-        }
-
-        protected override uint GetRowBackgroundColor(MissionInfo item, int itemIndex, int rowNumber, bool hovered)
-        {
-            var activeMission = CosmicHelper.CurrentLunarMission != 0 && CosmicHelper.CurrentLunarMission == item.Id;
-            var availableMission = _availableMissionIds.Contains(item.Id);
-            if (activeMission || availableMission)
-            {
-                return hovered
-                    ? ImGui.GetColorU32(new Vector4(0.12f, 0.45f, 0.25f, 0.72f))
-                    : ImGui.GetColorU32(new Vector4(0.03f, 0.34f, 0.13f, 0.38f));
-            }
-
-            return base.GetRowBackgroundColor(item, itemIndex, rowNumber, hovered);
-        }
-
-        private static double GetScorePerMinute(MissionInfo item)
-        {
-            if (ScorePerMinuteCache.TryGetValue(item.Id, out var cachedScore))
-                return cachedScore;
-
-            var scoreInfo = item.SheetInfo.ScoreInfo();
-            if (item.SheetInfo.IsCritical && scoreInfo.TryGetValue(TurninState.Critical, out var criticalScore))
-                return ScorePerMinuteCache[item.Id] = criticalScore.Score;
-            if (scoreInfo.TryGetValue(TurninState.SequenceGold, out var seqGold) && seqGold.Score != 0)
-                return ScorePerMinuteCache[item.Id] = seqGold.Score;
-            return ScorePerMinuteCache[item.Id] = scoreInfo.Values.MaxBy(r => r.Score)?.Score ?? 0;
-        }
-
-        private static void DrawSplitValues(string left, string right)
-        {
-            var start = ImGui.GetCursorScreenPos();
-            var width = ImGuiUtil.CurrentColumnWidth;
-            var half = MathF.Max(1f, width * 0.5f);
-            var lineColor = ImGui.GetColorU32(new Vector4(0.24f, 0.31f, 0.43f, 0.45f));
-
-            ImGui.GetWindowDrawList().AddLine(
-                new Vector2(start.X + half, start.Y - 2f * ImGuiHelpers.GlobalScale),
-                new Vector2(start.X + half, start.Y + ImGui.GetFrameHeight()),
-                lineColor);
-
-            using (ImGuiUtil.PushColumnWidth(half))
-                ImGuiUtil.Center(left);
-
-            ImGui.SetCursorScreenPos(new Vector2(start.X + half, start.Y));
-            using (ImGuiUtil.PushColumnWidth(half))
-                ImGuiUtil.Center(right);
+            Flags |= ImGuiTableFlags.Hideable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Resizable | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit;
         }
 
         public void Dispose()
         {
-
         }
         public sealed class EnabledColumn : ItemFilterColumn
         {
-            public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
+            public override float Width => Math.Max(
+                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
+            );
             private readonly Mission_Table _table;
             public EnabledColumn(Mission_Table table)
             {
                 _table = table;
                 Flags = ImGuiTableColumnFlags.NoHide | ImGuiTableColumnFlags.NoResize;
                 SetFlags(ItemFilter.Enabled, ItemFilter.Disabled);
-                SetNames(T("Enabled"), T("Disabled"));
+                SetNames("Enabled", "Disabled");
             }
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs)
@@ -501,6 +270,18 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 ImGui.PushID(item.Id);
 
+                var mission = CosmicHelper.CurrentLunarMission;
+
+                if (mission != 0 && mission == item.Id)
+                {
+                    ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, ImGui.GetColorU32(new Vector4(0.0f, 1.0f, 0.2f, 0.25f)));
+                }
+                else if (CosmicHandler.All_AvailableMissions().Contains(item.Id))
+                {
+                    ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, ImGui.GetColorU32(new Vector4(0.0f, 1.0f, 0.2f, 0.25f)));
+                }
+
+
                 bool disabled = C.SelectedMode == ModeSelect.MissionGoldMode
                              || C.SelectedMode == ModeSelect.LevelMode
                              || (C.SelectedMode == ModeSelect.RelicMode && !C.XPRelicOnlyEnabled);
@@ -508,12 +289,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 if (!disabled)
                 {
                     bool enabled = C.MissionConfig[item.Id].Enabled;
-                    var cursorPos = ImGui.GetCursorPos();
-                    var checkboxSize = ImGui.GetFrameHeight();
-                    ImGui.SetCursorPosX(cursorPos.X + MathF.Max(0, (ImGuiUtil.CurrentColumnWidth - checkboxSize) * 0.5f));
-                    ImGui.AlignTextToFramePadding();
-
-                    if (ImGui.Checkbox("##EnableMission", ref enabled))
+                    if (ImGui_Ice.Table_CenterCheckbox("##EnableMission", ref enabled))
                     {
                         C.MissionConfig[item.Id].Enabled = enabled;
                         if (enabled == true)
@@ -525,7 +301,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         }
 
                         C.SaveDebounced();
-                        _table.SetFilterDirty(false);
+                        _table.SetFilterDirty();
                     }
                     if (ImGui.IsItemClicked())
                     {
@@ -546,65 +322,42 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public override string ToName(MissionInfo mission) => mission.SheetInfo.Name;
             public override void DrawColumn(MissionInfo mission, int _)
             {
-                UpdateUnsupportedMissionState(mission);
-
-                var scale = ImGuiHelpers.GlobalScale;
-                var cellStart = ImGui.GetCursorScreenPos();
-                var iconGap = 4f * scale;
-                var iconCount = 0;
-                var showAuxesiaFishingWarning = mission.SheetInfo.TerritoryId == CosmicMoonRegistry.Auxesia.TerritoryId && mission.SheetInfo.Jobs.Contains(18);
-                var showFishingPresetWarning = mission.SheetInfo.Jobs.Contains(18) && !GatheringUtil.FishingPreset.ContainsKey(mission.Id);
                 if (UnsupportedMissions.Ids.Contains(mission.Id))
-                    iconCount++;
-                if (showAuxesiaFishingWarning || showFishingPresetWarning)
-                    iconCount++;
-                if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
-                    iconCount++;
-                if (GatheringUtil.CriticalSpots.ContainsKey(mission.SheetInfo.Critical_MapKey))
-                    iconCount++;
-                iconCount += CountNoteIcons(mission);
-
-                var reservedIconWidth = iconCount > 0
-                    ? iconCount * ImGui.GetFrameHeight() + MathF.Max(0, iconCount - 1) * ImGui.GetStyle().ItemSpacing.X + iconGap
-                    : 0f;
-                var buttonWidth = MathF.Max(110f * scale, ImGuiUtil.CurrentColumnWidth - reservedIconWidth - iconGap);
-
-                if (ImGui.Button($"{mission.SheetInfo.Name}##MissionName", new Vector2(buttonWidth, 0)))
+                {
+                    using (var warningPush = ImRaii.PushColor(ImGuiCol.Text, EColor.Red))
+                    {
+                        ImGuiEx.Icon(FontAwesomeIcon.ExclamationTriangle);
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("This mission is currently missing stuff to allow it to work. It might be planet locked, or could be just needs mapped out\nI'll get to it when my world gets to it o/"));
+                        ImGui.EndTooltip();
+                    }
+                }
+                if (mission.SheetInfo.Jobs.Contains(18) && !GatheringUtil.FishingPreset.ContainsKey(mission.Id))
+                {
+                    using (var warningPush = ImRaii.PushColor(ImGuiCol.Text, EColor.Yellow))
+                    {
+                        ImGuiEx.Icon(FontAwesomeIcon.ExclamationTriangle);
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("This mission doesn't have a fishing preset yet, this is your warning for this."));
+                        ImGui.EndTooltip();
+                    }
+                }
+                if (ImGui.Button(mission.SheetInfo.Name))
                 {
                     IceLogging.Verbose("Testing... if this fires off multiple times", "DEBUG TEST");
                     Window_ExternalDetails.SelectedMission = mission.Id;
                     P.externalDetails.IsOpen = true;
                     IceLogging.Verbose($"Collasped condition: {P.externalDetails.CollapsedCondition.ToString()}");
                 }
-                if (ImGui.IsItemHovered() && ImGui.CalcTextSize(mission.SheetInfo.Name).X > buttonWidth - ImGui.GetStyle().FramePadding.X * 2)
-                    ImGui.SetTooltip(mission.SheetInfo.Name);
-
-                var iconX = cellStart.X + buttonWidth + iconGap;
-                if (iconCount > 0)
-                    ImGui.SetCursorScreenPos(new Vector2(iconX, cellStart.Y));
-                var drewIcon = false;
-
-                if (UnsupportedMissions.Ids.Contains(mission.Id))
-                {
-                    ImGuiEx.IconWithTooltip(FontAwesomeIcon.ExclamationTriangle, T("This mission is currently not supported."));
-                    drewIcon = true;
-                }
-
-                if (showAuxesiaFishingWarning || showFishingPresetWarning)
-                {
-                    if (drewIcon)
-                        ImGui.SameLine();
-
-                    ImGuiEx.IconWithTooltip(FontAwesomeIcon.ExclamationTriangle,
-                        T("Fishing isn't directly supported yet, but fishing hole locations are available. Import an AutoHook wiki preset, then set the first preset name under Fishing Settings."));
-                    drewIcon = true;
-                }
-
                 if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
                 {
-                    if (drewIcon)
-                        ImGui.SameLine();
-
+                    ImGui.SameLine();
                     if (ImGuiEx.IconButton(FontAwesomeIcon.Flag, $"Flag_{mission.Id}"))
                     {
                         Window_ExternalDetails.SelectedMission = mission.Id;
@@ -613,16 +366,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.BeginTooltip();
-                        ImGui.Text(T("X: {0:N0}, Z: {1:N0}", mission.SheetInfo.MapPosition.X, mission.SheetInfo.MapPosition.Y));
+                        ImGui.Text($"X: {mission.SheetInfo.MapPosition.X:N0}, Z: {mission.SheetInfo.MapPosition.Y:N0}");
                         ImGui.EndTooltip();
                     }
-                    drewIcon = true;
                 }
                 if (GatheringUtil.CriticalSpots.TryGetValue(mission.SheetInfo.Critical_MapKey, out var criticalInfo))
                 {
-                    if (drewIcon)
-                        ImGui.SameLine();
-
+                    ImGui.SameLine();
                     if (ImGuiEx.IconButton(FontAwesomeIcon.FlagCheckered, $"CriticalFlag_{mission.Id}"))
                     {
                         Utils.SetGatheringRing(mission.SheetInfo.TerritoryId, criticalInfo.X, criticalInfo.Y, criticalInfo.Radius, $"Red Alert: {mission.SheetInfo.Name}", criticalInfo.IconId);
@@ -639,33 +389,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         ImGui.EndTooltip();
                     }
 #endif
-                    drewIcon = true;
                 }
-
-                DrawNoteIcons(mission, drewIcon);
             }
         }
-
-        private static void UpdateUnsupportedMissionState(MissionInfo mission)
-        {
-            if (UnsupportedMissions.Ids.Contains(mission.Id))
-                return;
-
-            if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather))
-            {
-                var gatherInfo = GatheringRouteLoader.GetRoute(mission.SheetInfo.Gather_MapKey);
-                if (gatherInfo == null || gatherInfo.Nodes.Count is 0)
-                    UnsupportedMissions.Ids.Add(mission.Id);
-            }
-            else if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
-            {
-                if (!GatheringUtil.MoonFishingLocations.TryGetValue(mission.SheetInfo.TerritoryId, out var zoneFishing)
-                    || !zoneFishing.TryGetValue(mission.SheetInfo.MapPosition, out var fishingHole)
-                    || fishingHole.Count == 0)
-                    UnsupportedMissions.Ids.Add(mission.Id);
-            }
-        }
-
         public sealed class IdColumn : VerticalCenterColumnString
         {
             public override float Width => Math.Max(
@@ -689,19 +415,21 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public CompletionColumn()
             {
                 SetFlags(ItemFilter.NotCompleted, ItemFilter.Completed, ItemFilter.Gold);
-                SetNames(T("Not Completed"), T("Completed"), T("Gold"));
+                SetNames("Not Completed", "Completed", "Gold");
             }
-            public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
+            public override float Width => Math.Max(
+                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
+            );
             public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.CompletionStatus.CompareTo(rhs.SheetInfo.CompletionStatus);
             public override void DrawColumn(MissionInfo item, int idx)
             {
                 var status = item.SheetInfo.CompletionStatus;
                 var frameHeight = ImGui.GetFrameHeight();
-                var iconSize = frameHeight - 2f * ImGuiHelpers.GlobalScale;
-                var size = new Vector2(iconSize);
+                var size = new Vector2(frameHeight);
 
-                var columnWidth = ImGuiUtil.CurrentColumnWidth;
-                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + MathF.Max(0, (columnWidth - iconSize) * 0.5f));
+                var columnWidth = ImGui.GetColumnWidth();
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - frameHeight) / 2);
 
                 if (status is Status.Gold)
                 {
@@ -715,11 +443,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     var icon = status is Status.None ? FontAwesomeIcon.Times : FontAwesomeIcon.Check;
                     var color = status is Status.None ? EColor.Red : EColor.Green;
 
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetStyle().FramePadding.X);
+
                     using (ImRaii.PushFont(UiBuilder.IconFont))
                     using (ImRaii.PushColor(ImGuiCol.Text, color))
                     {
-                        var iconText = icon.ToIconString();
-                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + MathF.Max(0, (columnWidth - ImGui.CalcTextSize(iconText).X) * 0.5f));
                         ImGuiEx.Icon(icon);
                     }
                 }
@@ -793,7 +521,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 Flags = ImGuiTableColumnFlags.NoResize;
             }
             public override float Width => Math.Max(
-                ImGui.CalcTextSize(Label + "x").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
                 ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
             );
             public override string ToName(MissionInfo mission) => mission.SheetInfo.DronebitReward.ToString();
@@ -803,48 +531,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 ImGuiUtil.Center($"{mission.SheetInfo.DronebitReward}");
             }
         }
-        public sealed class ScoreSummaryColumn : VerticalCenterColumnString
-        {
-            public override string ToName(MissionInfo mission) => $"{mission.SheetInfo.ClassScore} {GetScorePerMinute(mission):N2}";
-            public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.ClassScore.CompareTo(rhs.SheetInfo.ClassScore);
-            public override int SortKeyCount => 2;
-            public override int CompareSortKey(MissionInfo lhs, MissionInfo rhs, int sortKey)
-                => sortKey == 1
-                    ? GetScorePerMinute(lhs).CompareTo(GetScorePerMinute(rhs))
-                    : lhs.SheetInfo.ClassScore.CompareTo(rhs.SheetInfo.ClassScore);
-
-            public override void DrawColumn(MissionInfo mission, int _)
-            {
-                DrawSplitValues($"{mission.SheetInfo.ClassScore}", GetScorePerMinute(mission) > 0 ? $"{GetScorePerMinute(mission):N1}" : "-");
-            }
-        }
-        public sealed class CreditSummaryColumn : VerticalCenterColumnString
-        {
-            public override string ToName(MissionInfo mission) => $"{mission.SheetInfo.CosmoCredit} {mission.SheetInfo.LunarCredit}";
-            public override int SortKeyCount => 2;
-            public override int Compare(MissionInfo lhs, MissionInfo rhs)
-            {
-                var creditCompare = lhs.SheetInfo.CosmoCredit.CompareTo(rhs.SheetInfo.CosmoCredit);
-                return creditCompare != 0 ? creditCompare : lhs.SheetInfo.LunarCredit.CompareTo(rhs.SheetInfo.LunarCredit);
-            }
-            public override int CompareSortKey(MissionInfo lhs, MissionInfo rhs, int sortKey)
-                => sortKey == 1
-                    ? lhs.SheetInfo.LunarCredit.CompareTo(rhs.SheetInfo.LunarCredit)
-                    : lhs.SheetInfo.CosmoCredit.CompareTo(rhs.SheetInfo.CosmoCredit);
-
-            public override void DrawColumn(MissionInfo mission, int _)
-                => DrawSplitValues($"{mission.SheetInfo.CosmoCredit}", $"{mission.SheetInfo.LunarCredit}");
-        }
         public sealed class PlanetTokensColumn : ItemFilterColumn
         {
             public PlanetTokensColumn()
             {
                 Flags = ImGuiTableColumnFlags.NoResize;
                 SetFlags(ItemFilter.HasTokens, ItemFilter.NoTokens);
-                SetNames(T("Has Tokens"), T("No Tokens"));
+                SetNames("Has Tokens", "No Tokens");
             }
             public override float Width => Math.Max(
-                ImGui.CalcTextSize(Label + "x").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
                 ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
             );
             public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.TokenItemAmount.CompareTo(rhs.SheetInfo.TokenItemAmount);
@@ -869,31 +565,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs)
             {
-                var lhsPairs = FirstRelicExp(lhs.SheetInfo.RelicXpInfo);
-                var rhsPairs = FirstRelicExp(rhs.SheetInfo.RelicXpInfo);
+                var lhsPairs = lhs.SheetInfo.RelicXpInfo.OrderBy(x => x.Key).ThenBy(x => x.Value).FirstOrDefault();
+                var rhsPairs = rhs.SheetInfo.RelicXpInfo.OrderBy(x => x.Key).ThenBy(x => x.Value).FirstOrDefault();
 
                 var keyCompare = lhsPairs.Key.CompareTo(rhsPairs.Key);
                 if (keyCompare != 0) return keyCompare;
 
                 return lhsPairs.Value.CompareTo(rhsPairs.Value);
-            }
-
-            private static KeyValuePair<int, int> FirstRelicExp(Dictionary<int, int> relicXpInfo)
-            {
-                var found = false;
-                var bestKey = 0;
-                var bestValue = 0;
-                foreach (var (key, value) in relicXpInfo)
-                {
-                    if (found && key >= bestKey)
-                        continue;
-
-                    found = true;
-                    bestKey = key;
-                    bestValue = value;
-                }
-
-                return found ? new KeyValuePair<int, int>(bestKey, bestValue) : default;
             }
 
             private static string RomanNumeral(int tier) => tier switch
@@ -910,103 +588,76 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
             public override void DrawColumn(MissionInfo item, int idx)
             {
-                if (!HasVisibleRelicExp(item.SheetInfo.RelicXpInfo))
+                var exps = item.SheetInfo.RelicXpInfo
+                    .Where(x => x.Value != 0)
+                    .OrderBy(x => x.Key)
+                    .ToList();
+
+                if (exps.Count == 0)
                 {
                     ImGuiUtil.Center("-");
                     return;
                 }
 
-                DrawRelicExpPills(item.SheetInfo.RelicXpInfo);
-            }
+                float spacing = ImGui.GetStyle().ItemSpacing.X;
+                float padding = ImGui.GetStyle().FramePadding.X;
 
-            private static bool HasVisibleRelicExp(Dictionary<int, int> relicXpInfo)
-            {
-                foreach (var value in relicXpInfo.Values)
+                // Calculate total width of all pills + spacing between them
+                float totalWidth = exps.Sum(x => ImGui.CalcTextSize($"{RomanNumeral(x.Key)}:{x.Value}").X + padding * 2);
+                totalWidth += spacing * (exps.Count - 1);
+
+                float columnWidth = ImGui.GetColumnWidth();
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - totalWidth) / 2);
+
+                for (int i = 0; i < exps.Count; i++)
                 {
-                    if (value != 0)
-                        return true;
+                    var (tier, value) = (exps[i].Key, exps[i].Value);
+
+                    Vector4 pillColor = tier switch
+                    {
+                        1 => new Vector4(0.9f, 0.8f, 0.1f, 0.8f), // I   - Yellow
+                        2 => new Vector4(0.9f, 0.5f, 0.1f, 0.8f), // II  - Orange
+                        3 => new Vector4(0.8f, 0.2f, 0.2f, 0.8f), // III - Red
+                        4 => new Vector4(0.6f, 0.2f, 0.8f, 0.8f), // IV  - Purple
+                        5 => new Vector4(0.2f, 0.4f, 0.9f, 0.8f), // V   - Blue
+                        6 => new Vector4(0.4f, 0.8f, 1.0f, 0.8f), // VI  - Light Blue
+                        7 => new Vector4(0.2f, 0.8f, 0.3f, 0.8f), // VII - Green
+                        _ => new Vector4(0.5f, 0.5f, 0.5f, 0.8f),
+                    };
+
+                    string roman = tier switch
+                    {
+                        1 => "I",
+                        2 => "II",
+                        3 => "III",
+                        4 => "IV",
+                        5 => "V",
+                        6 => "VI",
+                        7 => "VII",
+                        _ => "?"
+                    };
+
+
+                    using (ImRaii.PushColor(ImGuiCol.Button, pillColor)
+                                 .Push(ImGuiCol.ButtonHovered, pillColor with { W = 1.0f })
+                                 .Push(ImGuiCol.ButtonActive, pillColor))
+                    {
+                        ImGui.SmallButton($"{roman}:{value}##exp{tier}_{idx}");
+                    }
+
+                    if (i < exps.Count - 1)
+                        ImGui.SameLine();
                 }
-
-                return false;
             }
-
-            private static void DrawRelicExpPills(Dictionary<int, int> relicXpInfo)
-            {
-                var scale = ImGuiHelpers.GlobalScale;
-                var drawList = ImGui.GetWindowDrawList();
-                var start = ImGui.GetCursorScreenPos();
-                var innerPadding = 3f * scale;
-                var columnWidth = MathF.Max(1f, ImGuiUtil.CurrentColumnWidth - innerPadding * 2f);
-                var spacing = 3f * scale;
-                var height = MathF.Max(18f * scale, ImGui.GetTextLineHeight() + 4f * scale);
-                var y = start.Y + MathF.Max(0, (ImGui.GetFrameHeight() - height) * 0.5f);
-
-                var xPos = start.X + innerPadding;
-                var right = start.X + innerPadding + columnWidth;
-
-                for (var tier = 1; tier <= 7; tier++)
-                {
-                    if (!relicXpInfo.TryGetValue(tier, out var value) || value == 0)
-                        continue;
-
-                    var text = $"{RomanNumeral(tier)}:{value}";
-                    var width = ImGui.CalcTextSize(text).X + 8f * scale;
-                    if (xPos + width > right)
-                        break;
-
-                    var min = new Vector2(xPos, y);
-                    var max = min + new Vector2(width, height);
-                    drawList.AddRectFilled(min, max, ImGui.GetColorU32(ExpPillColor(tier)), 4f * scale);
-                    drawList.AddRect(min, max, ImGui.GetColorU32(new Vector4(1f, 1f, 1f, 0.12f)), 4f * scale);
-
-                    ImGui.SetCursorScreenPos(new Vector2(min.X + 4f * scale, min.Y + MathF.Max(0, (height - ImGui.GetTextLineHeight()) * 0.5f)));
-                    ImGui.TextColored(Vector4.One, text);
-
-                    xPos += width + spacing;
-                }
-
-                ImGui.SetCursorScreenPos(start);
-            }
-
-            private static Vector4 ExpPillColor(int tier) => tier switch
-            {
-                1 => new Vector4(0.9f, 0.8f, 0.1f, 0.82f),
-                2 => new Vector4(0.9f, 0.5f, 0.1f, 0.82f),
-                3 => new Vector4(0.8f, 0.2f, 0.2f, 0.82f),
-                4 => new Vector4(0.6f, 0.2f, 0.8f, 0.82f),
-                5 => new Vector4(0.2f, 0.4f, 0.9f, 0.82f),
-                6 => new Vector4(0.4f, 0.8f, 1.0f, 0.82f),
-                7 => new Vector4(0.2f, 0.8f, 0.3f, 0.82f),
-                _ => new Vector4(0.5f, 0.5f, 0.5f, 0.82f),
-            };
 
             public override bool FilterFunc(MissionInfo mission)
             {
-                var hasExp = false;
-                foreach (var (tier, value) in mission.SheetInfo.RelicXpInfo)
-                {
-                    if (value <= 0)
-                        continue;
+                var exps = mission.SheetInfo.RelicXpInfo.Where(x => x.Value > 0).ToList();
 
-                    hasExp = true;
-                    if (FilterValue.HasFlag(TierFlag(tier)))
-                        return true;
-                }
+                if (exps.Count == 0) return true;
 
-                return !hasExp;
+                return exps.Any(x => FilterValue.HasFlag(TierToFlag(x.Key)));
             }
-
-            private static ItemFilter TierFlag(int tier) => tier switch
-            {
-                1 => ItemFilter.HasI,
-                2 => ItemFilter.HasII,
-                3 => ItemFilter.HasIII,
-                4 => ItemFilter.HasIV,
-                5 => ItemFilter.HasV,
-                6 => ItemFilter.HasVI,
-                7 => ItemFilter.HasVII,
-                _ => 0,
-            };
         }
         public sealed class RelicExpColumn : ItemFilterColumn
         {
@@ -1022,8 +673,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 SetNames("I", "II", "III", "IV", "V", "VI", "VII");
             }
             public override float Width => Math.Max(
-                ImGui.CalcTextSize(Label + "x").X + ImGui.GetStyle().CellPadding.X * 2,
-                ImGui.GetFrameHeight() + 12f * ImGuiHelpers.GlobalScale
+                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
             );
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs)
@@ -1053,7 +704,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 };
 
                 var buttonWidth = ImGui.CalcTextSize($"{value}").X + ImGui.GetStyle().FramePadding.X * 2;
-                var columnWidth = ImGuiUtil.CurrentColumnWidth;
+                var columnWidth = ImGui.GetColumnWidth();
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - buttonWidth) / 2);
 
                 using (ImRaii.PushColor(ImGuiCol.Button, pillColor)
@@ -1079,9 +730,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 Flags = ImGuiTableColumnFlags.NoResize;
                 SetFlags(MissionFilter.RedAlert, MissionFilter.Sequence, MissionFilter.Weather, MissionFilter.Timed, MissionFilter.ARank, MissionFilter.BRank, MissionFilter.CRank, MissionFilter.DRank, MissionFilter.Master);
-                SetNames(T("Red Alert"), T("Sequence"), T("Weather"), T("Timed"), T("A Rank"), T("B Rank"), T("C Rank"), T("D Rank"), T("Master"));
+                SetNames("Red Alert", "Sequence", "Weather", "Timed", "A Rank", "B Rank", "C Rank", "D Rank", "Master");
             }
-            public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
+            public override float Width => Math.Max(ImGui.CalcTextSize(Label + "XX").X + ImGui.GetStyle().CellPadding.X * 2, ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2);
 
             private static int GetMissionPriority(CosmicInfo info)
             {
@@ -1098,14 +749,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 GetMissionPriority(lhs.SheetInfo).CompareTo(GetMissionPriority(rhs.SheetInfo));
             public override void DrawColumn(MissionInfo item, int idx)
             {
+                var status = item.SheetInfo.CompletionStatus;
                 var frameHeight = ImGui.GetFrameHeight();
-                var iconSize = frameHeight - 2f * ImGuiHelpers.GlobalScale;
-                var size = new Vector2(iconSize);
-                var columnWidth = ImGuiUtil.CurrentColumnWidth;
-                var start = ImGui.GetCursorScreenPos();
+                var size = new Vector2(frameHeight);
 
-                void SetCenteredX(float contentWidth)
-                    => ImGui.SetCursorScreenPos(new Vector2(start.X + MathF.Max(0, (columnWidth - contentWidth) * 0.5f), ImGui.GetCursorScreenPos().Y));
+                var columnWidth = ImGui.GetColumnWidth();
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - frameHeight) / 2);
 
                 if (item.SheetInfo.IsCritical || item.SheetInfo.IsWeather)
                 {
@@ -1113,51 +762,51 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), "ICE.Resources.Red_Alert.png").GetWrapOrEmpty()
                       : CosmicHelper.WeatherIconDict[item.SheetInfo.Weather].GetWrapOrEmpty();
 
-                    SetCenteredX(iconSize);
                     ImGui.Image(texture.Handle, size);
                 }
                 else
                 {
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetStyle().FramePadding.X);
                     if (item.SheetInfo.IsProvisional)
                     {
                         var icon = item.SheetInfo.IsTimed ? FontAwesomeIcon.Clock : FontAwesomeIcon.ListOl;
-                        var iconText = icon.ToIconString();
-                        using (ImRaii.PushFont(UiBuilder.IconFont))
-                        {
-                            SetCenteredX(ImGui.CalcTextSize(iconText).X);
-                            ImGui.TextUnformatted(iconText);
-                        }
-                        if (ImGui.IsItemHovered())
-                        {
-                            ImGui.BeginTooltip();
+                        ImGuiEx.Icon(icon);
                         if (item.SheetInfo.IsTimed)
                         {
-                            ImGui.Text(T("Time Slot"));
-                            ImGui.Text($"{item.SheetInfo.StartTime:D2}:00 - {item.SheetInfo.EndTime:D2}:00");
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.BeginTooltip();
+                                ImGui.Text(T("Time Slot"));
+                                ImGui.Text($"{item.SheetInfo.StartTime:D2}:00 - {item.SheetInfo.EndTime:D2}:00");
+                                ImGui.EndTooltip();
+                            }
                         }
                         else if (item.SheetInfo.IsSequence)
                         {
-                            ImGui.Text(T("Sequence Missions"));
-                            if (item.SheetInfo.SequenceMissions_Previous.Count() > 0)
+                            if (ImGui.IsItemHovered())
                             {
-                                ImGui.Separator();
-                                ImGui.Text(T("Previous Missions"));
-                                foreach (var mission in item.SheetInfo.SequenceMissions_Previous)
+                                ImGui.BeginTooltip();
+                                ImGui.Text(T("Sequence Missions"));
+                                if (item.SheetInfo.SequenceMissions_Previous.Count() > 0)
                                 {
-                                    ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
+                                    ImGui.Separator();
+                                    ImGui.Text(T("Previous Missions"));
+                                    foreach (var mission in item.SheetInfo.SequenceMissions_Previous)
+                                    {
+                                        ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
+                                    }
                                 }
-                            }
-                            if (item.SheetInfo.SequenceMissions_Next.Count() > 0)
-                            {
-                                ImGui.Separator();
-                                ImGui.Text(T("Next Missions"));
-                                foreach (var mission in item.SheetInfo.SequenceMissions_Next)
+                                if (item.SheetInfo.SequenceMissions_Next.Count() > 0)
                                 {
-                                    ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
+                                    ImGui.Separator();
+                                    ImGui.Text(T("Next Missions"));
+                                    foreach (var mission in item.SheetInfo.SequenceMissions_Next)
+                                    {
+                                        ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
+                                    }
                                 }
+                                ImGui.EndTooltip();
                             }
-                        }
-                            ImGui.EndTooltip();
                         }
                     }
                     else
@@ -1171,8 +820,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                             1 => "D",
                             _ => "???"
                         };
-                        SetCenteredX(ImGui.CalcTextSize(rank).X);
-                        ImGui.TextUnformatted(rank);
+                        ImGui.Text(rank);
                     }
                 }
             }
@@ -1200,56 +848,20 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 Flags = ImGuiTableColumnFlags.NoResize;
             }
-
             public override float Width => Math.Max(
                 ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
                 ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
             );
-
-            private static bool TryGetBestScore(MissionInfo item, out TurninState state, out RewardInfo reward)
+            private double GetScore(MissionInfo item)
             {
-                state = default;
-                reward = null;
-
                 var scoreInfo = item.SheetInfo.ScoreInfo();
-                if (item.SheetInfo.IsCritical && scoreInfo.TryGetValue(TurninState.Critical, out var critical))
-                {
-                    state = TurninState.Critical;
-                    reward = critical;
-                    return critical.Score != 0;
-                }
-
-                if (item.SheetInfo.IsMaster && scoreInfo.TryGetValue(TurninState.Master_Score, out var masterScore))
-                {
-                    state = TurninState.Master_Score;
-                    reward = masterScore;
-                    return masterScore.Score != 0;
-                }
-
+                if (item.SheetInfo.IsCritical)
+                    return scoreInfo[TurninState.Critical].Score;
                 if (scoreInfo.TryGetValue(TurninState.SequenceGold, out var seqGold) && seqGold.Score != 0)
-                {
-                    state = TurninState.SequenceGold;
-                    reward = seqGold;
-                    return true;
-                }
-
-                foreach (var entry in scoreInfo)
-                {
-                    if (reward != null && entry.Value.Score <= reward.Score)
-                        continue;
-
-                    state = entry.Key;
-                    reward = entry.Value;
-                }
-
-                return reward?.Score != 0;
-            }
-
-            private static double GetScore(MissionInfo item)
-            {
-                return TryGetBestScore(item, out _, out var reward)
-                    ? reward.Score
-                    : 0;
+                    return seqGold.Score;
+                if (item.SheetInfo.IsMaster)
+                    return scoreInfo[TurninState.Master_Score].Score;
+                return scoreInfo.Values.MaxBy(r => r.Score)?.Score ?? 0;
             }
             private string GetName(TurninState state)
             {
@@ -1265,15 +877,20 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public override int Compare(MissionInfo x, MissionInfo y) => GetScore(x).CompareTo(GetScore(y));
             public override void DrawColumn(MissionInfo item, int _)
             {
-                if (TryGetBestScore(item, out var bestState, out var bestReward))
+                var scoreInfo = item.SheetInfo.ScoreInfo();
+                var bestScore = scoreInfo.MaxBy(r => r.Value.Score);
+                if (scoreInfo.TryGetValue(TurninState.SequenceGold, out var seqGold) && seqGold.Score != 0)
+                    bestScore = new(TurninState.SequenceGold, seqGold);
+
+                if (bestScore.Value.Score != 0)
                 {
-                    string scoreText = $"{bestReward.Score:N2}";
+                    string scoreText = $"{bestScore.Value.Score:N2}";
 
                     var buttonWidth = ImGui.CalcTextSize(scoreText).X + ImGui.GetStyle().FramePadding.X * 2;
-                    var columnWidth = ImGuiUtil.CurrentColumnWidth;
+                    var columnWidth = ImGui.GetColumnWidth();
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - buttonWidth) / 2);
 
-                    Vector4 pillColor = bestState switch
+                    Vector4 pillColor = bestScore.Key switch
                     {
                         TurninState.Bronze => new(0.6f, 0.35f, 0.15f, 1.0f), // darker bronze
                         TurninState.Silver => new(0.6f, 0.6f, 0.6f, 1.0f),
@@ -1284,7 +901,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         _ => new(0.5f, 0.5f, 0.5f, 0.8f)
                     };
 
-                    bool isBright = bestState is TurninState.Gold or TurninState.Silver or TurninState.SequenceGold or TurninState.Master_Score;
+                    bool isBright = bestScore.Key is TurninState.Gold or TurninState.Silver or TurninState.SequenceGold or TurninState.Master_Score;
                     Vector4 textColor = isBright ? new(0.1f, 0.1f, 0.1f, 1.0f) : new(1.0f, 1.0f, 1.0f, 1.0f);
 
                     using (ImRaii.PushColor(ImGuiCol.Button, pillColor)
@@ -1302,7 +919,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         ImGui.BeginTooltip();
                         ImGui.Text(T("Click button to view external details"));
                         ImGui.Separator();
-                        ImGui.Text(T("Average Rewards per minute"));
+                        ImGui.Text(T("[Average] Rewards per minute"));
                         if (C.MissionConfig.TryGetValue(item.Id, out var config))
                         {
                             ImGui.Text(T("Total Completions: {0:N0}/{1:N0}", config.TotalCompletions, config.TotalAttempts));
@@ -1317,18 +934,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
                             ImGui.TableHeadersRow();
 
-                            foreach (var entry in item.SheetInfo.ScoreInfo())
+                            foreach (var entry in scoreInfo.Where(x => x.Value.Score != 0))
                             {
                                 if (item.SheetInfo.IsMaster && entry.Key != TurninState.Master_Score)
                                     continue;
                                 if (item.SheetInfo.IsCritical && entry.Key != TurninState.Critical)
                                     continue;
-                                if (entry.Value.Score == 0)
-                                    continue;
 
                                 ImGui.TableNextRow();
                                 ImGui.TableSetColumnIndex(0);
-                                ImGui.Text($"{T(GetName(entry.Key))} [{entry.Value.Completions:N0}]");
+                                ImGui.Text($"{GetName(entry.Key)} [{entry.Value.Completions:N0}]");
 
                                 ImGui.TableNextColumn();
                                 ImGui.Text($"{entry.Value.Score:N2}");
@@ -1362,20 +977,20 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 Flags = ImGuiTableColumnFlags.NoResize;
                 SetFlags(ItemFilter.TurninGold, ItemFilter.TurninSilver, ItemFilter.TurninBronze);
-                SetNames(T("Gold"), T("Silver"), T("Bronze"));
+                SetNames("Gold", "Silver", "Bronze");
             }
             public override float Width
             {
                 get
                 {
-                    const int amount = 3;
+                    int amount = C.MissionFilter.HasFlag(MissionFilter.Master) ? 4 : 3;
 
                     var iconWidth = ImGui.GetFrameHeight(); // IconButton is square, frameHeight x frameHeight
                     var spacing = ImGui.GetStyle().ItemSpacing.X;
                     var cellPadding = ImGui.GetStyle().CellPadding.X * 2;
 
                     var headerWidth = ImGui.CalcTextSize(Label).X + cellPadding;
-                    var contentWidth = iconWidth * amount + spacing * (amount - 1) + cellPadding;
+                    var contentWidth = iconWidth * amount + spacing * 3 + cellPadding; // 4 icons (clock+3 trophies) worst case
 
                     return Math.Max(headerWidth, contentWidth);
                 }
@@ -1395,20 +1010,15 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 if (item.SheetInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining) || item.SheetInfo.IsCritical)
                 {
+
                     ImGuiUtil.Center(T("Auto"));
                 }
                 else if (item.SheetInfo.IsMaster)
                 {
                     string masterPopup = "Master Settings: Popup";
-                    var buttonLabel = T("Master Short Settings");
-                    var spacing = ImGui.GetStyle().ItemSpacing.X;
-                    var iconButtonSize = new Vector2(ImGui.GetFrameHeight());
-                    var iconButtonWidth = iconButtonSize.X;
-                    var buttonWidth = MathF.Min(ImGuiUtil.CurrentColumnWidth, iconButtonWidth * 3f + spacing * 2f);
 
                     ImGui.PushID($"Mission_{item.Id}");
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + MathF.Max(0, (ImGuiUtil.CurrentColumnWidth - buttonWidth) * 0.5f));
-                    if (ImGui.Button(buttonLabel, new Vector2(buttonWidth, 0)))
+                    if (ImGui.Button(T("Master Settings")))
                     {
                         ImGui.OpenPopup(masterPopup);
                     }
@@ -1432,9 +1042,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                             }
                             if (ImGui.IsItemHovered())
                             {
-                                ImGui.SetTooltip(T("Will turnin once the timer runs out\n" +
-                                    "Currently there isn't a way to stop artisan from crafting, it's been requested\n" +
-                                    "Please give it time"));
+                                ImGui.SetTooltip(T("Will turnin once the timer runs out\nCurrently there isn't a way to stop artisan from crafting, it's been requested\nPlease give it time"));
                             }
 
                             ImGui.Separator();
@@ -1445,11 +1053,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                             }
                             if (ImGui.IsItemHovered())
                             {
-                                ImGui.SetTooltip(T("Will turnin when 1 of the 2 things are met:\n" +
-                                    "1: Score that you personally have set has been met\n" +
-                                    "2: Timer has ran out\n" +
-                                    "You can set your score with this mode yourself, due to not knowing the scoring break points\n" +
-                                    "Yet"));
+                                ImGui.SetTooltip(T("Will turnin when 1 of the 2 things are met:\n1: Score that you personally have set has been met\n2: Timer has ran out\nYou can set your score with this mode yourself, due to not knowing the scoring break points\nYet"));
                             }
                             ImGui.SameLine();
                             var masterScore = configInfo.Master_Score;
@@ -1470,9 +1074,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                 }
                                 if (ImGui.IsItemHovered())
                                 {
-                                    ImGui.SetTooltip(T("Will turn in after X amount of crafts have been completed\n" +
-                                        "Good if you're goal is to just craft a certain amount and not worry bout score\n" +
-                                        "DO NOT. SET THIS TO SOME REDICULOUS AMOUNT AND ASK WHY IT DOESN'T WORK"));
+                                    ImGui.SetTooltip(T("Will turn in after X amount of crafts have been completed\nGood if you're goal is to just craft a certain amount and not worry bout score\nDO NOT. SET THIS TO SOME REDICULOUS AMOUNT AND ASK WHY IT DOESN'T WORK"));
                                 }
                                 ImGui.SameLine();
                                 var itemCount = configInfo.Master_Items;
@@ -1492,9 +1094,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                             }
                             if (ImGui.IsItemHovered())
                             {
-                                ImGui.SetTooltip(T("Will turnin the mission as soon as it can\n" +
-                                    "Very useful for quick score farming, mount tokens.\n" +
-                                    "For BTN/MIN, this will gather the non-collectable item"));
+                                ImGui.SetTooltip(T("Will turnin the mission as soon as it can\nVery useful for quick score farming, mount tokens.\nFor BTN/MIN, this will gather the non-collectable item"));
                             }
                         }
 
@@ -1518,35 +1118,29 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         var goldEnabled = highestTurnin >= TurninState.Gold;
                         var silverEnabled = highestTurnin >= TurninState.Silver;
                         var bronzeEnabled = highestTurnin >= TurninState.Bronze;
-                        var spacing = ImGui.GetStyle().ItemSpacing.X;
-                        var buttonSize = new Vector2(ImGui.GetFrameHeight());
-                        var buttonWidth = buttonSize.X;
 
-                        var buttonCount = 3f;
-                        var totalWidth = buttonWidth * buttonCount + spacing * (buttonCount - 1f);
-                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + MathF.Max(0, (ImGuiUtil.CurrentColumnWidth - totalWidth) * 0.5f));
                         using (ImRaii.PushColor(ImGuiCol.Text, goldEnabled ? GoldColor : DisabledColor))
                         {
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold", buttonSize))
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold"))
                             {
                                 configInfo.TurninGoal = TurninState.Gold;
                                 C.SaveDebounced();
                             }
                         }
-                        ImGui.SameLine(0, spacing);
+                        ImGui.SameLine();
                         using (ImRaii.PushColor(ImGuiCol.Text, silverEnabled ? SilverColor : DisabledColor))
                         {
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Silver", buttonSize))
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Silver"))
                             {
                                 configInfo.TurninGoal = TurninState.Silver;
                                 C.SaveDebounced();
                             }
 
                         }
-                        ImGui.SameLine(0, spacing);
+                        ImGui.SameLine();
                         using (ImRaii.PushColor(ImGuiCol.Text, bronzeEnabled ? BronzeColor : DisabledColor))
                         {
-                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Bronze", buttonSize))
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Bronze"))
                             {
                                 configInfo.TurninGoal = TurninState.Bronze;
                                 C.SaveDebounced();
@@ -1567,7 +1161,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 SetFlags(moons.Select(m => m.PlanetFilter).ToArray());
                 SetNames(moons.Select(m => T(m.DisplayName)).ToArray());
             }
-            public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
+            public override float Width => Math.Max(
+                ImGui.CalcTextSize(Label + "X").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
+            );
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.TerritoryId.CompareTo(rhs.SheetInfo.TerritoryId);
             public override void DrawColumn(MissionInfo item, int idx)
@@ -1576,7 +1173,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 var frameHeight = ImGui.GetFrameHeight();
                 var size = new Vector2(frameHeight - 2);
 
-                var columnWidth = ImGuiUtil.CurrentColumnWidth;
+                var columnWidth = ImGui.GetColumnWidth();
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - frameHeight) / 2);
 
                 var planetIcon = CosmicMoonRegistry.GetIconResource(item.SheetInfo.TerritoryId);
@@ -1596,28 +1193,27 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                  JobFilter.LTW, JobFilter.WVR, JobFilter.ALC, JobFilter.CUL,
                                  JobFilter.MIN, JobFilter.BTN, JobFilter.FSH);
             }
-            public override float Width => ImGui.GetFrameHeight() + 14f * ImGuiHelpers.GlobalScale;
+            public override float Width => Math.Max(ImGui.CalcTextSize(Label + "XX").X + ImGui.GetStyle().CellPadding.X * 2, ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2);
             public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.Jobs.First().CompareTo(rhs.SheetInfo.Jobs.First());
 
             public override void DrawColumn(MissionInfo item, int idx)
             {
                 var frameHeight = ImGui.GetFrameHeight();
-                var iconSize = frameHeight - 2f * ImGuiHelpers.GlobalScale;
-                var size = new Vector2(iconSize);
+                var size = new Vector2(frameHeight);
                 var jobs = item.SheetInfo.Jobs;
-                if (jobs.Count == 0)
-                    return;
 
-                var columnWidth = ImGuiUtil.CurrentColumnWidth;
-                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + MathF.Max(0, (columnWidth - iconSize) * 0.5f));
+                var tightSpacing = 2f; // adjust this if I don't like how close/far they are
+                var totalWidth = frameHeight * jobs.Count + tightSpacing * (jobs.Count - 1);
 
-                var job = jobs.First();
-                var icon = CosmicHelper.ClassInfoDict[job].JobIcon;
-                ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
-                if (jobs.Count > 1 && ImGui.IsItemHovered())
+                var columnWidth = ImGui.GetColumnWidth();
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - totalWidth) / 2);
+
+                using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, new Vector2(tightSpacing, 0));
+                foreach (var job in jobs)
                 {
-                    var jobNames = string.Join(" / ", jobs.Select(GetJobName));
-                    ImGui.SetTooltip(jobNames);
+                    var icon = CosmicHelper.ClassInfoDict[job].JobIcon;
+                    ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
+                    ImGui.SameLine();
                 }
             }
             public override bool FilterFunc(MissionInfo item)
@@ -1657,9 +1253,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public override void DrawColumn(MissionInfo item, int idx)
             {
                 var sheetInfo = item.SheetInfo;
-                var buttonInset = 3f * ImGuiHelpers.GlobalScale;
-                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + buttonInset);
-                var buttonSize = new Vector2(MathF.Max(1f, ImGuiUtil.CurrentColumnWidth - buttonInset * 2f), 0);
                 bool craftProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Craft);
                 bool gatherProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Gather);
                 bool collectable = sheetInfo.Attributes.HasFlag(MissionAttributes.Collectables) || sheetInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
@@ -1671,14 +1264,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
                 if (sheetInfo.Attributes.HasFlag(MissionAttributes.Craft))
                 {
-                    if (ImGui.Button($"{T("Craft Settings")}##Craft_{item.Id}", buttonSize))
+                    if (ImGui.Button(T("Open Craft Settings") + $"##Craft_{item.Id}"))
                     {
                         ImGui.OpenPopup("Craft Settings: Recipies");
                     }
-                    if (ImGui.IsItemHovered())
-                        ImGui.SetTooltip(T("Open Craft Settings"));
 
-                    using var popupStyle = ImGuiUtil.PushDefaultPopupStyle();
                     if (ImGui.BeginPopup("Craft Settings: Recipies"))
                     {
                         ImGui.TextDisabled($"{item.Id}");
@@ -1701,31 +1291,25 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     if (!collectable)
                     {
                         string profileName = "???";
-                        string profileButtonName = profileName;
                         if (C.MissionConfig.TryGetValue(item.Id, out var config))
                         {
                             if (C.GatherProfiles.TryGetValue(config.GProfileId, out var profileSetting))
                             {
-                                profileName = GetGatherProfileDisplayName(profileSetting.Name);
-                                profileButtonName = GetGatherProfileButtonName(profileSetting.Name);
+                                profileName = profileSetting.Name;
                             }
 
-                            var profileButtonLabel = FitButtonLabel(profileButtonName, buttonSize.X);
-                            if (ImGui.Button($"{profileButtonLabel}##{item.Id}_{item.SheetInfo.Name}", buttonSize))
+                            if (ImGui.Button($"{T(profileName)}##{profileName}_{item.Id}_{item.SheetInfo.Name}"))
                             {
-                                ImGui.OpenPopup(T("Select Gather Profile"));
+                                ImGui.OpenPopup($"Select Gather Profile");
                             }
                             if (ImGui.IsItemHovered())
                             {
-                                ImGui.BeginTooltip();
-                                ImGui.Text(profileName);
-                                ImGui.TextDisabled(T("Select gathering profile"));
-                                ImGui.EndTooltip();
+                                ImGui.SetTooltip(T("Select gathering profile"));
                             }
-                            if (ImGui.BeginPopup(T("Select Gather Profile")))
+                            if (ImGui.BeginPopup($"Select Gather Profile"))
                             {
                                 ImGui.Text(T("Mission: [{0}] {1}", item.Id, item.SheetInfo.Name));
-                                ImGui.Text(T("Currently Selected: {0}", profileName));
+                                ImGui.Text(T("Currently Selected: {0}", T(profileName)));
                                 ImGui.Separator();
 
                                 foreach (var profile in C.GatherProfiles)
@@ -1733,7 +1317,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                     var id = profile.Key;
                                     bool profileSelected = config.GProfileId == id;
                                     ImGui.PushID($"{id}_{profile.Value.Name}");
-                                    if (ImGui.RadioButton(GetGatherProfileDisplayName(profile.Value.Name), profileSelected))
+                                    if (ImGui.RadioButton($"{T(profile.Value.Name)}##{profile.Value.Name}_{id}", profileSelected))
                                     {
                                         config.GProfileId = id;
                                         C.Save();
@@ -1754,9 +1338,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 {
                     if (C.MissionConfig.TryGetValue(item.Id, out var config))
                     {
-                        if (ImGui.Button(T("Fishing Settings"), buttonSize))
+                        if (ImGui.Button(T("Fishing Settings")))
                         {
-                            ImGui.OpenPopup(T("Select Fishing Profile"));
+                            ImGui.OpenPopup("Select Fishing Profile");
                         }
                         if (ImGui.BeginPopup(T("Select Fishing Profile")))
                         {
@@ -1768,8 +1352,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                 config.Use_BuildinPreset = builtInPreset;
                                 C.Save();
                             }
-                            ImGuiEx.HelpMarker(T("Having this enabled means it will use the default preset that is included with the plugin for autohook. \n" +
-                                                "If you would like to use one that you already have in autohook, you can un-checkmark this and type the name of it below"));
+                            ImGuiEx.HelpMarker(T("Having this enabled means it will use the default preset that is included with the plugin for autohook. \nIf you would like to use one that you already have in autohook, you can un-checkmark this and type the name of it below"));
                             using (ImRaii.Disabled(builtInPreset))
                             {
                                 string presetName = config.AutoHookPresetName;
@@ -1785,8 +1368,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                 }
                                 if (ImGui.IsItemHovered())
                                 {
-                                    ImGui.SetTooltip(T("Allows testing to make sure that you have the preset name\n" +
-                                        "typed in correctly. This is *case* specific so"));
+                                    ImGui.SetTooltip(T("Allows testing to make sure that you have the preset name\ntyped in correctly. This is *case* specific so"));
                                 }
                                 ImGui.SameLine();
                                 if (ImGui.Button(T("Clear Profile")))
@@ -1802,776 +1384,92 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 }
             }
         }
-
-        private static string GetGatherProfileDisplayName(string profileName)
-            => profileName switch
-            {
-                "Default" => T("Default"),
-                "Timed Missions" => T("Timed Missions"),
-                "Limited Nodes" => T("Limited Nodes"),
-                "Chained" => T("Chained"),
-                "Boon" => T("Boon"),
-                "Chained + Boon" => T("Chained + Boon"),
-                "Dual Class" => T("Dual Class"),
-                "Gather X Amount" => T("Gather X Amount"),
-                "Greater Reach [Gather X]" => T("Greater Reach [Gather X]"),
-                "Greater Reach [Boon]" => T("Greater Reach [Boon]"),
-                "Greater Reach [Chain]" => T("Greater Reach [Chain]"),
-                "Greater Reach [Boon + Chain]" => T("Greater Reach [Boon + Chain]"),
-                _ => profileName,
-            };
-
-        private static string GetGatherProfileButtonName(string profileName)
-            => profileName switch
-            {
-                "Default" => T("Default"),
-                "Timed Missions" => T("Timed Missions"),
-                "Limited Nodes" => T("Limited Nodes"),
-                "Chained" => T("Chained"),
-                "Boon" => T("Boon Short"),
-                "Chained + Boon" => T("Chained + Boon Short"),
-                "Dual Class" => T("Dual Class"),
-                "Gather X Amount" => T("Gather X Amount"),
-                "Greater Reach [Gather X]" => T("Greater Reach Gather X Short"),
-                "Greater Reach [Boon]" => T("Greater Reach Boon Short"),
-                "Greater Reach [Chain]" => T("Greater Reach Chain Short"),
-                "Greater Reach [Boon + Chain]" => T("Greater Reach Boon Chain Short"),
-                _ => profileName,
-            };
-
-        private static string FitButtonLabel(string label, float buttonWidth)
+        public sealed class NotesColumn : ItemFilterColumn
         {
-            var maxTextWidth = MathF.Max(1f, buttonWidth - ImGui.GetStyle().FramePadding.X * 2f);
-            if (ImGui.CalcTextSize(label).X <= maxTextWidth)
-                return label;
-
-            const string suffix = "...";
-            for (var length = label.Length - 1; length > 0; length--)
+            public NotesColumn()
             {
-                var candidate = label[..length] + suffix;
-                if (ImGui.CalcTextSize(candidate).X <= maxTextWidth)
-                    return candidate;
+                Flags = ImGuiTableColumnFlags.NoResize;
+                SetFlags(ItemFilter.BestSPM, ItemFilter.Sequence, ItemFilter.Unlock, ItemFilter.NoNotes);
+                SetNames("Best Score Per Minute", "Sequence", "Needs Unlocked", "No Notes");
             }
-
-            return suffix;
-        }
-        private static void DrawNoteIcons(MissionInfo item, bool inlineAfterPreviousItem)
-        {
-            var sheetInfo = item.SheetInfo;
-            var hasSPM = sheetInfo.BestSPM.SPM > 0;
-            var hasSequence = sheetInfo.SequenceMissions_Next.Count > 0 || sheetInfo.SequenceMissions_Previous.Count > 0;
-            var hasUnlockable = sheetInfo.MissionUnlock.Count > 0;
-            var drewAny = false;
-
-            void SameLineForNextIcon()
+            public override float Width => Math.Max(
+                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
+            );
+            public override void DrawColumn(MissionInfo item, int idx)
             {
-                if (inlineAfterPreviousItem || drewAny)
-                    ImGui.SameLine();
-            }
+                var sheetInfo = item.SheetInfo;
+                var HasSPM = sheetInfo.BestSPM.SPM > 0;
+                var HasSequence = sheetInfo.SequenceMissions_Next.Count() > 0 || sheetInfo.SequenceMissions_Previous.Count() > 0;
+                var HasUnlockable = sheetInfo.MissionUnlock.Count() > 0;
 
-            if (hasSPM)
-            {
-                SameLineForNextIcon();
-                ImGuiEx.Icon(FontAwesomeIcon.Trophy);
-                drewAny = true;
-                if (ImGui.IsItemHovered())
+                if (HasSPM)
                 {
-                    ImGui.BeginTooltip();
-                    ImGui.Text(T("Average SPM: {0:N2}", sheetInfo.BestSPM.SPM));
-                    ImGui.Text(T(sheetInfo.BestSPM.NoteInfo));
-                    ImGui.EndTooltip();
-                }
-            }
-
-            if (hasSequence)
-            {
-                SameLineForNextIcon();
-                ImGuiEx.Icon(FontAwesomeIcon.ListOl);
-                drewAny = true;
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.BeginTooltip();
-                    if (sheetInfo.SequenceMissions_Next.Count > 0)
+                    ImGuiEx.Icon(FontAwesomeIcon.Trophy);
+                    if (ImGui.IsItemHovered())
                     {
-                        ImGui.Text(T("Next Sequence:"));
-                        foreach(var mission in sheetInfo.SequenceMissions_Next)
-                        {
-                            var seqInfo = CosmicHelper.SheetMissionDict[mission];
-                            ImGui.Text($"[{mission}] {seqInfo.Name}");
-                        }
-                    }
-                    if (sheetInfo.SequenceMissions_Previous.Count > 0)
-                    {
-                        ImGui.Text(T("Previous Sequence:"));
-                        foreach (var mission in sheetInfo.SequenceMissions_Previous)
-                        {
-                            var seqInfo = CosmicHelper.SheetMissionDict[mission];
-                            ImGui.Text($"[{mission}] {seqInfo.Name}");
-                        }
-                    }
-                    ImGui.EndTooltip();
-                }
-            }
-
-            if (hasUnlockable)
-            {
-                SameLineForNextIcon();
-                if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex)
-                {
-                    var frameHeight = ImGui.GetFrameHeight();
-                    var size = new Vector2(frameHeight);
-                    if (tex.TryGetWrap(out var wrap, out var exc))
-                    {
-                        ImGui.Image(wrap.Handle, size, new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("Average SPM: {0:N2}", sheetInfo.BestSPM.SPM));
+                        ImGui.Text(T(sheetInfo.BestSPM.NoteInfo));
+                        ImGui.EndTooltip();
                     }
                 }
-                drewAny = true;
-                if (ImGui.IsItemHovered())
+                if (HasSequence)
                 {
-                    ImGui.BeginTooltip();
-                    ImGui.Text(T("The following missions are required to have gold before you can do this one"));
-                    foreach (var mission in sheetInfo.MissionUnlock)
-                    {
-                        ImGui_Ice.CompletionStatusIcon(CosmicHelper.SheetMissionDict[mission]);
+                    if (HasSPM)
                         ImGui.SameLine();
-                        ImGui.Text($"[{mission}] - {CosmicHelper.SheetMissionDict[mission].Name}");
-                    }
-                    ImGui.EndTooltip();
-                }
-            }
-        }
 
-        private static int CountNoteIcons(MissionInfo item)
-        {
-            var sheetInfo = item.SheetInfo;
-            var count = 0;
-            if (sheetInfo.BestSPM.SPM > 0)
-                count++;
-            if (sheetInfo.SequenceMissions_Next.Count > 0 || sheetInfo.SequenceMissions_Previous.Count > 0)
-                count++;
-            if (sheetInfo.MissionUnlock.Count > 0)
-                count++;
-            return count;
-        }
-        public static void CrafterManagement(CosmicHelper.CosmicInfo mission, uint id, ImGuiTreeNodeFlags openDefault = ImGuiTreeNodeFlags.DefaultOpen)
-        {
-            var job = mission.Jobs.First(x => CosmicHelper.CrafterJobList.Contains(x));
-            ImGui.Text(T("Recipe Detailed Info"));
-
-            Dictionary<ushort, CosmicHelper.CraftingInfo> missionCrafts = new();
-            foreach (var craft in mission.Crafts_Main)
-                missionCrafts[craft.Key] = craft.Value;
-            foreach (var craft in mission.Crafts_Pre)
-                missionCrafts[craft.Key] = craft.Value;
-
-            bool massApplyButton = ImGui.IsKeyDown(ImGuiKey.LeftShift) || ImGui.IsKeyDown(ImGuiKey.RightShift);
-
-            if (ImGui.CollapsingHeader(T("Craft Item Settings"), openDefault))
-            {
-                using (ImRaii.Disabled(!massApplyButton))
-                {
-                    ImGui.PushID(id);
-
-                    if (ImGui.Button(T("Apply to similar missions")))
+                    ImGuiEx.Icon(FontAwesomeIcon.ListOl);
+                    if (ImGui.IsItemHovered())
                     {
-                        var currentMission = CosmicHelper.SheetMissionDict[id];
-                        var recipeConfig = C.MissionConfig[id];
-
-                        var currentRecipeSettings = new Dictionary<(int, int, int), MissionSettings.ArtisanSettings>();
-
-                        foreach (var (key, craft) in currentMission.Crafts_Main)
-                            if (recipeConfig.CraftSettings.TryGetValue(key, out var settings))
-                                currentRecipeSettings[(craft.RecipeInfo.Durability, craft.RecipeInfo.Progress, craft.RecipeInfo.Quality)] = settings;
-
-                        foreach (var (key, craft) in currentMission.Crafts_Pre)
-                            if (recipeConfig.CraftSettings.TryGetValue(key, out var settings))
-                                currentRecipeSettings[(craft.RecipeInfo.Durability, craft.RecipeInfo.Progress, craft.RecipeInfo.Quality)] = settings;
-
-                        int appliedMissions = 0;
-                        int appliedCrafts = 0;
-
-                        void ApplyMatchingCrafts(Dictionary<ushort, CosmicHelper.CraftingInfo> crafts, MissionSettings targetConfig, ref int craftCount)
+                        ImGui.BeginTooltip();
+                        if (sheetInfo.SequenceMissions_Next.Count() > 0)
                         {
-                            foreach (var (key, craft) in crafts)
+                            ImGui.Text(T("Next Sequence:"));
+                            foreach (var mission in sheetInfo.SequenceMissions_Next)
                             {
-                                var recipeKey = (craft.RecipeInfo.Durability, craft.RecipeInfo.Progress, craft.RecipeInfo.Quality);
-                                if (!currentRecipeSettings.TryGetValue(recipeKey, out var src))
-                                    continue;
-
-                                targetConfig.CraftSettings[key] = new MissionSettings.ArtisanSettings
-                                {
-                                    UseGlobal = src.UseGlobal,
-                                    FoodId = src.FoodId,
-                                    FoodHQ = src.FoodHQ,
-                                    PotionId = src.PotionId,
-                                    PotionHQ = src.PotionHQ,
-                                    ManualId = src.ManualId,
-                                    SquadronManualId = src.SquadronManualId,
-                                    ArtisanSolverType = src.ArtisanSolverType,
-                                    MacroName = src.MacroName,
-                                    SkillUsageAmount = src.SkillUsageAmount,
-                                    MinStepsForMiracle = src.MinStepsForMiracle,
-                                    ExpertProfileId = src.ExpertProfileId,
-                                };
-                                craftCount++;
+                                var seqInfo = CosmicHelper.SheetMissionDict[mission];
+                                ImGui.Text($"[{mission}] {seqInfo.Name}");
                             }
                         }
-
-                        foreach (var sheetMission in CosmicHelper.SheetMissionDict)
+                        if (sheetInfo.SequenceMissions_Previous.Count() > 0)
                         {
-                            if (!sheetMission.Value.Attributes.HasFlag(MissionAttributes.Craft))
-                                continue;
-
-                            if (sheetMission.Key == id)
-                                continue;
-
-                            if (!C.MissionConfig.TryGetValue(sheetMission.Key, out var targetConfig))
+                            ImGui.Text(T("Previous Sequence:"));
+                            foreach (var mission in sheetInfo.SequenceMissions_Previous)
                             {
-                                targetConfig = new MissionSettings();
-                                C.MissionConfig[sheetMission.Key] = targetConfig;
+                                var seqInfo = CosmicHelper.SheetMissionDict[mission];
+                                ImGui.Text($"[{mission}] {seqInfo.Name}");
                             }
-
-                            int craftsBeforeApply = appliedCrafts;
-                            ApplyMatchingCrafts(sheetMission.Value.Crafts_Main, targetConfig, ref appliedCrafts);
-                            ApplyMatchingCrafts(sheetMission.Value.Crafts_Pre, targetConfig, ref appliedCrafts);
-
-                            if (appliedCrafts > craftsBeforeApply)
-                                appliedMissions++;
                         }
-
-                        IceLogging.Info($"Amount of missions applied to: {appliedMissions}\n" +
-                            $"Total amount of crafts applied to: {appliedCrafts}\n" +
-                            $"Amount of recipies that the mission had: {currentRecipeSettings.Count()}\n" +
-                            $"From Mission: {id}");
+                        ImGui.EndTooltip();
                     }
-
-                    ImGui.PopID();
                 }
-                if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) && !massApplyButton)
+                if (HasUnlockable)
                 {
-                    ImGui.SetTooltip(T("Hold shift to allow applying"));
-                }
-
-                foreach (var craft in missionCrafts)
-                {
-                    if (ImGui.BeginTable($"Main Craft Details_{craft.Key}", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.Hideable))
+                    if (HasSPM || HasSequence)
                     {
-                        ImGui.TableSetupColumn(T("Item Details"));
-                        ImGui.TableSetupColumn(T("Dropdown Detail"));
-                        ImGui.TableSetupColumn(T("Dropdown Selection"), ImGuiTableColumnFlags.WidthStretch);
-
-                        if (C.MissionConfig[id].CraftSettings.TryGetValue(craft.Key, out var recipeConfig))
+                        ImGui.SameLine();
+                    }
+                    if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex)
+                    {
+                        var frameHeight = ImGui.GetFrameHeight();
+                        var size = new Vector2(frameHeight);
+                        if (tex.TryGetWrap(out var wrap, out var exc))
                         {
-                            bool globalArtisan = recipeConfig.UseGlobal;
-                            bool supportedArtisan = P.Artisan.UpdatedArtisan();
-
-                            ImGui.TableSetColumnEnabled(1, !globalArtisan);
-                            ImGui.TableSetColumnEnabled(2, !globalArtisan);
-
-                            ImGui.TableNextRow();
-                            ImGui.TableSetColumnIndex(0);
-                            if (ImGui.Checkbox(T("Use Global Artisan Settings"), ref globalArtisan))
-                            {
-                                recipeConfig.UseGlobal = globalArtisan;
-                                C.Save();
-                            }
-
-                            #region Label info
-
-                            string GetSolverLabel(ArtisanCraftType type)
-                            {
-                                return type switch
-                                {
-                                    ArtisanCraftType.Default => T("Default"),
-                                    ArtisanCraftType.Raphael => T("Raphael Solver"),
-                                    ArtisanCraftType.ProgressOnly => T("Progress Only Solver"),
-                                    ArtisanCraftType.Standard => T("Standard Solver"),
-                                    ArtisanCraftType.Expert => T("Expert Recipe Solver"),
-                                    ArtisanCraftType.Macro => T("Artisan Macro"),
-                                    _ => T("Unknown")
-                                };
-                            }
-                            string GetFoodLable(uint foodId)
-                            {
-                                if (foodId == 0) return T("Default");
-                                var item = ConsumableInfo.CrafterFood.FirstOrDefault(x => x.Id == foodId);
-                                PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
-                                PlayerHelper.GetItemCount(item.Id, out var hq, includeHq: true, includeNq: false);
-                                return BuildItemLabel(item.Name, nq, hq);
-                            }
-                            string GetPotionLable(uint potionId)
-                            {
-                                if (potionId == 0) return T("Default");
-                                var item = ConsumableInfo.Pots.FirstOrDefault(x => x.Id == potionId);
-                                PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
-                                PlayerHelper.GetItemCount(item.Id, out var hq, includeHq: true, includeNq: false);
-                                return BuildItemLabel(item.Name, nq, hq);
-                            }
-                            string GetManualLabel(uint manualId)
-                            {
-                                if (manualId == 0) return T("Default");
-                                var item = ConsumableInfo.Manuals.FirstOrDefault(x => x.Id == manualId);
-                                PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
-                                return BuildItemLabel(item.Name, nq, 0);
-                            }
-                            string GetSquadronManualLabel(uint squadManualId)
-                            {
-                                if (squadManualId == 0) return T("Default");
-                                var item = ConsumableInfo.SquadronManuals.FirstOrDefault(x => x.Id == squadManualId);
-                                PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
-                                return BuildItemLabel(item.Name, nq, 0);
-                            }
-                            string BuildItemLabel(string name, int nqCount, int hqCount)
-                            {
-                                var parts = new List<string>();
-                                if (hqCount > 0) parts.Add($"{(char)0xE03C} {name} [x{hqCount}]");
-                                if (nqCount > 0) parts.Add($"{name} [x{nqCount}]");
-                                return string.Join(" / ", parts);
-                            }
-
-                            var recipe_Solver = GetSolverLabel(recipeConfig.ArtisanSolverType);
-                            var recipe_FoodLabel = GetFoodLable(recipeConfig.FoodId);
-                            var recipe_PotionLabel = GetPotionLable(recipeConfig.PotionId);
-                            var recipe_ManualLabel = GetManualLabel(recipeConfig.ManualId);
-                            var recipe_SquadManualLabel = GetSquadronManualLabel(recipeConfig.SquadronManualId);
-
-                            float recipe_ComboWidth = new[]
-                            {
-                                                recipe_FoodLabel,
-                                                recipe_PotionLabel,
-                                                recipe_ManualLabel,
-                                                recipe_SquadManualLabel,
-                                                recipe_Solver
-                                            }.Max(label => ImGui.CalcTextSize(label).X + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetStyle().ScrollbarSize + 10);
-
-                            List<ArtisanCraftType> standardSolvers = new()
-                                    {
-                                        ArtisanCraftType.Default,
-                                        ArtisanCraftType.Standard,
-                                        ArtisanCraftType.Raphael,
-                                        ArtisanCraftType.ProgressOnly,
-                                        ArtisanCraftType.Macro,
-                                    };
-
-                            List<ArtisanCraftType> expertSolvers = new()
-                                    {
-                                        ArtisanCraftType.Default,
-                                        ArtisanCraftType.Expert,
-                                        ArtisanCraftType.Raphael,
-                                        ArtisanCraftType.Macro,
-                                    };
-
-                            #endregion
-
-                            #region Image
-
-                            ImGui.TableNextRow();
-                            ImGui.TableSetColumnIndex(0);
-                            if (Svc.Texture.TryGetFromGameIcon(craft.Value.IconId, out var iconImage))
-                            {
-                                ImGui.Image(iconImage.GetWrapOrEmpty().Handle, new Vector2(24, 24));
-                            }
-                            if (ImGui.IsItemHovered())
-                            {
-                                ImGui.BeginTooltip();
-                                ImGui.Text(T("Key / RecipeId: {0}", craft.Key));
-                                ImGui.Text(T("ItemID: {0}", craft.Value.ItemId));
-                                ImGui.EndTooltip();
-                            }
-                            if (craft.Value.ExpertCraft)
-                            {
-                                ImGui.SameLine();
-                                ImGui.AlignTextToFramePadding();
-                                ImGuiEx.Icon(new Vector4(1.0f, 0.4f, 0.0f, 1.0f), FontAwesomeIcon.Diamond);
-                                if (ImGui.IsItemHovered())
-                                {
-                                    ImGui.SetTooltip(T("Expert Craft"));
-                                }
-                            }
-
-                            #endregion
-
-                            #region Item Name + Solver
-
-
-                            ImGui.TableNextRow();
-                            ImGui.TableSetColumnIndex(0);
-                            ImGui.AlignTextToFramePadding();
-                            ImGui.Text($"{craft.Value.ItemName}");
-
-                            ImGui.TableNextColumn();
-                            ImGui.Text(T("Solver"));
-
-                            ImGui.TableNextColumn();
-                            ImGui.SetNextItemWidth(recipe_ComboWidth);
-                            if (ImGui.BeginCombo("##Solver", recipe_Solver))
-                            {
-                                if (craft.Value.ExpertCraft)
-                                {
-                                    foreach (var type in expertSolvers)
-                                    {
-                                        bool isSelected = recipeConfig.ArtisanSolverType == type;
-                                        if (ImGui.Selectable(GetSolverLabel(type), isSelected))
-                                        {
-                                            recipeConfig.ArtisanSolverType = type;
-                                            C.Save();
-                                        }
-                                        if (isSelected)
-                                            ImGui.SetItemDefaultFocus();
-                                    }
-                                }
-                                else
-                                {
-                                    foreach (var type in standardSolvers)
-                                    {
-                                        bool isSelected = recipeConfig.ArtisanSolverType == type;
-                                        if (ImGui.Selectable(GetSolverLabel(type), isSelected))
-                                        {
-                                            recipeConfig.ArtisanSolverType = type;
-                                            C.Save();
-                                        }
-                                        if (isSelected)
-                                            ImGui.SetItemDefaultFocus();
-                                    }
-                                }
-
-                                ImGui.EndCombo();
-                            }
-
-                            if (recipeConfig.ArtisanSolverType == ArtisanCraftType.Macro)
-                            {
-                                string macroName = recipeConfig.MacroName;
-                                ImGui.SameLine();
-                                ImGui.SetNextItemWidth(200);
-                                if (ImGui.InputText(T("Macro Name"), ref macroName))
-                                {
-                                    recipeConfig.MacroName = macroName;
-                                    C.Save();
-                                }
-                            }
-
-                            #endregion
-
-                            #region Durability + Food
-
-                            ImGui.TableNextRow();
-                            ImGui.TableSetColumnIndex(0);
-                            ImGui.AlignTextToFramePadding();
-                            ImGui.Text(T("Durability: {0}", craft.Value.RecipeInfo.Durability));
-
-                            if (supportedArtisan)
-                            {
-                                ImGui.TableNextColumn();
-                                ImGui.Text(T("Food"));
-
-                                ImGui.TableNextColumn();
-                                ImGui.SetNextItemWidth(recipe_ComboWidth);
-                                if (ImGui.BeginCombo("##FoodSelection", recipe_FoodLabel))
-                                {
-                                    bool isDefaultSelected = recipeConfig.FoodId == 0;
-                                    if (ImGui.Selectable(T("Default"), isDefaultSelected))
-                                    {
-                                        recipeConfig.FoodId = 0;
-                                        recipeConfig.FoodHQ = false;
-                                        C.Save();
-                                    }
-                                    if (isDefaultSelected)
-                                        ImGui.SetItemDefaultFocus();
-
-                                    ImGui.Separator();
-
-                                    foreach (var item in ConsumableInfo.CrafterFood)
-                                    {
-                                        PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
-                                        PlayerHelper.GetItemCount(item.Id, out var hqCount, includeHq: true, includeNq: false);
-
-                                        if (nqCount == 0 && hqCount == 0) continue;
-
-                                        bool isSelected = recipeConfig.FoodId == item.Id;
-                                        string label = BuildItemLabel(item.Name, nqCount, hqCount) + $"###{item.Id}";
-
-                                        if (ImGui.Selectable(label, isSelected))
-                                        {
-                                            recipeConfig.FoodId = item.Id;
-                                            recipeConfig.FoodHQ = hqCount > 0;
-                                            C.Save();
-                                        }
-
-                                        if (isSelected)
-                                            ImGui.SetItemDefaultFocus();
-                                    }
-
-                                    ImGui.EndCombo();
-                                }
-                            }
-
-                            #endregion
-
-                            #region Progress + Potion
-
-                            ImGui.TableNextRow();
-                            ImGui.TableSetColumnIndex(0);
-                            ImGui.AlignTextToFramePadding();
-                            ImGui.Text(T("Progress: {0}", craft.Value.RecipeInfo.Progress));
-
-                            if (supportedArtisan)
-                            {
-                                ImGui.TableNextColumn();
-                                ImGui.Text(T("Potion"));
-
-                                ImGui.TableNextColumn();
-                                ImGui.SetNextItemWidth(recipe_ComboWidth);
-                                if (ImGui.BeginCombo("##StandardPotion", recipe_PotionLabel))
-                                {
-                                    // Default option
-                                    bool isDefaultSelected = recipeConfig.PotionId == 0;
-                                    if (ImGui.Selectable(T("Default"), isDefaultSelected))
-                                    {
-                                        recipeConfig.PotionId = 0;
-                                        recipeConfig.PotionHQ = false;
-                                        C.Save();
-                                    }
-                                    if (isDefaultSelected)
-                                        ImGui.SetItemDefaultFocus();
-
-                                    ImGui.Separator();
-
-                                    foreach (var item in ConsumableInfo.Pots)
-                                    {
-                                        PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
-                                        PlayerHelper.GetItemCount(item.Id, out var hqCount, includeHq: true, includeNq: false);
-
-                                        if (nqCount == 0 && hqCount == 0) continue;
-
-                                        bool isSelected = recipeConfig.PotionId == item.Id;
-                                        string label = BuildItemLabel(item.Name, nqCount, hqCount) + $"###{item.Id}";
-
-                                        if (ImGui.Selectable(label, isSelected))
-                                        {
-                                            recipeConfig.PotionId = item.Id;
-                                            recipeConfig.PotionHQ = hqCount > 0;
-                                            C.Save();
-                                        }
-
-                                        if (isSelected)
-                                            ImGui.SetItemDefaultFocus();
-                                    }
-
-                                    ImGui.EndCombo();
-                                }
-                            }
-
-                            #endregion
-
-                            #region Quality + Manual
-
-                            ImGui.TableNextRow();
-                            ImGui.TableSetColumnIndex(0);
-                            ImGui.AlignTextToFramePadding();
-                            ImGui.Text(T("Quality: {0}", craft.Value.RecipeInfo.Quality));
-
-                            if (supportedArtisan)
-                            {
-                                ImGui.TableNextColumn();
-                                ImGui.AlignTextToFramePadding();
-                                ImGui.Text(T("Manual"));
-
-                                ImGui.TableNextColumn();
-                                ImGui.SetNextItemWidth(recipe_ComboWidth);
-                                if (ImGui.BeginCombo("##StandardManual", recipe_ManualLabel))
-                                {
-                                    // Default option
-                                    bool isDefaultSelected = recipeConfig.ManualId == 0;
-                                    if (ImGui.Selectable(T("Default"), isDefaultSelected))
-                                    {
-                                        recipeConfig.ManualId = 0;
-                                        C.Save();
-                                    }
-                                    if (isDefaultSelected)
-                                        ImGui.SetItemDefaultFocus();
-
-                                    ImGui.Separator();
-
-                                    foreach (var item in ConsumableInfo.Manuals)
-                                    {
-                                        PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
-
-                                        if (nqCount == 0) continue;
-
-                                        bool isSelected = recipeConfig.ManualId == item.Id;
-                                        string label = BuildItemLabel(item.Name, nqCount, 0) + $"###{item.Id}";
-
-                                        if (ImGui.Selectable(label, isSelected))
-                                        {
-                                            recipeConfig.ManualId = item.Id;
-                                            C.Save();
-                                        }
-
-                                        if (isSelected)
-                                            ImGui.SetItemDefaultFocus();
-                                    }
-
-                                    ImGui.EndCombo();
-                                }
-                            }
-
-                            #endregion
-
-                            #region Squadron Manual
-
-                            if (!globalArtisan)
-                            {
-                                ImGui.TableNextRow();
-                                ImGui.TableSetColumnIndex(1);
-                                ImGui.Text(T("Squadron Manual"));
-
-                                ImGui.TableNextColumn();
-                                ImGui.SetNextItemWidth(recipe_ComboWidth);
-                                if (ImGui.BeginCombo("##StandardSquadManual", recipe_SquadManualLabel))
-                                {
-                                    // Default option
-                                    bool isDefaultSelected = recipeConfig.SquadronManualId == 0;
-                                    if (ImGui.Selectable(T("Default"), isDefaultSelected))
-                                    {
-                                        recipeConfig.SquadronManualId = 0;
-                                        C.Save();
-                                    }
-                                    if (isDefaultSelected)
-                                        ImGui.SetItemDefaultFocus();
-
-                                    ImGui.Separator();
-
-                                    foreach (var item in ConsumableInfo.SquadronManuals)
-                                    {
-                                        PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
-
-                                        if (nqCount == 0) continue;
-
-                                        bool isSelected = recipeConfig.SquadronManualId == item.Id;
-                                        string label = BuildItemLabel(item.Name, nqCount, 0) + $"###{item.Id}";
-
-                                        if (ImGui.Selectable(label, isSelected))
-                                        {
-                                            recipeConfig.SquadronManualId = item.Id;
-                                            C.Save();
-                                        }
-
-                                        if (isSelected)
-                                            ImGui.SetItemDefaultFocus();
-                                    }
-
-                                    ImGui.EndCombo();
-                                }
-                            }
-
-                            #endregion
-
-                            #region ActionUsage
-
-                            if (mission.TemporaryActionCount != 0)
-                            {
-                                ImGui.TableNextRow();
-                                ImGui.TableSetColumnIndex(0);
-                                var actionInfo = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>().GetRow(mission.TemporaryActionId);
-                                var name = actionInfo.Name;
-                                var icon = Svc.Texture.GetFromGameIcon((int)actionInfo.Icon).GetWrapOrEmpty();
-                                ImGui.Image(icon.Handle, new(24, 24));
-                                ImGui.AlignTextToFramePadding();
-                                ImGui.SameLine();
-                                ImGui.Text($"{name}");
-
-                                if (supportedArtisan)
-                                {
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text(T("Max use"));
-
-                                    ImGui.TableNextColumn();
-                                    var maxUsage = recipeConfig.SkillUsageAmount;
-                                    ImGui.SetNextItemWidth(recipe_ComboWidth);
-                                    string skillUsageLabel = maxUsage == -1 ? T("Default") : $"{maxUsage}";
-                                    if (ImGui.SliderInt("##MaxSkillUsage", ref maxUsage, -1, (int)mission.TemporaryActionCount, skillUsageLabel))
-                                    {
-                                        recipeConfig.SkillUsageAmount = maxUsage;
-                                        C.SaveDebounced();
-                                    }
-
-                                    ImGui.TableNextRow();
-                                    ImGui.TableSetColumnIndex(0);
-#if DEBUG
-                                    if (ImGui.Button(T("Test Apply")))
-                                    {
-                                        var key = craft.Key;
-                                        var useAmount = recipeConfig.SkillUsageAmount;
-                                        var miracleSteps = recipeConfig.MinStepsForMiracle;
-                                        IceLogging.Verbose($"Was Expert: {craft.Value.ExpertCraft}", "Test Apply Skills");
-                                        if (craft.Value.ExpertCraft)
-                                        {
-                                            if (recipeConfig.SkillUsageAmount != -1)
-                                            {
-                                                P.Artisan.ChangeExpertMaxSteadyUses(key, (uint)useAmount, true);
-                                                P.Artisan.ChangeExpertMaxMaterialMiracleUses(key, (uint)useAmount, true);
-                                            }
-                                            else
-                                            {
-                                                P.Artisan.SetTempExpertMaxSteadyUsesBackToNormal(key);
-                                                P.Artisan.SetTempExpertMaxMaterialMiracleUsesBackToNormal(key);
-                                            }
-
-                                            if (miracleSteps != -1)
-                                                P.Artisan.ChangeExpertMinimumStepsBeforeMiracle(key, (uint)miracleSteps, true);
-                                            else
-                                                P.Artisan.SetTempExpertMinimumStepsBeforeMiracleBackToNormal(key);
-                                        }
-                                        else
-                                        {
-                                            if (useAmount != -1)
-                                            {
-                                                P.Artisan.ChangeStandardMaxMaterialMiracleUses((uint)useAmount, true);
-                                            }
-                                            else
-                                            {
-                                                P.Artisan.SetTempStandardMaxMaterialMiracleUsesBackToNormal();
-                                            }
-
-                                            if (miracleSteps != 1)
-                                            {
-                                                P.Artisan.ChangeStandardMinimumStepsBeforeMiracle((uint)miracleSteps, true);
-                                            }
-                                            else
-                                            {
-                                                P.Artisan.SetTempStandardMinimumStepsBeforeMiracleBackToNormal();
-                                            }
-                                        }
-                                    }
-#endif
-
-                                    if (mission.TemporaryActionId == 41269 && !globalArtisan)
-                                    {
-                                        ImGui.TableSetColumnIndex(1);
-                                        ImGui.Text(T("Use after this many steps"));
-
-                                        ImGui.TableNextColumn();
-                                        var minSteps = recipeConfig.MinStepsForMiracle;
-                                        string skillMinStepsName = minSteps == -1 ? T("Default") : $"{minSteps}";
-                                        ImGui.SetNextItemWidth(recipe_ComboWidth);
-                                        if (ImGui.SliderInt("##MinMiracleSteps", ref minSteps, -1, 20, skillMinStepsName))
-                                        {
-                                            recipeConfig.MinStepsForMiracle = minSteps;
-                                            C.SaveDebounced();
-                                        }
-                                    }
-                                }
-                            }
-
-                            #endregion
+                            ImGui.Image(wrap.Handle, size, new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
                         }
-                        else
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("The following missions are required to have gold before you can do this one"));
+                        foreach (var mission in sheetInfo.MissionUnlock)
                         {
-                            C.MissionConfig[id].CraftSettings[craft.Key] = new();
-                            C.SaveDebounced();
+                            ImGui_Ice.CompletionStatusIcon(CosmicHelper.SheetMissionDict[mission]);
+                            ImGui.SameLine();
+                            ImGui.Text($"[{mission}] - {CosmicHelper.SheetMissionDict[mission].Name}");
                         }
-
-                        ImGui.EndTable();
+                        ImGui.EndTooltip();
                     }
                 }
             }
@@ -2587,5 +1485,778 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             7 => ItemFilter.HasVII,
             _ => ItemFilter.HasI
         };
+    }
+    internal class Completion_Table : Table<MissionInfo>, IDisposable
+    {
+        public readonly EnabledColumn _enabledColumn = new() { Label = T("Mission Table Enabled") };
+        public readonly NameColumn _nameColumn = new() { Label = T("Mission Table Name") };
+        public readonly IdColumn _idColumn = new() { Label = T("Mission Table ID") };
+        public readonly JobColumn _jobColumn = new() { Label = T("Mission Table Job") };
+        public readonly MissionColumn _missionColumn = new() { Label = T("Mission Table Rank") };
+        public readonly CompletionColumn _completionColumn = new() { Label = T("Mission Table Status") };
+        public readonly TurninColumn _turninColumn = new() { Label = T("Mission Table Turnin Goal") };
+        public readonly ProfileColumn _profileColumn = new() { Label = T("Mission Table Profile") };
+        public readonly NotesColumn _notesColumn = new() { Label = T("Mission Table Notes") };
+
+        public Completion_Table(List<MissionInfo> itemList) : base("CompletionTable", itemList)
+        {
+            List<Column<MissionInfo>> headers =
+            [
+                _enabledColumn, _jobColumn, _missionColumn, _idColumn,
+                _completionColumn, _nameColumn, _turninColumn, _profileColumn, _notesColumn
+            ];
+
+            this.Headers = [.. headers];
+            Sortable = true;
+            Flags |= ImGuiTableFlags.Reorderable | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit;
+        }
+
+        public void Dispose()
+        {
+        }
+
+        public sealed class EnabledColumn : Column<MissionInfo>
+        {
+            public override float Width => Math.Max(
+                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.GetFrameHeight()
+            );
+            private readonly Mission_Table _table;
+            public EnabledColumn()
+            {
+                Flags = ImGuiTableColumnFlags.NoHide;
+            }
+
+            public override int Compare(MissionInfo lhs, MissionInfo rhs)
+                => lhs.Enabled().CompareTo(rhs.Enabled());
+
+            public override void DrawColumn(MissionInfo item, int _)
+            {
+                ImGui.PushID(item.Id);
+
+                var mission = CosmicHelper.CurrentLunarMission;
+
+                if (mission != 0 && mission == item.Id)
+                {
+                    ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, ImGui.GetColorU32(new Vector4(0.0f, 1.0f, 0.2f, 0.25f)));
+                }
+                else if (CosmicHandler.All_AvailableMissions().Contains(item.Id))
+                {
+                    ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, ImGui.GetColorU32(new Vector4(0.0f, 1.0f, 0.2f, 0.25f)));
+                }
+
+
+                bool disabled = C.SelectedMode == ModeSelect.MissionGoldMode
+                             || C.SelectedMode == ModeSelect.LevelMode
+                             || (C.SelectedMode == ModeSelect.RelicMode && !C.XPRelicOnlyEnabled);
+
+                if (!disabled)
+                {
+                    bool enabled = C.MissionConfig[item.Id].Enabled;
+                    if (ImGui_Ice.Table_CenterCheckbox("##EnableMission", ref enabled))
+                    {
+                        C.MissionConfig[item.Id].Enabled = enabled;
+                        if (enabled == true)
+                        {
+                            foreach (var prevMission in CosmicHelper.SheetMissionDict[item.Id].SequenceMissions_Previous)
+                            {
+                                C.MissionConfig[prevMission].Enabled = true;
+                            }
+                        }
+
+                        C.SaveDebounced();
+                        _table.SetFilterDirty();
+                    }
+                    if (ImGui.IsItemClicked())
+                    {
+                        Window_ExternalDetails.SelectedMission = item.Id;
+                    }
+                }
+                ImGui.PopID();
+            }
+        }
+        public sealed class JobColumn : Column<MissionInfo>
+        {
+            public JobColumn()
+            {
+                Flags = ImGuiTableColumnFlags.NoResize;
+            }
+            public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.Jobs.First().CompareTo(rhs.SheetInfo.Jobs.First());
+            public override float Width =>
+                Math.Max(
+                    ImGui.CalcTextSize("Jobs").X + ImGui.GetStyle().CellPadding.X * 2 + 20f,
+                    ImGui.GetFrameHeight()
+                );
+
+            public override void DrawColumn(MissionInfo item, int idx)
+            {
+                var frameHeight = ImGui.GetFrameHeight();
+                var size = new Vector2(frameHeight);
+                var jobs = item.SheetInfo.Jobs;
+
+                var tightSpacing = 2f; // adjust this if I don't like how close/far they are
+                var totalWidth = frameHeight * jobs.Count + tightSpacing * (jobs.Count - 1);
+
+                var columnWidth = ImGui.GetColumnWidth();
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - totalWidth) / 2);
+
+                using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, new Vector2(tightSpacing, 0));
+                foreach (var job in jobs)
+                {
+                    var icon = CosmicHelper.ClassInfoDict[job].JobIcon;
+                    ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
+                    ImGui.SameLine();
+                }
+            }
+        }
+        public sealed class MissionColumn : Column<MissionInfo>
+        {
+            public MissionColumn()
+            {
+                Flags = ImGuiTableColumnFlags.NoResize;
+            }
+
+            private static int GetMissionPriority(CosmicInfo info)
+            {
+                if (info.IsCritical) return 10;
+                if (info.IsSequence) return 9;
+                if (info.IsWeather) return 8;
+                if (info.IsTimed) return 7;
+                if (info.IsMaster) return 6;
+                // 5 = Ex, 4 = A, 3 = B, 2 = C, 1 = D
+                return (int)info.Rank;
+            }
+            public override float Width => ImGui.CalcTextSize("Type").X + ImGui.GetStyle().CellPadding.X * 2 + 10f;
+
+            public override int Compare(MissionInfo lhs, MissionInfo rhs) =>
+                GetMissionPriority(lhs.SheetInfo).CompareTo(GetMissionPriority(rhs.SheetInfo));
+            public override void DrawColumn(MissionInfo item, int idx)
+            {
+                var status = item.SheetInfo.CompletionStatus;
+                var frameHeight = ImGui.GetFrameHeight();
+                var size = new Vector2(frameHeight);
+
+                var columnWidth = ImGui.GetColumnWidth();
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - frameHeight) / 2);
+
+                if (item.SheetInfo.IsCritical || item.SheetInfo.IsWeather)
+                {
+                    var texture = item.SheetInfo.IsCritical ?
+                        Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), "ICE.Resources.Red_Alert.png").GetWrapOrEmpty()
+                      : CosmicHelper.WeatherIconDict[item.SheetInfo.Weather].GetWrapOrEmpty();
+
+                    ImGui.Image(texture.Handle, size);
+                }
+                else
+                {
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetStyle().FramePadding.X);
+                    if (item.SheetInfo.IsProvisional)
+                    {
+                        var icon = item.SheetInfo.IsTimed ? FontAwesomeIcon.Clock : FontAwesomeIcon.ListOl;
+                        ImGuiEx.Icon(icon);
+                        if (item.SheetInfo.IsTimed)
+                        {
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.BeginTooltip();
+                                ImGui.Text(T("Time Slot"));
+                                ImGui.Text($"{item.SheetInfo.StartTime:D2}:00 - {item.SheetInfo.EndTime:D2}:00");
+                                ImGui.EndTooltip();
+                            }
+                        }
+                        else if (item.SheetInfo.IsSequence)
+                        {
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.BeginTooltip();
+                                ImGui.Text(T("Sequence Missions"));
+                                if (item.SheetInfo.SequenceMissions_Previous.Count() > 0)
+                                {
+                                    ImGui.Separator();
+                                    ImGui.Text(T("Previous Missions"));
+                                    foreach (var mission in item.SheetInfo.SequenceMissions_Previous)
+                                    {
+                                        ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
+                                    }
+                                }
+                                if (item.SheetInfo.SequenceMissions_Next.Count() > 0)
+                                {
+                                    ImGui.Separator();
+                                    ImGui.Text(T("Next Missions"));
+                                    foreach (var mission in item.SheetInfo.SequenceMissions_Next)
+                                    {
+                                        ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
+                                    }
+                                }
+                                ImGui.EndTooltip();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        string rank = item.SheetInfo.Rank switch
+                        {
+                            6 => "M",
+                            5 or 4 => "A",
+                            3 => "B",
+                            2 => "C",
+                            1 => "D",
+                            _ => "???"
+                        };
+                        ImGui.Text(rank);
+                    }
+                }
+            }
+        }
+        public sealed class IdColumn : Column<MissionInfo>
+        {
+            public IdColumn()
+            {
+                Flags = ImGuiTableColumnFlags.NoResize;
+            }
+
+            public override float Width => Math.Max(
+                ImGui.CalcTextSize("ID").X + ImGui.GetStyle().CellPadding.X * 2 + 20f,
+                ImGui.CalcTextSize("9999").X + ImGui.GetStyle().CellPadding.X * 2
+            );
+
+            public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.Id.CompareTo(rhs.Id);
+
+            public override void DrawColumn(MissionInfo item, int _)
+            {
+                ImGuiUtil.Center($"{item.Id}");
+            }
+        }
+        public sealed class CompletionColumn : Column<MissionInfo>
+        {
+            public CompletionColumn()
+            {
+
+            }
+            public override float Width =>
+                Math.Max(
+                    ImGui.CalcTextSize("Completed").X + ImGui.GetStyle().CellPadding.X * 2 + 20f,
+                    ImGui.GetFrameHeight()
+                );
+            public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.CompletionStatus.CompareTo(rhs.SheetInfo.CompletionStatus);
+            public override void DrawColumn(MissionInfo item, int idx)
+            {
+                var status = item.SheetInfo.CompletionStatus;
+                var frameHeight = ImGui.GetFrameHeight();
+                var size = new Vector2(frameHeight);
+
+                var columnWidth = ImGui.GetColumnWidth();
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - frameHeight) / 2);
+
+                if (status is Status.Gold)
+                {
+                    if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex && tex.TryGetWrap(out var wrap, out _))
+                    {
+                        ImGui.Image(wrap.Handle, size, new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
+                    }
+                }
+                else
+                {
+                    var icon = status is Status.None ? FontAwesomeIcon.Times : FontAwesomeIcon.Check;
+                    var color = status is Status.None ? EColor.Red : EColor.Green;
+
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetStyle().FramePadding.X);
+
+                    using (ImRaii.PushFont(UiBuilder.IconFont))
+                    using (ImRaii.PushColor(ImGuiCol.Text, color))
+                    {
+                        ImGuiEx.Icon(icon);
+                    }
+                }
+            }
+        }
+        public sealed class NameColumn : VerticalCenterColumnString
+        {
+            public NameColumn() => Flags |= ImGuiTableColumnFlags.NoHide | ImGuiTableColumnFlags.WidthStretch;
+            public override string ToName(MissionInfo mission) => mission.SheetInfo.Name;
+            public override void DrawColumn(MissionInfo mission, int _)
+            {
+                if (UnsupportedMissions.Ids.Contains(mission.Id))
+                {
+                    using (var warningPush = ImRaii.PushColor(ImGuiCol.Text, EColor.Red))
+                    {
+                        ImGuiEx.Icon(FontAwesomeIcon.ExclamationTriangle);
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("This mission is currently missing stuff to allow it to work. It might be planet locked, or could be just needs mapped out\nI'll get to it when my world gets to it o/"));
+                        ImGui.EndTooltip();
+                    }
+                }
+                if (mission.SheetInfo.Jobs.Contains(18) && !GatheringUtil.FishingPreset.ContainsKey(mission.Id))
+                {
+                    using (var warningPush = ImRaii.PushColor(ImGuiCol.Text, EColor.Yellow))
+                    {
+                        ImGuiEx.Icon(FontAwesomeIcon.ExclamationTriangle);
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("This mission doesn't have a fishing preset yet, this is your warning for this."));
+                        ImGui.EndTooltip();
+                    }
+                }
+                if (ImGui.Button(mission.SheetInfo.Name))
+                {
+                    IceLogging.Verbose("Testing... if this fires off multiple times", "DEBUG TEST");
+                    Window_ExternalDetails.SelectedMission = mission.Id;
+                    P.externalDetails.IsOpen = true;
+                    IceLogging.Verbose($"Collasped condition: {P.externalDetails.CollapsedCondition.ToString()}");
+                }
+                if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
+                {
+                    ImGui.SameLine();
+                    if (ImGuiEx.IconButton(FontAwesomeIcon.Flag, $"Flag_{mission.Id}"))
+                    {
+                        Window_ExternalDetails.SelectedMission = mission.Id;
+                        Utils.SetGatheringRing(mission.SheetInfo.TerritoryId, (int)mission.SheetInfo.MapPosition.X, (int)mission.SheetInfo.MapPosition.Y, mission.SheetInfo.Radius, mission.SheetInfo.Name);
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text($"X: {mission.SheetInfo.MapPosition.X:N0}, Z: {mission.SheetInfo.MapPosition.Y:N0}");
+                        ImGui.EndTooltip();
+                    }
+                }
+                if (GatheringUtil.CriticalSpots.TryGetValue(mission.SheetInfo.Critical_MapKey, out var criticalInfo))
+                {
+                    ImGui.SameLine();
+                    if (ImGuiEx.IconButton(FontAwesomeIcon.FlagCheckered, $"CriticalFlag_{mission.Id}"))
+                    {
+                        Utils.SetGatheringRing(mission.SheetInfo.TerritoryId, criticalInfo.X, criticalInfo.Y, criticalInfo.Radius, $"Red Alert: {mission.SheetInfo.Name}", criticalInfo.IconId);
+                    }
+#if DEBUG
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("Critical Route: {0}", mission.SheetInfo.Critical_MapKey));
+                        ImGui.Separator();
+                        ImGui.Text(T("Map Coordinates: {0} | {1}", criticalInfo.X, criticalInfo.Y));
+                        ImGui.Separator();
+                        ImGui.Text(T("World Position: {0:N2} | {1:N2} | {2:N2}", criticalInfo.WorldCords.X, criticalInfo.WorldCords.Y, criticalInfo.WorldCords.Z));
+                        ImGui.EndTooltip();
+                    }
+#endif
+                }
+            }
+        }
+        public sealed class TurninColumn : Column<MissionInfo>
+        {
+            public TurninColumn()
+            {
+                Flags = ImGuiTableColumnFlags.NoResize;
+            }
+            public override float Width
+            {
+                get
+                {
+                    int amount = 4;
+
+                    var iconWidth = ImGui.GetFrameHeight(); // IconButton is square, frameHeight x frameHeight
+                    var spacing = ImGui.GetStyle().ItemSpacing.X;
+                    var cellPadding = ImGui.GetStyle().CellPadding.X * 2;
+
+                    var headerWidth = ImGui.CalcTextSize(Label).X + cellPadding;
+                    var contentWidth = iconWidth * amount + spacing * 3 + cellPadding; // 4 icons (clock+3 trophies) worst case
+
+                    return Math.Max(headerWidth, contentWidth);
+                }
+            }
+            public override int Compare(MissionInfo lhs, MissionInfo rhs)
+            {
+                if (C.MissionConfig.TryGetValue(lhs.Id, out var lhsConfig) && C.MissionConfig.TryGetValue(rhs.Id, out var rhsConfig))
+                {
+                    return lhsConfig.TurninGoal.CompareTo(rhsConfig.TurninGoal);
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            public override void DrawColumn(MissionInfo item, int idx)
+            {
+                if (item.SheetInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining) || item.SheetInfo.IsCritical)
+                {
+
+                    ImGuiUtil.Center(T("Auto"));
+                }
+                else if (item.SheetInfo.IsMaster)
+                {
+                    string masterPopup = "Master Settings: Popup";
+
+                    ImGui.PushID($"Mission_{item.Id}");
+                    if (ImGui.Button(T("Master Settings")))
+                    {
+                        ImGui.OpenPopup(masterPopup);
+                    }
+                    if (ImGui.BeginPopup(masterPopup))
+                    {
+                        ImGui.Text($"[{item.Id}] - {item.SheetInfo.Name}");
+
+                        if (C.MissionConfig.TryGetValue(item.Id, out var configInfo))
+                        {
+                            var selectedMode = configInfo.TurninGoal;
+                            var timeExpired = selectedMode == TurninState.TimeExpired;
+                            var scoreMode = selectedMode == TurninState.Master_Score;
+                            var quickTurnin = selectedMode == TurninState.Gold;
+                            var itemTurnin = selectedMode == TurninState.Master_Items;
+
+
+                            if (ImGui.RadioButton(T("Timed Turnin") + "##TurninGoalRadio", timeExpired))
+                            {
+                                configInfo.TurninGoal = TurninState.TimeExpired;
+                                C.SaveDebounced();
+                            }
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.SetTooltip(T("Will turnin once the timer runs out\nCurrently there isn't a way to stop artisan from crafting, it's been requested\nPlease give it time"));
+                            }
+
+                            ImGui.Separator();
+                            if (ImGui.RadioButton(T("Score Goal") + "##ScoreGoalRadio", scoreMode))
+                            {
+                                configInfo.TurninGoal = TurninState.Master_Score;
+                                C.SaveDebounced();
+                            }
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.SetTooltip(T("Will turnin when 1 of the 2 things are met:\n1: Score that you personally have set has been met\n2: Timer has ran out\nYou can set your score with this mode yourself, due to not knowing the scoring break points\nYet"));
+                            }
+                            ImGui.SameLine();
+                            var masterScore = configInfo.Master_Score;
+                            ImGui.SetNextItemWidth(150);
+                            if (ImGui.InputUInt(T("Score Goal") + "##ScoreGoalInput", ref masterScore))
+                            {
+                                configInfo.Master_Score = masterScore;
+                                C.SaveDebounced();
+                            }
+
+                            if (item.SheetInfo.Jobs.ContainsAny(CosmicHelper.CrafterJobList))
+                            {
+                                ImGui.Separator();
+                                if (ImGui.RadioButton(T("After X Crafts"), itemTurnin))
+                                {
+                                    configInfo.TurninGoal = TurninState.Master_Items;
+                                    C.SaveDebounced();
+                                }
+                                if (ImGui.IsItemHovered())
+                                {
+                                    ImGui.SetTooltip(T("Will turn in after X amount of crafts have been completed\nGood if you're goal is to just craft a certain amount and not worry bout score\nDO NOT. SET THIS TO SOME REDICULOUS AMOUNT AND ASK WHY IT DOESN'T WORK"));
+                                }
+                                ImGui.SameLine();
+                                var itemCount = configInfo.Master_Items;
+                                ImGui.SetNextItemWidth(200);
+                                if (ImGui.InputUInt($"##ItemCount_{item.Id}", ref itemCount, 1))
+                                {
+                                    configInfo.Master_Items = itemCount;
+                                    C.SaveDebounced();
+                                }
+                            }
+
+                            ImGui.Separator();
+                            if (ImGui.RadioButton(T("Quick Turnin") + "##QuickTurninRadio", quickTurnin))
+                            {
+                                configInfo.TurninGoal = TurninState.Gold;
+                                C.SaveDebounced();
+                            }
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.SetTooltip(T("Will turnin the mission as soon as it can\nVery useful for quick score farming, mount tokens.\nFor BTN/MIN, this will gather the non-collectable item"));
+                            }
+                        }
+
+                        ImGui.EndPopup();
+                    }
+
+                    ImGui.PopID();
+                }
+                else
+                {
+                    Vector4 BronzeColor = new Vector4(0.804f, 0.498f, 0.196f, 1.0f);
+                    Vector4 SilverColor = new Vector4(0.753f, 0.753f, 0.753f, 1.0f);
+                    Vector4 GoldColor = new Vector4(1.0f, 0.843f, 0.0f, 1.0f);
+                    Vector4 DisabledColor = new Vector4(0.4f, 0.4f, 0.4f, 1.0f);
+
+                    ImGui.PushID($"Mission_{item.Id}");
+
+                    if (C.MissionConfig.TryGetValue(item.Id, out var configInfo))
+                    {
+                        var highestTurnin = configInfo.TurninGoal;
+                        var goldEnabled = highestTurnin >= TurninState.Gold;
+                        var silverEnabled = highestTurnin >= TurninState.Silver;
+                        var bronzeEnabled = highestTurnin >= TurninState.Bronze;
+
+                        using (ImRaii.PushColor(ImGuiCol.Text, goldEnabled ? GoldColor : DisabledColor))
+                        {
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold"))
+                            {
+                                configInfo.TurninGoal = TurninState.Gold;
+                                C.SaveDebounced();
+                            }
+                        }
+                        ImGui.SameLine();
+                        using (ImRaii.PushColor(ImGuiCol.Text, silverEnabled ? SilverColor : DisabledColor))
+                        {
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Silver"))
+                            {
+                                configInfo.TurninGoal = TurninState.Silver;
+                                C.SaveDebounced();
+                            }
+
+                        }
+                        ImGui.SameLine();
+                        using (ImRaii.PushColor(ImGuiCol.Text, bronzeEnabled ? BronzeColor : DisabledColor))
+                        {
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Bronze"))
+                            {
+                                configInfo.TurninGoal = TurninState.Bronze;
+                                C.SaveDebounced();
+                            }
+                        }
+                    }
+
+                    ImGui.PopID();
+                }
+            }
+        }
+        public sealed class ProfileColumn : Column<MissionInfo>
+        {
+            public ProfileColumn()
+            {
+                Flags = ImGuiTableColumnFlags.NoResize;
+            }
+            public override float Width => Math.Max(
+                ImGui.CalcTextSize(Label).X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.CalcTextSize("Open Craft Settings").X + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetStyle().CellPadding.X * 2
+            );
+            public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.Jobs.First().CompareTo(rhs.SheetInfo.Jobs.First());
+            public override void DrawColumn(MissionInfo item, int idx)
+            {
+                var sheetInfo = item.SheetInfo;
+                bool craftProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Craft);
+                bool gatherProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Gather);
+                bool collectable = sheetInfo.Attributes.HasFlag(MissionAttributes.Collectables) || sheetInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
+                bool fishProfile = sheetInfo.Attributes.HasFlag(MissionAttributes.Fish);
+                bool master = sheetInfo.IsMaster;
+
+                ImGui.PushID($"Mission: {item.Id}");
+
+
+                if (sheetInfo.Attributes.HasFlag(MissionAttributes.Craft))
+                {
+                    if (ImGui.Button(T("Open Craft Settings") + $"##Craft_{item.Id}"))
+                    {
+                        ImGui.OpenPopup("Craft Settings: Recipies");
+                    }
+
+                    if (ImGui.BeginPopup("Craft Settings: Recipies"))
+                    {
+                        ImGui.TextDisabled($"{item.Id}");
+                        ImGui.SameLine();
+                        ImGui.Text(T("Mission: {0}", sheetInfo.Name));
+
+                        CrafterManagement(sheetInfo, item.Id);
+
+                        ImGui.EndPopup();
+                    }
+                }
+
+                if (sheetInfo.Jobs.Count > 1)
+                {
+                    // ImGui.SameLine();
+                }
+
+                if (gatherProfile)
+                {
+                    if (!collectable)
+                    {
+                        string profileName = "???";
+                        if (C.MissionConfig.TryGetValue(item.Id, out var config))
+                        {
+                            if (C.GatherProfiles.TryGetValue(config.GProfileId, out var profileSetting))
+                            {
+                                profileName = profileSetting.Name;
+                            }
+
+                            if (ImGui.Button($"{T(profileName)}##{profileName}_{item.Id}_{item.SheetInfo.Name}"))
+                            {
+                                ImGui.OpenPopup($"Select Gather Profile");
+                            }
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.SetTooltip(T("Select gathering profile"));
+                            }
+                            if (ImGui.BeginPopup($"Select Gather Profile"))
+                            {
+                                ImGui.Text(T("Mission: [{0}] {1}", item.Id, item.SheetInfo.Name));
+                                ImGui.Text(T("Currently Selected: {0}", T(profileName)));
+                                ImGui.Separator();
+
+                                foreach (var profile in C.GatherProfiles)
+                                {
+                                    var id = profile.Key;
+                                    bool profileSelected = config.GProfileId == id;
+                                    ImGui.PushID($"{id}_{profile.Value.Name}");
+                                    if (ImGui.RadioButton($"{T(profile.Value.Name)}##{profile.Value.Name}_{id}", profileSelected))
+                                    {
+                                        config.GProfileId = id;
+                                        C.Save();
+                                    }
+                                    ImGui.PopID();
+                                }
+
+                                ImGui.EndPopup();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ImGuiUtil.Center(T("Auto"));
+                    }
+                }
+                else if (fishProfile)
+                {
+                    if (C.MissionConfig.TryGetValue(item.Id, out var config))
+                    {
+                        if (ImGui.Button(T("Fishing Settings")))
+                        {
+                            ImGui.OpenPopup("Select Fishing Profile");
+                        }
+                        if (ImGui.BeginPopup(T("Select Fishing Profile")))
+                        {
+                            ImGui.Text(T("Fishing profile: {0}", sheetInfo.Name));
+                            ImGui.Separator();
+                            bool builtInPreset = config.Use_BuildinPreset;
+                            if (ImGui.Checkbox(T("Use Built In Preset"), ref builtInPreset))
+                            {
+                                config.Use_BuildinPreset = builtInPreset;
+                                C.Save();
+                            }
+                            ImGuiEx.HelpMarker(T("Having this enabled means it will use the default preset that is included with the plugin for autohook. \nIf you would like to use one that you already have in autohook, you can un-checkmark this and type the name of it below"));
+                            using (ImRaii.Disabled(builtInPreset))
+                            {
+                                string presetName = config.AutoHookPresetName;
+                                ImGui.SetNextItemWidth(200);
+                                if (ImGui.InputText(T("Preset Name"), ref presetName))
+                                {
+                                    config.AutoHookPresetName = presetName;
+                                    C.SaveDebounced();
+                                }
+                                if (ImGui.Button(T("Try and apply above profile")))
+                                {
+                                    P.AutoHook.SetPreset(presetName);
+                                }
+                                if (ImGui.IsItemHovered())
+                                {
+                                    ImGui.SetTooltip(T("Allows testing to make sure that you have the preset name\ntyped in correctly. This is *case* specific so"));
+                                }
+                                ImGui.SameLine();
+                                if (ImGui.Button(T("Clear Profile")))
+                                {
+                                    config.AutoHookPresetName = string.Empty;
+                                    C.SaveDebounced();
+                                }
+                            }
+
+                            ImGui.EndPopup();
+                        }
+                    }
+                }
+            }
+        }
+        public sealed class NotesColumn : Column<MissionInfo>
+        {
+            public NotesColumn()
+            {
+                Flags = ImGuiTableColumnFlags.NoResize;
+            }
+            public override float Width => Math.Max(
+                ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
+                ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2
+            );
+            public override void DrawColumn(MissionInfo item, int idx)
+            {
+                var sheetInfo = item.SheetInfo;
+                var HasSPM = sheetInfo.BestSPM.SPM > 0;
+                var HasSequence = sheetInfo.SequenceMissions_Next.Count() > 0 || sheetInfo.SequenceMissions_Previous.Count() > 0;
+                var HasUnlockable = sheetInfo.MissionUnlock.Count() > 0;
+
+                if (HasSPM)
+                {
+                    ImGuiEx.Icon(FontAwesomeIcon.Trophy);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("Average SPM: {0:N2}", sheetInfo.BestSPM.SPM));
+                        ImGui.Text(T(sheetInfo.BestSPM.NoteInfo));
+                        ImGui.EndTooltip();
+                    }
+                }
+                if (HasSequence)
+                {
+                    if (HasSPM)
+                        ImGui.SameLine();
+
+                    ImGuiEx.Icon(FontAwesomeIcon.ListOl);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        if (sheetInfo.SequenceMissions_Next.Count() > 0)
+                        {
+                            ImGui.Text(T("Next Sequence:"));
+                            foreach (var mission in sheetInfo.SequenceMissions_Next)
+                            {
+                                var seqInfo = CosmicHelper.SheetMissionDict[mission];
+                                ImGui.Text($"[{mission}] {seqInfo.Name}");
+                            }
+                        }
+                        if (sheetInfo.SequenceMissions_Previous.Count() > 0)
+                        {
+                            ImGui.Text(T("Previous Sequence:"));
+                            foreach (var mission in sheetInfo.SequenceMissions_Previous)
+                            {
+                                var seqInfo = CosmicHelper.SheetMissionDict[mission];
+                                ImGui.Text($"[{mission}] {seqInfo.Name}");
+                            }
+                        }
+                        ImGui.EndTooltip();
+                    }
+                }
+                if (HasUnlockable)
+                {
+                    if (HasSPM || HasSequence)
+                    {
+                        ImGui.SameLine();
+                    }
+                    if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex)
+                    {
+                        var frameHeight = ImGui.GetFrameHeight();
+                        var size = new Vector2(frameHeight);
+                        if (tex.TryGetWrap(out var wrap, out var exc))
+                        {
+                            ImGui.Image(wrap.Handle, size, new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
+                        }
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text(T("The following missions are required to have gold before you can do this one"));
+                        foreach (var mission in sheetInfo.MissionUnlock)
+                        {
+                            ImGui_Ice.CompletionStatusIcon(CosmicHelper.SheetMissionDict[mission]);
+                            ImGui.SameLine();
+                            ImGui.Text($"[{mission}] - {CosmicHelper.SheetMissionDict[mission].Name}");
+                        }
+                        ImGui.EndTooltip();
+                    }
+                }
+            }
+        }
     }
 }

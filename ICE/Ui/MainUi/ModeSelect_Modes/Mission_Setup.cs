@@ -52,12 +52,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         private static int ItemCount = 0;
         private static string newListName = string.Empty;
 
-        // Search bar state: free text search against mission ID and name.
-        private static string _searchText = string.Empty;
-        private static Mission_Table.TableViewMode _tableViewMode = Mission_Table.TableViewMode.Compact;
-        private static bool _openCustomColumnPopup;
-        private static Vector2 _tableViewPopupPos;
-
         public static void Draw()
         {
             using var style = ImRaii.PushStyle(ImGuiStyleVar.ChildRounding, 10).Push(ImGuiStyleVar.ChildBorderSize, 1);
@@ -133,7 +127,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                              | C.StopWhenLevel
                             || C.StopOnceHitCosmoCredits
                             || C.StopOnceHitLunarCredits
-                            || C.StopOnceRelicFinished;
+                            || C.StopOnceRelicFinished
+                            || C.StopOnceStandardMissionsGolded;
                 if (AnyStop)
                 {
                     ImGui.SameLine(0, 10 * scale);
@@ -154,6 +149,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             ImGui.BulletText(T("Stop once planetary credit hit [{0:N0}]", C.LunarCreditsCap));
                         if (C.StopOnceRelicFinished)
                             ImGui.BulletText(T("Stop once relic completed"));
+                        if (C.StopOnceStandardMissionsGolded)
+                            ImGui.BulletText(T("Stop when all standard missions are golded"));
 
                         ImGui.Text(T("So if you stop and you're unsure why... this might be why"));
 
@@ -445,280 +442,57 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             {
                 if (!bodyChild.Success) return;
 
-                EnsureMissionTable();
-                DrawMissionToolbar(scale);
+                float scrollbarSize = ImGui.GetStyle().ScrollbarSize;
+                float buttonRowHeight = (ImGui.GetTextLineHeight() + 8 * scale + 4 * scale) + scrollbarSize;
 
-                var bottomSpace = ImGui.GetTextLineHeight() + 18f; // prevent the tabs from creating a scrollbar
-                var available = ImGui.GetContentRegionAvail();
-                var tableHeight = available.Y - bottomSpace;
-
-                if (MissionTable == null || available.X <= 2f || tableHeight <= ImGui.GetFrameHeight() * 3f)
-                    return;
-
-                using (var tableChild = ImRaii.Child("###MissionTableV3", new Vector2(available.X, tableHeight), false))
+                using (var missionButtons = ImRaii.Child("##tab_scroll", new Vector2(0, buttonRowHeight), false, ImGuiWindowFlags.HorizontalScrollbar))
                 {
-                    if (!tableChild.Success) return;
+                    if (!missionButtons.Success)
+                        return;
 
+                    ImGui_Ice.DrawRankButton(T("Red Alert"), MissionFilter.RedAlert, MissionTable);
+                    ImGui_Ice.DrawRankButton(T("Sequence"), MissionFilter.Sequence, MissionTable);
+                    ImGui_Ice.DrawRankButton(T("Weather"), MissionFilter.Weather, MissionTable);
+                    ImGui_Ice.DrawRankButton(T("Timed"), MissionFilter.Timed, MissionTable);
+                    ImGui_Ice.DrawRankButton(T("Master"), MissionFilter.Master, MissionTable);
+                    ImGui_Ice.DrawRankButton(T("A Rank"), MissionFilter.ARank, MissionTable);
+                    ImGui_Ice.DrawRankButton(T("B Rank"), MissionFilter.BRank, MissionTable);
+                    ImGui_Ice.DrawRankButton(T("C Rank"), MissionFilter.CRank, MissionTable);
+                    ImGui_Ice.DrawRankButton(T("D Rank"), MissionFilter.DRank, MissionTable);
+
+                    ImGui_Ice.EndCategoryButtonRow();
+                }
+
+                var bottomSpace = ImGui.GetTextLineHeight() + 6f;
+                bottomSpace += 12f; // prevent the tabs from creating a scrollbar
+
+                Vector2 size = new(ImGui.GetContentRegionAvail().X, ImGui.GetContentRegionAvail().Y - bottomSpace);
+                if (ImGui.BeginChild("###MissionTableV3", size, false))
+                {
                     try
                     {
+                        if (MissionTable == null && CosmicHelper.SheetMissionDict.Count > 0)
+                        {
+                            foreach (var mission in CosmicHelper.SheetMissionDict)
+                            {
+                                CosmicHelper.MissionInfo missionDetails = new() { Id = mission.Key };
+                                TableItems.Add(missionDetails);
+                            }
+                            ItemCount = TableItems.Count();
+                            MissionTable = new(TableItems);
+                        }
+                        var filterActive = MissionTable.FilteredItems.Count != 0 && MissionTable.FilteredItems.Count != ItemCount;
+                        var filterCount = filterActive ? $" (of {ItemCount})" : "";
                         var height = ImGui.GetFrameHeight();
-                        MissionTable.ViewMode = _tableViewMode;
-                        MissionTable.Draw(height + 2f);
+                        MissionTable.Draw(height + 4f);
                     }
                     catch (Exception ex)
                     {
                         IceLogging.Error(ex.Message, "Drawing Mission Table");
                     }
                 }
+                ImGui.EndChild();
             }
-        }
-
-        private static void EnsureMissionTable()
-        {
-            if (MissionTable != null || CosmicHelper.SheetMissionDict.Count == 0)
-                return;
-
-            TableItems.Clear();
-            foreach (var mission in CosmicHelper.SheetMissionDict)
-                TableItems.Add(new CosmicHelper.MissionInfo { Id = mission.Key });
-
-            ItemCount = TableItems.Count;
-            MissionTable = new(TableItems)
-            {
-                SearchText = _searchText,
-            };
-        }
-
-        private static void DrawMissionToolbar(float scale)
-        {
-            var style = ImGui.GetStyle();
-            float cardHeight = ImGui.GetTextLineHeight() + ImGui.GetFrameHeight() + 24 * scale;
-            float groupRowHeight = cardHeight + style.ScrollbarSize + 4 * scale;
-            float toolbarHeight = groupRowHeight + ImGui.GetFrameHeight() + style.ItemSpacing.Y + 16 * scale;
-
-            using var toolbarStyle = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, new Vector2(8 * scale, 7 * scale))
-                .Push(ImGuiStyleVar.ItemSpacing, new Vector2(8 * scale, 6 * scale));
-
-            using (var toolbar = ImRaii.Child("##missionToolbar", new Vector2(0, toolbarHeight), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
-            {
-                if (!toolbar.Success)
-                    return;
-
-                using (var filterStrip = ImRaii.Child("##missionFilterStrip", new Vector2(0, groupRowHeight), false, ImGuiWindowFlags.HorizontalScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
-                {
-                    if (filterStrip.Success)
-                    {
-                        DrawFilterCard("Tasks", GetFilterCardWidth(scale, T("Tasks"), T("Red Alert"), T("Sequence"), T("Weather"), T("Timed"), T("Master"), T("A Rank"), T("B Rank"), T("C Rank"), T("D Rank")), cardHeight, scale, () =>
-                        {
-                            ImGui_Ice.DrawRankButton(T("Red Alert"), MissionFilter.RedAlert, MissionTable);
-                            ImGui_Ice.DrawRankButton(T("Sequence"), MissionFilter.Sequence, MissionTable);
-                            ImGui_Ice.DrawRankButton(T("Weather"), MissionFilter.Weather, MissionTable);
-                            ImGui_Ice.DrawRankButton(T("Timed"), MissionFilter.Timed, MissionTable);
-                            ImGui_Ice.DrawRankButton(T("Master"), MissionFilter.Master, MissionTable);
-                            ImGui_Ice.DrawRankButton(T("A Rank"), MissionFilter.ARank, MissionTable);
-                            ImGui_Ice.DrawRankButton(T("B Rank"), MissionFilter.BRank, MissionTable);
-                            ImGui_Ice.DrawRankButton(T("C Rank"), MissionFilter.CRank, MissionTable);
-                            ImGui_Ice.DrawRankButton(T("D Rank"), MissionFilter.DRank, MissionTable, spacingAfter: -1);
-                        });
-                        ImGui.SameLine(0, 8 * scale);
-
-                        DrawFilterCard("Experience", GetFilterCardWidth(scale, T("Experience"), "I", "II", "III", "IV", "V", "VI", "VII"), cardHeight, scale, () =>
-                        {
-                            ImGui_Ice.DrawItemFilterButton("I", ItemFilter.HasI, MissionTable);
-                            ImGui_Ice.DrawItemFilterButton("II", ItemFilter.HasII, MissionTable);
-                            ImGui_Ice.DrawItemFilterButton("III", ItemFilter.HasIII, MissionTable);
-                            ImGui_Ice.DrawItemFilterButton("IV", ItemFilter.HasIV, MissionTable);
-                            ImGui_Ice.DrawItemFilterButton("V", ItemFilter.HasV, MissionTable);
-                            ImGui_Ice.DrawItemFilterButton("VI", ItemFilter.HasVI, MissionTable);
-                            ImGui_Ice.DrawItemFilterButton("VII", ItemFilter.HasVII, MissionTable, spacingAfter: -1);
-                        });
-                        ImGui.SameLine(0, 8 * scale);
-
-                        DrawFilterCard("State", GetFilterCardWidth(scale, T("State"), T("Enabled"), T("Disabled")), cardHeight, scale, () =>
-                        {
-                            ImGui_Ice.DrawItemFilterButton(T("Enabled"), ItemFilter.Enabled, MissionTable);
-                            ImGui_Ice.DrawItemFilterButton(T("Disabled"), ItemFilter.Disabled, MissionTable, spacingAfter: -1);
-                        });
-                        ImGui.SameLine(0, 8 * scale);
-
-                        DrawFilterCard("Tokens", GetFilterCardWidth(scale, T("Tokens"), T("Has Tokens"), T("No Tokens")), cardHeight, scale, () =>
-                        {
-                            ImGui_Ice.DrawItemFilterButton(T("Has Tokens"), ItemFilter.HasTokens, MissionTable);
-                            ImGui_Ice.DrawItemFilterButton(T("No Tokens"), ItemFilter.NoTokens, MissionTable, spacingAfter: -1);
-                        });
-                        ImGui.SameLine(0, 8 * scale);
-
-                        DrawFilterCard("Completion", GetFilterCardWidth(scale, T("Completion"), T("Not Completed"), T("Completed"), T("Gold")), cardHeight, scale, () =>
-                        {
-                            ImGui_Ice.DrawItemFilterButton(T("Not Completed"), ItemFilter.NotCompleted, MissionTable);
-                            ImGui_Ice.DrawItemFilterButton(T("Completed"), ItemFilter.Completed, MissionTable);
-                            ImGui_Ice.DrawItemFilterButton(T("Gold"), ItemFilter.Gold, MissionTable, spacingAfter: -1);
-                        });
-                    }
-                }
-
-                DrawSearchAndViewRow(scale);
-            }
-        }
-
-        private static float GetFilterCardWidth(float scale, string title, params string[] chipLabels)
-        {
-            var cardPaddingX = 8f * scale;
-            var chipPaddingX = 8f * scale;
-            var chipSpacing = 5f * scale;
-            var contentWidth = 0f;
-
-            for (var i = 0; i < chipLabels.Length; i++)
-            {
-                contentWidth += ImGui.CalcTextSize(chipLabels[i]).X + chipPaddingX * 2f;
-                if (i + 1 < chipLabels.Length)
-                    contentWidth += chipSpacing;
-            }
-
-            contentWidth = MathF.Max(contentWidth, ImGui.CalcTextSize(title).X);
-            return contentWidth + cardPaddingX * 2f + 2f * scale;
-        }
-
-        private static void DrawFilterCard(string label, float width, float height, float scale, Action drawContent)
-        {
-            using var cardStyle = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, new Vector2(8 * scale, 7 * scale))
-                .Push(ImGuiStyleVar.ItemSpacing, new Vector2(5 * scale, 5 * scale));
-            using var card = ImRaii.Child($"##missionFilterCard_{label}", new Vector2(width, height), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
-            if (!card.Success)
-                return;
-
-            ImGui.TextColored(new Vector4(0.58f, 0.78f, 1.00f, 0.92f), T(label));
-            drawContent();
-        }
-
-        private static void DrawSearchAndViewRow(float scale)
-        {
-            if (MissionTable == null)
-                return;
-
-            float viewButtonWidth = 142 * scale;
-            float searchViewGap = 20 * scale;
-            float searchGroupWidth = Math.Min(430 * scale, Math.Max(220 * scale, ImGui.GetContentRegionAvail().X - viewButtonWidth - searchViewGap - 8 * scale));
-
-            DrawUnifiedSearch(searchGroupWidth, scale);
-            ImGui.SameLine(0, searchViewGap);
-
-            if (ImGui.Button($"{T("View")}: {GetTableViewLabel(_tableViewMode)}", new Vector2(viewButtonWidth, 0)))
-            {
-                _tableViewPopupPos = ImGui.GetItemRectMin() + new Vector2(0, ImGui.GetItemRectSize().Y + 4 * scale);
-                ImGui.OpenPopup("##missionTableViewPopup");
-            }
-
-            DrawViewPopups(scale);
-        }
-
-        private static void DrawUnifiedSearch(float width, float scale)
-        {
-            var style = ImGui.GetStyle();
-            var drawList = ImGui.GetWindowDrawList();
-            var pos = ImGui.GetCursorScreenPos();
-            var height = ImGui.GetFrameHeight();
-            var size = new Vector2(width, height);
-            var rounding = 6f * scale;
-            var inputPaddingX = 12f * scale;
-
-            drawList.AddRectFilled(pos, pos + size, ImGui.GetColorU32(ImGuiCol.FrameBg), rounding);
-            drawList.AddRect(pos, pos + size, ImGui.GetColorU32(ImGuiCol.Border), rounding, ImDrawFlags.RoundCornersAll, 1f * scale);
-
-            ImGui.SetCursorScreenPos(new Vector2(pos.X + inputPaddingX, pos.Y));
-            ImGui.SetNextItemWidth(MathF.Max(1f, width - inputPaddingX * 2f));
-            using (ImRaii.PushStyle(ImGuiStyleVar.FrameBorderSize, 0)
-                   .Push(ImGuiStyleVar.FrameRounding, 0)
-                   .Push(ImGuiStyleVar.FramePadding, new Vector2(0, style.FramePadding.Y)))
-            using (ImRaii.PushColor(ImGuiCol.FrameBg, Vector4.Zero)
-                   .Push(ImGuiCol.FrameBgHovered, Vector4.Zero)
-                   .Push(ImGuiCol.FrameBgActive, Vector4.Zero))
-            {
-                if (ImGui.InputTextWithHint("##searchInput", T("Search..."), ref _searchText, 256))
-                {
-                    if (MissionTable != null)
-                        MissionTable.SearchText = _searchText;
-                    MissionTable?.SetFilterDirty();
-                }
-            }
-
-            ImGui.SetCursorScreenPos(pos + new Vector2(width, 0));
-        }
-
-        private static void DrawViewPopups(float scale)
-        {
-            ImGui.SetNextWindowPos(_tableViewPopupPos, ImGuiCond.Appearing);
-            ImGui.SetNextWindowSize(new Vector2(148 * scale, 0), ImGuiCond.Appearing);
-            PushMissionPopupStyle(scale);
-            if (ImGui.BeginPopup("##missionTableViewPopup"))
-            {
-                DrawTableViewOption(Mission_Table.TableViewMode.Compact);
-                DrawTableViewOption(Mission_Table.TableViewMode.Full);
-                DrawTableViewOption(Mission_Table.TableViewMode.Custom);
-                ImGui.EndPopup();
-            }
-            PopMissionPopupStyle();
-
-            if (_openCustomColumnPopup)
-            {
-                ImGui.OpenPopup("##missionCustomColumnPopup");
-                _openCustomColumnPopup = false;
-            }
-
-            ImGui.SetNextWindowPos(_tableViewPopupPos, ImGuiCond.Appearing);
-            ImGui.SetNextWindowSize(new Vector2(260 * scale, 0), ImGuiCond.Appearing);
-            PushMissionPopupStyle(scale);
-            if (ImGui.BeginPopup("##missionCustomColumnPopup"))
-            {
-                MissionTable?.DrawCustomColumnSelector();
-                ImGui.EndPopup();
-            }
-            PopMissionPopupStyle();
-        }
-
-        private static void PushMissionPopupStyle(float scale)
-        {
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(12 * scale, 10 * scale));
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 8 * scale);
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 2 * scale);
-            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(6 * scale, 6 * scale));
-            ImGui.PushStyleColor(ImGuiCol.PopupBg, ImGui.GetColorU32(new Vector4(0.045f, 0.060f, 0.095f, 1.00f)));
-            ImGui.PushStyleColor(ImGuiCol.Border, ImGui.GetColorU32(new Vector4(0.42f, 0.64f, 0.95f, 1.00f)));
-            ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(new Vector4(0.14f, 0.30f, 0.55f, 0.92f)));
-            ImGui.PushStyleColor(ImGuiCol.HeaderHovered, ImGui.GetColorU32(new Vector4(0.20f, 0.42f, 0.75f, 1.00f)));
-            ImGui.PushStyleColor(ImGuiCol.HeaderActive, ImGui.GetColorU32(new Vector4(0.25f, 0.52f, 0.92f, 1.00f)));
-            ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetColorU32(new Vector4(0.92f, 0.96f, 1.00f, 1.00f)));
-        }
-
-        private static void PopMissionPopupStyle()
-        {
-            ImGui.PopStyleColor(6);
-            ImGui.PopStyleVar(4);
-        }
-
-        private static void DrawTableViewOption(Mission_Table.TableViewMode mode)
-        {
-            bool selected = _tableViewMode == mode;
-            var label = GetTableViewLabel(mode);
-            if (ImGui.Selectable(label, selected))
-            {
-                _tableViewMode = mode;
-                if (mode == Mission_Table.TableViewMode.Custom)
-                    _openCustomColumnPopup = true;
-            }
-            if (selected)
-                ImGui.SetItemDefaultFocus();
-        }
-
-        private static string GetTableViewLabel(Mission_Table.TableViewMode mode)
-        {
-            return mode switch
-            {
-                Mission_Table.TableViewMode.Compact => T("Compact"),
-                Mission_Table.TableViewMode.Full => T("Full"),
-                Mission_Table.TableViewMode.Custom => T("Custom"),
-                _ => T("Unknown"),
-            };
         }
     }
 }

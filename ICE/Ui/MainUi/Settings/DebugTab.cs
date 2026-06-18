@@ -19,7 +19,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             ImGui.Checkbox(T("Force OOM Main"), ref SchedulerMain.DebugOOMMain);
             ImGui.Checkbox(T("Force OOM Sub"), ref SchedulerMain.DebugOOMSub);
 
-            if (ImGui.Button("Get current hub forecast"))
+            if (ImGui.Button(T("Get current hub forecast")))
             {
                 // Same fallback as other debug tabs: current hub, or Sinus when not in cosmic.
                 var territoryId = PlayerHelper.IsInCosmicZone()
@@ -66,7 +66,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
 
             bool onlyGrabMission = C.OnlyGrabMission_Debug;
-            if (ImGui.Checkbox($"Only grab mission", ref onlyGrabMission))
+            if (ImGui.Checkbox(T("Only grab mission"), ref onlyGrabMission))
             {
                 C.OnlyGrabMission_Debug = onlyGrabMission;
                 C.Save();

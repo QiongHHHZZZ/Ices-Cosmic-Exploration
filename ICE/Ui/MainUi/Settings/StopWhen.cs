@@ -14,7 +14,8 @@ namespace ICE.Ui.MainUi.Settings
                                    || C.StopWhenLevel
                                    || C.StopOnceHitCosmoCredits
                                    || C.StopOnceHitLunarCredits
-                                   || C.StopOnceRelicFinished;
+                                   || C.StopOnceRelicFinished
+                                   || C.StopOnceStandardMissionsGolded;
 
         public static void Draw()
         {
@@ -136,6 +137,20 @@ ImGui.Checkbox(T("Stop after current mission"), ref Mission_Settings.StopAfterCu
                 C.RelicLv = relicLv;
                 C.SaveDebounced();
             }
+
+            #endregion
+
+            #region Standard Missions Golded
+
+            bool standardGoldStop = C.StopOnceStandardMissionsGolded;
+            if (ImGui.Checkbox(T("Stop when all standard missions are golded"), ref standardGoldStop))
+            {
+                C.StopOnceStandardMissionsGolded = standardGoldStop;
+                C.Save();
+            }
+            ImGuiEx.HelpMarker(
+                T("Stops when every non-provisional, non-critical mission for your selected job on the current moon is gold.\n" +
+                "Timed, weather, sequence, and red alert missions are not counted."));
 
             #endregion
 

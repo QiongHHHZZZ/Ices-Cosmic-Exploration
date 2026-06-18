@@ -23,6 +23,20 @@ namespace ICE.Utilities
     {
         // WKSMission category tab index for "Tool Mastery Missions" (0 = Basic, 3 = Tool Mastery).
         internal const byte ToolMasteryTab = 3;
+        internal const byte StandardMissionTab = 0;
+
+        /// <summary>
+        /// Weather/critical boards only refresh while the agent is on the standard (basic) tab.
+        /// </summary>
+        internal static unsafe void EnsureStandardMissionTab(uint classJobId)
+        {
+            var wks = AgentWKSMission.Instance();
+            if (wks is not null && wks->IsAgentActive())
+                AgentWKSMissionEx.SetSelectedJobTab(wks, (byte)classJobId, StandardMissionTab);
+
+            if (GenericHelpers.TryGetAddonMaster<WKSMission>(out var wksMission) && wksMission.IsAddonReady)
+                wksMission.BasicMissions();
+        }
 
         internal unsafe static bool IsMissionTimedOut()
         {
@@ -68,31 +82,38 @@ namespace ICE.Utilities
             return ((WKSEvents)data->State, data->EndTime);
         }
 
+        internal unsafe static bool CanQueryMissionsWithoutUi()
+        {
+            var wks = AgentWKSMission.Instance();
+            return wks is not null && wks->IsAgentActive();
+        }
+
+        private static unsafe AgentWKSMission* GetActiveMissionAgent()
+        {
+            var wks = AgentWKSMission.Instance();
+            if (wks is null || !wks->IsAgentActive())
+                return null;
+            return wks;
+        }
+
         internal unsafe static List<uint> All_AvailableMissions()
         {
             List<uint> allMissions = new();
 
-            if (GenericHelpers.TryGetAddonMaster<WKSMission>(out var wksMission) && wksMission.IsAddonReady)
-            {
-                var wks = AgentWKSMission.Instance();
-                if (wks is null)
-                    return allMissions;
+            if (GetActiveMissionAgent() is null)
+                return allMissions;
 
-                if (!wks->IsAgentActive())
-                    return allMissions;
+            foreach (var mission in Basic_AvailableMissions())
+                allMissions.Add(mission);
 
-                foreach (var mission in Basic_AvailableMissions())
-                    allMissions.Add(mission);
+            foreach (var mission in Provisional_AvailableMissions())
+                allMissions.Add(mission);
 
-                foreach (var mission in Provisional_AvailableMissions())
-                    allMissions.Add(mission);
+            foreach (var mission in Critical_AvailableMissions())
+                allMissions.Add(mission);
 
-                foreach (var mission in Critical_AvailableMissions())
-                    allMissions.Add(mission);
-
-                foreach (var mission in Mastery_AvailableMissions())
-                    allMissions.Add(mission);
-            }
+            foreach (var mission in Mastery_AvailableMissions())
+                allMissions.Add(mission);
 
             return allMissions;
         }
@@ -100,21 +121,15 @@ namespace ICE.Utilities
         {
             List<uint> allMissions = new();
 
-            if (GenericHelpers.TryGetAddonMaster<WKSMission>(out var wksMission) && wksMission.IsAddonReady)
+            var wks = GetActiveMissionAgent();
+            if (wks is null)
+                return allMissions;
+
+            StdVector<MissionEntry> basicList = default;
+            if (wks->GetBasicMissions(&basicList))
             {
-                var wks = AgentWKSMission.Instance();
-                if (wks is null)
-                    return allMissions;
-
-                if (!wks->IsAgentActive())
-                    return allMissions;
-
-                StdVector<MissionEntry> basicList = default;
-                if (wks->GetBasicMissions(&basicList))
-                {
-                    foreach (var mission in basicList)
-                        allMissions.Add(mission.MissionUnitId);
-                }
+                foreach (var mission in basicList)
+                    allMissions.Add(mission.MissionUnitId);
             }
 
             return allMissions;
@@ -123,21 +138,15 @@ namespace ICE.Utilities
         {
             List<uint> allMissions = new();
 
-            if (GenericHelpers.TryGetAddonMaster<WKSMission>(out var wksMission) && wksMission.IsAddonReady)
+            var wks = GetActiveMissionAgent();
+            if (wks is null)
+                return allMissions;
+
+            StdVector<MissionEntry> provisionalList = default;
+            if (wks->GetProvisionalMissions(&provisionalList))
             {
-                var wks = AgentWKSMission.Instance();
-                if (wks is null)
-                    return allMissions;
-
-                if (!wks->IsAgentActive())
-                    return allMissions;
-
-                StdVector<MissionEntry> provisionalList = default;
-                if (wks->GetProvisionalMissions(&provisionalList))
-                {
-                    foreach (var mission in provisionalList)
-                        allMissions.Add(mission.MissionUnitId);
-                }
+                foreach (var mission in provisionalList)
+                    allMissions.Add(mission.MissionUnitId);
             }
 
             return allMissions;
@@ -146,21 +155,15 @@ namespace ICE.Utilities
         {
             List<uint> allMissions = new();
 
-            if (GenericHelpers.TryGetAddonMaster<WKSMission>(out var wksMission) && wksMission.IsAddonReady)
+            var wks = GetActiveMissionAgent();
+            if (wks is null)
+                return allMissions;
+
+            StdVector<MissionEntry> criticalList = default;
+            if (AgentWKSMissionEx.GetCriticalMissions(wks, &criticalList))
             {
-                var wks = AgentWKSMission.Instance();
-                if (wks is null)
-                    return allMissions;
-
-                if (!wks->IsAgentActive())
-                    return allMissions;
-
-                StdVector<MissionEntry> criticalList = default;
-                if (wks->GetCriticalMissions(&criticalList))
-                {
-                    foreach (var mission in criticalList)
-                        allMissions.Add(mission.MissionUnitId);
-                }
+                foreach (var mission in criticalList)
+                    allMissions.Add(mission.MissionUnitId);
             }
 
             return allMissions;
@@ -228,20 +231,14 @@ namespace ICE.Utilities
         {
             List<uint> allMissions = new();
 
-            if (GenericHelpers.TryGetAddonMaster<WKSMission>(out var wksMission) && wksMission.IsAddonReady)
+            var wks = GetActiveMissionAgent();
+            if (wks is null || wks->Data is null)
+                return allMissions;
+
+            foreach (var mission in wks->Data->MissionList.ToList())
             {
-                var wks = AgentWKSMission.Instance();
-                if (wks is null)
-                    return allMissions;
-
-                if (!wks->IsAgentActive())
-                    return allMissions;
-
-                foreach (var mission in wks->Data->MissionList.ToList())
-                {
-                    if (!allMissions.Contains(mission.MissionUnitId))
-                        allMissions.Add(mission.MissionUnitId);
-                }
+                if (!allMissions.Contains(mission.MissionUnitId))
+                    allMissions.Add(mission.MissionUnitId);
             }
 
             return allMissions;
@@ -256,11 +253,8 @@ namespace ICE.Utilities
         {
             UiInfo selectedInfo = new();
 
-            var wks = AgentWKSMission.Instance();
+            var wks = GetActiveMissionAgent();
             if (wks is null)
-                return selectedInfo;
-
-            if (!wks->IsAgentActive())
                 return selectedInfo;
 
             var data = wks->Data;

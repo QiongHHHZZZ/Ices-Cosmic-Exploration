@@ -50,6 +50,7 @@ namespace ICE.Scheduler
                     case Repair: Task_Repair.Enqueue(); break;
                     case HubReturn: Task_HubActivities.Enqueue(); break;
                     case GrabMission: Task_CheckMissions.Enqueue(); break;
+                    case Waiting: Task_CheckMissions.EnqueueWaitRecheck(); break;
                     case AbandonMission: Task_AbandonMission.Enqueue(); break;
                     case ExecutingMission: Task_ExecuteMission.Enqueue(); break;
                     case ScoreCheck: Task_CheckScore.Enqueue(); break;

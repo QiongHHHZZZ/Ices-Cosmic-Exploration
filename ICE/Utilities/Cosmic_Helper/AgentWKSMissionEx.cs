@@ -13,6 +13,7 @@ public static unsafe class AgentWKSMissionEx
 {
     private delegate bool GetCriticalMissionsDelegate(AgentWKSMission* agent, StdVector<AgentWKSMission.MissionEntry>* list);
     private delegate byte JobIndexToClassJobIdDelegate(AgentWKSMission* agent, byte jobIndex);
+    private static readonly nint _wksAetheryteBase;
 
     private delegate bool GetMasterMissionsDelegate(AgentWKSMission* agent, StdVector<AgentWKSMission.MissionEntry>* list);
 
@@ -50,6 +51,15 @@ public static unsafe class AgentWKSMissionEx
         catch(Exception ex)
         {
             IceLogging.Error($"{ex.Message} | [AgentWKSMissionEx] Failed to scan MasterMission sig");
+        }
+
+        try
+        {
+            _wksAetheryteBase = Svc.SigScanner.GetStaticAddressFromSig("48 89 05 ?? ?? ?? ?? 48 8B F8");
+        }
+        catch (Exception ex)
+        {
+            IceLogging.Error($"{ex.Message} | [AgentWKSMissionEx] Failed to scan WKSAetheryte sig");
         }
     }
 
@@ -102,5 +112,16 @@ public static unsafe class AgentWKSMissionEx
 
         if (_jobIndexToClassJobId == null || agent == null || agent->Data == null) return -1;
         return agent->SelectedTab;
+    }
+
+    public static bool IsWKSAetheryteUnlocked(byte rowId)
+    {
+        if (_wksAetheryteBase == nint.Zero) return false;
+
+        var addr = *(nint*)_wksAetheryteBase + 3788;
+        if (addr == nint.Zero) return false;
+
+        var value = *(uint*)addr;
+        return (value & (1u << (rowId - 1))) != 0;
     }
 }

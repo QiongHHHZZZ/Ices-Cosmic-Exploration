@@ -47,6 +47,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             if (ImGui.BeginChild("Detailed Class View", new(rightPanelWidth, childHeight), true))
             {
+                if (ImGui_Ice.SliderButton("Hide Completed", "Hide Completed", ref HideCompleted))
+                {
+                    ResetCompletionTable();
+                }
+
                 ClassDetails();
             }
             ImGui.EndChild();
@@ -176,6 +181,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             foreach (var mission in CosmicHelper.SheetMissionDict)
                             {
                                 if (mission.Value.TerritoryId != selectedTabId)
+                                    continue;
+
+                                if (HideCompleted && mission.Value.CompletionStatus == CosmicHelper.Status.Gold)
                                     continue;
 
                                 if (SelectedJob != 0 && !mission.Value.Jobs.Contains(SelectedJob))

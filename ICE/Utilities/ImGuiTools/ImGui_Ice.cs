@@ -925,6 +925,51 @@ public static partial class ImGui_Ice
         // Add spacing after the button (scaled) - matches DrawCategoryButton
         ImGui.SameLine(0, spacingAfter * scale);
     }
+    public static bool ImageButtonWithText(IDalamudTextureWrap texture, string label, string id, Vector2 imageSize, float padding = 4f, float sidePadding = 4f)
+    {
+        var frameHeight = ImGui.GetFrameHeight();
+        var textSize = ImGui.CalcTextSize(label);
+
+        // Always fit image to frame height, ignore passed height for sizing
+        var iconHeight = frameHeight - sidePadding;
+        // Preserve aspect ratio from the passed imageSize
+        var aspect = imageSize.X / imageSize.Y;
+        var scaledImage = new Vector2(iconHeight * aspect, iconHeight);
+
+        var buttonSize = new Vector2(
+            sidePadding + scaledImage.X + padding + textSize.X + sidePadding,
+            frameHeight
+        );
+
+        var pos = ImGui.GetCursorScreenPos();
+        bool clicked = ImGui.InvisibleButton($"##{id}", buttonSize);
+
+        bool hovered = ImGui.IsItemHovered();
+        bool active = ImGui.IsItemActive();
+
+        var drawList = ImGui.GetWindowDrawList();
+        var rounding = ImGui.GetStyle().FrameRounding;
+
+        uint bgColor = active ? ImGui.GetColorU32(ImGuiCol.ButtonActive) :
+                       hovered ? ImGui.GetColorU32(ImGuiCol.ButtonHovered) :
+                                 ImGui.GetColorU32(ImGuiCol.Button);
+        drawList.AddRectFilled(pos, pos + buttonSize, bgColor, rounding);
+        drawList.AddRect(pos, pos + buttonSize, ImGui.GetColorU32(ImGuiCol.Border), rounding);
+
+        var imagePos = new Vector2(
+            pos.X + sidePadding,
+            pos.Y + (frameHeight - scaledImage.Y) / 2f
+        );
+        drawList.AddImage(texture.Handle, imagePos, imagePos + scaledImage);
+
+        var textPos = new Vector2(
+            imagePos.X + scaledImage.X + padding,
+            pos.Y + (frameHeight - textSize.Y) / 2f
+        );
+        drawList.AddText(textPos, ImGui.GetColorU32(ImGuiCol.Text), label);
+
+        return clicked;
+    }
     public static void EndCategoryButtonRow()
     {
         ImGui.NewLine();

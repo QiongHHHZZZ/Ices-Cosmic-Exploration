@@ -8,6 +8,7 @@ using ICE.Scheduler.Handlers.PictoStuff;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.GatheringHelper.RouteLoader;
+using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -569,10 +570,45 @@ namespace ICE.Scheduler.Tasks
         };
         private static Task? _PathCalculations = null;
 
+        public class WKSAetherInfo
+        {
+            public string Name { get; set; } = string.Empty;
+            public List<uint> BaseId { get; set; } = new();
+            public bool Unlocked { get; set; } = false;
+        }
+
+        public static Dictionary<uint, WKSAetherInfo> MoonAethernet = new();
+        private static void UpdateDict()
+        {
+            if (MoonAethernet.Count == 0)
+            {
+                var wksAetheryteSheet = Svc.Data.GetExcelSheet<WKSAetheryte>();
+                foreach (var aetherSheet in wksAetheryteSheet)
+                {
+                    var rowId = aetherSheet.RowId;
+                    if (rowId == 0)
+                        continue;
+
+                    string name = aetherSheet.Name.Value.Name.ToString();
+
+                    var ids = aetherSheet.ObjectGroup.Value.Select(s => s.Unknown0).ToList();
+
+                    uint baseId = aetherSheet.ObjectGroup.Value.First().Unknown0;
+                    MoonAethernet[rowId] = new()
+                    {
+                        Name = name,
+                        BaseId = ids,
+                        Unlocked = AgentWKSMissionEx.IsWKSAetheryteUnlocked((byte)rowId)
+                    };
+                }
+            }
+        }
+
         public static void Enqueue_NavmeshTask(Vector3 destination, bool waitForBusy = true, float distance = 2.0f)
         {
             if (P.Navmesh.Installed)
             {
+                UpdateDict();
                 P.TaskManager.InsertMulti
                 (
                     new(() => Paths_Clear(), "Clearing all Navmesh Paths"),
@@ -592,6 +628,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (P.Navmesh.Installed)
             {
+                UpdateDict();
                 P.TaskManager.InsertMulti
                 (
                     new(() => Paths_Clear(), "Clearing all Navmesh Paths"),
@@ -650,10 +687,10 @@ namespace ICE.Scheduler.Tasks
             }
 
             var closestAetheryte = aetherList
-                .Where(x => x.RequiredLogLv <= planetProgress)
+                .Where(x => MoonAethernet.Any(y => y.Value.BaseId.Contains(x.AethernetId) && y.Value.Unlocked))
                 .OrderBy(x => Player.DistanceTo(x.Location)).FirstOrDefault();
             var destinationAetheryte = aetherList
-                .Where(x => x.RequiredLogLv <= planetProgress)
+                .Where(x => MoonAethernet.Any(y => y.Value.BaseId.Contains(x.AethernetId) && y.Value.Unlocked))
                 .OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
 
             if (closestAetheryte == null || destinationAetheryte == null)
@@ -974,9 +1011,11 @@ namespace ICE.Scheduler.Tasks
                         return true;
                     }
 
-                    var closestAetheryte = aetherList.OrderBy(x => Vector3.Distance(HubCenter, x.Location)).FirstOrDefault();
+                    var closestAetheryte = aetherList
+                        .Where(x => MoonAethernet.Any(y => y.Value.BaseId.Contains(x.AethernetId) && y.Value.Unlocked))
+                        .OrderBy(x => Vector3.Distance(HubCenter, x.Location)).FirstOrDefault();
                     var destinationAetheryte = aetherList
-                        .Where(x => x.RequiredLogLv <= planetProgress)
+                        .Where(x => MoonAethernet.Any(y => y.Value.BaseId.Contains(x.AethernetId) && y.Value.Unlocked))
                         .OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
 
                     if (closestAetheryte == null || destinationAetheryte == null)

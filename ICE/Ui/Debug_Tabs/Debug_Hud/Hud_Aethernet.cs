@@ -1,5 +1,9 @@
-﻿using ECommons.GameHelpers;
+﻿using Dalamud.Interface;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using ICE.Utilities.Cosmic_Helper;
+using InteropGenerator.Runtime.Attributes;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,23 +14,49 @@ namespace ICE.Ui.Debug_Tabs.Debug_Hud
     {
         public static void Draw()
         {
-            List<uint> AetherIds = new()
+            UpdateDict();
+            foreach (var entry in MoonAethernet)
             {
-                16, 17, 18, 19, 20
-            };
+                bool isUnlocked = AgentWKSMissionEx.IsWKSAetheryteUnlocked((byte)entry.Key);
 
-            foreach (var aethernet in AetherIds)
-            {
-                ImGui.Text($"[{aethernet}] 已解锁：{IsAetheryteUnlocked(aethernet, out var _)}");
+                FontAwesomeIcon mark = isUnlocked ? FontAwesomeIcon.Check : FontAwesomeIcon.XmarksLines;
+
+                string ids = string.Join(",", entry.Value.BaseId);
+
+                ImGuiEx.IconWithText(mark, $"以太之光ID：{ids} | 名称：{entry.Value.Name}");
             }
         }
 
-        public unsafe static bool IsAetheryteUnlocked(uint aetheryteId, out byte subIndex)
+        public class WKSAetherInfo
         {
-            subIndex = 0;
+            public string Name { get; set; } = string.Empty;
+            public List<uint> BaseId { get; set; } = new();
+        }
 
-            UIState* uiState = UIState.Instance();
-            return uiState != null && uiState->IsAetheryteUnlocked(aetheryteId);
+        public static Dictionary<uint, WKSAetherInfo> MoonAethernet = new();
+        private static void UpdateDict()
+        {
+            if (MoonAethernet.Count == 0)
+            {
+                var wksAetheryteSheet = Svc.Data.GetExcelSheet<WKSAetheryte>();
+                foreach (var aetherSheet in wksAetheryteSheet)
+                {
+                    var rowId = aetherSheet.RowId;
+                    if (rowId == 0)
+                        continue;
+
+                    string name = aetherSheet.Name.Value.Name.ToString();
+
+                    var ids = aetherSheet.ObjectGroup.Value.Select(s => s.Unknown0).ToList();
+
+                    uint baseId = aetherSheet.ObjectGroup.Value.First().Unknown0;
+                    MoonAethernet[rowId] = new()
+                    {
+                        Name = name,
+                        BaseId = ids
+                    };
+                }
+            }
         }
     }
 }

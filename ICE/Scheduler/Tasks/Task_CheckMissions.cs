@@ -73,14 +73,31 @@ namespace ICE.Scheduler.Tasks
         private static readonly MissionKind[] HuntSpecialMissionKinds =
             [MissionKind.Critical, MissionKind.Weather, MissionKind.Timed, MissionKind.Sequence];
 
+        private static readonly MissionKind[] StandardMissionKinds =
+            [MissionKind.Ex, MissionKind.A, MissionKind.B, MissionKind.C, MissionKind.D];
+
+        private static int EnabledStandardMissionCount()
+        {
+            var count = 0;
+            foreach (var rank in StandardMissionKinds)
+                count += MissionLibrary[rank].Count;
+            return count;
+        }
+
+        /// <summary>
+        /// Gold completion grind only: idle-wait when special missions remain ungolded,
+        /// none are on the board, and there are no standard missions left to reroll for.
+        /// </summary>
         private static bool WaitingForSpecialMissions() =>
-            HuntSpecialMissionKinds.Any(kind => MissionLibrary[kind].Count > 0);
+            Mission_Settings.Mode == ModeSelect.MissionGoldMode
+            && HuntSpecialMissionKinds.Any(kind => MissionLibrary[kind].Count > 0)
+            && EnabledStandardMissionCount() == 0;
 
         private static void EnterWaitForSpecialMissions(string tag)
         {
             if (SchedulerMain.State != IceState.Waiting)
             {
-                IceLogging.Info("Waiting for a timed, weather, or critical mission to appear.", tag);
+                IceLogging.Info("Gold completion grind: waiting for a timed, weather, or critical mission to appear on the board.", tag);
                 SchedulerMain.State = IceState.Waiting;
             }
 
@@ -356,16 +373,20 @@ namespace ICE.Scheduler.Tasks
                 return false;
             }
 
-            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && hud.IsAddonReady)
-            {
-                IceLogging.Info("The Mission Selection Ui is visible! Continuing on", tag);
-                return true;
-            }
-
             if (CosmicHandler.CanQueryMissionsWithoutUi())
             {
                 CosmicHandler.EnsureStandardMissionTab(Mission_Settings.SelectedJob);
-                IceLogging.Verbose("Mission agent is active — reading the board without opening WKSMission UI", tag);
+
+                if (WaitingForSpecialMissions())
+                {
+                    IceLogging.Verbose("Mission agent is active — reading the board without opening WKSMission UI", tag);
+                    return true;
+                }
+            }
+
+            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && hud.IsAddonReady)
+            {
+                IceLogging.Info("The Mission Selection Ui is visible! Continuing on", tag);
                 return true;
             }
 

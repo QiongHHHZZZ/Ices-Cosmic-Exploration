@@ -1035,15 +1035,16 @@ namespace ICE.Scheduler.Tasks
                     }
 
                     IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now", tag);
+                    var randomPosition = Task_NavmeshMove.Gather_RandomFanPosition(startNode);
 
                     // CN-MAINT: Gather mission entry rule: outside flag/critical circle -> DRTP once, fallback nav if TP unavailable.
-                    if (Task_Gather.TryDailyRoutinesTeleportToGatherLandZone(startNode.LandZone, tag))
+                    if (Task_Gather.TryDailyRoutinesTeleportToGatherLandZone(randomPosition, tag))
                     {
                         Task_Gather.MarkMissionEntryPrepared(missionId);
                         return false;
                     }
 
-                    Task_NavmeshMove.Enqueue_NavmeshTask(startNode.LandZone);
+                    Task_NavmeshMove.Enqueue_NavmeshTask(randomPosition);
                     Task_Gather.MarkMissionEntryPrepared(missionId);
                     return true;
                 }
@@ -1229,7 +1230,7 @@ namespace ICE.Scheduler.Tasks
 
                         if (allmissions.Contains(missionId))
                         {
-                            if (EzThrottler.Throttle("Selecting Mission"))
+                            if (EzThrottler.Throttle("Selecting Mission", 1000))
                                 InitiateMission(missionId);
                         }
                         else

@@ -318,6 +318,18 @@ namespace ICE.Ui.MainUi.Settings
             ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle, T("This does abosolutely nothing\n" +
                 "But I know there's going to be people who enable this and don't read, so it's a tehe.\n" +
                 "Thanks for using my plugin though, it means a lot <3"));
+
+            var fakeFishing = C.FakeIncreaseFisher;
+            ImGui.Dummy(new(0, 0));
+            if (ImGui.Checkbox(T("Increase Fishing Speed"), ref fakeFishing))
+            {
+                C.FakeIncreaseFisher = fakeFishing;
+                C.SaveDebounced();
+            }
+            ImGui.SameLine();
+            ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle, T(
+                "This is your warning, this will just apply a clown head to you every minute or so from glamourer.\n" +
+                "100% a joke setting, don't take it seriously. I don't have the technology for this"));
         }
         private static void Separator()
         {

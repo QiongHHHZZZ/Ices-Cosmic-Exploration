@@ -144,6 +144,15 @@ public sealed partial class ICE : IDalamudPlugin
                 if (SchedulerMain.State != IceState.Idle)
                     SchedulerMain.Tick();
                 WeatherForecastHandler.Tick();
+
+                if (C.FakeIncreaseFisher)
+                {
+                    GlamourIpc.SetClownHead();
+                }
+                else
+                {
+                    GlamourIpc.ResetClownHead();
+                }
             }
             else
             {

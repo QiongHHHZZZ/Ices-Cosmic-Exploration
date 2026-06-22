@@ -1208,6 +1208,8 @@ internal static class L10n
         ["Show Crazy Taxi Arrow when navmeshing"] = "导航时显示方向箭头",
         ["Increase Gathering & Crafting Speed"] = "提高采集与制作速度",
         ["This does abosolutely nothing\nBut I know there's going to be people who enable this and don't read, so it's a tehe.\nThanks for using my plugin though, it means a lot <3"] = "这个选项完全没有实际效果。\n但我知道肯定会有人不看说明就启用，所以只是个小玩笑。\n感谢你使用这个插件，这对我来说很重要 <3",
+        ["Increase Fishing Speed"] = "提高钓鱼速度",
+        ["This is your warning, this will just apply a clown head to you every minute or so from glamourer.\n100% a joke setting, don't take it seriously. I don't have the technology for this"] = "提前提醒一下：这个选项只会每隔一小段时间通过 Glamourer 给你套上小丑头。\n100% 是玩笑设置，别当真。我还没有这种科技。",
         ["Repair all gear in bag"] = "修理背包中的全部装备",
         ["Stop when below x dark matter"] = "暗物质低于设定值时停止",
         ["Minimum Grade 8 Dark Matter"] = "最低保留 8 级暗物质",

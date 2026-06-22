@@ -142,32 +142,9 @@ namespace ICE.Scheduler.Tasks
 
             if (_lastGatherNodeKey != nodeKey || !_cachedGatherPositions.ContainsKey(nodeKey))
             {
-                float node_MinAngle = routeinfo.RadiusStart;
-                float node_MaxAngle = routeinfo.RadiusEnd;
-                float rangeSpan = GetRangeSpan(node_MinAngle, node_MaxAngle);
-                float sectionSize = C.GatherFanSectionSize;
-
-                float selectedAngle;
-                if (rangeSpan >= 359.9f)
-                {
-                    // Full fan — pure random, no bias
-                    selectedAngle = RandomAngleInRange(node_MinAngle, node_MaxAngle);
-                }
-                else
-                {
-                    // Partial fan — find the section closest to where the player is approaching from
-                    float angleToPlayer = CalculateAngleToPlayer(nodePos, Player.Position);
-                    var (sectionMin, sectionMax) = GetNearestSection(node_MinAngle, node_MaxAngle, angleToPlayer, sectionSize);
-                    selectedAngle = RandomAngleInRange(sectionMin, sectionMax);
-                }
-
-                float selectedDistance = NextFloat(routeinfo.MinDistance, routeinfo.MaxDistance);
-
-                Vector3 randomPosition = CalculateFanPosition(nodePos, selectedAngle, selectedDistance, routeinfo.FanHeight);
+                Vector3 randomPosition = Gather_RandomFanPosition(routeinfo);
                 _cachedGatherPositions[nodeKey] = randomPosition;
                 _lastGatherNodeKey = nodeKey;
-
-                IceLogging.Debug($"[GatherMove] New cached position: angle={selectedAngle:F1}, dist={selectedDistance:F2}, pos={randomPosition}", handle);
             }
 
             Vector3 cachedPos = _cachedGatherPositions[nodeKey];
@@ -565,6 +542,14 @@ namespace ICE.Scheduler.Tasks
                     Location = new(-599.94f, 206.55f, -375.08f),
                     LandZone = new(-599.77f, 206.55f, -373.25f),
                     RequiredLogLv = 232,
+                },
+                new()
+                {
+                    MapSelector = 4,
+                    AethernetId = 2015426,
+                    Location = new(-674.68f, 155.50f, 621.65f),
+                    LandZone = new(-677.02f, 115f, 626.32f),
+
                 }
             }
         };
@@ -657,7 +642,6 @@ namespace ICE.Scheduler.Tasks
             }
             return true;
         }
-
         private static unsafe uint WorldProgress()
         {
             var wks = WKSManager.Instance();
@@ -666,7 +650,6 @@ namespace ICE.Scheduler.Tasks
 
             return wks->State.DevGrade;
         }
-
         private static bool? CalculateAethernet(Vector3 destination)
         {
             string tag = "Navmesh: Aethernet Calculation";
@@ -1292,7 +1275,6 @@ namespace ICE.Scheduler.Tasks
 
             return true;
         }
-
         private static unsafe bool? TravelToAethershard(PathInfo shardInfo)
         {
             string tag = "[Navmesh: Aethershard movement]";
@@ -1510,7 +1492,7 @@ namespace ICE.Scheduler.Tasks
             return ffxivAngle;
         }
 
-        private static float CalculateAngleToPlayer(Vector3 nodePos, Vector3 playerPos)
+        public static float CalculateAngleToPlayer(Vector3 nodePos, Vector3 playerPos)
         {
             Vector3 direction = playerPos - nodePos;
             float angle = MathF.Atan2(direction.X, direction.Z) * (180f / MathF.PI);
@@ -1547,7 +1529,6 @@ namespace ICE.Scheduler.Tasks
 
             return span;
         }
-
         private static bool IsAngleInRange(float angle, float min, float max)
         {
             angle = NormalizeAngle(angle);
@@ -1566,7 +1547,6 @@ namespace ICE.Scheduler.Tasks
             else
                 return angle >= min || angle <= max;
         }
-
         private static float GetAngularDistance(float angle1, float angle2)
         {
             angle1 = NormalizeAngle(angle1);
@@ -1578,7 +1558,6 @@ namespace ICE.Scheduler.Tasks
 
             return MathF.Abs(diff);
         }
-
         private static float ClampAngleToRange(float angle, float allowedMin, float allowedMax, bool preferMin)
         {
             angle = NormalizeAngle(angle);
@@ -1594,7 +1573,6 @@ namespace ICE.Scheduler.Tasks
 
             return distToMin < distToMax ? allowedMin : allowedMax;
         }
-
         private static (float sectionMin, float sectionMax) GetNearestSection(float allowedMin, float allowedMax, float targetAngle, float sectionSize)
         {
             float rangeSpan = GetRangeSpan(allowedMin, allowedMax);
@@ -1636,7 +1614,6 @@ namespace ICE.Scheduler.Tasks
                 }
             }
         }
-
         private static float RandomAngleInRange(float min, float max)
         {
             min = NormalizeAngle(min);
@@ -1648,12 +1625,10 @@ namespace ICE.Scheduler.Tasks
             float rangeSize = (360f - min) + max;
             return NormalizeAngle(min + NextFloat(0, rangeSize));
         }
-
         private static float NextFloat(float min, float max)
         {
             return min + (float)_random.NextDouble() * (max - min);
         }
-
         private static Vector3 CalculateFanPosition(Vector3 center, float angleDegrees, float distance, float height)
         {
             float standardAngle = 180f - angleDegrees;
@@ -1665,9 +1640,32 @@ namespace ICE.Scheduler.Tasks
                 center.Z + distance * MathF.Cos(angleRadians)
             );
         }
+        public static Vector3 Gather_RandomFanPosition(NodeInfo startNode)
+        {
+            float node_MinAngle = startNode.RadiusStart;
+            float node_MaxAngle = startNode.RadiusEnd;
+            float rangeSpan = Task_NavmeshMove.GetRangeSpan(node_MinAngle, node_MaxAngle);
+            float sectionSize = C.GatherFanSectionSize;
+
+            float selectedAngle;
+            if (rangeSpan >= 359.9f)
+            {
+                // Full fan — pure random, no bias
+                selectedAngle = Task_NavmeshMove.RandomAngleInRange(node_MinAngle, node_MaxAngle);
+            }
+            else
+            {
+                // Partial fan — find the section closest to where the player is approaching from
+                float angleToPlayer = Task_NavmeshMove.CalculateAngleToPlayer(startNode.Position, Player.Position);
+                var (sectionMin, sectionMax) = Task_NavmeshMove.GetNearestSection(node_MinAngle, node_MaxAngle, angleToPlayer, sectionSize);
+                selectedAngle = Task_NavmeshMove.RandomAngleInRange(sectionMin, sectionMax);
+            }
+
+            float selectedDistance = Task_NavmeshMove.NextFloat(startNode.MinDistance, startNode.MaxDistance);
+            return Task_NavmeshMove.CalculateFanPosition(startNode.Position, selectedAngle, selectedDistance, startNode.FanHeight);
+        }
 
         #endregion
-
         private static void CloseExtraWindows()
         {
             if (EzThrottler.Throttle("Closing Extra Windows"))

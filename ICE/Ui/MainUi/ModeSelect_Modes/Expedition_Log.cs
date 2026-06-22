@@ -191,6 +191,18 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                                 CosmicHelper.MissionInfo missionDetails = new() { Id = mission.Key };
                                 TableItems.Add(missionDetails);
+
+                                if (mission.Value.SequenceMissions_Previous.Count() != 0)
+                                {
+                                    foreach (var prevMission in mission.Value.SequenceMissions_Previous)
+                                    {
+                                        if (!TableItems.Any(x => x.Id == prevMission))
+                                        {
+                                            CosmicHelper.MissionInfo prevMissionDetails = new() { Id = prevMission };
+                                            TableItems.Add(prevMissionDetails);
+                                        }
+                                    }
+                                }
                             }
                             ItemCount = TableItems.Count();
                             CompletionTable = new(TableItems);

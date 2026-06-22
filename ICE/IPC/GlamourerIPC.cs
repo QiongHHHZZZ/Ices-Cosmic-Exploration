@@ -37,11 +37,20 @@ public class GlamourerIPC
 
     public void SetClownHead()
     {
-        if (_clownHeadApplied) return;
         if (!IsAvailable()) return;
 
-        P.TaskManager.Enqueue(() => ApplyStates(), "Setting Clown Head");
-        _clownHeadApplied = true;
+        if (EzThrottler.Throttle("Apply Clown Head", 60_000))
+        {
+            Svc.Log.Info("[I.C.E.] Hey! Glamourer team if you're reading this somebody enabled a tehe setting\n" +
+                "And either: Didn't read the tooltip, or did read the tooltip and still enabled it as a joke\n" +
+                "This isn't a you bug, this is just me applying the clown head on them\n" +
+                "Have a good day");
+
+            if (!P.TaskManager.IsBusy)
+            {
+                P.TaskManager.Enqueue(() => ApplyStates(), "Setting Clown Head");
+            }
+        }
     }
     private int ThrottleCount = 0;
     public bool ApplyStates()

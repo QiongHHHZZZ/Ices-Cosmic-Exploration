@@ -286,6 +286,14 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
                         P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_GatherMove(nodeInfo, stayMounted: true));
                     }
 
+                    ImGui.SameLine();
+                    if (ImGui.Button("Move To [Smart]"))
+                    {
+                        Task_NavmeshMove.ResetGatherMove();
+                        var randomPosition = Task_NavmeshMove.Gather_RandomFanPosition(nodeInfo);
+                        Task_NavmeshMove.Enqueue_NavmeshTask(randomPosition);
+                    }
+
                     ImGui.Dummy(new(0, 5));
                     if (ImGui.Button($"Player Start: {nodeInfo.LandZone}"))
                     {

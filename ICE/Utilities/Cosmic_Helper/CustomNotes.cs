@@ -96,6 +96,43 @@ public static partial class CosmicHelper
         // Unlock / quick-level IDs are built automatically — see CosmicMissionLists.cs.
         // If the sheet misses rows, use ManualUnlockAdditions / ManualQuickLevelAdditions there.
 
+        AddMissions(notesDictonary, 342.85f,
+            $"Food: All I Pebre HQ\n" +
+            $"Pots: Cunning Craftsman's Tisane\n" +
+            $"Solver: Macro / Raphael\n" +
+            $"3rd best overall, but still great for dronebit farming/easily farmable.",
+            1389, 1417, 1445, 1473, 1501, 1529, 1557, 1585);
+
+        AddMissions(notesDictonary, 383.46f,
+            $"Solver: Macro / Raphael\n" +
+            $"2nd best / contention for best overall. Only reason why it's not the best is because it's not up all the time\n" +
+            $"Still great SPM and great for dronebits",
+            1390, 1418, 1446, 1474, 1502, 1530, 1558, 1586);
+
+        AddMissions(notesDictonary, 1700f,
+            $"THE BEST one to do period. Like absolutely insane how much they buffed this (it was originally at 1k originally\n" +
+            $"Now it's just really dumb MAKE SURE TO SET TO QUICK TURNIN for class score.\n" +
+            $"MASTERY\n" +
+            $"Set goal to 6,250 in the turnin section for ~19,800 mastery points every 1 minute",
+            1621, 1649);
+
+        AddMissions(notesDictonary, 1200,
+            $"Class score: Set to Quick Turnin\n" +
+            $"Mastery\n" +
+            $"Set the score turnin at 50k, or set to quick turnin. You'll probably hit it for both reguardless.\n" +
+            $"You'll get ~19-20k mastery points per turnin every 3ish minutes",
+            1677);
+
+        AddMissions(notesDictonary, 384f,
+            $"Food: All I Pebre HQ\n" +
+            $"Pots: Cunning Craftsman's Tisane\n" +
+            $"Solver: Macro / Raphael\n" +
+            $"Probably the best for always being up all the time once you unlock it.\n" +
+            $"Set the Stellar Hand usages for x2\n" +
+            $"MASTERY\n" +
+            $"Set to turnin after x6 crafts, will net you ~30k mastery points every 6 minutes",
+            1396, 1424, 1452, 1480, 1508, 1536, 1564, 1592);
+
         foreach (var mission in notesDictonary)
         {
             SheetMissionDict[mission.Key].BestSPM = mission.Value;

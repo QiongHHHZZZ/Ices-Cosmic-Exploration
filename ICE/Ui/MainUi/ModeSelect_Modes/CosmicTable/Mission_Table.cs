@@ -1482,6 +1482,19 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     }
                 }
             }
+            public override bool FilterFunc(MissionInfo item)
+            {
+                var sheetInfo = item.SheetInfo;
+
+                var HasSPM = sheetInfo.BestSPM.SPM > 0;
+                var HasSequence = sheetInfo.SequenceMissions_Next.Count() > 0 || sheetInfo.SequenceMissions_Previous.Count() > 0;
+                var HasUnlockable = sheetInfo.MissionUnlock.Count() > 0;
+
+                return (HasSPM && FilterValue.HasFlag(ItemFilter.BestSPM))
+                    || (HasSequence && FilterValue.HasFlag(ItemFilter.Sequence))
+                    || (HasUnlockable && FilterValue.HasFlag(ItemFilter.Unlock))
+                    || ((!HasSPM && !HasSequence && !HasUnlockable) && FilterValue.HasFlag(ItemFilter.NoNotes));
+            }
         }
         private static ItemFilter TierToFlag(int tier) => tier switch
         {

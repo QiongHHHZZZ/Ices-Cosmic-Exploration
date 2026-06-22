@@ -46,6 +46,7 @@ internal class DebugWindow : Window
     {
         ["Hud"] = new()
         {
+            ["Shop"] = () => Hud_Shop.Draw(),
             ["Moon Main"] = () => Hud_MainMoon.Draw(),
             ["Mission"] = () => Hud_Mission.Draw(),
             ["Mission Info"] = () => Hud_MissionInfo.Draw(),

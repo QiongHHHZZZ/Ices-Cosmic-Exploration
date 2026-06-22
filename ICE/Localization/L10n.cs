@@ -221,6 +221,16 @@ internal static class L10n
             = "这组天气任务冲分很强，刷出来时通常建议优先做。",
         ["Second best weather missions for scoring, still good to focus over the basic A Ranks"]
             = "这组是第二梯队的天气冲分任务，仍然值得优先于基础 A 类任务。",
+        ["Food: All I Pebre HQ\nPots: Cunning Craftsman's Tisane\nSolver: Macro / Raphael\n3rd best overall, but still great for dronebit farming/easily farmable."]
+            = "食物：高品质 All I Pebre\n爆发药：巧匠药茶\n求解器：宏 / Raphael\n综合排名第 3，但仍然很适合刷无人机币，也比较容易刷。",
+        ["Solver: Macro / Raphael\n2nd best / contention for best overall. Only reason why it's not the best is because it's not up all the time\nStill great SPM and great for dronebits"]
+            = "求解器：宏 / Raphael\n综合排名第 2，也有竞争最佳的潜力。它不是最佳的唯一原因是并非一直可接。\n每分钟技巧点依然很高，也很适合刷无人机币。",
+        ["THE BEST one to do period. Like absolutely insane how much they buffed this (it was originally at 1k originally\nNow it's just really dumb MAKE SURE TO SET TO QUICK TURNIN for class score.\nMASTERY\nSet goal to 6,250 in the turnin section for ~19,800 mastery points every 1 minute"]
+            = "毫无疑问最值得做的任务。它被加强得非常夸张（原本大约只有 1000）。\n现在强得离谱。为了职业分数，务必设置为快速交付。\n精通\n在交付设置中把目标设为 6,250，约每 1 分钟可获得 19,800 精通点。",
+        ["Class score: Set to Quick Turnin\nMastery\nSet the score turnin at 50k, or set to quick turnin. You'll probably hit it for both reguardless.\nYou'll get ~19-20k mastery points per turnin every 3ish minutes"]
+            = "职业分数：设置为快速交付\n精通\n将分数交付设为 50k，或设置为快速交付。两种情况通常都能达到。\n大约每 3 分钟交付一次，每次可获得 19-20k 精通点。",
+        ["Food: All I Pebre HQ\nPots: Cunning Craftsman's Tisane\nSolver: Macro / Raphael\nProbably the best for always being up all the time once you unlock it.\nSet the Stellar Hand usages for x2\nMASTERY\nSet to turnin after x6 crafts, will net you ~30k mastery points every 6 minutes"]
+            = "食物：高品质 All I Pebre\n爆发药：巧匠药茶\n求解器：宏 / Raphael\n解锁后由于一直可接，可能是最好的常驻选择。\n将 Stellar Hand 使用次数设为 x2。\n精通\n设置为制作 6 次后交付，约每 6 分钟可获得 30k 精通点。",
         ["I would HIGHLY recommend doing these as you first start out.\nKnocks out 2 classes at once, allowing you to double dip and get done quicker.\nMake sure the turnin is on silver, gold isn't worth the extra timeAlso, best for A Rank level on Sinus"]
             = "开荒阶段非常推荐优先做这些任务。\n一次推进两个职业，能同时收益并更快完成。\n交付建议设为银奖，金奖不值得额外耗时；同时也很适合在憧憬湾刷 A 类等级。",
         ["Best fishing mission.... period. Which sucks.\nTurnin on silver for best results. Don't do the other dual class, it's not worth\nRecommend Raphael Solver"]

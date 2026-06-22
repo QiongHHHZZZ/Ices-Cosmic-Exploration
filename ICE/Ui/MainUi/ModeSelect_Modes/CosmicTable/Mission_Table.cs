@@ -260,7 +260,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 _table = table;
                 Flags = ImGuiTableColumnFlags.NoHide | ImGuiTableColumnFlags.NoResize;
                 SetFlags(ItemFilter.Enabled, ItemFilter.Disabled);
-                SetNames("Enabled", "Disabled");
+                SetNames(T("Enabled"), T("Disabled"));
             }
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs)
@@ -415,7 +415,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public CompletionColumn()
             {
                 SetFlags(ItemFilter.NotCompleted, ItemFilter.Completed, ItemFilter.Gold);
-                SetNames("Not Completed", "Completed", "Gold");
+                SetNames(T("Not Completed"), T("Completed"), T("Gold"));
             }
             public override float Width => Math.Max(
                 ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
@@ -537,7 +537,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 Flags = ImGuiTableColumnFlags.NoResize;
                 SetFlags(ItemFilter.HasTokens, ItemFilter.NoTokens);
-                SetNames("Has Tokens", "No Tokens");
+                SetNames(T("Has Tokens"), T("No Tokens"));
             }
             public override float Width => Math.Max(
                 ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
@@ -730,7 +730,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 Flags = ImGuiTableColumnFlags.NoResize;
                 SetFlags(MissionFilter.RedAlert, MissionFilter.Sequence, MissionFilter.Weather, MissionFilter.Timed, MissionFilter.ARank, MissionFilter.BRank, MissionFilter.CRank, MissionFilter.DRank, MissionFilter.Master);
-                SetNames("Red Alert", "Sequence", "Weather", "Timed", "A Rank", "B Rank", "C Rank", "D Rank", "Master");
+                SetNames(T("Red Alert"), T("Sequence"), T("Weather"), T("Timed"), T("A Rank"), T("B Rank"), T("C Rank"), T("D Rank"), T("Master"));
             }
             public override float Width => Math.Max(ImGui.CalcTextSize(Label + "XX").X + ImGui.GetStyle().CellPadding.X * 2, ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2);
 
@@ -977,7 +977,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 Flags = ImGuiTableColumnFlags.NoResize;
                 SetFlags(ItemFilter.TurninGold, ItemFilter.TurninSilver, ItemFilter.TurninBronze);
-                SetNames("Gold", "Silver", "Bronze");
+                SetNames(T("Gold"), T("Silver"), T("Bronze"));
             }
             public override float Width
             {
@@ -1399,7 +1399,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 Flags = ImGuiTableColumnFlags.NoResize;
                 SetFlags(ItemFilter.BestSPM, ItemFilter.Sequence, ItemFilter.Unlock, ItemFilter.NoNotes);
-                SetNames("Best Score Per Minute", "Sequence", "Needs Unlocked", "No Notes");
+                SetNames(T("Best Score Per Minute"), T("Sequence"), T("Needs Unlocked"), T("No Notes"));
             }
             public override float Width => Math.Max(
                 ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,

@@ -47,7 +47,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             if (ImGui.BeginChild("Detailed Class View", new(rightPanelWidth, childHeight), true))
             {
-                if (ImGui_Ice.SliderButton("Hide Completed", "Hide Completed", ref HideCompleted))
+                if (ImGui_Ice.SliderButton("Hide Completed", T("Hide Completed"), ref HideCompleted))
                 {
                     ResetCompletionTable();
                 }

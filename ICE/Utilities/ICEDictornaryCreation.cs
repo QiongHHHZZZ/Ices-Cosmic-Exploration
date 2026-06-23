@@ -45,6 +45,7 @@ public sealed partial class ICE
             string missionName = entry.Name.ToString();
             missionName = missionName.Replace("<nbsp>", " ");
             missionName = missionName.Replace("<->", "");
+            missionName = missionName.Replace("\uE0BE ", "");
 
             // Jobs tied to mission
             jobs.Add(entry.ClassJobCategory[0].RowId - 1);

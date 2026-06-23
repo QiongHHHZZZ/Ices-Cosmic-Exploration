@@ -547,8 +547,8 @@ namespace ICE.Scheduler.Tasks
                 {
                     MapSelector = 4,
                     AethernetId = 2015426,
-                    Location = new(-674.68f, 155.50f, 621.65f),
-                    LandZone = new(-677.02f, 115f, 626.32f),
+                    Location = new(-676.35f, 115.00f, 626.07f),
+                    LandZone = new(-674.68f, 115.50f, 621.65f),
 
                 }
             }

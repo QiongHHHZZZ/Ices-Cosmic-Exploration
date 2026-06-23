@@ -123,31 +123,22 @@ namespace ICE.Scheduler.Tasks
         }
         private static void ImportPresetsSequentially(uint missionId)
         {
-            bool? ImportOtherPresets(string preset)
-            {
-                P.AutoHook.CreateAndSelectAnonymousPreset(preset);
-                return true;
-            }
-
             var presetList = CosmicHelper.SheetMissionDict[missionId].Fish_Presets;
 
             if (presetList.Count == 0)
                 return;
 
-            IceLogging.Debug($"Current Fish Preset Count for [{missionId}]: {presetList.Count}");
-
-            // Import first preset immediately
-            P.AutoHook.CreateAndSelectAnonymousPreset(presetList[0]);
-
-            // Queue remaining presets with delays
-            for (int i = 1; i < presetList.Count; i++)
+            var preset = presetList[0];
+            if (preset.StartsWith("AHFOLDER"))
             {
-                var preset = presetList[i]; // Capture for closure
-
-                P.TaskManager.EnqueueDelay(100);
-                P.TaskManager.Enqueue(() => ImportOtherPresets(preset));
+                IceLogging.Verbose("We found a folder! We're going to import that", "AH Import");
+                P.AutoHook.CreateAndSelectAnonymousFolder(preset);
+            }
+            else
+            {
+                IceLogging.Verbose("Basic Fishing preset (bless) single import it is", "AH Import");
+                P.AutoHook.CreateAndSelectAnonymousPreset(preset);
             }
         }
-
     }
 }

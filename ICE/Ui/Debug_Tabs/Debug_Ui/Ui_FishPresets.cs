@@ -12,8 +12,10 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
 {
     internal class Ui_FishPresets
     {
-        private static uint search_MissionId = 0;
+        private static string search_MissionId = string.Empty;
         private static string search_MissionName = "";
+
+        private static int _selectedPlanetIndex = 0;
 
         private static uint selectedMission = 0;
 
@@ -27,7 +29,7 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
                 ImGui.InputText(T("Search Name"), ref search_MissionName, 100);
-                ImGui.InputUInt("Search ID", ref search_MissionId);
+                ImGui.InputText(T("Search ID"), ref search_MissionId, 100);
                 using (var missionSelection = ImRaii.Child("Mission Selection Child", new(300, ImGui.GetContentRegionAvail().Y)))
                 {
                     ImGui.Separator();
@@ -49,9 +51,9 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
         {
             var list = CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(18));
 
-            if (search_MissionId != 0)
+            if (search_MissionId != string.Empty)
             {
-                list = list.Where(x => x.Key == search_MissionId);
+                list = list.Where(x => x.Key.ToString().Contains(search_MissionId));
             }
 
             if (!string.IsNullOrEmpty(search_MissionName))
@@ -80,11 +82,22 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
         {
             if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var missionInfo))
             {
+                for (int i = 0; i < CosmicMoonRegistry.All.Length; i++)
+                {
+                    var moon = CosmicMoonRegistry.All[i];
+                    ImGui.RadioButton(moon.DisplayName, ref _selectedPlanetIndex, i);
+
+                    if (i < CosmicMoonRegistry.All.Length - 1)
+                        ImGui.SameLine();
+                }
+
                 if (ImGui.Button(T("Export All Presets")))
                 {
                     var clipboard = ExportAllMissions();
                     ImGui.SetClipboardText(clipboard);
                 }
+
+                ImGui.SameLine();
 
                 if (ImGui.Button(T("Export Selected Mission")))
                 {
@@ -92,7 +105,20 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
                     ImGui.SetClipboardText(clipboard);
                 }
 
+                ImGui.SameLine();
+                if (ImGui.Button(T("Export for wiki")))
+                {
+                    var clipboard = ExportWiki();
+                    ImGui.SetClipboardText(clipboard);
+                }
+
+                ImGui.AlignTextToFramePadding();
                 ImGui.Text($"[{selectedMission}] {missionInfo.Name}");
+                ImGui.SameLine();
+                if (ImGui.Button(T("Copy Mission Name")))
+                {
+                    ImGui.SetClipboardText($"[{selectedMission}] {missionInfo.Name}");
+                }
                 if (ImGui.Button(T("Import New Preset")))
                 {
                     var clipboard = ImGui.GetClipboardText();
@@ -111,8 +137,15 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
                 if (ImGui.Button(T("Temp Set Presets")))
                 {
                     P.AutoHook.DeleteAllAnonymousPresets();
-                    foreach (var preset in missionInfo.Fish_Presets)
+                    var preset = missionInfo.Fish_Presets[0];
+                    if (preset.StartsWith("AHFOLDER"))
                     {
+                        IceLogging.Verbose("We found a folder! We're going to import that", "AH Import");
+                        P.AutoHook.CreateAndSelectAnonymousFolder(preset);
+                    }
+                    else
+                    {
+                        IceLogging.Verbose("Basic Fishing preset (bless) single import it is", "AH Import");
                         P.AutoHook.CreateAndSelectAnonymousPreset(preset);
                     }
                 }
@@ -148,9 +181,13 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
         private static string ExportAllMissions()
         {
             var sb = new StringBuilder();
-            foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(18)))
+            var selectedMoon = CosmicMoonRegistry.All[_selectedPlanetIndex];
+            foreach (var mission in CosmicHelper.SheetMissionDict
+                .Where(x => x.Value.Jobs.Contains(18))
+                .Where(x => x.Value.TerritoryId == selectedMoon.TerritoryId))
             {
-                sb.AppendLine($"\t\t[{mission.Key}] = new()");
+
+                sb.AppendLine($"\t\tFishingPreset[{mission.Key}] = new()");
                 sb.AppendLine("\t\t{");
 
                 foreach (var preset in mission.Value.Fish_Presets)
@@ -158,7 +195,7 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
                     sb.AppendLine($"\t\t\t\"{preset}\",");
                 }
 
-                sb.AppendLine("\t\t},");
+                sb.AppendLine("\t\t};");
             }
 
             return sb.ToString();
@@ -178,6 +215,23 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
                 }
 
                 sb.AppendLine("\t\t};");
+            }
+
+            return sb.ToString();
+        }
+
+        private static string ExportWiki()
+        {
+            var sb = new StringBuilder();
+            if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var mission))
+            {
+                sb.AppendLine($"### [{selectedMission}] {mission.Name}");
+                foreach (var preset in mission.Fish_Presets)
+                {
+                    sb.AppendLine("```");
+                    sb.AppendLine($"{preset}");
+                    sb.AppendLine("```");
+                }
             }
 
             return sb.ToString();

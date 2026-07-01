@@ -47,7 +47,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             { "Pictomancer", 42 }
         };
 
-        public static CosmicTables.Mission_Table? MissionTable;
+        public static Mission_Table? MissionTable;
         private static List<CosmicHelper.MissionInfo> TableItems = [];
         private static int ItemCount = 0;
         private static string newListName = string.Empty;

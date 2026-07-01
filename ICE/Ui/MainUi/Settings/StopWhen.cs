@@ -145,7 +145,7 @@ ImGui.Checkbox(T("Stop after current mission"), ref Mission_Settings.StopAfterCu
             #region Mastery Score
 
             bool stopMastery = C.StopWhenMasteryComplete;
-            if (ImGui.Checkbox("Stop When Mastery Complete", ref stopMastery))
+            if (ImGui.Checkbox(T("Stop When Mastery Complete"), ref stopMastery))
             {
                 C.StopWhenMasteryComplete = stopMastery;
                 C.SaveDebounced();

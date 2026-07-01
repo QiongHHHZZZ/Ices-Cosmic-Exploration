@@ -269,13 +269,13 @@ namespace ICE.Ui
                 {
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text("Mission Skill");
+                    ImGui.Text(T("Mission Skill"));
 
                     ImGui.TableNextColumn();
                     ImGui.Image(mission.TemporaryAction.Icon.GetWrapOrEmpty().Handle, new(24, 24));
                     if (ImGui.IsItemHovered() && mission.TemporaryAction.UseAmount != 0)
                     {
-                        ImGui.SetTooltip($"Max Use: {mission.TemporaryAction.UseAmount}");
+                        ImGui.SetTooltip(T("Max Use: {0}", mission.TemporaryAction.UseAmount));
                     }
                     ImGui.SameLine();
                     ImGui.Text($"{mission.TemporaryAction.Name}");
@@ -285,7 +285,7 @@ namespace ICE.Ui
                 {
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text("Supplied Items");
+                    ImGui.Text(T("Supplied Items"));
 
                     ImGui.TableNextColumn();
                     for (int i = 0; i < mission.Supplies.Count(); i++)
@@ -295,8 +295,8 @@ namespace ICE.Ui
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text($"ItemId: {supply.ItemId}");
-                            ImGui.Text($"Name: {supply.Name}");
+                            ImGui.Text(T("ItemId: {0}", supply.ItemId));
+                            ImGui.Text(T("Name: {0}", supply.Name));
                             ImGui.EndTooltip();
                         }
                         ImGui.SameLine();

@@ -25,7 +25,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         private static uint selectedTabId = ProgressTabId;
         private static bool HideCompleted = false;
 
-        private static CosmicTables.Completion_Table? CompletionTable;
+        private static Completion_Table? CompletionTable;
         private static List<CosmicHelper.MissionInfo> TableItems = [];
         private static int ItemCount = 0;
         private static string newListName = string.Empty;
@@ -325,7 +325,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.TableSetupColumn("##Relic_XPBar");
                     ImGui.TableSetupColumn(T("Score"));
                     ImGui.TableSetupColumn("##Score_XPBar");
-                    ImGui.TableSetupColumn("Mastery");
+                    ImGui.TableSetupColumn(T("Mastery"));
                     ImGui.TableSetupColumn("##Mastery_XPBar");
 
                     ImGui.TableHeadersRow();

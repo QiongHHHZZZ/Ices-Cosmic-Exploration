@@ -624,11 +624,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 var masteryScore = CosmicHelper.Cosmic_ClassInfo();
                                 if (masteryScore.TryGetValue(agendaInfo.SelectedJob, out var job))
                                 {
-                                    ImGui.SetTooltip($"Current Mastery: {job.Mastery:N0}");
+                                    ImGui.SetTooltip(T("Current Mastery: {0:N0}", job.Mastery));
                                 }
                                 else
                                 {
-                                    ImGui.SetTooltip("No Mastery info can be loaded");
+                                    ImGui.SetTooltip(T("No Mastery info can be loaded"));
                                 }
                             }
                         }

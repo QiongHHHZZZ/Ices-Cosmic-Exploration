@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <DalamudLibPath Condition="Exists('$(APPDATA)\XIVLauncherCN\addon\Hooks\dev\')">$(APPDATA)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
+    <DalamudLibPath Condition="!Exists('$(APPDATA)\XIVLauncherCN\addon\Hooks\dev\') and Exists('$(APPDATA)\XIVLauncher\addon\Hooks\dev\')">$(APPDATA)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+    <AssemblySearchPaths Condition="Exists('$(DalamudLibPath)')">$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>
+  </PropertyGroup>
+</Project>

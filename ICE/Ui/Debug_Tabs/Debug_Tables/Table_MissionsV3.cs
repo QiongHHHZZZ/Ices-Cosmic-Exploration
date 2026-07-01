@@ -12,7 +12,7 @@ namespace ICE.Ui.Debug_Tabs.Debug_Tables;
 
 internal class Table_MissionsV3
 {
-    private static CosmicTables.Mission_Table? MissionTable;
+    private static Mission_Table? MissionTable;
     private static List<MissionInfo> TableItems = [];
     private static int ItemCount = 0;
 

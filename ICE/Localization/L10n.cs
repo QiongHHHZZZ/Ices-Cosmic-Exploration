@@ -126,6 +126,13 @@ internal static class L10n
         ["Gold Sequence"] = "连续金奖",
         ["TimeExpired"] = "计时结束",
         ["Master_Score"] = "超难分数",
+        ["Mastery"] = "超难熟练度",
+        ["Mastery Score"] = "超难熟练度",
+        ["Mission Skill"] = "任务技能",
+        ["Supplied Items"] = "补给物品",
+        ["Max Use: {0}"] = "最大使用次数：{0}",
+        ["ItemId: {0}"] = "物品ID：{0}",
+        ["Name: {0}"] = "名称：{0}",
         ["Total Completions: {0:N0}/{1:N0}"] = "总完成/尝试：{0:N0}/{1:N0}",
         ["{0} [{1:N0}]"] = "{0} [{1:N0}]",
         ["This option will strive to get the best result, but will turn in any result if necessary without stopping."]
@@ -965,6 +972,7 @@ internal static class L10n
         ["Stage: {0}"] = "阶段：{0}",
         ["Waypoints in {0}"] = "{0} 中的路径点",
         ["Current Score: {0:N0}"] = "当前技巧点：{0:N0}",
+        ["Current Mastery: {0:N0}"] = "当前超难熟练度：{0:N0}",
         ["Exp {0}: {1} / {2}"] = "经验 {0}：{1} / {2}",
         ["Type: {0}"] = "类型：{0}",
         ["Current: {0}"] = "当前：{0}",
@@ -973,6 +981,7 @@ internal static class L10n
         ["Dronebits"] = "晶片",
         ["Dronebox Count: {0:N0}"] = "俄匊斯能源包数量：{0:N0}",
         ["No score can be loaded"] = "无法读取技巧点",
+        ["No Mastery info can be loaded"] = "无法读取超难熟练度信息",
         ["Currently Selected: {0}"] = "当前选择：{0}",
         ["Fishing profile: {0}"] = "钓鱼配置：{0}",
         ["Previous Missions"] = "前置任务",
@@ -1384,6 +1393,7 @@ internal static class L10n
         ["Turnin if relic is complete"] = "宇宙工具完成后上交",
         ["Stop once relic completed"] = "宇宙工具完成后停止",
         ["Stop when all standard missions are golded"] = "普通任务全部金奖后停止",
+        ["Stop When Mastery Complete"] = "超难熟练度达标后停止",
         ["Stops when every non-provisional, non-critical mission for your selected job on the current moon is gold.\nTimed, weather, sequence, and red alert missions are not counted."] = "当前星球上所选职业的全部普通任务达到金奖后停止。\n限时、天气、连续与紧急任务不计入。",
 
         // Mission_Setup.cs HelpMarker texts

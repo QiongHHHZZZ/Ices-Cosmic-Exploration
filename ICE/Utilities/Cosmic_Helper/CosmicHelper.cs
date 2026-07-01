@@ -662,13 +662,13 @@ public static unsafe partial class CosmicHelper
 
                         #region ActionUsage
 
-                        if (mission.TemporaryActionCount != 0)
+                        var actionInfo = mission.TemporaryAction;
+                        if (actionInfo.ActionId != 0)
                         {
                             ImGui.TableNextRow();
                             ImGui.TableSetColumnIndex(0);
-                            var actionInfo = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>().GetRow(mission.TemporaryActionId);
                             var name = actionInfo.Name;
-                            var icon = Svc.Texture.GetFromGameIcon((int)actionInfo.Icon).GetWrapOrEmpty();
+                            var icon = actionInfo.Icon.GetWrapOrEmpty();
                             ImGui.Image(icon.Handle, new(24, 24));
                             ImGui.AlignTextToFramePadding();
                             ImGui.SameLine();
@@ -683,7 +683,7 @@ public static unsafe partial class CosmicHelper
                                 var maxUsage = recipeConfig.SkillUsageAmount;
                                 ImGui.SetNextItemWidth(recipe_ComboWidth);
                                 string skillUsageLabel = maxUsage == -1 ? T("Default") : $"{maxUsage}";
-                                if (ImGui.SliderInt("##MaxSkillUsage", ref maxUsage, -1, (int)mission.TemporaryActionCount, skillUsageLabel))
+                                if (ImGui.SliderInt("##MaxSkillUsage", ref maxUsage, -1, (int)actionInfo.UseAmount, skillUsageLabel))
                                 {
                                     recipeConfig.SkillUsageAmount = maxUsage;
                                     C.SaveDebounced();
@@ -739,7 +739,7 @@ public static unsafe partial class CosmicHelper
                                 }
 #endif
 
-                                if (mission.TemporaryActionId == 41269 && !globalArtisan)
+                                if (mission.TemporaryAction.ActionId == 41269 && !globalArtisan)
                                 {
                                     ImGui.TableSetColumnIndex(1);
                                     ImGui.Text(T("Use after this many steps"));

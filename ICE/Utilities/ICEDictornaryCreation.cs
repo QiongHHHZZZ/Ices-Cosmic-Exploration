@@ -194,6 +194,47 @@ public sealed partial class ICE
             tempActionId = missionToDo.TemporaryAction.RowId;
             tempActionCount = missionToDo.Unknown14;
 
+            ActionInfo tempAction = new();
+            if (tempActionId != 0 && ExcelHelper.ActionSheet.TryGetRow(tempActionId, out var actionSheet))
+            {
+                if (actionSheet.Icon is { } actionId)
+                {
+                    if (Svc.Texture.TryGetFromGameIcon((int)actionId, out var actionIcon))
+                    {
+                        tempAction.ActionId = tempActionId;
+                        tempAction.Icon = actionIcon;
+                        tempAction.UseAmount = tempActionCount;
+                        tempAction.Name = actionSheet.Name.ToString();
+                    }
+                }
+            }
+
+            List <SupplyInfo> missionSupplies = new();
+            for (int i = 0; i < 3; i++)
+            {
+                var supplyItems = entry.WKSMissionSupplyItem.Value;
+                var item = supplyItems.Item[i];
+                var count = supplyItems.ItemCount[i];
+
+                if (item.RowId != 0)
+                {
+                    // First item -> Value takes it to WKSItemInfo
+                    // Second item -> Value takes it to Item [Actual sheet we want]
+                    var itemSheet = item.Value.Item.Value;
+                    var itemId = item.Value.Item.RowId;
+                    Svc.Texture.TryGetFromGameIcon((int)itemSheet.Icon, out var itemIcon);
+                    SupplyInfo supplyInfo = new()
+                    {
+                        Icon = itemIcon,
+                        Name = itemSheet.Name.ToString(),
+                        Count = count,
+                        ItemId = itemId
+                    };
+                    missionSupplies.Add(supplyInfo);
+                }
+            }
+
+
             // - - - Crafter information - - - //
             var wksRecipeSheet = entry.WKSMissionRecipe;
             uint wksRecipeRowId = wksRecipeSheet.RowId;
@@ -617,8 +658,8 @@ public sealed partial class ICE
                     Crafts_Pre = crafts_Pre,
                     IsExpert = isExpert,
 
-                    TemporaryActionId = tempActionId,
-                    TemporaryActionCount = tempActionCount,
+                    TemporaryAction = tempAction,
+                    Supplies = missionSupplies,
 
                     Gather_MapKey = marker_Gather,
                     Critical_MapKey = marker_Critical,

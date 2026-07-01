@@ -25,7 +25,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         private static uint selectedTabId = ProgressTabId;
         private static bool HideCompleted = false;
 
-        private static Completion_Table? CompletionTable;
+        private static CosmicTables.Completion_Table? CompletionTable;
         private static List<CosmicHelper.MissionInfo> TableItems = [];
         private static int ItemCount = 0;
         private static string newListName = string.Empty;
@@ -318,13 +318,15 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.EndTable();
                 }
 
-                if (ImGui.BeginTable("Class Progress: All", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
+                if (ImGui.BeginTable("Class Progress: All", 7, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
                 {
                     ImGui.TableSetupColumn(T("Job"));
                     ImGui.TableSetupColumn(T("Relic"));
                     ImGui.TableSetupColumn("##Relic_XPBar");
                     ImGui.TableSetupColumn(T("Score"));
                     ImGui.TableSetupColumn("##Score_XPBar");
+                    ImGui.TableSetupColumn("Mastery");
+                    ImGui.TableSetupColumn("##Mastery_XPBar");
 
                     ImGui.TableHeadersRow();
 
@@ -387,6 +389,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                             ImGui.SetCursorScreenPos(new Vector2(scoreCellMin.X, scoreCellMin.Y + offsetY));
                             ImGui_Ice.Draw_XPBar(jobInfo.Score, 500_000, 500_000, size: new Vector2(200, barHeight));
+
+                            ImGui.TableNextColumn();
+                            ImGui_Ice.Table_FullCenterText($"{jobInfo.Mastery:N0}");
+
+                            ImGui.TableNextColumn();
+                            var masteryColWidth = ImGui.GetColumnWidth();
+                            var masteryCellMin = ImGui.GetCursorScreenPos(); ;
+
+                            ImGui.SetCursorScreenPos(new(masteryCellMin.X, masteryCellMin.Y + offsetY));
+                            ImGui_Ice.Draw_XPBar(jobInfo.Mastery, 500_000, 500_000, size: new(200, barHeight));
                         }
                     }
 
@@ -423,6 +435,28 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.SetCursorScreenPos(new Vector2(cellMin.X, cellMin.Y + offsetY));
 
                     ImGui_Ice.Draw_XPBar(jobStatus.Score, 500_000, 500_000, size: new(200, barHeight));
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui_Ice.Table_FullCenterText(T("Mastery Score"));
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui_Ice.Table_FullCenterText($"{jobStatus.Mastery:N0}");
+
+                    ImGui.TableNextColumn();
+                    // Get the column's available width and current cursor position
+                    var Master_colWidth = ImGui.GetColumnWidth();
+                    var Master_cellMin = ImGui.GetCursorScreenPos();
+
+                    float Master_barHeight = 10f;
+                    float Master_rowHeight = ImGui.GetFrameHeight(); // matches text/icon row height
+
+                    // Vertically center the bar
+                    float Master_offsetY = (Master_rowHeight - Master_barHeight) / 2f;
+                    ImGui.SetCursorScreenPos(new Vector2(Master_cellMin.X, Master_cellMin.Y + Master_offsetY));
+
+                    ImGui_Ice.Draw_XPBar(jobStatus.Mastery, 500_000, 500_000, size: new(200, barHeight));
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);

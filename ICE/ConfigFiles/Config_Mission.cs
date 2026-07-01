@@ -17,6 +17,8 @@ public partial class Config
     public int CosmicScoreCap { get; set; } = 500_000;
     public bool StopOnceRelicFinished { get; set; } = false;
     public bool StopOnceStandardMissionsGolded { get; set; } = false;
+    public bool StopWhenMasteryComplete { get; set; } = false;
+    public int MasteryCap { get; set; } = 500_000;
     public bool StopAtRelicLv { get; set; } = false;
     public int RelicLv { get; set; } = 20;
     public List<ProvisionalTypes> MissionPrio { get; set; } = new()

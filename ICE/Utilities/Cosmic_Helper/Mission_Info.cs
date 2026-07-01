@@ -145,6 +145,7 @@ public static partial class CosmicHelper
     public class ClassInfo
     {
         public int Score { get; set; } = 0;
+        public int Mastery { get; set; } = 0;
         public int Stage_Current { get; set; } = 0;
         public int Stage_Next { get; set; } = 0;
         public Dictionary<int, ExpInfo> CurrentExp { get; set; } = new();
@@ -213,9 +214,19 @@ public static partial class CosmicHelper
                 ? maxStage
                 : (byte)(currentStage + 1);
 
+            // Mastery Score. Because ofc it's stored as a fucking item
+            var masteryScore = 0;
+            if (ExcelHelper.WKSScoreListSheet.TryGetRow((uint)i, out var scoreListSheet))
+            {
+                // Far right column aka Unknown5
+                var masteryItem = scoreListSheet.Unknown5;
+                PlayerHelper.GetItemCount(masteryItem, out masteryScore);
+            }
+
             ClassInfo entry = new()
             {
                 Score = score,
+                Mastery = masteryScore,
                 Stage_Current = currentStage,
                 Stage_Next = nextStage,
             };

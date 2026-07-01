@@ -25,6 +25,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             var order = new List<PlaylistOptions> { PlaylistOptions.None };
             order.AddRange(CosmicMoonRegistry.MaxRelicPlaylistOptions);
             order.Add(PlaylistOptions.ToolMaxExp);
+            order.Add(PlaylistOptions.MasteryScore);
             order.Add(PlaylistOptions.SelectedRelicLv);
             order.Add(PlaylistOptions.CreditAmount);
             order.Add(PlaylistOptions.PlanetAmount);
@@ -376,6 +377,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     ImGui.TableNextColumn();
                                     string optionText = selectedOption switch
                                     {
+                                        PlaylistOptions.MasteryScore => $"{agendaInfo.ClassScore}",
                                         PlaylistOptions.SelectedRelicLv => $"{agendaInfo.SelectedRelicLevel}",
                                         PlaylistOptions.CreditAmount => $"{agendaInfo.CreditAmount}",
                                         PlaylistOptions.PlanetAmount => $"{agendaInfo.PlanetAmount}",
@@ -609,6 +611,27 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 }
                             }
                         }
+                        else if (selectedOption == PlaylistOptions.MasteryScore)
+                        {
+                            var score = agendaInfo.ClassScore;
+                            if (ImGui.SliderInt("##MasteryScore", ref score, 0, 500_000))
+                            {
+                                agendaInfo.ClassScore = score;
+                                C.SaveDebounced();
+                            }
+                            if (ImGui.IsItemHovered())
+                            {
+                                var masteryScore = CosmicHelper.Cosmic_ClassInfo();
+                                if (masteryScore.TryGetValue(agendaInfo.SelectedJob, out var job))
+                                {
+                                    ImGui.SetTooltip($"Current Mastery: {job.Mastery:N0}");
+                                }
+                                else
+                                {
+                                    ImGui.SetTooltip("No Mastery info can be loaded");
+                                }
+                            }
+                        }
 
                         ImGui.TableNextColumn();
                         var currentMode = agendaInfo.SelectedMode;
@@ -646,8 +669,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             var currentMoon = CosmicMoonRegistry.GetMoonForTerritory(Player.Territory.RowId);
                             if (currentMoon != null)
                             {
-                                var standardCount = CosmicMoonRegistry.CountEnabledStandardMissions(
-                                    currentMoon.TerritoryId, agendaInfo.SelectedJob);
+                                var standardCount = CosmicMoonRegistry.CountEnabledStandardMissions(currentMoon.TerritoryId, agendaInfo.SelectedJob);
 
                                 if (standardCount == 0)
                                 {
@@ -722,10 +744,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     goal = agendaInfo.DronebitAmount;
                                 }
                             }
-                            else if (selectedOption is PlaylistOptions.ClassScore)
+                            else if (selectedOption is PlaylistOptions.ClassScore or PlaylistOptions.MasteryScore)
                             {
                                 var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
-                                current = ScoreInfo[job].Score;
+                                current = selectedOption == PlaylistOptions.ClassScore ? ScoreInfo[job].Score : ScoreInfo[job].Mastery;
                                 goal = agendaInfo.ClassScore;
                             }
                             else if (selectedOption is PlaylistOptions.GoldClassMissions)

@@ -171,10 +171,11 @@ namespace ICE.Ui
             return T(mode switch
             {
                 ModeSelect.Standard =>
-                    "Standard Mode\n" +
-                    "-> Used to select which missions you want to grind. It'll prioritize in the following order:\n" +
-                    "-> Critical -> Provisional [Sequence/Timed/Weather] -> Standard [A->D]\n" +
-                    "-> Select which missions you want to do, and go at it.",
+                    "Standard Mode \n" +
+                    "-> Used to select which missions you want to grind. It'll prioritize in the following order by default:\n" +
+                    "-> Critical -> Provisional [Sequence/Timed/Weather] -> Standard [A->D] -> Mastery (if applicable)\n" +
+                    "-> Select which missions you want to do, and go at it.\n" +
+                    "-> If you would like to change the priority, set it in Settings -> Mission Priority",
                 ModeSelect.LevelMode =>
                     "Leveling Grind\n" +
                     "-> Will automatically select which mission is the best for leveling your current class based on what level bracket you're in\n" +

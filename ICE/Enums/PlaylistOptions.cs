@@ -7,7 +7,6 @@
         SinusMax = 1,
         PhaennaMax = 2,
         OizysMax = 3,
-        // Planet4Max = 4,
         AuxesiaMax = 4,
         SelectedRelicLv = 5,
 
@@ -19,6 +18,7 @@
         ClassScore = 10,
 
         GoldClassMissions = 11,
-        ToolMaxExp = 12
+        ToolMaxExp = 12,
+        MasteryScore = 13,
     }
 }

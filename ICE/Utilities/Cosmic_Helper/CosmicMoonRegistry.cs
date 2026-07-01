@@ -183,7 +183,7 @@ public static class CosmicMoonRegistry
         var count = 0;
         foreach (var (missionId, info) in CosmicHelper.SheetMissionDict)
         {
-            if (info.TerritoryId != territoryId || !info.Jobs.Contains(jobId) || info.Rank >= 6)
+            if (info.TerritoryId != territoryId || !info.Jobs.Contains(jobId) || info.IsProvisional)
                 continue;
 
             if (C.MissionConfig.TryGetValue(missionId, out var cfg) && cfg.Enabled)

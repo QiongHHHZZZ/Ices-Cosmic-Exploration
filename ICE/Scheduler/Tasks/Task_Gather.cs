@@ -378,31 +378,6 @@ namespace ICE.Scheduler.Tasks
                 }
             }
         }
-        public static bool SelfTravelGather()
-        {
-            string tag = "Self Gather: Traveling";
-
-            if (Svc.Condition[ConditionFlag.Gathering])
-            {
-                IceLogging.Verbose("We're gathering woo! We're gonna kick it off from automating from here", tag);
-                return true;
-            }
-            else
-            {
-                if (EzThrottler.Throttle("Message throttle"))
-                    IceLogging.Verbose("Waiting for us to get a gathering thing up... going to check for score things between", tag);
-
-                if (UseCordial())
-                    return false;
-
-                GreaterReachCount = 0;
-            }
-
-            return true;
-        }
-
-        // Old Gathering system here
-
         public static bool? CheckCurrentLocation()
         {
             ThrottleMessage("- - - Check Gather Locations Task - - -", "[Check Gather Locations]");
@@ -522,7 +497,6 @@ namespace ICE.Scheduler.Tasks
             }
         }
         private const float SmartRoutingThreshold = 50f;
-
         public static bool? PathandCheckNode()
         {
             UpdateMissionEntryTpState(CosmicHelper.CurrentLunarMission);
@@ -619,7 +593,6 @@ namespace ICE.Scheduler.Tasks
 
         public static uint GreaterReachCount = 0;
         public static bool HadGreaterReach = false;
-
         public static unsafe bool UseGatherAction(int profileId, int gatherChance, int? boonChance, int currentDur, int maxDur, int availableGp)
         {
             C.GatherProfiles.TryGetValue(profileId, out var gatherProfile);
@@ -971,8 +944,9 @@ namespace ICE.Scheduler.Tasks
             var actionId = collectorBuffs[action].ClassAction[jobId];
             if (EzThrottler.Throttle("Log Message for Collectable Action"))
                 IceLogging.Verbose($"Checking for action usage: {actionId} | {action}");
-            if (PlayerHelper.CanUseAction(actionId) && EzThrottler.Throttle("Using Action Buff", 100))
+            if (EzThrottler.Throttle("Using Action Buff", 500))
             {
+                IceLogging.Verbose($"Attempting to use collectable buff: [{actionId}] {action}");
                 ActionManager.Instance()->UseAction(ActionType.Action, actionId);
             }
         }
@@ -985,8 +959,11 @@ namespace ICE.Scheduler.Tasks
             if (EzThrottler.Throttle("Log Message for Collectable Action"))
                 IceLogging.Verbose($"Checking for action usage: {actionId} | {action}");
 
-            if (PlayerHelper.CanUseAction(actionId) && EzThrottler.Throttle("Using Action Buff", 100))
+            if (EzThrottler.Throttle("Using Action Buff", 100))
+            {
+                IceLogging.Verbose($"Attempting to use collectable action: [{actionId}] {action}");
                 ActionManager.Instance()->UseAction(ActionType.Action, actionId);
+            }
         }
         public static bool? CheckReduceMission()
         {

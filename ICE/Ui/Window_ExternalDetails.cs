@@ -265,6 +265,51 @@ namespace ICE.Ui
                     }
                 }
 
+                if (mission.TemporaryAction.ActionId != 0)
+                {
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Mission Skill");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Image(mission.TemporaryAction.Icon.GetWrapOrEmpty().Handle, new(24, 24));
+                    if (ImGui.IsItemHovered() && mission.TemporaryAction.UseAmount != 0)
+                    {
+                        ImGui.SetTooltip($"Max Use: {mission.TemporaryAction.UseAmount}");
+                    }
+                    ImGui.SameLine();
+                    ImGui.Text($"{mission.TemporaryAction.Name}");
+                }
+
+                if (mission.Supplies.Count > 0)
+                {
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Supplied Items");
+
+                    ImGui.TableNextColumn();
+                    for (int i = 0; i < mission.Supplies.Count(); i++)
+                    {
+                        var supply = mission.Supplies[i];
+                        ImGui.Image(supply.Icon.GetWrapOrEmpty().Handle, new(24));
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text($"ItemId: {supply.ItemId}");
+                            ImGui.Text($"Name: {supply.Name}");
+                            ImGui.EndTooltip();
+                        }
+                        ImGui.SameLine();
+                        ImGui.Text($"x {supply.Count}");
+                        if (i+1 < mission.Supplies.Count())
+                        {
+                            ImGui.SameLine();
+                            ImGui.Text(" | ");
+                            ImGui.SameLine();
+                        }
+                    }
+                }
+
                 ImGui.EndTable();
             }
 

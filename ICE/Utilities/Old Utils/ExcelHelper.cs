@@ -21,6 +21,8 @@ internal static class ExcelHelper
     internal static ExcelSheet<WKSMissionMapMarker>? MarkerSheet;
     internal static ExcelSheet<LeveAssignmentType>? LeveAssignmentSheet;
     internal static SubrowExcelSheet<WKSMissionToDoEvalutionItem>? EvalSheet;
+    internal static ExcelSheet<WKSScoreList>? WKSScoreListSheet;
+    internal static ExcelSheet<Lumina.Excel.Sheets.Action>? ActionSheet;
 
     public static void Init() // Only need to grab once, they won't change
     {
@@ -39,5 +41,7 @@ internal static class ExcelHelper
         MarkerSheet ??= Svc.Data.GetExcelSheet<WKSMissionMapMarker>();
         LeveAssignmentSheet ??= Svc.Data.GetExcelSheet<LeveAssignmentType>(); // using this for icons
         EvalSheet ??= Svc.Data.GetSubrowExcelSheet<WKSMissionToDoEvalutionItem>();
+        WKSScoreListSheet ??= Svc.Data.GetExcelSheet<WKSScoreList>();
+        ActionSheet ??= Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>();
     }
 }

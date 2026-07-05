@@ -1,8 +1,9 @@
-﻿using ECommons.Automation;
-using ECommons.GameHelpers;
+﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ICE.ConfigFiles;
+using ICE.ExtraUtil;
 using ICE.Utilities.Cosmic_Helper;
+using InteropGenerator.Runtime.Attributes;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.ConfigFiles.Config;
@@ -37,6 +38,17 @@ namespace ICE.Scheduler.Tasks
                         new(CloseShop, "Closing the shop menu")
                     );
             }
+
+            if (CanExchanceTokens())
+            {
+                P.TaskManager.EnqueueMulti
+                    (
+                        new(TalkToCreditNPC, "Npc Talk: Material Exchange"),
+                        new(() => SelectShop(1), "Selecting Material Exchange"),
+                        new(BuyPlanetBoolets, "Buying booklets from the NPC", Utils.TaskConfig),
+                        new(CloseExchange, "Closing the exchange window")
+                    );
+            }
         }
 
         private static bool CanPurchaseFromShop(List<uint> shoppingOrder, Dictionary<uint, Shop_Cosmocredits.ItemInfo> shopData)
@@ -64,6 +76,21 @@ namespace ICE.Scheduler.Tasks
                 // Check KeepBuying
                 if (item.KeepBuying && currencyAmount >= shopItem.Cost)
                     return true;
+            }
+
+            return false;
+        }
+        private static bool CanExchanceTokens()
+        {
+            var territory = Player.Territory.RowId;
+            int bookletAmount = 100;
+
+            if (CosmicMoonRegistry.TokenIds.TryGetValue(territory, out var tokenInfo))
+            {
+                if (PlayerHelper.GetItemCount(tokenInfo.tokenId, out var tokenCount))
+                {
+                    return tokenCount >= bookletAmount;
+                }
             }
 
             return false;
@@ -152,6 +179,17 @@ namespace ICE.Scheduler.Tasks
             {
                 if (EzThrottler.Throttle("Close Shop"))
                     shopAddon->Close(true);
+                return false;
+            }
+            else
+                return true;
+        }
+        private static unsafe bool? CloseExchange()
+        {
+            if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("ShopExchangeItem", out var shopExchange) && shopExchange->IsReady)
+            {
+                if (EzThrottler.Throttle("Close Shop"))
+                    shopExchange->Close(true);
                 return false;
             }
             else
@@ -321,9 +359,7 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         private static uint ItemId = 0;
-
         private static bool? BuyMaterialItems()
         {
             bool TryPurchaseMaterialItem(ShopExchangeCurrency shopExchange, uint currencyAmount, Func<CosmoShoppingList, uint, int> getTargetAmount, Action<int> setAmount)
@@ -409,6 +445,93 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+
+        private static int Counter = 0;
+        private static bool WaitCounter = false;
+
+        public static bool? BuyPlanetBoolets()
+        {
+            string tag = "Shop Exchange: Planet Booklets";
+
+            var territory = Player.Territory.RowId;
+            if (CosmicMoonRegistry.TokenIds.TryGetValue(territory, out var tokenInfo) 
+                && PlayerHelper.GetItemCount(tokenInfo.tokenId, out var tokenCount))
+            {
+                if (GenericHelpers.TryGetAddonMaster<Request>(out var request) && request.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Request attempt"))
+                    {
+                        IceLogging.Verbose("Attempting to turnin request", tag);
+                    }
+                }
+                else if (WaitCounter)
+                {
+                    if (EzThrottler.Throttle("Waiting for counter to count"))
+                    {
+                        Counter += 1;
+                    }
+                    if (Counter > 3)
+                    {
+                        WaitCounter = false;
+                        Counter = 0;
+                    }
+
+                    return false;
+                }
+                else if (GenericHelpers.TryGetAddonMaster<ShopExchangeItemDialog>(out var shopExchangeDialog) && shopExchangeDialog.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Buy Item", 500))
+                    {
+                        IceLogging.Verbose("Buying the item");
+                        shopExchangeDialog.Exchange();
+                        WaitCounter = true;
+                    }
+                }
+                else if (GenericHelpers.TryGetAddonMaster<ShopExchangeItem>(out var shopExchange) && shopExchange.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle($"Token Report"))
+                        IceLogging.Verbose($"Current Token Count: {tokenCount}");
+
+                    if (tokenCount >= 100)
+                    {
+                        int maxExchange = 9;
+
+                        var bookletShop = shopExchange.ItemInfo.Where(x => x.ItemId == tokenInfo.bookletId).FirstOrDefault();
+                        if (bookletShop != null)
+                        {
+                            long buyAmountLong = tokenCount / bookletShop.ExchangeItems[0].RequiredAmount;
+                            int buyAmount = (int)Math.Min(maxExchange, buyAmountLong);
+
+                            if (EzThrottler.Throttle("Merging items", 1000))
+                            {
+                                MergeItems();
+                            }
+
+                            if (buyAmount != 0)
+                            {
+                                if (EzThrottler.Throttle("Selecting the item"))
+                                {
+                                    IceLogging.Verbose($"Going to buy: {buyAmount} of booklets");
+                                    bookletShop.Select(buyAmount);
+                                }
+                            }
+                            else
+                            {
+                                IceLogging.Verbose("We have reached the end of buying tokens, exiting out of the process", tag);
+                                return true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        IceLogging.Verbose("We've reached the limit of buying booklets, going to exit out", tag);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
         public static bool CanPurchaseAnyItem()
         {
             // Get current currency amount (you'll need to determine how to get this without the shop window)
@@ -482,6 +605,34 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
             return false;
+        }
+
+        public static unsafe void MergeItems()
+        {
+            var inv = InventoryManager.Instance();
+
+            var incompleteStacks = InventoryType.Bags
+                .SelectMany(container => inv->GetItems(container))
+                .Where(handle => handle.ItemId != 0
+                    && !handle.IsCollectible
+                    && handle.ItemLocation != null
+                    && handle.ItemLocation.GetInventoryItem() != null
+                    && handle.ItemLocation.GetInventoryItem()->Quantity < handle.GameData()?.StackSize)
+                .GroupBy(handle => new { handle.ItemId, handle.IsHighQuality })
+                .Where(group => group.Count() > 1);
+
+            foreach (var group in incompleteStacks)
+            {
+                var firstSlot = group.First();
+                if (firstSlot.ItemLocation == null) continue;
+
+                foreach (var slot in group.Skip(1))
+                {
+                    if (slot.ItemLocation == null) continue;
+                    inv->MoveItemSlot(slot.ItemLocation.Container, slot.ItemLocation.Slot,
+                        firstSlot.ItemLocation.Container, firstSlot.ItemLocation.Slot, true);
+                }
+            }
         }
     }
 }

@@ -121,6 +121,11 @@ public static partial class CosmicHelper
         public uint creditId { get; set; } = 0;
         public uint boxId { get; set; } = 0;
     }
+    public class TokenInfo
+    {
+        public uint tokenId { get; set; } = 0;
+        public uint bookletId { get; set; } = 0;
+    }
 
     // General use functions used across the codebase, specifically tied to cosmic related functions
     public static void OpenStellarMission()

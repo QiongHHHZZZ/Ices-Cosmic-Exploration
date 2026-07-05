@@ -18,6 +18,8 @@ namespace ICE.Ui.DebugWindowTabs
         internal static ItemInfo SelectedManual = new();
         internal static ItemInfo SelectedSquadronManual = new();
 
+        internal static List<(string Name, int Id)> MacroList = new();
+
         public class ItemInfo
         {
             public uint Id { get; set; } = 0;
@@ -196,6 +198,25 @@ namespace ICE.Ui.DebugWindowTabs
                         }
                     }
                 }
+            }
+
+            ImGui.Separator();
+
+            if (ImGui.Button("Update Macros"))
+            {
+                MacroList = P.Artisan.MacroList();
+            }
+
+            if (MacroList.Count > 0)
+            {
+                foreach (var macro in MacroList)
+                {
+                    ImGui.Text($"[{macro.Id}] - {macro.Name}");
+                }
+            }
+            else
+            {
+                ImGui.Text($"No macro's loaded");
             }
 
         }

@@ -54,6 +54,7 @@ internal class DebugWindow : Window
             ["Moon Recipe"] = () => Hud_MoonRecipe.Draw(),
             ["Gather Collectable"] = () => Hud_CollectableGathering.Draw(),
             ["Item Exchange"] = () => Hud_ItemExchange.Draw(),
+            ["Token Exchange"] = () => Hud_ShopExchange.Draw(),
             ["Aethernet"] = () => Hud_Aethernet.Draw(),
         },
         ["Table"] = new()

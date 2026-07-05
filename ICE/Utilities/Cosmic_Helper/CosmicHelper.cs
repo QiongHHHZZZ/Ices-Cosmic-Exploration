@@ -147,6 +147,8 @@ public static unsafe partial class CosmicHelper
         [510] = new() { 172, 487 },
         [511] = new() { 352, 487 }
     };
+
+    private static List<(string Name, int Id)> ArtisanMacros = new();
     public static void CrafterManagement(CosmicHelper.CosmicInfo mission, uint id, ImGuiTreeNodeFlags openDefault = ImGuiTreeNodeFlags.DefaultOpen)
     {
         var job = mission.Jobs.First(x => CosmicHelper.CrafterJobList.Contains(x));
@@ -434,7 +436,51 @@ public static unsafe partial class CosmicHelper
 
                         if (recipeConfig.ArtisanSolverType == ArtisanCraftType.Macro)
                         {
+
+                            ImGui.SameLine();
                             string macroName = recipeConfig.MacroName;
+                            ImGui.SetNextItemWidth(200);
+                            if (ImGui.BeginCombo("##MacroName", macroName, ImGuiComboFlags.HeightLargest))
+                            {
+                                ImGui.SetNextItemWidth(200);
+                                if (ImGui.InputText(T("Macro Name"), ref macroName))
+                                {
+                                    recipeConfig.MacroName = macroName;
+                                    C.SaveDebounced();
+                                }
+
+                                ImGui.Separator();
+                                if (ImGui.Button(T("Refresh Artisan Macros")))
+                                {
+                                    ArtisanMacros = P.Artisan.MacroList();
+                                }
+                                if (ArtisanMacros.Count > 0)
+                                {
+                                    var lineHeight = ImGui.GetTextLineHeightWithSpacing();
+                                    var macroChildHeight = lineHeight * 5 + ImGui.GetStyle().FramePadding.Y * 2;
+
+                                    if (ImGui.BeginChild("Macro List: Child", new(ImGui.GetContentRegionAvail().X, macroChildHeight)))
+                                    {
+                                        foreach (var macro in ArtisanMacros)
+                                        {
+                                            bool isSelected = recipeConfig.MacroName == macro.Name;
+                                            if (ImGui.Selectable($"[{macro.Id}] - {macro.Name}##{macro.Id}"))
+                                            {
+                                                recipeConfig.MacroName = macro.Name;
+                                                C.Save();
+                                            }
+
+                                            if (isSelected)
+                                                ImGui.SetItemDefaultFocus();
+                                        }
+                                    }
+                                    ImGui.EndChild();
+                                }
+
+                                ImGui.EndCombo();
+                            }
+
+                            /*
                             ImGui.SameLine();
                             ImGui.SetNextItemWidth(200);
                             if (ImGui.InputText(T("Macro Name"), ref macroName))
@@ -442,6 +488,7 @@ public static unsafe partial class CosmicHelper
                                 recipeConfig.MacroName = macroName;
                                 C.Save();
                             }
+                            */
                         }
 
                         #endregion

@@ -56,6 +56,8 @@ namespace ICE.IPC
         [EzIPC] public Action<uint, bool> ChangeStandardMinimumStepsBeforeMiracle;
         [EzIPC] public Action SetTempStandardMinimumStepsBeforeMiracleBackToNormal;
 
+        [EzIPC] public Func<List<(string, int)>> ReturnMacroInfo;
+
         private void AssignArtisanRecipe(uint recipeId, ArtisanSettings recipeConfig, bool isExpert)
         {
             if (recipeConfig.ArtisanSolverType != ArtisanCraftType.Default)
@@ -218,6 +220,14 @@ namespace ICE.IPC
             }
 
             return false;
+        }
+
+        public List<(string Name, int Id)> MacroList()
+        {
+            if (ReturnMacroInfo == null)
+                return new List<(string Name, int Id)>();
+
+            return ReturnMacroInfo.Invoke();
         }
     }
 }

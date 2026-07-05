@@ -13,6 +13,8 @@ public sealed class CosmicMoonDefinition
     public required string IconResource { get; init; }
     public required ItemFilter PlanetFilter { get; init; }
     public required uint PlanetCreditItemId { get; init; }
+    public uint? TokenId { get; set; }
+    public uint? BookletId { get; set; } 
     /// <summary>Hub stellar return / navmesh anchor for this moon.</summary>
     public required Vector3 HubCenter { get; init; }
     /// <summary>Oizys and Auxesia have the cosmodrome / drone vendor; Sinus and Phaenna do not.</summary>
@@ -78,6 +80,8 @@ public static class CosmicMoonRegistry
         IconResource = "ICE.Resources.Phaenna.png",
         PlanetFilter = ItemFilter.Phaenna,
         PlanetCreditItemId = 48146,
+        TokenId = 47594,
+        BookletId = 47343,
         HubCenter = new(339.90f, 52.60f, -412.10f),
         MaxRelicStage = 14,
         ExpeditionTabIndex = 1,
@@ -95,6 +99,8 @@ public static class CosmicMoonRegistry
         IconResource = "ICE.Resources.Oizys.png",
         PlanetFilter = ItemFilter.Oizys,
         PlanetCreditItemId = 48147,
+        TokenId = 49802,
+        BookletId = 50829,
         HubCenter = new(-180.02f, 0.50f, 129.25f),
         HasCosmodrome = true,
         DronebitCreditId = 49170,
@@ -115,6 +121,8 @@ public static class CosmicMoonRegistry
         IconResource = "ICE.Resources.Auxesia.png",
         PlanetFilter = ItemFilter.Auxesia,
         PlanetCreditItemId = 48148,
+        TokenId = 52092,
+        BookletId = 52091,
         HubCenter = new(291.00f, 205.78f, 376.02f),
         HasCosmodrome = true,
         DronebitCreditId = 49171,
@@ -122,7 +130,6 @@ public static class CosmicMoonRegistry
         MaxRelicStage = 20,
         ExpeditionTabIndex = 3,
         MissionRowIdStart = CosmicMissionBlocks.AuxesiaStart,
-        // Gathering YAML: ICE/Resources/GatheringRoutes/1319_Auxesia/ — copy format from 1310_Oizys (MIN_/BTN_Flag_X_Y.yaml)
         GatheringRoutesFolder = "1319_Auxesia",
         MaxRelicPlaylistOption = PlaylistOptions.AuxesiaMax,
         DefaultAethernetLogLevel = 2,
@@ -155,6 +162,13 @@ public static class CosmicMoonRegistry
         .ToDictionary(
             m => m.TerritoryId,
             m => new CosmicHelper.Dronebit { creditId = m.DronebitCreditId!.Value, boxId = m.DronebitBoxId!.Value });
+
+    // Returns a dictionary that only contains the tokens and booklets for everything but sinus
+    public static readonly Dictionary<uint, CosmicHelper.TokenInfo> TokenIds =
+        All.Where(m => m.TokenId is uint tokenId && m.BookletId is uint bookletId)
+        .ToDictionary(
+            m => m.TerritoryId,
+            m => new CosmicHelper.TokenInfo { tokenId = m.TokenId!.Value, bookletId = m.BookletId!.Value });
 
     public static bool TryGetMoon(uint territoryId, out CosmicMoonDefinition moon) =>
         ByTerritoryId.TryGetValue(territoryId, out moon!);

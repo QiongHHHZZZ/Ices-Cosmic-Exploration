@@ -1071,9 +1071,50 @@ internal static class L10n
             = "为轮盘奖项设置权重，权重越高代表越希望抽到。",
         ["Yes"] = "是",
         ["No"] = "否",
+        ["Macro Name"] = "宏名称",
+        ["Refresh Artisan Macros"] = "刷新 Artisan 宏",
+        ["Stopping the plugin as your current tool is at {0} and your goal was: {1}"] = "当前工具等级为 {0}，已达到你设置的目标 {1}，插件已停止。",
+        ["Stopping the plugin as your mastery score is at {0} and your goal was: {1}"] = "当前超难熟练度为 {0}，已达到你设置的目标 {1}，插件已停止。",
         ["Relic Grind Mode"] = "宇宙工具强化模式",
         ["Leveling Mode"] = "练级模式",
+        ["Gold Completion"] = "金奖补全",
+        ["Cosmic Agenda | Agenda Mode"] = "宇宙计划 | 计划模式",
         ["Cosmic Agenda Mode"] = "宇宙计划模式",
+        ["Auxesia - Rank VII Max"] = "阿谢希亚 - 最高 Rank VII",
+        ["So make sure that you're on the correct planet to accomodate for the exp that you need and to allow for completion your relic."]
+            = "因此请确认你所在的星球适合当前所需经验，并能继续推进宇宙工具。",
+        ["A very direct mode of aiming to get a gold completion of every single mission that is not currently gold-completed. Removed the need of selecting each mission that you want to do, and will automatically pick->choose the missions based on the priority that you currently have set."]
+            = "这是一个非常直接的金奖补全模式，会以所有尚未金奖完成的任务为目标。你不需要逐个选择任务，它会按照当前设置的优先级自动挑选任务。",
+        ["PLEASE NOTE: that this has no other internal logic. It has no way to tell it can't do the mission due to either a set of missing stats, no food... ect. This is just meant to be the most direct \"auto select missions that it can do\". If you want some control over WHICH missions that you know you can do, select standard mode and choose the missions that need completed"]
+            = "请注意：该模式没有额外判断逻辑，无法判断任务是否因属性不足、没有食物等原因无法完成。它只是最直接的“自动选择可做任务”模式。如果你想控制具体做哪些确定能完成的任务，请使用标准模式并手动选择需要完成的任务。",
+        ["This mode also respects the settings of being able to grind off class provisionals"]
+            = "该模式也会遵循是否允许异职刷临时探索任务的设置。",
+        ["A mode designed around selecting the best missions that give both the most experience, while also choosing the missions that can be done the quickest. These are all completed on bronze completion (aka the fastest you can complete a mission) because experience doesn't scale off of the level of turnin. Meaning if a mission gives 125% exp, it'll alwayws give that"]
+            = "该模式会选择经验收益高、同时完成速度也快的任务。任务都会按铜奖完成（也就是最快完成），因为经验不会随交付评价变化；如果任务给 125% 经验，就始终是这个数值。",
+        ["Crafters"] = "制作职业",
+        ["Missions are selected with the lowest progress"] = "会优先选择所需进度最低的任务",
+        ["Quality DOES NOT MATTER for these"] = "这些任务不需要考虑品质",
+        ["YOU WILL NEED TO GO UNLOCK COLLECTABLES IN MOR DHONA AT LV. 50 IF YOU HAVEN'T ALREADY"]
+            = "如果还没解锁收藏品，请在 50 级时先去摩杜纳解锁。",
+        ["You can get away with leveling up your gear at the following levels if you really wanna be stingy like me:"]
+            = "如果想像我一样省钱，可以大致在以下等级再换装备：",
+        ["Lv. 10 -> 35 -> 52 -> 80"] = "等级 10 -> 35 -> 52 -> 80",
+        ["These are the points where I found i could just get away with, if you want to make it go faster absolutely can grab gear more often between but."]
+            = "这些是我觉得勉强够用的换装节点；如果想更快，当然可以在中间更频繁地换装备。",
+        ["A bit more tedious, and defitenly not the fastest, but it's the safest so far."]
+            = "采集会更麻烦一些，也绝对不是最快的，但目前相对最稳。",
+        ["Fisher has profiles already built into the plugin, and Btn/Min will auto set profiles to be able to turnin missions ASAP"]
+            = "捕鱼人已有内置配置；园艺工/采矿工会自动设置配置，以便尽快完成并交付任务。",
+        ["You NEED to get gear more often here than crafters, about every 5-7 levels below lv 50, then about every 3 levels after"]
+            = "采集职业比制作职业更需要频繁换装备：50 级前大约每 5-7 级一次，之后大约每 3 级一次。",
+        ["The mode to help combine (most) of the other modes into one little playlist so you can set and forget. The purpose of this is to allow you to organize when and what order you want to do things"]
+            = "该模式会把（大部分）其他模式组合成一个小播放列表，让你设置后自动执行。它的用途是让你安排要做什么以及按什么顺序做。",
+        ["This includes but not limited to:"] = "包括但不限于：",
+        ["Leveling selected classes to to a specific level"] = "将选定职业练到指定等级",
+        ["Farming specific classes scores to 500k"] = "将指定职业技巧点刷到 50 万",
+        ["Completed relics on all classes"] = "完成所有职业的宇宙工具",
+        ["You can specify the modes that you want to use these from, and it will run continue attempting to do that class until that objective is complete. This will respect any setting that you currently have enabled, it's jsut a fancy way of letting you the user choose what to do"]
+            = "你可以指定这些目标要使用哪些模式；插件会持续尝试对应职业，直到目标完成。它会遵循你当前启用的所有设置，本质上只是一个更方便的方式，让你决定接下来要做什么。",
         ["??? {0}"] = "未知模式：{0}",
         ["Select Profile"] = "选择配置",
         ["What is a pirates favorite letter?\nYou might thing it's R, but tis first love was the C\n(It helps if you verbally say it like a pirate)"]

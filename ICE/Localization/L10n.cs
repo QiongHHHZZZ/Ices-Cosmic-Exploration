@@ -21,6 +21,7 @@ internal static class L10n
         ["Credit Shopping"] = "信用点兑换",
         ["Gambling Settings"] = "轮盘抽奖设置",
         ["Dronebit Settings"] = "无人机晶片设置",
+        ["Mount Tokens"] = "坐骑代币",
         ["Settings"] = "插件设置",
         ["Stop When..."] = "停止条件",
         ["Gathering Profile"] = "采集配置",

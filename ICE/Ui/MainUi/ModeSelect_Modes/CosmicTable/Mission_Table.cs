@@ -316,8 +316,8 @@ public static class CosmicTables
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text("This mission is currently missing stuff to allow it to work. It might be planet locked, or could be just needs mapped out\n" +
-                        "I'll get to it when my world gets to it o/");
+                    ImGui.Text(T("This mission is currently missing stuff to allow it to work. It might be planet locked, or could be just needs mapped out\n" +
+                        "I'll get to it when my world gets to it o/"));
                     ImGui.EndTooltip();
                 }
             }
@@ -903,20 +903,20 @@ public static class CosmicTables
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text($"Click button to view external details");
+                    ImGui.Text(T("Click button to view external details"));
                     ImGui.Separator();
-                    ImGui.Text($"[Average] Rewards per minute");
+                    ImGui.Text(T("[Average] Rewards per minute"));
                     if (C.MissionConfig.TryGetValue(item.Id, out var config))
                     {
-                        ImGui.Text($"Total Completions: {config.TotalCompletions:N0}/{config.TotalAttempts:N0}");
+                        ImGui.Text(T("Total Completions: {0:N0}/{1:N0}", config.TotalCompletions, config.TotalAttempts));
                     }
                     if (ImGui.BeginTable($"Score Info Table_{item.SheetInfo.MissionId}", 5, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
                     {
-                        ImGui.TableSetupColumn("Kind");
-                        ImGui.TableSetupColumn("Score");
-                        ImGui.TableSetupColumn("Credits");
-                        ImGui.TableSetupColumn("Planetary");
-                        ImGui.TableSetupColumn("Tokens");
+                        ImGui.TableSetupColumn(T("Kind"));
+                        ImGui.TableSetupColumn(T("Score"));
+                        ImGui.TableSetupColumn(T("Credits"));
+                        ImGui.TableSetupColumn(T("Planetary"));
+                        ImGui.TableSetupColumn(T("Tokens"));
 
                         ImGui.TableHeadersRow();
 
@@ -2227,4 +2227,3 @@ public static class CosmicTables
 public sealed class Mission_Table(List<MissionInfo> itemList) : CosmicTables.Mission_Table(itemList);
 
 public sealed class Completion_Table(List<MissionInfo> itemList) : CosmicTables.Completion_Table(itemList);
-

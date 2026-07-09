@@ -146,6 +146,8 @@ namespace ICE.Ui.MainUi
 
                     if (ShowDronebitSettings())
                         ImGui_Ice.DrawSelectable_Image(65138, T("Dronebit Settings"), WindowSelection.DroneShopping);
+
+                    ImGui_Ice.DrawSelectable_Image(26176, T("Mount Tokens"), WindowSelection.MountShopping);
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader(T("Settings"), SidebarTabs.Settings, icon: FontAwesomeIcon.Cog))
                 {

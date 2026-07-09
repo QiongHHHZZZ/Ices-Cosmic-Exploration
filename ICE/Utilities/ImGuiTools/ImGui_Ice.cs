@@ -507,6 +507,43 @@ public static partial class ImGui_Ice
             ImGui.EndTooltip();
         }
     }
+    public static bool DrawJobIconButton(string id, List<uint> jobs)
+    {
+        var frameHeight = ImGui.GetFrameHeight();
+        var iconSize = new Vector2(frameHeight);
+        var tightSpacing = 2f;
+
+        var totalWidth = iconSize.X * jobs.Count + tightSpacing * (jobs.Count - 1);
+        var buttonSize = new Vector2(totalWidth, frameHeight);
+
+        ImGui.PushID(id);
+        var clicked = ImGui.InvisibleButton("##job", buttonSize);
+        ImGui.PopID();
+
+        var drawList = ImGui.GetWindowDrawList();
+        var buttonMin = ImGui.GetItemRectMin();
+        var buttonMax = ImGui.GetItemRectMax();
+
+        var hovered = ImGui.IsItemHovered();
+        var active = ImGui.IsItemActive();
+
+        var bgColor = ImGui.GetColorU32(active ? ImGuiCol.ButtonActive : hovered ? ImGuiCol.ButtonHovered : ImGuiCol.Button);
+        var borderColor = ImGui.GetColorU32(ImGuiCol.Border);
+        var rounding = ImGui.GetStyle().FrameRounding;
+
+        drawList.AddRectFilled(buttonMin, buttonMax, bgColor, rounding);
+        drawList.AddRect(buttonMin, buttonMax, borderColor, rounding);
+
+        for (var i = 0; i < jobs.Count; i++)
+        {
+            var icon = CosmicHelper.ClassInfoDict[jobs[i]].JobIcon.GetWrapOrEmpty();
+            var xOffset = i * (iconSize.X + tightSpacing);
+            var iconPos = buttonMin + new Vector2(xOffset, 0);
+            drawList.AddImage(icon.Handle, iconPos, iconPos + iconSize);
+        }
+
+        return clicked;
+    }
     public static void Draw_XPBar(float current, float needed, float max = 0, string label = null, Vector2? size = null)
     {
         // If we want it to have a standard label above the bar. Not required but for small things it's nice to just have the option

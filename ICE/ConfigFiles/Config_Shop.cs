@@ -12,6 +12,12 @@ public partial class Config
     public int CosmoBuyAtAmount { get; set; } = 10000;
     public int CosmoKeepAmount { get; set; } = 0;
 
+    public bool BookletBuy_Enable { get; set; } = false;
+    public int BookletBuy_Amount { get; set; } = 900;
+
+    public bool PlanetMount_Enable { get; set; } = false;
+    public int PlanetMount_Amount { get; set; } = 60;
+
     public class CosmoShoppingList
     {
         public int KeepAmount { get; set; } = 0;

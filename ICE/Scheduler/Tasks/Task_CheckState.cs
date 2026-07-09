@@ -596,6 +596,10 @@ namespace ICE.Scheduler.Tasks
                     BuyItems = creditAmount >= C.CosmoBuyAtAmount && Task_BuyCosmoItems.CanPurchaseAnyItem();
                 }
             }
+            if (Task_BuyCosmoItems.CanExchangeTokens() || Task_BuyCosmoItems.CanExchangeMount())
+            {
+                BuyItems = true;
+            }
             if (C.TurninRelic)
             {
                 var jobId = Mission_Settings.SelectedJob;
@@ -639,7 +643,7 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Info("We have some reason to return back to the base so... we're doing so.\n" +
                                   $"Can Buy Drones: {BuyDrones}\n" +
                                   $"Gamba Wheel: {GambaWheel}\n" +
-                                  $"Buying Cosmocredit Items: {BuyItems}\n" +
+                                  $"Buying Cosmocredit/Mount Items: {BuyItems}\n" +
                                   $"Repair At Vendor: {RepairVendor}\n" +
                                   $"Turnin Relic: {TurninRelic}", tag);
                 Task_HubActivities.CanBuyDrones = BuyDrones;

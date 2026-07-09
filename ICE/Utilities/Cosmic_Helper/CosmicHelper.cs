@@ -4,6 +4,7 @@ using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Enums;
+using ICE.IPC;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.IO;
@@ -148,7 +149,7 @@ public static unsafe partial class CosmicHelper
         [511] = new() { 352, 487 }
     };
 
-    private static List<(string Name, int Id)> ArtisanMacros = new();
+    private static List<ArtisanIPC.MacroInfo> ArtisanMacros = new();
     public static void CrafterManagement(CosmicHelper.CosmicInfo mission, uint id, ImGuiTreeNodeFlags openDefault = ImGuiTreeNodeFlags.DefaultOpen)
     {
         var job = mission.Jobs.First(x => CosmicHelper.CrafterJobList.Contains(x));

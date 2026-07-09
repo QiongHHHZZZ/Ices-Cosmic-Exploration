@@ -158,18 +158,42 @@ namespace ICE.Scheduler.Handlers
         internal static string FormatForecastTime(DateTime forecastTime)
         {
             TimeSpan timeDifference = forecastTime - DateTime.UtcNow;
+            bool isNegative = timeDifference < TimeSpan.Zero;
+            string sign = isNegative ? "-" : "";
+
             if (!AccurateTime)
             {
-                string format = C.ShowSeconds ? @"hh\:mm\:ss" : @"hh\:mm";
-                return timeDifference < TimeSpan.Zero ? "-" + timeDifference.Duration().ToString(format) : timeDifference.ToString(format);
+                TimeSpan absDifference = timeDifference.Duration();
+                int hours = absDifference.Hours + absDifference.Days * 24;
+                int minutes = absDifference.Minutes;
+                int seconds = absDifference.Seconds;
+
+                return sign + FormatParts(hours, minutes, seconds, C.ShowSeconds);
             }
             else
             {
                 int totalSeconds = Math.Abs((int)timeDifference.TotalSeconds);
                 int hours = totalSeconds / 10000;
                 int minutes = (totalSeconds % 10000) / 100;
-                string format = C.ShowSeconds ? $"{hours:D2}:{minutes:D2}:{totalSeconds % 100:D2}" : $"{hours:D2}:{minutes:D2}";
-                return timeDifference < TimeSpan.Zero ? "-" + format : format;
+                int seconds = totalSeconds % 100;
+
+                return sign + FormatParts(hours, minutes, seconds, C.ShowSeconds);
+            }
+        }
+
+        private static string FormatParts(int hours, int minutes, int seconds, bool showSeconds)
+        {
+            if (hours > 0)
+            {
+                return showSeconds
+                    ? $"{hours} hr, {minutes} min, {seconds} sec"
+                    : $"{hours} hr, {minutes} min";
+            }
+            else
+            {
+                return showSeconds
+                    ? $"{minutes} min, {seconds} sec"
+                    : $"{minutes} min";
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using ICE.Utilities.Cosmic_Helper;
+﻿using ICE.IPC;
+using ICE.Utilities.Cosmic_Helper;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,7 +19,7 @@ namespace ICE.Ui.DebugWindowTabs
         internal static ItemInfo SelectedManual = new();
         internal static ItemInfo SelectedSquadronManual = new();
 
-        internal static List<(string Name, int Id)> MacroList = new();
+        internal static List<ArtisanIPC.MacroInfo> MacroList = new();
 
         public class ItemInfo
         {

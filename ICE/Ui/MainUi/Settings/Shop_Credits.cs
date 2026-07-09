@@ -9,7 +9,7 @@ using static ICE.Localization.L10n;
 
 namespace ICE.Ui.MainUi.Settings
 {
-    internal class ShoppingTab
+    internal class Shop_Credits
     {
         private static string ItemSearch = string.Empty;
         private static ImGuiEx.RealtimeDragDrop<uint> MaterialDragDrop = new("MaterialShop", (id) => id.ToString());

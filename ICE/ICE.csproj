@@ -29,6 +29,9 @@
 
 	<ItemGroup>
 		<Content Include="ICE.json" />
+		<EmbeddedResource Include="Resources\TrophyIcons\bronze_trophy.png" />
+		<EmbeddedResource Include="Resources\TrophyIcons\gold_trophy.png" />
+		<EmbeddedResource Include="Resources\TrophyIcons\silver_trophy.png" />
 		<EmbeddedResource Include="Resources\Auxesia.png" />
 		<EmbeddedResource Include="Resources\ResearchIcons\advance.png" />
 		<EmbeddedResource Include="Resources\ResearchIcons\expert.png" />

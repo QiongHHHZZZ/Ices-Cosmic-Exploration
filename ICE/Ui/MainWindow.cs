@@ -99,9 +99,10 @@ namespace ICE.Ui
             [WindowSelection.TravelSettings] = () => TravelSettings.Draw(),
 
             // Hub Activities
-            [WindowSelection.CreditShopping] = () => ShoppingTab.Draw(),
+            [WindowSelection.CreditShopping] = () => Shop_Credits.Draw(),
             [WindowSelection.GambaShopping] = () => GambaWheel.Draw(),
             [WindowSelection.DroneShopping] = () => Shop_Dronebit.Draw(),
+            [WindowSelection.MountShopping] = () => Shop_Tokens.Draw(),
 
             // Help Section
             [WindowSelection.Plugin_Install] = () => helpSelect_Required.Draw(),

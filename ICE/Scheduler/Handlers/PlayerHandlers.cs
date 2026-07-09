@@ -26,10 +26,15 @@ internal static unsafe class PlayerHandlers
         if (!P.overlayWindow.IsOpen && PlayerHelper.IsInCosmicZone() && C.ShowOverlay)
             P.overlayWindow.IsOpen = true;
 
-        if (C.MoonSprint && PlayerHelper.IsInCosmicZone()
-         && !PlayerHelper.HasStatusId(stellarSprintID) && Svc.Condition[ConditionFlag.NormalConditions]
-         && IsMoving() && PlayerHelper.UsingSupportedJob())
+        if (C.MoonSprint 
+            && PlayerHelper.IsInCosmicZone()
+            && !PlayerHelper.HasStatusId(stellarSprintID) 
+            && Svc.Condition[ConditionFlag.NormalConditions]
+            && IsMoving() 
+            && PlayerHelper.UsingSupportedJob())
+        {
             UseSprint();
+        }
 
         if ((!PlayerHelper.IsInCosmicZone()) && SchedulerMain.State != IceState.Idle)
         {

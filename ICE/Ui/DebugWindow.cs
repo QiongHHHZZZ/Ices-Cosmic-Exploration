@@ -1,4 +1,5 @@
 using Dalamud.Interface;
+using Dalamud.Interface.Utility.Raii;
 using ICE.Ui.Debug_Tabs.Debug_CS;
 using ICE.Ui.Debug_Tabs.Debug_Hud;
 using ICE.Ui.Debug_Tabs.Debug_Tables;
@@ -105,65 +106,91 @@ internal class DebugWindow : Window
     public override void Draw()
     {
         float spacing = 10f;
-        float leftPanelWidth = 160f;
+        float leftPanelWidth = 250f;
         float childHeight = ImGui.GetContentRegionAvail().Y;
 
-        // -- Left sidebar: one selectable per group --
         if (_showSidebar)
         {
-            if (ImGui.BeginChild("DebugGroupSelector", new Vector2(leftPanelWidth, childHeight), true))
-            {
-                foreach (var groupName in DebugViewGroups.Keys)
-                {
-                    bool isSelected = (_selectedGroup == groupName);
-                    if (ImGui.Selectable(groupName, isSelected))
-                    {
-                        if (_selectedGroup != groupName)
-                        {
-                            _selectedGroup = groupName;
-                            // Auto-select first tab in the new group
-                            _selectedView = DebugViewGroups[groupName].Keys.First();
-                        }
-                    }
-                }
-            }
-            ImGui.EndChild();
+            DrawSidebar(leftPanelWidth, childHeight);
             ImGui.SameLine(0, spacing);
         }
 
-        // -- Right panel: tabs across the top, content below --
         float rightPanelWidth = ImGui.GetContentRegionAvail().X;
-        if (ImGui.BeginChild("DebugRightPanel", new Vector2(rightPanelWidth, childHeight), false))
+        using var content = ImRaii.Child("DebugContent", new Vector2(rightPanelWidth, childHeight), true);
+        if (!content || !content.Success)
+            return;
+
+        if (DebugViewGroups.TryGetValue(_selectedGroup, out var views)
+            && views.TryGetValue(_selectedView, out var drawAction))
         {
-            if (DebugViewGroups.TryGetValue(_selectedGroup, out var views))
+            drawAction();
+        }
+        else
+        {
+            ImGui.Text(T("Unknown Debug View"));
+        }
+    }
+
+    private void DrawSidebar(float width, float height)
+    {
+        var lineHeight = ImGui.GetTextLineHeightWithSpacing();
+        var halfLineHeight = (int)MathF.Round(lineHeight / 2f);
+
+        using var child = ImRaii.Child("DebugGroupSelector", new Vector2(width, height), true, ImGuiWindowFlags.NoSavedSettings);
+        if (!child || !child.Success)
+            return;
+
+        using var table = ImRaii.Table("DebugGroupTable"u8, 1, ImGuiTableFlags.NoSavedSettings);
+        if (!table || !table.Success)
+            return;
+
+        ImGui.TableSetupColumn("Group"u8, ImGuiTableColumnFlags.WidthStretch);
+
+        foreach (var (groupName, views) in DebugViewGroups)
+        {
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+
+            bool groupSelected = _selectedGroup == groupName;
+            if (ImGui.Selectable($"{groupName}###Selectable_{groupName}", groupSelected))
             {
-                if (ImGui.BeginTabBar("DebugTabs"))
-                {
-                    foreach (var (viewName, drawAction) in views)
-                    {
-                        var flags = (_selectedView == viewName && ImGui.GetFrameCount() <= 1)
-                            ? ImGuiTabItemFlags.SetSelected
-                            : ImGuiTabItemFlags.None;
-
-                        if (ImGui.BeginTabItem(viewName, ref Unsafe.NullRef<bool>(), flags))
-                        {
-                            _selectedView = viewName;
-
-                            if (ImGui.BeginChild("DebugContent", new Vector2(0, 0), true))
-                                drawAction();
-                            ImGui.EndChild();
-
-                            ImGui.EndTabItem();
-                        }
-                    }
-                    ImGui.EndTabBar();
-                }
+                _selectedGroup = groupName;
+                _selectedView = views.Keys.First();
             }
-            else
+
+            // Always expanded now — no gating on _selectedGroup.
+            var viewNames = views.Keys.ToList();
+            for (var i = 0; i < viewNames.Count; i++)
             {
-                ImGui.Text(T("Unknown Debug View"));
+                var viewName = viewNames[i];
+                var pos = ImGui.GetCursorPos();
+
+                ImGui.Indent(lineHeight);
+
+                bool viewSelected = _selectedGroup == groupName && _selectedView == viewName;
+                if (ImGui.Selectable($"{viewName}###Selectable_{groupName}_{viewName}", viewSelected))
+                {
+                    _selectedGroup = groupName;
+                    _selectedView = viewName;
+                }
+
+                ImGui.Unindent(lineHeight);
+
+                // Tree-connector line, drawn at the indent gutter.
+                var linePos = ImGui.GetWindowPos() + pos
+                    - new Vector2(ImGui.GetScrollX(), ImGui.GetScrollY())
+                    + new Vector2(MathF.Round(halfLineHeight - ImGui.GetStyle().ItemSpacing.Y / 2f), -MathF.Round(ImGui.GetStyle().ItemSpacing.Y / 2f));
+
+                ImGui.GetWindowDrawList().AddLine(
+                    linePos,
+                    linePos + new Vector2(0, i == viewNames.Count - 1 ? halfLineHeight : lineHeight),
+                    ImGui.GetColorU32(ImGuiCol.TextDisabled));
+
+                ImGui.GetWindowDrawList().AddLine(
+                    linePos + new Vector2(0, halfLineHeight),
+                    linePos + new Vector2(halfLineHeight, halfLineHeight),
+                    ImGui.GetColorU32(ImGuiCol.TextDisabled));
             }
         }
-        ImGui.EndChild();
     }
 }

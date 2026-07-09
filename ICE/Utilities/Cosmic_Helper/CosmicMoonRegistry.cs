@@ -15,6 +15,7 @@ public sealed class CosmicMoonDefinition
     public required uint PlanetCreditItemId { get; init; }
     public uint? TokenId { get; set; }
     public uint? BookletId { get; set; } 
+    public uint? MountId { get; set; }
     /// <summary>Hub stellar return / navmesh anchor for this moon.</summary>
     public required Vector3 HubCenter { get; init; }
     /// <summary>Oizys and Auxesia have the cosmodrome / drone vendor; Sinus and Phaenna do not.</summary>
@@ -82,6 +83,7 @@ public static class CosmicMoonRegistry
         PlanetCreditItemId = 48146,
         TokenId = 47594,
         BookletId = 47343,
+        MountId = 47336,
         HubCenter = new(339.90f, 52.60f, -412.10f),
         MaxRelicStage = 14,
         ExpeditionTabIndex = 1,
@@ -101,6 +103,7 @@ public static class CosmicMoonRegistry
         PlanetCreditItemId = 48147,
         TokenId = 49802,
         BookletId = 50829,
+        MountId = 50442,
         HubCenter = new(-180.02f, 0.50f, 129.25f),
         HasCosmodrome = true,
         DronebitCreditId = 49170,
@@ -123,6 +126,7 @@ public static class CosmicMoonRegistry
         PlanetCreditItemId = 48148,
         TokenId = 52092,
         BookletId = 52091,
+        MountId = 52268,
         HubCenter = new(291.00f, 205.78f, 376.02f),
         HasCosmodrome = true,
         DronebitCreditId = 49171,
@@ -161,14 +165,23 @@ public static class CosmicMoonRegistry
         .Where(m => m.DronebitCreditId is uint creditId && m.DronebitBoxId is uint boxId)
         .ToDictionary(
             m => m.TerritoryId,
-            m => new CosmicHelper.Dronebit { creditId = m.DronebitCreditId!.Value, boxId = m.DronebitBoxId!.Value });
+            m => new CosmicHelper.Dronebit 
+            { 
+                creditId = m.DronebitCreditId!.Value, 
+                boxId = m.DronebitBoxId!.Value 
+            });
 
     // Returns a dictionary that only contains the tokens and booklets for everything but sinus
     public static readonly Dictionary<uint, CosmicHelper.TokenInfo> TokenIds =
         All.Where(m => m.TokenId is uint tokenId && m.BookletId is uint bookletId)
         .ToDictionary(
             m => m.TerritoryId,
-            m => new CosmicHelper.TokenInfo { tokenId = m.TokenId!.Value, bookletId = m.BookletId!.Value });
+            m => new CosmicHelper.TokenInfo 
+            { 
+                tokenId = m.TokenId!.Value, 
+                bookletId = m.BookletId!.Value,
+                mountId = m.MountId!.Value
+            });
 
     public static bool TryGetMoon(uint territoryId, out CosmicMoonDefinition moon) =>
         ByTerritoryId.TryGetValue(territoryId, out moon!);

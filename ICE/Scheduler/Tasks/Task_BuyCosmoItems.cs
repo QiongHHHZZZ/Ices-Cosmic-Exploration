@@ -39,15 +39,18 @@ namespace ICE.Scheduler.Tasks
                     );
             }
 
-            if (CanExchanceTokens())
+            bool tokenExchange = CanExchangeTokens();
+            bool mountExchange = CanExchangeMount();
+
+            if (tokenExchange || mountExchange)
             {
                 P.TaskManager.EnqueueMulti
-                    (
-                        new(TalkToCreditNPC, "Npc Talk: Material Exchange"),
-                        new(() => SelectShop(1), "Selecting Material Exchange"),
-                        new(BuyPlanetBoolets, "Buying booklets from the NPC", Utils.TaskConfig),
-                        new(CloseExchange, "Closing the exchange window")
-                    );
+                (
+                    new(TalkToCreditNPC, "Npc Talk: Material Exchange"),
+                    new(() => SelectShop(2), "Selecting Material Exchange"),
+                    new(BuyPlanetBoolets, "Buying booklets from the NPC", Utils.TaskConfig),
+                    new(CloseExchange, "Closing the exchange window")
+                );
             }
         }
 
@@ -80,16 +83,33 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        private static bool CanExchanceTokens()
+        public static bool CanExchangeTokens()
         {
             var territory = Player.Territory.RowId;
             int bookletAmount = 100;
+            var bookletBuyAmount = C.BookletBuy_Amount;
 
             if (CosmicMoonRegistry.TokenIds.TryGetValue(territory, out var tokenInfo))
             {
                 if (PlayerHelper.GetItemCount(tokenInfo.tokenId, out var tokenCount))
                 {
-                    return tokenCount >= bookletAmount;
+                    return tokenCount >= bookletAmount && tokenCount >= bookletBuyAmount && C.BookletBuy_Enable;
+                }
+            }
+
+            return false;
+        }
+        public static bool CanExchangeMount()
+        {
+            var territory = Player.Territory.RowId;
+            int mountAmount = 60;
+            var mountBuyAmount = C.PlanetMount_Amount;
+
+            if (CosmicMoonRegistry.TokenIds.TryGetValue(territory, out var tokenInfo))
+            {
+                if (PlayerHelper.GetItemCount(tokenInfo.bookletId, out var bookletCount))
+                {
+                    return bookletCount >= mountAmount && bookletCount >= mountBuyAmount && C.PlanetMount_Enable;
                 }
             }
 
@@ -165,6 +185,10 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Debug($"Selecting: {select.Text}");
                     select.Select();
                 }
+            }
+            else if (GenericHelpers.TryGetAddonMaster<ShopExchangeItem>(out var shopItem) && shopItem.IsAddonReady)
+            {
+                return true;
             }
             else if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
             {
@@ -464,6 +488,13 @@ namespace ICE.Scheduler.Tasks
                         IceLogging.Verbose("Attempting to turnin request", tag);
                     }
                 }
+                else if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var YesNo) && YesNo.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Buy Item", 500))
+                    {
+                        YesNo.Yes();
+                    }
+                }
                 else if (WaitCounter)
                 {
                     if (EzThrottler.Throttle("Waiting for counter to count"))
@@ -513,6 +544,104 @@ namespace ICE.Scheduler.Tasks
                                 {
                                     IceLogging.Verbose($"Going to buy: {buyAmount} of booklets");
                                     bookletShop.Select(buyAmount);
+                                }
+                            }
+                            else
+                            {
+                                IceLogging.Verbose("We have reached the end of buying tokens, exiting out of the process", tag);
+                                if (CanExchangeMount())
+                                {
+                                    P.TaskManager.Insert(BuyPlanetMount, "Buying Planet Mount");
+                                }
+                                return true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        IceLogging.Verbose("We've reached the limit of buying booklets, going to exit out", tag);
+                        if (CanExchangeMount())
+                        {
+                            P.TaskManager.Insert(BuyPlanetMount, "Buying Planet Mount");
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        public static bool? BuyPlanetMount()
+        {
+            string tag = "Shop Exchange: Planet Mount";
+
+            var territory = Player.Territory.RowId;
+            if (CosmicMoonRegistry.TokenIds.TryGetValue(territory, out var tokenInfo)
+                && PlayerHelper.GetItemCount(tokenInfo.bookletId, out var mountCount))
+            {
+                if (GenericHelpers.TryGetAddonMaster<Request>(out var request) && request.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Request attempt"))
+                    {
+                        IceLogging.Verbose("Attempting to turnin request", tag);
+                    }
+                }
+                else if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var YesNo) && YesNo.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Buy Item", 500))
+                    {
+                        YesNo.Yes();
+                    }
+                }
+                else if (WaitCounter)
+                {
+                    if (EzThrottler.Throttle("Waiting for counter to count"))
+                    {
+                        Counter += 1;
+                    }
+                    if (Counter > 3)
+                    {
+                        WaitCounter = false;
+                        Counter = 0;
+                    }
+
+                    return false;
+                }
+                else if (GenericHelpers.TryGetAddonMaster<ShopExchangeItemDialog>(out var shopExchangeDialog) && shopExchangeDialog.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Buy Item", 500))
+                    {
+                        IceLogging.Verbose("Buying the item");
+                        shopExchangeDialog.Exchange();
+                        WaitCounter = true;
+                    }
+                }
+                else if (GenericHelpers.TryGetAddonMaster<ShopExchangeItem>(out var shopExchange) && shopExchange.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle($"Token Report"))
+                        IceLogging.Verbose($"Current Token Count: {mountCount}");
+
+                    if (mountCount >= 60)
+                    {
+                        int maxExchange = 1;
+
+                        var mountShop = shopExchange.ItemInfo.Where(x => x.ItemId == tokenInfo.mountId).FirstOrDefault();
+                        if (mountShop != null)
+                        {
+                            long buyAmountLong = mountCount / mountShop.ExchangeItems[0].RequiredAmount;
+                            int buyAmount = (int)Math.Min(maxExchange, buyAmountLong);
+
+                            if (EzThrottler.Throttle("Merging items", 1000))
+                            {
+                                MergeItems();
+                            }
+
+                            if (buyAmount != 0)
+                            {
+                                if (EzThrottler.Throttle("Selecting the item"))
+                                {
+                                    IceLogging.Verbose($"Going to buy: {buyAmount} of booklets");
+                                    mountShop.Select(buyAmount);
                                 }
                             }
                             else
@@ -606,7 +735,6 @@ namespace ICE.Scheduler.Tasks
             }
             return false;
         }
-
         public static unsafe void MergeItems()
         {
             var inv = InventoryManager.Instance();

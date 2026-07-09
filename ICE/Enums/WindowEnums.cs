@@ -24,6 +24,8 @@ namespace ICE.Enums
         Plugin_Install,
         Plugin_Logs,
         Plugin_Tips,
+
+        MountShopping,
     }
 
     [Flags]

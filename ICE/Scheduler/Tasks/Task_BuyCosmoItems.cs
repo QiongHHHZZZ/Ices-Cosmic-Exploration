@@ -472,6 +472,7 @@ namespace ICE.Scheduler.Tasks
 
         private static int Counter = 0;
         private static bool WaitCounter = false;
+        private static bool NeedsMergeCheck = true;
 
         public static bool? BuyPlanetBoolets()
         {
@@ -525,18 +526,30 @@ namespace ICE.Scheduler.Tasks
 
                     if (tokenCount >= 100)
                     {
-                        int maxExchange = 9;
+                        if (NeedsMergeCheck)
+                        {
+                            if (EzThrottler.Throttle("Merging items", 1000))
+                            {
+                                if (MergeItems())
+                                {
+                                    IceLogging.Verbose("Merged split stacks, will re-check next pass", tag);
+                                }
+                                else
+                                {
+                                    NeedsMergeCheck = false;
+                                    IceLogging.Verbose("Inventory confirmed clean, proceeding to buy", tag);
+                                }
+                            }
 
+                            return false; // not going to buy until the merge check is completed here. Safety and preventing soft locks...
+                        }
+
+                        int maxExchange = 9;
                         var bookletShop = shopExchange.ItemInfo.Where(x => x.ItemId == tokenInfo.bookletId).FirstOrDefault();
                         if (bookletShop != null)
                         {
                             long buyAmountLong = tokenCount / bookletShop.ExchangeItems[0].RequiredAmount;
                             int buyAmount = (int)Math.Min(maxExchange, buyAmountLong);
-
-                            if (EzThrottler.Throttle("Merging items", 1000))
-                            {
-                                MergeItems();
-                            }
 
                             if (buyAmount != 0)
                             {
@@ -544,15 +557,14 @@ namespace ICE.Scheduler.Tasks
                                 {
                                     IceLogging.Verbose($"Going to buy: {buyAmount} of booklets");
                                     bookletShop.Select(buyAmount);
+                                    NeedsMergeCheck = true; // re-check before the *next* buy, since this purchase will add new stacks
                                 }
                             }
                             else
                             {
                                 IceLogging.Verbose("We have reached the end of buying tokens, exiting out of the process", tag);
                                 if (CanExchangeMount())
-                                {
                                     P.TaskManager.Insert(BuyPlanetMount, "Buying Planet Mount");
-                                }
                                 return true;
                             }
                         }
@@ -561,9 +573,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.Verbose("We've reached the limit of buying booklets, going to exit out", tag);
                         if (CanExchangeMount())
-                        {
                             P.TaskManager.Insert(BuyPlanetMount, "Buying Planet Mount");
-                        }
                         return true;
                     }
                 }
@@ -735,7 +745,7 @@ namespace ICE.Scheduler.Tasks
             }
             return false;
         }
-        public static unsafe void MergeItems()
+        public static unsafe bool MergeItems()
         {
             var inv = InventoryManager.Instance();
 
@@ -747,20 +757,38 @@ namespace ICE.Scheduler.Tasks
                     && handle.ItemLocation.GetInventoryItem() != null
                     && handle.ItemLocation.GetInventoryItem()->Quantity < handle.GameData()?.StackSize)
                 .GroupBy(handle => new { handle.ItemId, handle.IsHighQuality })
-                .Where(group => group.Count() > 1);
+                .Where(group => group.Count() > 1)
+                .ToList();
+
+            if (incompleteStacks.Count == 0)
+                return false; // nothing to do, inventory already clean
 
             foreach (var group in incompleteStacks)
             {
                 var firstSlot = group.First();
                 if (firstSlot.ItemLocation == null) continue;
 
+                var destItem = firstSlot.ItemLocation.GetInventoryItem();
+                if (destItem == null) continue;
+
+                var stackSize = firstSlot.GameData()?.StackSize ?? uint.MaxValue;
+                var destQty = destItem->Quantity;
+
                 foreach (var slot in group.Skip(1))
                 {
-                    if (slot.ItemLocation == null) continue;
+                    if (slot.ItemLocation == null || destQty >= stackSize) continue;
+
+                    var srcItem = slot.ItemLocation.GetInventoryItem();
+                    if (srcItem == null) continue;
+
                     inv->MoveItemSlot(slot.ItemLocation.Container, slot.ItemLocation.Slot,
                         firstSlot.ItemLocation.Container, firstSlot.ItemLocation.Slot, true);
+
+                    destQty += srcItem->Quantity;
                 }
             }
+
+            return true; // we queued moves this pass
         }
     }
 }

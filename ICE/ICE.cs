@@ -130,37 +130,36 @@ public sealed partial class ICE : IDalamudPlugin
 
     private void Tick(object _)
     {
-        if (PlayerHelper.IsInCosmicZone())
+        if (Player.Available && PlayerHelper.IsInCosmicZone())
         {
-            if (Player.Available)
+            if (EzThrottler.Throttle("Update Character Stats"))
             {
-                if (EzThrottler.Throttle("Update Character Stats"))
-                {
-                    CosmicHelper.Task_UpdateRelicMissionInfo();
-                }
+                CosmicHelper.Task_UpdateRelicMissionInfo();
+            }
+            PlayerHandlers.Tick();
+            if (SchedulerMain.State != IceState.Idle)
+                SchedulerMain.Tick();
+            WeatherForecastHandler.Tick();
 
-
-                PlayerHandlers.Tick();
-                if (SchedulerMain.State != IceState.Idle)
-                    SchedulerMain.Tick();
-                WeatherForecastHandler.Tick();
-
-                if (C.FakeIncreaseFisher)
-                {
-                    GlamourIpc.SetClownHead();
-                }
-                else
-                {
-                    GlamourIpc.ResetClownHead();
-                }
+            if (C.FakeIncreaseFisher)
+            {
+                GlamourIpc.SetClownHead();
             }
             else
             {
-                if (SchedulerMain.State != IceState.Idle)
-                    PlayerHandlers.DisablePlugin();
-                if (PlayerHandlers.PlayerFirstCosmicZone)
-                    PlayerHandlers.PlayerFirstCosmicZone = false;
+                GlamourIpc.ResetClownHead();
             }
+        }
+        else if (!Player.Available)
+        {
+            if (SchedulerMain.State != IceState.Idle)
+                PlayerHandlers.DisablePlugin();
+            if (PlayerHandlers.PlayerFirstCosmicZone)
+                PlayerHandlers.PlayerFirstCosmicZone = false;
+        }
+
+        if (PlayerHelper.IsInCosmicZone())
+        {
             GenericManager.Tick();
             TextAdvancedManager.Tick();
             YesAlreadyManager.Tick();
@@ -328,6 +327,11 @@ public sealed partial class ICE : IDalamudPlugin
                                  $"/ice only (ids) - 仅保留指定任务为启用\n" +
                                  $"/ice flag (id) - 打开地图并标记该任务区域（若存在）\n";
             Svc.Chat.Print(helpMessage);
+        }
+        else if (firstArg.ToLower() == "overlay")
+        {
+            overlayWindow.IsOpen = false;
+            overlayWindow.IsOpen = true;
         }
     }
 

@@ -293,35 +293,27 @@ public static partial class CosmicHelper
     {
         string tag = "Task: Update Cosmic Info";
 
-        if (PlayerHelper.IsInCosmicZone())
+        if (PlayerHelper.IsScreenReady())
         {
-            if (PlayerHelper.IsScreenReady())
+            var wksManagerPtr = WKSManager.Instance();
+            if (wksManagerPtr == null)
             {
-                var wksManagerPtr = WKSManager.Instance();
-                if (wksManagerPtr == null)
-                {
-                    if (EzThrottler.Throttle("Update Stats"))
-                        IceLogging.Verbose("Waiting for the wksManager to be loaded", tag);
+                if (EzThrottler.Throttle("Update Stats"))
+                    IceLogging.Verbose("Waiting for the wksManager to be loaded", tag);
 
-                    return false;
-                }
-                else
-                {
-                    Update_MissionCompletion();
-                    // IceLogging.Verbose("Updated cosmic dictionary to have proper values", tag);
-                    return true;
-                }
+                return false;
             }
             else
             {
-                IceLogging.Verbose("Waiting for screen to be ready...", tag);
-                return false;
+                Update_MissionCompletion();
+                // IceLogging.Verbose("Updated cosmic dictionary to have proper values", tag);
+                return true;
             }
         }
         else
         {
-            IceLogging.Verbose("We're not in a cosmic area, so we're going to just exit this check", tag);
-            return true;
+            IceLogging.Verbose("Waiting for screen to be ready...", tag);
+            return false;
         }
     }
 }

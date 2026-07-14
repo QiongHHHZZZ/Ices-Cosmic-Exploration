@@ -4,6 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using ICE.ExtraUtil;
 using ICE.Scheduler.Handlers.PictoStuff;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
@@ -20,6 +21,7 @@ namespace ICE.Ui.Debug_Tabs.Debug_Ui
         private static int currentXp = 0;
         private static int neededXp = 100;
         private static int maxXp = 200;
+
 
         public static unsafe void Draw()
         {

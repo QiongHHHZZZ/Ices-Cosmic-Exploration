@@ -40,10 +40,16 @@ namespace ICE.Ui.MainUi.Settings
             ImGui.Dummy(new (0, 5));
 
             bool showOverlay = C.ShowOverlay;
-            if (ImGui.Checkbox(T("Show Overlay"), ref showOverlay))
+            if (ImGui.Checkbox(T("Auto-Open Overlay"), ref showOverlay))
             {
                 C.ShowOverlay = showOverlay;
                 C.Save();
+            }
+            ImGui.SameLine();
+            if (ImGui.Button(T("Open Overlay")))
+            {
+                if (!P.overlayWindow.IsOpen)
+                    P.overlayWindow.IsOpen = true;
             }
             ImGui.SameLine();
             bool useCogsIcon = C.Overlay_UseCogsIcon;
@@ -88,6 +94,13 @@ namespace ICE.Ui.MainUi.Settings
             if (ImGui.Checkbox(T("Show Total Score"), ref showTotalScore))
             {
                 C.ShowTotalScore = showTotalScore;
+                C.Save();
+            }
+            ImGui.SameLine();
+            bool showMasteryScore = C.ShowMasteryScore;
+            if (ImGui.Checkbox(T("Show Mastery Score"), ref showMasteryScore))
+            {
+                C.ShowMasteryScore = showMasteryScore;
                 C.Save();
             }
 

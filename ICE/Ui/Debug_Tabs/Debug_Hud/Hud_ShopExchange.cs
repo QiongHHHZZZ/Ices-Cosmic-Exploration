@@ -1,4 +1,5 @@
-﻿using ICE.Utilities.ImGuiTools;
+﻿using ICE.ExtraUtil;
+using ICE.Utilities.ImGuiTools;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +9,6 @@ namespace ICE.Ui.Debug_Tabs.Debug_Hud
     internal class Hud_ShopExchange
     {
         private static int BuyAmount = 1;
-
         public static void Draw()
         {
             if (ImGui.Button("Merge Items"))

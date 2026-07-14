@@ -200,7 +200,7 @@ namespace ICE.Ui
                 {
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text($"Mission Exp[s]");
+                    ImGui.Text(T("Mission Exp[s]"));
 
                     ImGui.TableNextColumn();
                     for (int i = 0; i < exps.Count; i++)
@@ -367,7 +367,7 @@ namespace ICE.Ui
 
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
-                ImGui.Text($"Notes [Hover over]");
+                ImGui.Text(T("Notes [Hover over]"));
 
                 ImGui.TableNextColumn();
                 var HasSPM = mission.BestSPM.SPM > 0;
@@ -380,8 +380,8 @@ namespace ICE.Ui
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.BeginTooltip();
-                        ImGui.Text($"Average SPM: {mission.BestSPM.SPM:N2}");
-                        ImGui.Text($"{mission.BestSPM.NoteInfo}");
+                        ImGui.Text(T("Average SPM: {0:N2}", mission.BestSPM.SPM));
+                        ImGui.Text(T(mission.BestSPM.NoteInfo));
                         ImGui.EndTooltip();
                     }
                 }

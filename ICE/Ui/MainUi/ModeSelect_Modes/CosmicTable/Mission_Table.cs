@@ -352,7 +352,7 @@ public static class CosmicTables
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text($"X: {mission.SheetInfo.MapPosition.X:N0}, Z: {mission.SheetInfo.MapPosition.Y:N0}");
+                    ImGui.Text(T("X: {0:N0}, Z: {1:N0}", mission.SheetInfo.MapPosition.X, mission.SheetInfo.MapPosition.Y));
                     ImGui.EndTooltip();
                 }
             }
@@ -367,11 +367,11 @@ public static class CosmicTables
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text($"Critical Route: {mission.SheetInfo.Critical_MapKey}");
+                    ImGui.Text(T("Critical Route: {0}", mission.SheetInfo.Critical_MapKey));
                     ImGui.Separator();
-                    ImGui.Text($"Map Cordinates: {criticalInfo.X} | {criticalInfo.Y}");
+                    ImGui.Text(T("Map Coordinates: {0} | {1}", criticalInfo.X, criticalInfo.Y));
                     ImGui.Separator();
-                    ImGui.Text($"World Position: {criticalInfo.WorldCords.X:N2} | {criticalInfo.WorldCords.Y:N2} | {criticalInfo.WorldCords.Z:N2}");
+                    ImGui.Text(T("World Position: {0:N2} | {1:N2} | {2:N2}", criticalInfo.WorldCords.X, criticalInfo.WorldCords.Y, criticalInfo.WorldCords.Z));
                     ImGui.EndTooltip();
                 }
 #endif
@@ -772,11 +772,11 @@ public static class CosmicTables
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text($"Sequence Missions");
+                            ImGui.Text(T("Sequence Missions"));
                             if (item.SheetInfo.SequenceMissions_Previous.Count() > 0)
                             {
                                 ImGui.Separator();
-                                ImGui.Text($"Previous Missions");
+                                ImGui.Text(T("Previous Missions"));
                                 foreach (var mission in item.SheetInfo.SequenceMissions_Previous)
                                 {
                                     ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
@@ -785,7 +785,7 @@ public static class CosmicTables
                             if (item.SheetInfo.SequenceMissions_Next.Count() > 0)
                             {
                                 ImGui.Separator();
-                                ImGui.Text($"Next Missions");
+                                ImGui.Text(T("Next Missions"));
                                 foreach (var mission in item.SheetInfo.SequenceMissions_Next)
                                 {
                                     ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
@@ -1440,8 +1440,8 @@ public static class CosmicTables
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text($"Average SPM: {sheetInfo.BestSPM.SPM:N2}");
-                    ImGui.Text($"{sheetInfo.BestSPM.NoteInfo}");
+                    ImGui.Text(T("Average SPM: {0:N2}", sheetInfo.BestSPM.SPM));
+                    ImGui.Text(T(sheetInfo.BestSPM.NoteInfo));
                     ImGui.EndTooltip();
                 }
             }
@@ -1685,11 +1685,11 @@ public static class CosmicTables
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text($"Sequence Missions");
+                            ImGui.Text(T("Sequence Missions"));
                             if (item.SheetInfo.SequenceMissions_Previous.Count() > 0)
                             {
                                 ImGui.Separator();
-                                ImGui.Text($"Previous Missions");
+                                ImGui.Text(T("Previous Missions"));
                                 foreach (var mission in item.SheetInfo.SequenceMissions_Previous)
                                 {
                                     ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
@@ -1698,7 +1698,7 @@ public static class CosmicTables
                             if (item.SheetInfo.SequenceMissions_Next.Count() > 0)
                             {
                                 ImGui.Separator();
-                                ImGui.Text($"Next Missions");
+                                ImGui.Text(T("Next Missions"));
                                 foreach (var mission in item.SheetInfo.SequenceMissions_Next)
                                 {
                                     ImGuiEx.IconWithText(FontAwesomeIcon.ListOl, $"[{mission}] {CosmicHelper.SheetMissionDict[mission].Name}");
@@ -2155,8 +2155,8 @@ public static class CosmicTables
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text($"Average SPM: {sheetInfo.BestSPM.SPM:N2}");
-                    ImGui.Text($"{sheetInfo.BestSPM.NoteInfo}");
+                    ImGui.Text(T("Average SPM: {0:N2}", sheetInfo.BestSPM.SPM));
+                    ImGui.Text(T(sheetInfo.BestSPM.NoteInfo));
                     ImGui.EndTooltip();
                 }
             }

@@ -66,7 +66,7 @@ namespace ICE.Ui.MainUi.Settings
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui_Ice.ImageButtonWithText(planetIcon, planet.DisplayName, planet.DisplayName, new(24, 24));
+                    ImGui_Ice.ImageButtonWithText(planetIcon, T(planet.DisplayName), planet.DisplayName, new(24, 24));
 
                     ImGui.TableNextColumn();
                     if (ExcelHelper.ItemSheet.TryGetRow(entry.Value.tokenId, out var tokenSheet))

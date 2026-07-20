@@ -169,6 +169,12 @@ public sealed partial class ICE : IDalamudPlugin
             if (SchedulerMain.State != IceState.Idle)
                 SchedulerMain.DisablePlugin();
         }
+
+        if (SchedulerMain.State == IceState.Idle && !GenericManager.Pandora_WasRestored)
+        {
+            if (EzThrottler.Throttle("Turning on pandora features"))
+                GenericManager.RestorePandoraStates();
+        }
     }
 
     private void OnDraw()

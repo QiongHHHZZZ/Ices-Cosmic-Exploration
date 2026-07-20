@@ -12,6 +12,9 @@ namespace ICE.IPC
         public bool Installed => Utils.HasPlugin(Name);
         public bool UpdatedPlugin()
         {
+            // Really only need this for users, should probably add a way for dev plugin versions (ah) but :shrug:
+
+            /*
             if (DalamudReflector.TryGetDalamudPlugin(Name, out var plogon, false, true))
             {
                 if (plogon.GetType().Assembly.GetName().Version < new Version(6, 0, 0, 27))
@@ -21,6 +24,8 @@ namespace ICE.IPC
             }
 
             return false;
+            */
+            return true;
         }
 
         [EzIPC] private readonly Func<bool> GetPluginState;

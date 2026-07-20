@@ -94,7 +94,11 @@ namespace ICE.Scheduler.Handlers
                 P.Pandora.SetFeatureEnabled("Auto-Cordial", false);
             if (PandoraAutoTurnin)
                 P.Pandora.SetFeatureEnabled("Auto-select Turn-ins", false);
+
+            Pandora_WasRestored = false;
         }
+
+        public static bool Pandora_WasRestored = false;
 
         public static void RestorePandoraStates()
         {
@@ -106,6 +110,9 @@ namespace ICE.Scheduler.Handlers
                 P.Pandora.SetFeatureEnabled("Auto-Cordial", true);
             if (PandoraAutoTurnin)
                 P.Pandora.SetFeatureEnabled("Auto-select Turn-ins", true);
+
+            if (!Pandora_WasRestored)
+                Pandora_WasRestored = true;
         }
     }
 }

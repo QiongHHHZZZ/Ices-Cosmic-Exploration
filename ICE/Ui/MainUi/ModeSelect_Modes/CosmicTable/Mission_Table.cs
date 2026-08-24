@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
@@ -32,13 +33,13 @@ public static class CosmicTables
         {
             return item switch
             {
-                ItemFilter.NoItems => "No Items",
-                ItemFilter.Enabled => "Enabled",
-                ItemFilter.Disabled => "Disabled",
+                ItemFilter.NoItems => T("No Items"),
+                ItemFilter.Enabled => T("Enabled"),
+                ItemFilter.Disabled => T("Disabled"),
                 // ItemFilter.NotCompleted => "Not Completed",
                 // ItemFilter.Completed => "Completed",
                 // ItemFilter.Gold => "Gold",
-                _ => "Unknown",
+                _ => T("Unknown"),
             };
         }
 
@@ -71,6 +72,49 @@ public static class CosmicTables
             C.ItemFilter = tmp;
             C.SaveDebounced();
         }
+
+        public override bool DrawFilter()
+        {
+            using var id = ImRaii.PushId(FilterLabel);
+            using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
+            ImGui.SetNextItemWidth(-Table.ArrowWidth * ImGuiHelpers.GlobalScale);
+            var all = FilterValue.HasFlag(AllFlags);
+            using var color = ImRaii.PushColor(ImGuiCol.FrameBg, 0x803030A0, !all);
+            using var combo = ImRaii.Combo(string.Empty, Label, ComboFlags);
+
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+            {
+                SetValue(AllFlags, true);
+                return true;
+            }
+
+            if (!all && ImGui.IsItemHovered())
+                ImGui.SetTooltip(T("Right-click to clear filters."));
+
+            if (!combo)
+                return false;
+
+            color.Pop();
+
+            var ret = false;
+            if (ImGui.Checkbox(T("Enable All"), ref all))
+            {
+                SetValue(AllFlags, all);
+                ret = true;
+            }
+
+            using var indent = ImRaii.PushIndent(10f);
+            for (var i = 0; i < Names.Length; ++i)
+            {
+                if (!DrawCheckbox(i, out var enabled))
+                    continue;
+
+                SetValue(Values[i], enabled);
+                ret = true;
+            }
+
+            return ret;
+        }
     }
     private class MissionFilterColumn : ColumnFlags<MissionFilter, MissionInfo>
     {
@@ -86,7 +130,7 @@ public static class CosmicTables
         protected void SetFlagsAndNames(params MissionFilter[] flags)
         {
             SetFlags(flags);
-            SetNames(flags.Select(f => f.ToString()).ToArray());
+            SetNames(flags.Select(f => T(f.ToString())).ToArray());
         }
 
         protected void SetNames(params string[] names) => FlagNames = names;
@@ -106,6 +150,49 @@ public static class CosmicTables
             C.MissionFilter = tmp;
             C.SaveDebounced();
         }
+
+        public override bool DrawFilter()
+        {
+            using var id = ImRaii.PushId(FilterLabel);
+            using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
+            ImGui.SetNextItemWidth(-Table.ArrowWidth * ImGuiHelpers.GlobalScale);
+            var all = FilterValue.HasFlag(AllFlags);
+            using var color = ImRaii.PushColor(ImGuiCol.FrameBg, 0x803030A0, !all);
+            using var combo = ImRaii.Combo(string.Empty, Label, ComboFlags);
+
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+            {
+                SetValue(AllFlags, true);
+                return true;
+            }
+
+            if (!all && ImGui.IsItemHovered())
+                ImGui.SetTooltip(T("Right-click to clear filters."));
+
+            if (!combo)
+                return false;
+
+            color.Pop();
+
+            var ret = false;
+            if (ImGui.Checkbox(T("Enable All"), ref all))
+            {
+                SetValue(AllFlags, all);
+                ret = true;
+            }
+
+            using var indent = ImRaii.PushIndent(10f);
+            for (var i = 0; i < Names.Length; ++i)
+            {
+                if (!DrawCheckbox(i, out var enabled))
+                    continue;
+
+                SetValue(Values[i], enabled);
+                ret = true;
+            }
+
+            return ret;
+        }
     }
     private class JobFilterColumn : ColumnFlags<JobFilter, MissionInfo>
     {
@@ -121,7 +208,7 @@ public static class CosmicTables
         protected void SetFlagsAndNames(params JobFilter[] flags)
         {
             SetFlags(flags);
-            SetNames(flags.Select(f => f.ToString()).ToArray());
+            SetNames(flags.Select(f => T(f.ToString())).ToArray());
         }
 
         protected void SetNames(params string[] names) => FlagNames = names;
@@ -140,6 +227,49 @@ public static class CosmicTables
 
             C.JobFilter = tmp;
             C.SaveDebounced();
+        }
+
+        public override bool DrawFilter()
+        {
+            using var id = ImRaii.PushId(FilterLabel);
+            using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
+            ImGui.SetNextItemWidth(-Table.ArrowWidth * ImGuiHelpers.GlobalScale);
+            var all = FilterValue.HasFlag(AllFlags);
+            using var color = ImRaii.PushColor(ImGuiCol.FrameBg, 0x803030A0, !all);
+            using var combo = ImRaii.Combo(string.Empty, Label, ComboFlags);
+
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+            {
+                SetValue(AllFlags, true);
+                return true;
+            }
+
+            if (!all && ImGui.IsItemHovered())
+                ImGui.SetTooltip(T("Right-click to clear filters."));
+
+            if (!combo)
+                return false;
+
+            color.Pop();
+
+            var ret = false;
+            if (ImGui.Checkbox(T("Enable All"), ref all))
+            {
+                SetValue(AllFlags, all);
+                ret = true;
+            }
+
+            using var indent = ImRaii.PushIndent(10f);
+            for (var i = 0; i < Names.Length; ++i)
+            {
+                if (!DrawCheckbox(i, out var enabled))
+                    continue;
+
+                SetValue(Values[i], enabled);
+                ret = true;
+            }
+
+            return ret;
         }
     }
     public class Mission_Table : Table<MissionInfo>, IDisposable
@@ -245,7 +375,50 @@ public static class CosmicTables
             _table = table;
             Flags = ImGuiTableColumnFlags.NoHide | ImGuiTableColumnFlags.NoResize;
             SetFlags(ItemFilter.Enabled, ItemFilter.Disabled);
-            SetNames("Enabled", "Disabled");
+            SetNames(T("Enabled"), T("Disabled"));
+        }
+
+        public override bool DrawFilter()
+        {
+            using var id = ImRaii.PushId(FilterLabel);
+            using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
+            ImGui.SetNextItemWidth(-Table.ArrowWidth * ImGuiHelpers.GlobalScale);
+            var all = FilterValue.HasFlag(AllFlags);
+            using var color = ImRaii.PushColor(ImGuiCol.FrameBg, 0x803030A0, !all);
+            using var combo = ImRaii.Combo(string.Empty, Label, ComboFlags);
+
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+            {
+                SetValue(AllFlags, true);
+                return true;
+            }
+
+            if (!all && ImGui.IsItemHovered())
+                ImGui.SetTooltip(T("Right-click to clear filters."));
+
+            if (!combo)
+                return false;
+
+            color.Pop();
+
+            var ret = false;
+            if (ImGui.Checkbox(T("Enable All"), ref all))
+            {
+                SetValue(AllFlags, all);
+                ret = true;
+            }
+
+            using var indent = ImRaii.PushIndent(10f);
+            for (var i = 0; i < Names.Length; ++i)
+            {
+                if (!DrawCheckbox(i, out var enabled))
+                    continue;
+
+                SetValue(Values[i], enabled);
+                ret = true;
+            }
+
+            return ret;
         }
 
         public override int Compare(MissionInfo lhs, MissionInfo rhs)
@@ -361,7 +534,7 @@ public static class CosmicTables
                 ImGui.SameLine();
                 if (ImGuiEx.IconButton(FontAwesomeIcon.FlagCheckered, $"CriticalFlag_{mission.Id}"))
                 {
-                    Utils.SetGatheringRing(mission.SheetInfo.TerritoryId, criticalInfo.X, criticalInfo.Y, criticalInfo.Radius, $"Red Alert: {mission.SheetInfo.Name}", criticalInfo.IconId);
+                    Utils.SetGatheringRing(mission.SheetInfo.TerritoryId, criticalInfo.X, criticalInfo.Y, criticalInfo.Radius, T("Red Alert: {0}", mission.SheetInfo.Name), criticalInfo.IconId);
                 }
 #if DEBUG
                 if (ImGui.IsItemHovered())
@@ -401,7 +574,7 @@ public static class CosmicTables
         public CompletionColumn()
         {
             SetFlags(ItemFilter.NotCompleted, ItemFilter.Completed, ItemFilter.Gold);
-            SetNames("Not Completed", "Completed", "Gold");
+            SetNames(T("Not Completed"), T("Completed"), T("Gold"));
         }
         public override float Width => Math.Max(
             ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
@@ -523,7 +696,7 @@ public static class CosmicTables
         {
             Flags = ImGuiTableColumnFlags.NoResize;
             SetFlags(ItemFilter.HasTokens, ItemFilter.NoTokens);
-            SetNames("Has Tokens", "No Tokens");
+            SetNames(T("Has Tokens"), T("No Tokens"));
         }
         public override float Width => Math.Max(
             ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
@@ -546,7 +719,7 @@ public static class CosmicTables
         {
             Flags = ImGuiTableColumnFlags.NoResize;
             SetFlags(ItemFilter.HasI, ItemFilter.HasII, ItemFilter.HasIII, ItemFilter.HasIV, ItemFilter.HasV, ItemFilter.HasVI, ItemFilter.HasVII);
-            SetNames("I", "II", "III", "IV", "V", "VI", "VII");
+            SetNames(T("I"), T("II"), T("III"), T("IV"), T("V"), T("VI"), T("VII"));
         }
 
         public override int Compare(MissionInfo lhs, MissionInfo rhs)
@@ -656,7 +829,7 @@ public static class CosmicTables
             _tier = tier;
             _flag = flag;
             SetFlags(ItemFilter.HasI, ItemFilter.HasII, ItemFilter.HasIII, ItemFilter.HasIV, ItemFilter.HasV, ItemFilter.HasVI, ItemFilter.HasVII);
-            SetNames("I", "II", "III", "IV", "V", "VI", "VII");
+            SetNames(T("I"), T("II"), T("III"), T("IV"), T("V"), T("VI"), T("VII"));
         }
         public override float Width => Math.Max(
             ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
@@ -716,7 +889,7 @@ public static class CosmicTables
         {
             Flags = ImGuiTableColumnFlags.NoResize;
             SetFlags(MissionFilter.RedAlert, MissionFilter.Sequence, MissionFilter.Weather, MissionFilter.Timed, MissionFilter.ARank, MissionFilter.BRank, MissionFilter.CRank, MissionFilter.DRank, MissionFilter.Master);
-            SetNames("Red Alert", "Sequence", "Weather", "Timed", "A Rank", "B Rank", "C Rank", "D Rank", "Master");
+            SetNames(T("Red Alert"), T("Sequence"), T("Weather"), T("Timed"), T("A Rank"), T("B Rank"), T("C Rank"), T("D Rank"), T("Master"));
         }
         public override float Width => Math.Max(ImGui.CalcTextSize(Label + "XX").X + ImGui.GetStyle().CellPadding.X * 2, ImGui.GetFrameHeight() + ImGui.GetStyle().CellPadding.X * 2);
 
@@ -853,9 +1026,9 @@ public static class CosmicTables
         {
             return state switch
             {
-                TurninState.SequenceGold => "Gold Sequence",
-                TurninState.Master_Score => "Master",
-                _ => state.ToString()
+                TurninState.SequenceGold => T("Gold Sequence"),
+                TurninState.Master_Score => T("Master"),
+                _ => T(state.ToString())
             };
         }
 
@@ -963,7 +1136,7 @@ public static class CosmicTables
         {
             Flags = ImGuiTableColumnFlags.NoResize;
             SetFlags(ItemFilter.TurninGold, ItemFilter.TurninSilver, ItemFilter.TurninBronze);
-            SetNames("Gold", "Silver", "Bronze");
+            SetNames(T("Gold"), T("Silver"), T("Bronze"));
         }
         public override float Width
         {
@@ -997,7 +1170,7 @@ public static class CosmicTables
             if (item.SheetInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining) || item.SheetInfo.IsCritical)
             {
 
-                ImGuiUtil.Center("Auto");
+                ImGuiUtil.Center(T("Auto"));
             }
             else if (item.SheetInfo.IsMaster)
             {
@@ -1155,7 +1328,7 @@ public static class CosmicTables
             Flags = ImGuiTableColumnFlags.NoResize;
             var moons = CosmicMoonRegistry.All;
             SetFlags(moons.Select(m => m.PlanetFilter).ToArray());
-            SetNames(moons.Select(m => m.DisplayName).ToArray());
+            SetNames(moons.Select(m => T(m.DisplayName)).ToArray());
         }
         public override float Width => Math.Max(
             ImGui.CalcTextSize(Label + "X").X + ImGui.GetStyle().CellPadding.X * 2,
@@ -1316,7 +1489,7 @@ public static class CosmicTables
 
                 if (!collectable)
                 {
-                    string profileName = "???";
+                    string profileName = T("Unknown");
                     if (C.MissionConfig.TryGetValue(item.Id, out var config))
                     {
                         if (C.GatherProfiles.TryGetValue(config.GProfileId, out var profileSetting))
@@ -1335,7 +1508,7 @@ public static class CosmicTables
                         if (ImGui.BeginPopup($"Select Gather Profile"))
                         {
                             ImGui.Text(T("Mission: [{0}] {1}", item.Id, item.SheetInfo.Name));
-                            ImGui.Text(T("Currently Selected: {0}", T(profileName)));
+                            ImGui.Text(T("Currently Selected: {0}", profileName));
                             ImGui.Separator();
 
                             foreach (var profile in C.GatherProfiles)
@@ -1343,7 +1516,7 @@ public static class CosmicTables
                                 var id = profile.Key;
                                 bool profileSelected = config.GProfileId == id;
                                 ImGui.PushID($"{id}_{profile.Value.Name}");
-                                if (ImGui.RadioButton(profile.Value.Name, profileSelected))
+                                if (ImGui.RadioButton(T(profile.Value.Name), profileSelected))
                                 {
                                     config.GProfileId = id;
                                     C.Save();
@@ -1366,12 +1539,13 @@ public static class CosmicTables
                 {
                     var job = item.SheetInfo.Jobs.Where(x => CosmicHelper.GatheringJobList.Contains(x)).First();
                     var icon = CosmicHelper.ClassInfoDict[job].JobIcon;
+                    const string fishingProfilePopup = "Select Fishing Profile";
 
                     if (ImGui_Ice.ImageButtonWithText(icon.GetWrapOrEmpty(), T("Fishing Profile"), $"{item.Id}_{item.SheetInfo.Name}_FSH", jobIconSize))
                     {
-                        ImGui.OpenPopup("Select Fishing Profile");
+                        ImGui.OpenPopup(fishingProfilePopup);
                     }
-                    if (ImGui.BeginPopup(T("Select Fishing Profile")))
+                    if (ImGui.BeginPopup(fishingProfilePopup))
                     {
                         ImGui.Text(T("Fishing profile: {0}", sheetInfo.Name));
                         ImGui.Separator();
@@ -1421,7 +1595,7 @@ public static class CosmicTables
         {
             Flags = ImGuiTableColumnFlags.NoResize;
             SetFlags(ItemFilter.BestSPM, ItemFilter.Sequence, ItemFilter.Unlock, ItemFilter.NoNotes);
-            SetNames("Best Score Per Minute", "Sequence", "Needs Unlocked", "No Notes");
+            SetNames(T("Best Score Per Minute"), T("Sequence"), T("Needs Unlocked"), T("No Notes"));
         }
         public override float Width => Math.Max(
             ImGui.CalcTextSize(Label + "xxx").X + ImGui.GetStyle().CellPadding.X * 2,
@@ -1825,7 +1999,7 @@ public static class CosmicTables
             if (item.SheetInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining) || item.SheetInfo.IsCritical)
             {
 
-                ImGuiUtil.Center("Auto");
+                ImGuiUtil.Center(T("Auto"));
             }
             else if (item.SheetInfo.IsMaster)
             {
@@ -2033,7 +2207,7 @@ public static class CosmicTables
 
                 if (!collectable)
                 {
-                    string profileName = "???";
+                    string profileName = T("Unknown");
                     if (C.MissionConfig.TryGetValue(item.Id, out var config))
                     {
                         if (C.GatherProfiles.TryGetValue(config.GProfileId, out var profileSetting))
@@ -2052,7 +2226,7 @@ public static class CosmicTables
                         if (ImGui.BeginPopup($"Select Gather Profile"))
                         {
                             ImGui.Text(T("Mission: [{0}] {1}", item.Id, item.SheetInfo.Name));
-                            ImGui.Text(T("Currently Selected: {0}", T(profileName)));
+                            ImGui.Text(T("Currently Selected: {0}", profileName));
                             ImGui.Separator();
 
                             foreach (var profile in C.GatherProfiles)
@@ -2060,7 +2234,7 @@ public static class CosmicTables
                                 var id = profile.Key;
                                 bool profileSelected = config.GProfileId == id;
                                 ImGui.PushID($"{id}_{profile.Value.Name}");
-                                if (ImGui.RadioButton(profile.Value.Name, profileSelected))
+                                if (ImGui.RadioButton(T(profile.Value.Name), profileSelected))
                                 {
                                     config.GProfileId = id;
                                     C.Save();
@@ -2083,12 +2257,13 @@ public static class CosmicTables
                 {
                     var job = item.SheetInfo.Jobs.Where(x => CosmicHelper.GatheringJobList.Contains(x)).First();
                     var icon = CosmicHelper.ClassInfoDict[job].JobIcon;
+                    const string fishingProfilePopup = "Select Fishing Profile";
 
                     if (ImGui_Ice.ImageButtonWithText(icon.GetWrapOrEmpty(), T("Fishing Profile"), $"{item.Id}_{item.SheetInfo.Name}", jobIconSize))
                     {
-                        ImGui.OpenPopup("Select Fishing Profile");
+                        ImGui.OpenPopup(fishingProfilePopup);
                     }
-                    if (ImGui.BeginPopup(T("Select Fishing Profile")))
+                    if (ImGui.BeginPopup(fishingProfilePopup))
                     {
                         ImGui.Text(T("Fishing profile: {0}", sheetInfo.Name));
                         ImGui.Separator();

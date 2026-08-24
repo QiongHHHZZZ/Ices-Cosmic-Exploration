@@ -106,6 +106,8 @@ public sealed partial class ICE : IDalamudPlugin
             C.SelectedTab = WindowSelection.MiscSettings;
         };
 
+        Svc.ClientState.TerritoryChanged += OnTerritoryChange;
+
         // timer stuff
         MissionTimer = new MissionTimer();
 
@@ -177,6 +179,15 @@ public sealed partial class ICE : IDalamudPlugin
         }
     }
 
+    private void OnTerritoryChange(uint TerritoryId)
+    {
+        bool isInCosmic = PlayerHelper.IsInCosmicZone();
+        if (isInCosmic && !overlayWindow.IsOpen && C.ShowOverlay)
+            P.overlayWindow.IsOpen = true;
+        else if (!isInCosmic && overlayWindow.IsOpen)
+            P.overlayWindow.IsOpen = false;
+    }
+
     private void OnDraw()
     {
         if (PlayerHelper.IsInCosmicZone() && Player.Available)
@@ -190,6 +201,7 @@ public sealed partial class ICE : IDalamudPlugin
         GenericHelpers.Safe(() => Svc.Framework.Update -= Tick);
         GenericHelpers.Safe(() => Svc.PluginInterface.UiBuilder.Draw -= OnDraw);
         GenericHelpers.Safe(() => Svc.PluginInterface.UiBuilder.Draw -= windowSystem.Draw);
+        GenericHelpers.Safe(() => Svc.ClientState.TerritoryChanged -= OnTerritoryChange);
         GenericHelpers.Safe(TextAdvancedManager.UnlockTA);
         GenericHelpers.Safe(YesAlreadyManager.Unlock);
         GenericHelpers.Safe(PictoService.Dispose);

@@ -3,14 +3,9 @@ using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using ICE.Ui.MainUi.ModeSelect_Modes;
-using ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
-using OtterGui;
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -271,7 +266,7 @@ namespace ICE.Ui
 
                 RelicInfo();
 
-                ScoreInfo(TurninState.Gold, "Class Score", mission.ClassScore);
+                ScoreInfo(TurninState.Gold, T("Class Score"), mission.ClassScore);
 
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
@@ -289,9 +284,9 @@ namespace ICE.Ui
                 ImGui.TableNextColumn();
                 ImGui_Ice.CompletionStatusIcon(mission);
 
-                ScoreInfo(TurninState.Bronze, "Bronze Requirement", mission.BronzeScore);
-                ScoreInfo(TurninState.Silver, "Silver Requirement", mission.SilverScore);
-                ScoreInfo(TurninState.Gold, "Gold Requirement", mission.GoldScore);
+                ScoreInfo(TurninState.Bronze, T("Bronze Requirement"), mission.BronzeScore);
+                ScoreInfo(TurninState.Silver, T("Silver Requirement"), mission.SilverScore);
+                ScoreInfo(TurninState.Gold, T("Gold Requirement"), mission.GoldScore);
 
                 if (mission.MarkerId != 0)
                 {
@@ -342,6 +337,7 @@ namespace ICE.Ui
                 {
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
+                    ImGui.AlignTextToFramePadding();
                     ImGui.Text(T("Supplied Items"));
 
                     ImGui.TableNextColumn();
@@ -367,6 +363,7 @@ namespace ICE.Ui
 
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
+                ImGui.AlignTextToFramePadding();
                 ImGui.Text(T("Notes [Hover over]"));
 
                 ImGui.TableNextColumn();
@@ -440,6 +437,14 @@ namespace ICE.Ui
                             ImGui.Text($"[{mission}] - {CosmicHelper.SheetMissionDict[missionUnlock].Name}");
                         }
                         ImGui.EndTooltip();
+                    }
+                }
+                if (CosmicMissionLists.QuickLevelList.Contains(SelectedMission))
+                {
+                    ImGuiEx.IconButton(FontAwesomeIcon.Leaf);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip(T("Leveling mode mission"));
                     }
                 }
 

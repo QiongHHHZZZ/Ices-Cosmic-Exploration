@@ -146,6 +146,11 @@ public sealed partial class ICE
             {
                 // Purely a crafting job. Expert Recipes checked later.
                 attributes = MissionAttributes.Craft;
+                if (missionToDo.WKSMissionText.RowId is 100 or 147)
+                {
+                    attributes |= MissionAttributes.Collectables;
+                }
+
             }
             else
             {

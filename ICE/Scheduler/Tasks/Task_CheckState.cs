@@ -12,6 +12,7 @@ namespace ICE.Scheduler.Tasks
     {
         public static void Enqueue()
         {
+
             P.TaskManager.Enqueue(() => CheckStateV2(), "Checking to see what state we should be in");
         }
 
@@ -36,10 +37,12 @@ namespace ICE.Scheduler.Tasks
                 }
             }
 
-            string tag = "[Task: Check State]";
+            string tag = "Task: Check State";
 
             IceLogging.Verbose("Updating the mission completion status", tag);
             CosmicHelper.Update_MissionCompletion();
+
+            IceLogging.Verbose("We've started fresh from start (or atleast was in a state to start). So we're going to see where we need to go from here", tag);
 
             var currentMode = C.SelectedMode;
             var currentMissionId = CosmicHelper.CurrentLunarMission;
@@ -520,6 +523,8 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "Task Check State: Hub Activity Check";
 
+            IceLogging.Verbose("Starting Hub Activity Checks", tag);
+
             var territoryId = Player.Territory.RowId;
             var relicProgress = CosmicHelper.Cosmic_ClassInfo();
 
@@ -575,6 +580,7 @@ namespace ICE.Scheduler.Tasks
 
             if (spiritbonded)
             {
+                IceLogging.Verbose("We were told we have spiritbond, so going to extract those", tag);
                 SchedulerMain.State = IceState.Spiritbond;
                 return true;
             }

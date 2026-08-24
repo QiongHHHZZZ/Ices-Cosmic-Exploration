@@ -25,6 +25,7 @@ internal static unsafe class PlayerHandlers
     internal static unsafe void Tick()
     {
         var playerTerritory = Player.Territory.RowId;
+        /*
         if (lastTerritory != playerTerritory)
         {
             lastTerritory = playerTerritory;
@@ -34,6 +35,7 @@ internal static unsafe class PlayerHandlers
                     P.overlayWindow.IsOpen = true;
             }
         }
+        */
 
         if (C.MoonSprint 
             && PlayerHelper.IsInCosmicZone()

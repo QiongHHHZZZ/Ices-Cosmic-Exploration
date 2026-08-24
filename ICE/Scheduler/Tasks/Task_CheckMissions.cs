@@ -549,8 +549,7 @@ namespace ICE.Scheduler.Tasks
                     $"Provisional: {provisional}", tag);
             }
 
-            if (CosmicHandler.CanQueryMissionsWithoutUi()
-                || (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var missionInfo) && missionInfo.IsAddonReady))
+            if (CosmicHandler.CanQueryMissionsWithoutUi() || (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var missionInfo) && missionInfo.IsAddonReady))
             {
                 var basicMissionList = CosmicHandler.Basic_AvailableMissions();
                 var specialMissionList = CosmicHandler.Provisional_AvailableMissions();
@@ -560,10 +559,7 @@ namespace ICE.Scheduler.Tasks
 
                 var job = Goldjob != 0 ? Goldjob : Mission_Settings.SelectedJob;
 
-                // Tool Mastery missions live on their own category tab (3); everything else is Basic (0).
-                byte categoryTab = type is MissionTypes.ToolMastery ? CosmicHandler.ToolMasteryTab : (byte)0;
-
-                if (CorrectJobTab(job, categoryTab))
+                if (CorrectJobTab(job))
                 {
                     if (mode == ModeSelect.LevelMode)
                     {
@@ -770,11 +766,20 @@ namespace ICE.Scheduler.Tasks
                             {
                                 if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var sheetInfo) && (basicMissionList.Contains(missionId) || specialMissionList.Contains(missionId)))
                                 {
-                                    if (jobLv < sheetInfo.Level)
+                                    bool allLeveled = true;
+                                    foreach (var classes in sheetInfo.Jobs)
+                                    {
+                                        var classLv = Player.GetLevel((Job)classes);
+                                        IceLogging.Verbose($"{classes}: Lv: {classLv}");
+                                        allLeveled &= classLv >= sheetInfo.Level;
+                                    }
+
+                                    if (!allLeveled)
                                     {
                                         IceLogging.Verbose($"Skipping Mission: {missionId} due to not high enough lv [Player: {jobLv} | Mission: {sheetInfo.Level}].\n");
                                         continue;
                                     }
+
 
                                     float score = 0;
                                     foreach (var reward in sheetInfo.RelicXpInfo)
@@ -918,6 +923,12 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Info($"Next mission rank {nextMission.Rank} is below EX+, extracting materia first");
                     P.TaskManager.Enqueue(() => Task_Spiritbond.ExtractMateria(), "Extracting materia before next mission");
                 }
+            }
+
+            if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var sheetInfo))
+            {
+                bool isCollectable = sheetInfo.Attributes.HasFlag(MissionAttributes.Collectables);
+
             }
 
             P.TaskManager.EnqueueMulti
@@ -1210,31 +1221,34 @@ namespace ICE.Scheduler.Tasks
                     List<uint> viableMissions = new();
                     viableMissions.Add(missionId);
 
-                    var job = CosmicHelper.SheetMissionDict[missionId].Jobs.First();
-
-                    // TODO: Need to just clean this up later, the function to directly grab it is no longer necessary
-                    // Tool Mastery missions are only readable/grabbable from their own tab (3).
-                    byte categoryTab = CosmicHelper.SheetMissionDict[missionId].IsMaster ? CosmicHandler.ToolMasteryTab : (byte)0;
-
-                    if (CorrectJobTab(job, categoryTab))
+                    var sheetInfo = CosmicHelper.SheetMissionDict[missionId];
+                    var allmissions = CosmicHandler.All_AvailableMissions();
+                    if (allmissions.Contains(missionId))
                     {
-                        IceLogging.Verbose("On the correct tab, we're going to see the total mission count", tag);
-                        var allmissions = CosmicHandler.All_AvailableMissions();
-                        IceLogging.Verbose($"All mission count: {allmissions.Count()} | Goal: {missionId}");
-                        foreach (var mission in allmissions.OrderBy(x => CosmicHelper.SheetMissionDict[x].Rank))
+                        if (EzThrottler.Throttle("Selecting Mission", 1000))
+                            InitiateMission(missionId);
+                    }
+                    else
+                    {
+                        if (EzThrottler.Throttle("Reporting Current Missions"))
                         {
-                            var sheetInfo = CosmicHelper.SheetMissionDict[mission];
-                            IceLogging.Verbose($"ID: [{mission}] | Rank: [{sheetInfo.Rank}]", tag, true);
-                        }
+                            IceLogging.Verbose("We couldn't find the mission? So we're reporting back all visible missions currently", tag);
+                            foreach (var mission in allmissions.OrderBy(x => CosmicHelper.SheetMissionDict[x].Rank))
+                            {
+                                var allMissionInfo = CosmicHelper.SheetMissionDict[mission];
+                                string jobs = string.Join(", ", allMissionInfo.Jobs);
+                                IceLogging.Verbose($"Job: [{jobs}] | ID: [{mission}] [{allMissionInfo.Name}] | Rank: [{allMissionInfo.Rank}]", tag);
+                            }
 
+                            if (sheetInfo.Jobs.Count > 1)
+                            {
+                                if (EzThrottler.Throttle("Swapping tabs"))
+                                {
+                                    IceLogging.Verbose("We seem to be on a dual class mission, and it also seems like we're on the gathering class... and missing it from that list. So we're just gonna swap", tag);
+                                    CorrectJobTab(sheetInfo.Jobs[0]);
+                                }
+                            }
 
-                        if (allmissions.Contains(missionId))
-                        {
-                            if (EzThrottler.Throttle("Selecting Mission", 1000))
-                                InitiateMission(missionId);
-                        }
-                        else
-                        {
                             if (FrameThrottler.Throttle("Counter added", 8))
                                 retryCheck += 1;
 
@@ -1247,9 +1261,7 @@ namespace ICE.Scheduler.Tasks
                             }
                         }
                     }
-                    else
-                    {
-                    }
+
                 }
                 else
                 {

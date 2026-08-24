@@ -7,13 +7,8 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.STD;
 using ICE.Utilities.Cosmic_Helper;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using TerraFX.Interop.Windows;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentWKSMission;
 

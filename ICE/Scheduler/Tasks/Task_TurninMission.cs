@@ -301,7 +301,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         private static unsafe void ReportMission()
         {
             if (EzThrottler.Throttle("Previous Score Set"))
@@ -310,7 +309,6 @@ namespace ICE.Scheduler.Tasks
             var WKSInstance = WKSManager.Instance();
             WKSInstance->MissionModule->ReportMission();
         }
-
         public static bool? JobSwapCheck()
         {
             if (CosmicHelper.SheetMissionDict[PreviousMissionId].Jobs.Count == 2)
@@ -332,7 +330,6 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
         }
-
         public static unsafe bool? GoldCheck()
         {
             var managerPtr = WKSManager.Instance();
@@ -394,7 +391,6 @@ namespace ICE.Scheduler.Tasks
 
             return true;
         }
-
         public static unsafe bool? CommandCheck()
         {
             string tag = "Turnin Mission: Command Check";
@@ -427,14 +423,12 @@ namespace ICE.Scheduler.Tasks
             }
             return true;
         }
-
         public static bool? ExecuteCommand(string command)
         {
             Svc.Commands.ProcessCommand(command);
             IceLogging.Info($"Command has been processed: {command}", "Turnin Mission: Execute Command");
             return true;
         }
-
         public static unsafe int ScoreCheck()
         {
             var wksManager = WKSManager.Instance();
@@ -444,7 +438,6 @@ namespace ICE.Scheduler.Tasks
             var scores = wksManager->State.Scores;
             return scores[(int)(uint)Player.Job - 8];
         }
-
         public static void UpdateScoreInfo()
         {
             var multiplier = 1;
@@ -478,7 +471,6 @@ namespace ICE.Scheduler.Tasks
             }
             PreviousScore = 0;
         }
-
         public static bool? ClearAllPostTask()
         {
             P.TaskManager.Tasks.Clear();

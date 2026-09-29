@@ -226,13 +226,13 @@ public static partial class SettingsUi
     {
         return new SettingEntry
         {
-            Label = label,
+            Label = T(label),
             Category = category,
             Keywords = keywords,
             Draw = () =>
             {
                 var value = get();
-                var changed = ImGui.Checkbox(label, ref value);
+                var changed = ImGui.Checkbox(T(label), ref value);
 
                 if (tooltip != null && ImGui.IsItemHovered())
                     ImGui.SetTooltip(tooltip);

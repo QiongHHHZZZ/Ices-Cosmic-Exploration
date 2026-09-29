@@ -15,7 +15,7 @@ public static partial class SettingsUi
 
     private static readonly SettingEntry Debug_Forecast = new()
     {
-        Label = "Weather Forecast",
+        Label = T("Weather Forecast"),
         Category = DebugCategory,
         Keywords = new[] { "Weather", "Forecast", "Hub", "Refresh", "Echo", "Chat" },
         Draw = () =>

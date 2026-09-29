@@ -1645,6 +1645,20 @@ internal static class L10n
         ["Tokens group"] = "代币:",
         ["Complete group"] = "完成:",
         ["Search group"] = "搜索:",
+
+        // Settings categories
+        ["Notification Master"] = "通知管理",
+        ["Debug"] = "调试",
+
+        // Notification Master settings
+        ["Flash the icon on your bar"] = "在任务栏上闪烁图标",
+        ["Send a toast message when stopped"] = "停止时发送弹出提示",
+        ["Bring game to foreground"] = "将游戏置于前台",
+        ["Need to install Notification Master"] = "需要安装 Notification Master",
+        ["Weather Forecast"] = "天气预报",
+        ["Notification Master: Foreground"] = "通知管理：前台",
+        ["Notification Master: Toast"] = "通知管理：弹出提示",
+        ["Notification Master: Flash"] = "通知管理：闪烁图标",
     };
 
     internal static string T(string key)

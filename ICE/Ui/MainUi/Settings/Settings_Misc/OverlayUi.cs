@@ -12,17 +12,17 @@ public static partial class SettingsUi
 
     private static readonly Dictionary<uint, string> OverlayClassNames = new()
     {
-        [8] = "CRP",
-        [9] = "BSM",
-        [10] = "ARM",
-        [11] = "GSM",
-        [12] = "LTW",
-        [13] = "WVR",
-        [14] = "ALC",
-        [15] = "CUL",
-        [16] = "MIN",
-        [17] = "BTN",
-        [18] = "FSH",
+        [8] = "刻木匠",
+        [9] = "锻铁匠",
+        [10] = "铸甲匠",
+        [11] = "雕金匠",
+        [12] = "革匠",
+        [13] = "裁缝",
+        [14] = "炼金术士",
+        [15] = "烹调师",
+        [16] = "采矿工",
+        [17] = "园艺工",
+        [18] = "捕鱼人",
     };
 
     private static readonly SettingEntry Overlay_AutoOpen = new()

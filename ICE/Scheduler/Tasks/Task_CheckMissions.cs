@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Localization.L10n;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -570,8 +571,8 @@ namespace ICE.Scheduler.Tasks
 
                         if (levelingInfo.Attributes.HasFlag(MissionAttributes.Collectables) && !QuestCheck.CollectablesUnlocked())
                         {
-                            string warningText = "We are missing the ability to do collectables... and we can't continue on without them. \n" +
-                                "Please go to Mor Dhona and complete the quest: No longer a collectable";
+                            string warningText = T("We are missing the ability to do collectables... and we can't continue on without them. \n") +
+                                T("Please go to Mor Dhona and complete the quest: No longer a collectable");
 
                             IceLogging.Info(warningText, tag);
                             Svc.Chat.Print(new()

@@ -1659,6 +1659,12 @@ internal static class L10n
         ["Notification Master: Foreground"] = "通知管理：前台",
         ["Notification Master: Toast"] = "通知管理：弹出提示",
         ["Notification Master: Flash"] = "通知管理：闪烁图标",
+
+        // Collectables warning
+        ["HEY! YOU DON'T HAVE COLLECTABLES UNLOCKED. YOU CAN'T DO THESE MISSIONS"] = "嘿！你尚未解锁收藏品功能，无法执行这些任务。",
+        ["Go to Mor Dhona and accept the quest \"No Longer a Collectable\""] = "前往摩杜纳并接受任务【收藏品不再是收藏品】。",
+        ["We are missing the ability to do collectables... and we can't continue on without them. \n"] = "我们缺少收藏品能力，没有它无法继续。\n",
+        ["Please go to Mor Dhona and complete the quest: No longer a collectable"] = "请前往摩杜纳完成任务：不再是收藏品",
     };
 
     internal static string T(string key)

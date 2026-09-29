@@ -516,8 +516,8 @@ public static class CosmicTables
                     {
                         if (tooltip.Alive)
                         {
-                            ImGui.Text("HEY! YOU DON'T HAVE COLLECTABLES UNLOCKED. YOU CAN'T DO THESE MISSIONS");
-                            ImGui.Text("Go to Mor Dhona and accept the quest \"No Longer a Collectable\"");
+                            ImGui.Text(T("HEY! YOU DON'T HAVE COLLECTABLES UNLOCKED. YOU CAN'T DO THESE MISSIONS"));
+                            ImGui.Text(T("Go to Mor Dhona and accept the quest \"No Longer a Collectable\""));
                         }
                     }
                 }

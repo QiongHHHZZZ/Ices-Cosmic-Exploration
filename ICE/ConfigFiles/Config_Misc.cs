@@ -51,4 +51,8 @@ public partial class Config
     // And some of these are just for memes
     public bool CrazyTaxiArrow { get; set; } = false;
     public bool PlaceboCheckbox { get; set; } = false;
+
+    public bool Notification_Foreground { get; set; } = false;
+    public bool Notification_Toast { get; set; } = false;
+    public bool Notification_FlashTaskbar { get; set; } = false;
 }

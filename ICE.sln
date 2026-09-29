@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtterGui", "OtterGui\OtterG
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glamourer.Api", "Glamourer.Api\Glamourer.Api.csproj", "{8C7FE3F5-06BE-8D99-EA44-47B7A8097CF8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationMasterAPI", "NotificationMasterAPI\NotificationMasterAPI\NotificationMasterAPI.csproj", "{9804E776-FA8B-4871-ED49-FAB8E7332BE0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -32,6 +34,10 @@ Global
 		{8C7FE3F5-06BE-8D99-EA44-47B7A8097CF8}.Debug|x64.Build.0 = Debug|x64
 		{8C7FE3F5-06BE-8D99-EA44-47B7A8097CF8}.Release|x64.ActiveCfg = Release|x64
 		{8C7FE3F5-06BE-8D99-EA44-47B7A8097CF8}.Release|x64.Build.0 = Release|x64
+		{9804E776-FA8B-4871-ED49-FAB8E7332BE0}.Debug|x64.ActiveCfg = Debug|x64
+		{9804E776-FA8B-4871-ED49-FAB8E7332BE0}.Debug|x64.Build.0 = Debug|x64
+		{9804E776-FA8B-4871-ED49-FAB8E7332BE0}.Release|x64.ActiveCfg = Release|x64
+		{9804E776-FA8B-4871-ED49-FAB8E7332BE0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,3 @@
-using ECommons.Automation.NeoTaskManager;
 using ECommons.GameHelpers;
 using ICE.Utilities.Cosmic_Helper;
 using static ICE.Enums.IceState;
@@ -19,8 +18,8 @@ namespace ICE.Scheduler
         internal static bool DisablePlugin()
         {
             IceLogging.Debug("Stopping the plugin state", "[Schedular - Disable Plugin]");
-            P.TaskManager.Abort();
             State = IceState.Idle;
+            P.TaskManager.Abort();
             GenericManager.RestorePandoraStates();
             if (P.Navmesh.Installed)
             {

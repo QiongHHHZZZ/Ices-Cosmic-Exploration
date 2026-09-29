@@ -164,7 +164,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.SetNextItemWidth(200);
                     if (ImGui.BeginCombo("##Playlist Options", optionName))
                     {
-                        foreach (PlaylistOptions option in Enum.GetValues<PlaylistOptions>())
+                        foreach (PlaylistOptions option in PlaylistOptionsOrder)
                         {
                             if (option == PlaylistOptions.GoldClassMissions)
                                 continue;
@@ -640,7 +640,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         {
                             foreach (ModeSelect option in Enum.GetValues(typeof(ModeSelect)))
                             {
-                                if (option == ModeSelect.AgendaMode)
+                                if (option == ModeSelect.AgendaMode || option == ModeSelect.MissionGoldMode)
                                     continue;
                                 else
                                 {

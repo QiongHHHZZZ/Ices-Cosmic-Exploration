@@ -191,6 +191,8 @@ namespace ICE.IPC
             if (CraftSettings.TryGetValue(recipeId, out var cached) && ArtisanSettingsEqual(cached, effectiveSettings))
                 return;
 
+            LogArtisanSettingsChange(recipeId, missionId, isExpert, isLeveling, cached, effectiveSettings);
+
             AssignArtisanRecipe(recipeId, effectiveSettings, isExpert);
             CraftSettings[recipeId] = new ArtisanSettings
             {
@@ -207,6 +209,39 @@ namespace ICE.IPC
                 MinStepsForMiracle = effectiveSettings.MinStepsForMiracle,
                 ExpertProfileId = effectiveSettings.ExpertProfileId,
             };
+        }
+
+        private static void LogArtisanSettingsChange(ushort recipeId, uint missionId, bool isExpert, bool isLeveling, ArtisanSettings? previous, ArtisanSettings updated)
+        {
+            var diffs = new List<string>();
+
+            void Diff<T>(string name, T oldVal, T newVal)
+            {
+                if (!EqualityComparer<T>.Default.Equals(oldVal, newVal))
+                    diffs.Add($"{name}: {oldVal} -> {newVal}");
+            }
+
+            if (previous is null)
+            {
+                diffs.Add("initial assignment");
+            }
+            else
+            {
+                Diff(nameof(ArtisanSettings.UseGlobal), previous.UseGlobal, updated.UseGlobal);
+                Diff(nameof(ArtisanSettings.FoodId), previous.FoodId, updated.FoodId);
+                Diff(nameof(ArtisanSettings.FoodHQ), previous.FoodHQ, updated.FoodHQ);
+                Diff(nameof(ArtisanSettings.PotionId), previous.PotionId, updated.PotionId);
+                Diff(nameof(ArtisanSettings.PotionHQ), previous.PotionHQ, updated.PotionHQ);
+                Diff(nameof(ArtisanSettings.ManualId), previous.ManualId, updated.ManualId);
+                Diff(nameof(ArtisanSettings.SquadronManualId), previous.SquadronManualId, updated.SquadronManualId);
+                Diff(nameof(ArtisanSettings.ArtisanSolverType), previous.ArtisanSolverType, updated.ArtisanSolverType);
+                Diff(nameof(ArtisanSettings.MacroName), previous.MacroName, updated.MacroName);
+                Diff(nameof(ArtisanSettings.SkillUsageAmount), previous.SkillUsageAmount, updated.SkillUsageAmount);
+                Diff(nameof(ArtisanSettings.MinStepsForMiracle), previous.MinStepsForMiracle, updated.MinStepsForMiracle);
+                Diff(nameof(ArtisanSettings.ExpertProfileId), previous.ExpertProfileId, updated.ExpertProfileId);
+            }
+
+            IceLogging.Info($"[Artisan] recipeId = [{recipeId}] missionId = [{missionId}] isExpert = [{isExpert}] isLeveling = [{isLeveling}] | {string.Join(", ", diffs)}", "Artisan: IPC Applied");
         }
 
         public bool UpdatedArtisan()

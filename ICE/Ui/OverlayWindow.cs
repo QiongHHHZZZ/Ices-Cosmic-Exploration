@@ -4,6 +4,7 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ICE.Ui.MainUi;
 using ICE.Ui.MainUi.Settings;
+using ICE.Ui.MainUi.Settings.Settings_Misc;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
@@ -54,7 +55,7 @@ namespace ICE.Ui
         {
             if (ImGui.BeginPopup("OverlaySettingsPopup"))
             {
-                Misc_Settings.OverlaySettings();
+                SettingsUi.OverlaySettings();
                 ImGui.EndPopup();
             }
 

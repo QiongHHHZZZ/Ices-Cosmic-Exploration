@@ -7,15 +7,26 @@ namespace ICE.Utilities;
 
 public class QuestCheck
 {
-    public static unsafe bool CollectablesUnlocked()
+    public static bool CollectablesUnlocked()
+    {
+        ushort collectableMission = 2097;
+        return QuestCompleted(collectableMission);
+    }
+
+    public static bool ReductionUnlocked()
+    {
+        ushort reduceMission = 2095;
+        return QuestCompleted(reduceMission);
+    }
+
+    private static unsafe bool QuestCompleted(ushort questId)
     {
         var questManager = QuestManager.Instance();
         if (questManager == null)
             return false;
 
-        ushort collectableMission = 2095;
-        var missionId = questManager->GetQuestById(collectableMission);
-
-        return QuestManager.IsQuestComplete(collectableMission);
+        return QuestManager.IsQuestComplete(questId);
     }
+
+
 }

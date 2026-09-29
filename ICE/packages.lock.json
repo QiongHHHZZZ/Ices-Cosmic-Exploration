@@ -200,6 +200,9 @@
       "glamourer.api": {
         "type": "Project"
       },
+      "notificationmasterapi": {
+        "type": "Project"
+      },
       "ottergui": {
         "type": "Project",
         "dependencies": {

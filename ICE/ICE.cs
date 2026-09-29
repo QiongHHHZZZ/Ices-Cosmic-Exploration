@@ -48,6 +48,7 @@ public sealed partial class ICE : IDalamudPlugin
     internal AutoHookIPC AutoHook;
     internal IceCosmicExplorationIPC IceIpc;
     internal GlamourerIPC GlamourIpc;
+    internal NotificationMasterIPC NotificationIPC;
 
     public ICE(IDalamudPluginInterface pi)
     {
@@ -70,6 +71,7 @@ public sealed partial class ICE : IDalamudPlugin
         AutoHook = new();
         IceIpc = new();
         GlamourIpc = new(Svc.PluginInterface);
+        NotificationIPC = new();
 
         // all the windows
         windowSystem = new();

@@ -8,6 +8,7 @@ using ICE.Ui.MainUi;
 using ICE.Ui.MainUi.HelpFolder;
 using ICE.Ui.MainUi.ModeSelect_Modes;
 using ICE.Ui.MainUi.Settings;
+using ICE.Ui.MainUi.Settings.Settings_Misc;
 using ICE.Ui.MainUi.Settings.Settings_Table;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
@@ -95,7 +96,7 @@ namespace ICE.Ui
             [WindowSelection.GatheringProfiles] = () => GatherSettings.Draw(),
             [WindowSelection.MissionPriority] = () => Priority_Settings.Draw(),
             [WindowSelection.CharacterSettings] = () => Character_Settings.Draw(),
-            [WindowSelection.MiscSettings] = () => Misc_Settings.Draw(),
+            [WindowSelection.MiscSettings] = () => SettingsUi.Draw(),
             [WindowSelection.TravelSettings] = () => TravelSettings.Draw(),
 
             // Hub Activities

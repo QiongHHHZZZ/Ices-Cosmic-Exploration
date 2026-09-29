@@ -507,6 +507,23 @@ public static class CosmicTables
                     ImGui.EndTooltip();
                 }
             }
+            if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Collectables) && !QuestCheck.CollectablesUnlocked())
+            {
+                ImGuiEx.IconButton(FontAwesomeIcon.ExclamationTriangle, "Warning_Collectable");
+                if (ImGui.IsItemHovered())
+                {
+                    using (var tooltip = ImRaii.Tooltip())
+                    {
+                        if (tooltip.Alive)
+                        {
+                            ImGui.Text("HEY! YOU DON'T HAVE COLLECTABLES UNLOCKED. YOU CAN'T DO THESE MISSIONS");
+                            ImGui.Text("Go to Mor Dhona and accept the quest \"No Longer a Collectable\"");
+                        }
+                    }
+                }
+                ImGui.SameLine();
+            }
+
             if (ImGui.Button(mission.SheetInfo.Name))
             {
                 IceLogging.Verbose("Testing... if this fires off multiple times", "DEBUG TEST");

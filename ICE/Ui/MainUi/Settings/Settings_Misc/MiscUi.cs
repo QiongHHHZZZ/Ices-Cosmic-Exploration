@@ -33,8 +33,7 @@ public static partial class SettingsUi
 
             ImGui.SameLine();
             ImGuiEx.IconWithTooltip(FontAwesomeIcon.InfoCircle,
-                T("Automatically removes the Star Contributor visual effect (the glow you get for being a top contributor).\n") +
-                T("The buff restores itself when you re-enter the zone."));
+                T("Automatically removes the Star Contributor visual effect (the glow you get for being a top contributor).\nThe buff restores itself when you re-enter the zone."));
         }
     };
 

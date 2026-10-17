@@ -343,6 +343,22 @@ public static class CosmicTables
                         if (tooltip.Alive)
                         {
                             ImGui.Text("HEY! YOU DON'T HAVE COLLECTABLES UNLOCKED. YOU CAN'T DO THESE MISSIONS");
+                            ImGui.Text("Go to Idyllshire and accept the quest \"Inscrutable Taste\"");
+                        }
+                    }
+                }
+                ImGui.SameLine();
+            }
+            if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.ReducedItems) && !QuestCheck.ReductionUnlocked())
+            {
+                ImGuiEx.IconButton(FontAwesomeIcon.ExclamationTriangle, "Warning_Reduction");
+                if (ImGui.IsItemHovered())
+                {
+                    using (var tooltip = ImRaii.Tooltip())
+                    {
+                        if (tooltip.Alive)
+                        {
+                            ImGui.Text("HEY! YOU DON'T HAVE REDUCABLES UNLOCKED. YOU CAN'T DO THESE MISSIONS");
                             ImGui.Text("Go to Mor Dhona and accept the quest \"No Longer a Collectable\"");
                         }
                     }

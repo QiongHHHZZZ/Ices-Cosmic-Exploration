@@ -9,13 +9,13 @@ public class QuestCheck
 {
     public static bool CollectablesUnlocked()
     {
-        ushort collectableMission = 2097;
+        ushort collectableMission = 2095;
         return QuestCompleted(collectableMission);
     }
 
     public static bool ReductionUnlocked()
     {
-        ushort reduceMission = 2095;
+        ushort reduceMission = 2097;
         return QuestCompleted(reduceMission);
     }
 

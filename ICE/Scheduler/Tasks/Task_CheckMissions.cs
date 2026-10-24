@@ -1,4 +1,4 @@
-﻿using ECommons.GameHelpers;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ICE.Sounds;
@@ -572,7 +572,7 @@ namespace ICE.Scheduler.Tasks
                         if (levelingInfo.Attributes.HasFlag(MissionAttributes.Collectables) && !QuestCheck.CollectablesUnlocked())
                         {
                             string warningText = T("We are missing the ability to do collectables... and we can't continue on without them. \n") +
-                                T("Please go to Mor Dhona and complete the quest: No longer a collectable");
+                                T("Please go to Foundation and complete: Inscrutable Tastes");
 
                             IceLogging.Info(warningText, tag);
                             Svc.Chat.Print(new()
@@ -933,6 +933,7 @@ namespace ICE.Scheduler.Tasks
         private static void Insert_GrabMissionTask(uint missionId)
         {
             P.TaskManager.Tasks.Clear();
+            string tag = "Grab Mission";
 
             // Extract materia between missions if spiritbond is ready and next mission is not EX+
             if (C.SelfSpiritbondGather && Task_Spiritbond.IsSpiritbondReadyAny())
@@ -947,7 +948,37 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var sheetInfo))
             {
                 bool isCollectable = sheetInfo.Attributes.HasFlag(MissionAttributes.Collectables);
+                bool isReducable = sheetInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
 
+                if (isCollectable && !QuestCheck.CollectablesUnlocked())
+                {
+                    string warningText = "We are missing the ability to do collectables... and we can't continue on without them. \n" +
+                        "Please go to Foundation and complete the quest: Inscrutable Tastes";
+
+                    IceLogging.Info(warningText, tag);
+                    Svc.Chat.Print(new()
+                    {
+                        Message = warningText,
+                        Name = "I.C.E.",
+                        Type = Dalamud.Game.Text.XivChatType.Notice
+                    });
+                    SchedulerMain.DisablePlugin();
+                }
+
+                if (isReducable && !QuestCheck.ReductionUnlocked())
+                {
+                    string warningText = "We are missing the ability to do Reducables... and we can't continue on without them. \n" +
+                        "Please go to Mor Dhona and complete the quest: No longer a collectable";
+
+                    IceLogging.Info(warningText, tag);
+                    Svc.Chat.Print(new()
+                    {
+                        Message = warningText,
+                        Name = "I.C.E.",
+                        Type = Dalamud.Game.Text.XivChatType.Notice
+                    });
+                    SchedulerMain.DisablePlugin();
+                }
             }
 
             P.TaskManager.EnqueueMulti

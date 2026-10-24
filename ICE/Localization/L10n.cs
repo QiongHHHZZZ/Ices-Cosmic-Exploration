@@ -1671,6 +1671,10 @@ internal static class L10n
         ["Please go to Foundation and complete: Inscrutable Tastes"] = "请前往伊修加德基础层完成任务：难以捉摸的口味",
         ["Please go to Foundation and complete the quest: Inscrutable Tastes"] = "请前往伊修加德基础层完成任务：难以捉摸的口味",
 
+        // Remaining player-visible UI text
+        ["No settings match \"{0}\"."] = "没有匹配“{0}”的设置。",
+        ["You've either hit the Lunar Credit threshold, or gone above it. Stopping"] = "已达到或超过月面信用点阈值，正在停止。",
+
         // Missing keys found by full scan
         ["? Ko-fi (Buy me an ice coffee)"] = "? Ko-fi（请我喝杯冰咖啡）",
         ["100% a joke setting, don't take it seriously. I don't have the technology for this"] = "100% 是玩笑设置，别当真。我没有这个技术",
@@ -1680,16 +1684,13 @@ internal static class L10n
         ["Buy: Will buy X amount of those items, as it buys it from the vendor, the number will decrease until it hits 0.\n"] = "购买：将购买 X 个物品，从商人处购买时数量会递减直到 0。\n",
         ["Clear"] = "清除",
         ["Do you want to run the automated drone finding? If yes, enable this\n"] = "是否运行自动无人机寻找？如果是，请启用此选项\n",
-        ["Global setting \u2014 applies to all characters."] = "全局设置 \u2014 适用于所有角色。",
         ["ICE {0} Debugger ###IceCosmicDebug1"] = "ICE {0} 调试器 ###IceCosmicDebug1",
         ["If you are, it will automatically start as if you had pressed the start button yourself\n"] = "如果是，它会自动启动，就像你自己按了开始按钮一样\n",
         ["Keep Buying: Once the other 2 have been met (Keep/Buy), it will constantly buy this item if it has the credits to do so.\n"] = "持续购买：一旦满足其他 2 个条件（保留/购买），如果有足够信用点会持续购买此物品。\n",
         ["Keep: Will buy up to that many items to make sure that you have in your inventory. This count doesn't go down between runs.\n"] = "保留：将购买指定数量的物品以确保库存中有足够库存。此数量在运行间不会减少。\n",
-        ["No settings match \\\"{0}\\\"."] = "没有匹配的设置：{0}。",
         ["Only enable this if you want plan on doing missions YOURSELF. AND NOT AUTOMATING IT."] = "只有在你打算自己手动做任务、不启用自动化时才启用此选项。",
         ["Or if you're feeling daredevil. Lower it. I'm not your dad (will tell dad jokes though."] = "或者如果你觉得可以冒险，可以降低。我不是你爸（但会讲冷笑话）。",
         ["Order you would like to do the actions. It will work from the top down.\n"] = "你希望执行操作的顺序。它将从上到下执行。\n",
-        ["Override active \u2014 click to inherit from Global"] = "覆盖已激活 \u2014 点击以从全局继承",
         ["Really useful if you have a tool to auto-log you in/if you just want to enter the moon and go\n"] = "如果你有自动登录工具/如果你只想进入月球然后出发，这非常有用\n",
         ["Safety is around... 250? If you're having animation locks you can absolutely increase it higher\n"] = "安全值约为... 250？如果遇到动画锁定可以适当提高\n",
         ["Safety is around... 2500? If you're having animation locks you can absolutely increase it higher\n"] = "安全值约为... 2500？如果遇到动画锁定可以适当提高\n",

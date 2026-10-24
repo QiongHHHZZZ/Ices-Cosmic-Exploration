@@ -952,8 +952,8 @@ namespace ICE.Scheduler.Tasks
 
                 if (isCollectable && !QuestCheck.CollectablesUnlocked())
                 {
-                    string warningText = "We are missing the ability to do collectables... and we can't continue on without them. \n" +
-                        "Please go to Foundation and complete the quest: Inscrutable Tastes";
+                    string warningText = T("We are missing the ability to do collectables... and we can't continue on without them. \n") +
+                        T("Please go to Foundation and complete the quest: Inscrutable Tastes");
 
                     IceLogging.Info(warningText, tag);
                     Svc.Chat.Print(new()
@@ -967,8 +967,8 @@ namespace ICE.Scheduler.Tasks
 
                 if (isReducable && !QuestCheck.ReductionUnlocked())
                 {
-                    string warningText = "We are missing the ability to do Reducables... and we can't continue on without them. \n" +
-                        "Please go to Mor Dhona and complete the quest: No longer a collectable";
+                    string warningText = T("We are missing the ability to do Reducables... and we can't continue on without them. \n") +
+                        T("Please go to Mor Dhona and complete the quest: No longer a collectable");
 
                     IceLogging.Info(warningText, tag);
                     Svc.Chat.Print(new()

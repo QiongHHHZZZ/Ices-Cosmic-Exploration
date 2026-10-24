@@ -1665,6 +1665,11 @@ internal static class L10n
         ["Go to Mor Dhona and accept the quest \"No Longer a Collectable\""] = "前往摩杜纳并接受任务【收藏品不再是收藏品】。",
         ["We are missing the ability to do collectables... and we can't continue on without them. \n"] = "我们缺少收藏品能力，没有它无法继续。\n",
         ["Please go to Mor Dhona and complete the quest: No longer a collectable"] = "请前往摩杜纳完成任务：不再是收藏品",
+        ["Go to Idyllshire and accept the quest \"Inscrutable Taste\""] = "前往田园郡并接受任务【难以捉摸的口味】。",
+        ["HEY! YOU DON'T HAVE REDUCABLES UNLOCKED. YOU CAN'T DO THESE MISSIONS"] = "嘿！你尚未解锁还原功能，无法执行这些任务。",
+        ["We are missing the ability to do Reducables... and we can't continue on without them. \n"] = "我们缺少还原能力，没有它无法继续。\n",
+        ["Please go to Foundation and complete: Inscrutable Tastes"] = "请前往伊修加德基础层完成任务：难以捉摸的口味",
+        ["Please go to Foundation and complete the quest: Inscrutable Tastes"] = "请前往伊修加德基础层完成任务：难以捉摸的口味",
 
         // Missing keys found by full scan
         ["? Ko-fi (Buy me an ice coffee)"] = "? Ko-fi（请我喝杯冰咖啡）",
